@@ -1,0 +1,1916 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Oct 03, 2025 at 06:12 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `opticrew`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cars`
+--
+
+CREATE TABLE `cars` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `car_name` varchar(255) NOT NULL,
+  `is_available` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `cars`
+--
+
+INSERT INTO `cars` (`id`, `car_name`, `is_available`, `created_at`, `updated_at`) VALUES
+(1, 'Van 1', 1, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(2, 'Van 2', 1, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(3, 'Sedan 1', 1, '2025-10-02 18:51:46', '2025-10-02 18:51:46');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `clients`
+--
+
+CREATE TABLE `clients` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `client_type` enum('personal','company') NOT NULL,
+  `company_name` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `contracted_clients`
+--
+
+CREATE TABLE `contracted_clients` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `contracted_clients`
+--
+
+INSERT INTO `contracted_clients` (`id`, `name`, `created_at`, `updated_at`) VALUES
+(1, 'Kakslauttanen', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(2, 'Aikamatkat', '2025-10-02 18:51:46', '2025-10-02 18:51:46');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `daily_team_assignments`
+--
+
+CREATE TABLE `daily_team_assignments` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `assignment_date` date NOT NULL,
+  `car_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `contracted_client_id` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `daily_team_assignments`
+--
+
+INSERT INTO `daily_team_assignments` (`id`, `assignment_date`, `car_id`, `contracted_client_id`, `created_at`, `updated_at`) VALUES
+(1, '2025-10-03', 1, 1, '2025-10-02 18:52:17', '2025-10-02 18:52:17'),
+(2, '2025-07-01', 1, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(3, '2025-07-01', 2, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(4, '2025-07-01', 3, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(5, '2025-07-01', 1, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(6, '2025-07-01', 2, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employees`
+--
+
+CREATE TABLE `employees` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `full_name` varchar(255) NOT NULL,
+  `skills` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`skills`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employees`
+--
+
+INSERT INTO `employees` (`id`, `user_id`, `full_name`, `skills`, `created_at`, `updated_at`) VALUES
+(1, 2, 'Vincent Rey Digol', '[\"Driving\",\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(2, 3, 'Martin Yvann Leonardo', '[\"Driving\",\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(3, 4, 'Earl Leonardo', '[\"Driving\",\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(4, 5, 'Merlyn Guzman', '[\"Driving\",\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(5, 6, 'Aries Guzman', '[\"Driving\",\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(6, 7, 'Bella Ostan', '[\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(7, 8, 'Jennylyn Saballero', '[\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(8, 9, 'Rizza Estrella ', '[\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(9, 10, 'Cherrylyn Morales ', '[\"Driving\",\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(10, 11, 'John Carl Morales', '[\"Driving\",\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(11, 12, 'John Kevin Morales', '[\"Driving\",\"Cleaning\"]', '2025-10-02 18:51:46', '2025-10-02 18:51:46');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employee_schedules`
+--
+
+CREATE TABLE `employee_schedules` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `employee_id` bigint(20) UNSIGNED NOT NULL,
+  `work_date` date NOT NULL,
+  `is_day_off` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employee_schedules`
+--
+
+INSERT INTO `employee_schedules` (`id`, `employee_id`, `work_date`, `is_day_off`, `created_at`, `updated_at`) VALUES
+(1, 2, '2025-10-03', 1, '2025-10-02 18:52:06', '2025-10-02 18:52:06'),
+(2, 3, '2025-10-03', 1, '2025-10-02 18:52:07', '2025-10-02 18:52:07'),
+(3, 4, '2025-10-03', 1, '2025-10-02 18:52:07', '2025-10-02 18:52:07'),
+(4, 5, '2025-10-03', 1, '2025-10-02 18:52:08', '2025-10-02 18:52:08'),
+(5, 6, '2025-10-03', 1, '2025-10-02 18:52:08', '2025-10-02 18:52:08'),
+(6, 7, '2025-10-03', 1, '2025-10-02 18:52:08', '2025-10-02 18:52:08'),
+(7, 9, '2025-10-03', 1, '2025-10-02 18:52:09', '2025-10-02 18:52:09'),
+(8, 10, '2025-10-03', 1, '2025-10-02 18:52:10', '2025-10-02 18:52:10'),
+(9, 11, '2025-10-03', 1, '2025-10-02 18:52:10', '2025-10-02 18:52:10');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `locations`
+--
+
+CREATE TABLE `locations` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `contracted_client_id` bigint(20) UNSIGNED NOT NULL,
+  `location_name` varchar(255) NOT NULL,
+  `location_type` varchar(255) NOT NULL,
+  `base_cleaning_duration_minutes` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `locations`
+--
+
+INSERT INTO `locations` (`id`, `contracted_client_id`, `location_name`, `location_type`, `base_cleaning_duration_minutes`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Small Cabin #1', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(2, 1, 'Small Cabin #2', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(3, 1, 'Small Cabin #3', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(4, 1, 'Small Cabin #4', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(5, 1, 'Small Cabin #5', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(6, 1, 'Small Cabin #6', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(7, 1, 'Small Cabin #7', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(8, 1, 'Small Cabin #8', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(9, 1, 'Small Cabin #9', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(10, 1, 'Small Cabin #10', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(11, 1, 'Small Cabin #11', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(12, 1, 'Small Cabin #12', 'Small Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(13, 1, 'Medium Cabin #1', 'Medium Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(14, 1, 'Medium Cabin #2', 'Medium Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(15, 1, 'Medium Cabin #3', 'Medium Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(16, 1, 'Medium Cabin #4', 'Medium Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(17, 1, 'Medium Cabin #5', 'Medium Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(18, 1, 'Medium Cabin #6', 'Medium Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(19, 1, 'Big Cabin #1', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(20, 1, 'Big Cabin #2', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(21, 1, 'Big Cabin #3', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(22, 1, 'Big Cabin #4', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(23, 1, 'Big Cabin #5', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(24, 1, 'Big Cabin #6', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(25, 1, 'Big Cabin #7', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(26, 1, 'Big Cabin #8', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(27, 1, 'Big Cabin #9', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(28, 1, 'Big Cabin #10', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(29, 1, 'Big Cabin #11', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(30, 1, 'Big Cabin #12', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(31, 1, 'Big Cabin #13', 'Big Cabin', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(32, 1, 'Queen Suite #1', 'Queen Suite', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(33, 1, 'Queen Suite #2', 'Queen Suite', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(34, 1, 'Queen Suite #3', 'Queen Suite', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(35, 1, 'Queen Suite #4', 'Queen Suite', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(36, 1, 'Queen Suite #5', 'Queen Suite', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(37, 1, 'Igloo #1', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(38, 1, 'Igloo #2', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(39, 1, 'Igloo #3', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(40, 1, 'Igloo #4', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(41, 1, 'Igloo #5', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(42, 1, 'Igloo #6', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(43, 1, 'Igloo #7', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(44, 1, 'Igloo #8', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(45, 1, 'Igloo #9', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(46, 1, 'Igloo #10', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(47, 1, 'Igloo #11', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(48, 1, 'Igloo #12', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(49, 1, 'Igloo #13', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(50, 1, 'Igloo #14', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(51, 1, 'Igloo #15', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(52, 1, 'Igloo #16', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(53, 1, 'Igloo #17', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(54, 1, 'Igloo #18', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(55, 1, 'Igloo #19', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(56, 1, 'Igloo #20', 'Igloo', 45, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(57, 1, 'Traditional House', 'Traditional House', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(58, 1, 'Turf Chamber', 'Turf Chamber', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(59, 2, 'Panimo Cabins #1', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(60, 2, 'Panimo Cabins #2', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(61, 2, 'Panimo Cabins #3', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(62, 2, 'Panimo Cabins #4', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(63, 2, 'Panimo Cabins #5', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(64, 2, 'Panimo Cabins #6', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(65, 2, 'Panimo Cabins #7', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(66, 2, 'Panimo Cabins #8', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(67, 2, 'Panimo Cabins #9', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(68, 2, 'Panimo Cabins #10', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(69, 2, 'Panimo Cabins #11', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(70, 2, 'Panimo Cabins #12', 'Panimo Cabins', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(71, 2, 'Metsakoti A', 'Metsakoti A', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(72, 2, 'Metsakoti B', 'Metsakoti B', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(73, 2, 'Kermikkas', 'Kermikkas', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(74, 2, 'Hirvasaho A2 and B1', 'Hirvasaho A2 and B1', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(75, 2, 'Hirvasaho B2', 'Hirvasaho B2', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(76, 2, 'Hirvas Apartments', 'Hirvas Apartments', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(77, 2, 'Voursa 3A and 3B', 'Voursa 3A and 3B', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(78, 2, 'Voursa 3C', 'Voursa 3C', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(79, 2, 'Moitakuru C31 and C32', 'Moitakuru C31 and C32', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(80, 2, 'Luulampi', 'Luulampi', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(81, 2, 'Metashirvas', 'Metashirvas', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(82, 2, 'Kelotähti', 'Kelotähti', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(83, 2, 'Raahenmaja', 'Raahenmaja', 60, '2025-10-02 18:51:46', '2025-10-02 18:51:46');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `migrations`
+--
+
+CREATE TABLE `migrations` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `migration` varchar(255) NOT NULL,
+  `batch` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `migrations`
+--
+
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
+(1, '2019_12_14_000001_create_personal_access_tokens_table', 1),
+(2, '2025_10_02_130207_create_all_tables', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `personal_access_tokens`
+--
+
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `tokenable_type` varchar(255) NOT NULL,
+  `tokenable_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `abilities` text DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tasks`
+--
+
+CREATE TABLE `tasks` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `location_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `client_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `task_description` text NOT NULL,
+  `estimated_duration_minutes` int(11) NOT NULL,
+  `scheduled_date` date NOT NULL,
+  `status` enum('Pending','Scheduled','In-Progress','Completed','Cancelled') NOT NULL DEFAULT 'Pending',
+  `assigned_team_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `started_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `tasks`
+--
+
+INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `estimated_duration_minutes`, `scheduled_date`, `status`, `assigned_team_id`, `started_at`, `created_at`, `updated_at`) VALUES
+(1, 2, NULL, 'Standard Cleaning', 60, '2025-10-03', 'Completed', 1, '2025-10-02 18:52:23', '2025-10-02 18:52:17', '2025-10-02 18:52:40'),
+(2, 3, NULL, 'Standard Cleaning', 60, '2025-10-03', 'Completed', 1, '2025-10-02 18:52:25', '2025-10-02 18:52:17', '2025-10-02 19:33:07'),
+(1003, 12, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 3, '2025-07-31 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1004, 39, NULL, 'Historical Cleaning', 45, '2025-07-22', 'Completed', 2, '2025-08-19 05:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1005, 77, NULL, 'Historical Cleaning', 60, '2025-09-17', 'Completed', 4, '2025-09-25 05:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1006, 23, NULL, 'Historical Cleaning', 45, '2025-07-28', 'Completed', 5, '2025-08-12 04:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1007, 46, NULL, 'Historical Cleaning', 60, '2025-07-10', 'Completed', 5, '2025-07-02 03:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1008, 9, NULL, 'Historical Cleaning', 60, '2025-09-27', 'Completed', 3, '2025-09-01 03:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1009, 28, NULL, 'Historical Cleaning', 60, '2025-08-11', 'Completed', 3, '2025-07-29 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1010, 74, NULL, 'Historical Cleaning', 60, '2025-07-19', 'Completed', 2, '2025-09-03 04:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1011, 30, NULL, 'Historical Cleaning', 45, '2025-09-02', 'Completed', 4, '2025-08-18 03:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1012, 10, NULL, 'Historical Cleaning', 60, '2025-08-11', 'Completed', 4, '2025-09-02 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1013, 1, NULL, 'Historical Cleaning', 60, '2025-07-10', 'Completed', 6, '2025-08-14 01:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1014, 15, NULL, 'Historical Cleaning', 45, '2025-08-25', 'Completed', 4, '2025-07-13 06:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1015, 22, NULL, 'Historical Cleaning', 60, '2025-07-11', 'Completed', 2, '2025-09-11 01:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1016, 27, NULL, 'Historical Cleaning', 60, '2025-09-12', 'Completed', 2, '2025-07-25 04:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1017, 73, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 3, '2025-07-04 05:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1018, 42, NULL, 'Historical Cleaning', 45, '2025-08-25', 'Completed', 3, '2025-07-18 05:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1019, 14, NULL, 'Historical Cleaning', 60, '2025-08-11', 'Completed', 4, '2025-09-11 01:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1020, 51, NULL, 'Historical Cleaning', 45, '2025-09-24', 'Completed', 5, '2025-08-03 02:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1021, 70, NULL, 'Historical Cleaning', 60, '2025-07-16', 'Completed', 6, '2025-07-16 04:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1022, 29, NULL, 'Historical Cleaning', 60, '2025-08-02', 'Completed', 5, '2025-09-09 05:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1023, 60, NULL, 'Historical Cleaning', 60, '2025-09-25', 'Completed', 5, '2025-07-06 02:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1024, 56, NULL, 'Historical Cleaning', 60, '2025-07-15', 'Completed', 6, '2025-09-05 04:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1025, 79, NULL, 'Historical Cleaning', 45, '2025-07-06', 'Completed', 5, '2025-08-02 01:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1026, 9, NULL, 'Historical Cleaning', 60, '2025-08-03', 'Completed', 5, '2025-09-30 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1027, 54, NULL, 'Historical Cleaning', 60, '2025-08-16', 'Completed', 6, '2025-08-30 05:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1028, 54, NULL, 'Historical Cleaning', 45, '2025-09-29', 'Completed', 4, '2025-07-21 02:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1029, 58, NULL, 'Historical Cleaning', 45, '2025-09-20', 'Completed', 2, '2025-07-01 01:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1030, 45, NULL, 'Historical Cleaning', 60, '2025-08-09', 'Completed', 4, '2025-07-16 01:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1031, 45, NULL, 'Historical Cleaning', 60, '2025-09-09', 'Completed', 6, '2025-07-12 03:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1032, 33, NULL, 'Historical Cleaning', 45, '2025-08-09', 'Completed', 2, '2025-08-05 01:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1033, 58, NULL, 'Historical Cleaning', 60, '2025-09-05', 'Completed', 4, '2025-09-24 02:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1034, 17, NULL, 'Historical Cleaning', 60, '2025-09-10', 'Completed', 6, '2025-07-06 01:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1035, 48, NULL, 'Historical Cleaning', 60, '2025-09-11', 'Completed', 5, '2025-08-15 04:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1036, 1, NULL, 'Historical Cleaning', 45, '2025-08-29', 'Completed', 5, '2025-07-17 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1037, 50, NULL, 'Historical Cleaning', 45, '2025-08-28', 'Completed', 4, '2025-09-16 01:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1038, 32, NULL, 'Historical Cleaning', 45, '2025-08-29', 'Completed', 3, '2025-07-09 04:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1039, 25, NULL, 'Historical Cleaning', 60, '2025-08-24', 'Completed', 6, '2025-08-25 04:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1040, 61, NULL, 'Historical Cleaning', 60, '2025-09-28', 'Completed', 5, '2025-09-29 01:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1041, 26, NULL, 'Historical Cleaning', 45, '2025-07-08', 'Completed', 3, '2025-09-07 05:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1042, 26, NULL, 'Historical Cleaning', 60, '2025-08-06', 'Completed', 4, '2025-08-09 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1043, 60, NULL, 'Historical Cleaning', 45, '2025-08-28', 'Completed', 5, '2025-07-15 06:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1044, 27, NULL, 'Historical Cleaning', 45, '2025-09-11', 'Completed', 5, '2025-07-27 04:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1045, 70, NULL, 'Historical Cleaning', 45, '2025-09-10', 'Completed', 3, '2025-08-14 02:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1046, 69, NULL, 'Historical Cleaning', 45, '2025-07-28', 'Completed', 3, '2025-09-07 01:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1047, 4, NULL, 'Historical Cleaning', 45, '2025-07-09', 'Completed', 4, '2025-08-29 02:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1048, 4, NULL, 'Historical Cleaning', 45, '2025-07-08', 'Completed', 2, '2025-09-13 02:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1049, 59, NULL, 'Historical Cleaning', 45, '2025-08-24', 'Completed', 5, '2025-07-28 04:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1050, 13, NULL, 'Historical Cleaning', 60, '2025-08-29', 'Completed', 6, '2025-07-16 04:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1051, 46, NULL, 'Historical Cleaning', 60, '2025-07-31', 'Completed', 6, '2025-07-28 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1052, 82, NULL, 'Historical Cleaning', 60, '2025-07-25', 'Completed', 4, '2025-08-30 04:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1053, 68, NULL, 'Historical Cleaning', 60, '2025-09-27', 'Completed', 6, '2025-08-24 02:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1054, 14, NULL, 'Historical Cleaning', 60, '2025-07-27', 'Completed', 3, '2025-09-18 06:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1055, 81, NULL, 'Historical Cleaning', 45, '2025-09-12', 'Completed', 5, '2025-09-21 02:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1056, 10, NULL, 'Historical Cleaning', 60, '2025-09-23', 'Completed', 5, '2025-08-20 01:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1057, 79, NULL, 'Historical Cleaning', 45, '2025-07-13', 'Completed', 2, '2025-08-04 05:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1058, 23, NULL, 'Historical Cleaning', 60, '2025-07-25', 'Completed', 2, '2025-08-07 04:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1059, 15, NULL, 'Historical Cleaning', 60, '2025-09-29', 'Completed', 2, '2025-07-26 05:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1060, 42, NULL, 'Historical Cleaning', 45, '2025-07-12', 'Completed', 6, '2025-09-11 04:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1061, 37, NULL, 'Historical Cleaning', 60, '2025-09-24', 'Completed', 6, '2025-09-26 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1062, 42, NULL, 'Historical Cleaning', 60, '2025-09-23', 'Completed', 3, '2025-08-14 06:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1063, 58, NULL, 'Historical Cleaning', 60, '2025-08-16', 'Completed', 2, '2025-07-01 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1064, 43, NULL, 'Historical Cleaning', 60, '2025-07-28', 'Completed', 2, '2025-07-10 06:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1065, 27, NULL, 'Historical Cleaning', 45, '2025-08-25', 'Completed', 2, '2025-09-25 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1066, 27, NULL, 'Historical Cleaning', 45, '2025-09-16', 'Completed', 5, '2025-09-29 06:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1067, 2, NULL, 'Historical Cleaning', 45, '2025-07-23', 'Completed', 2, '2025-09-05 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1068, 10, NULL, 'Historical Cleaning', 45, '2025-08-26', 'Completed', 5, '2025-08-31 03:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1069, 72, NULL, 'Historical Cleaning', 45, '2025-07-26', 'Completed', 4, '2025-07-09 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1070, 13, NULL, 'Historical Cleaning', 45, '2025-09-14', 'Completed', 5, '2025-07-25 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1071, 2, NULL, 'Historical Cleaning', 45, '2025-08-06', 'Completed', 2, '2025-09-04 01:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1072, 30, NULL, 'Historical Cleaning', 60, '2025-09-27', 'Completed', 4, '2025-09-29 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1073, 20, NULL, 'Historical Cleaning', 60, '2025-07-15', 'Completed', 3, '2025-08-20 05:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1074, 4, NULL, 'Historical Cleaning', 45, '2025-07-11', 'Completed', 3, '2025-07-25 05:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1075, 55, NULL, 'Historical Cleaning', 45, '2025-07-30', 'Completed', 2, '2025-09-15 01:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1076, 39, NULL, 'Historical Cleaning', 45, '2025-09-05', 'Completed', 4, '2025-07-18 01:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1077, 44, NULL, 'Historical Cleaning', 45, '2025-07-01', 'Completed', 2, '2025-07-19 05:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1078, 46, NULL, 'Historical Cleaning', 45, '2025-08-28', 'Completed', 5, '2025-09-09 03:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1079, 25, NULL, 'Historical Cleaning', 45, '2025-09-13', 'Completed', 6, '2025-08-22 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1080, 15, NULL, 'Historical Cleaning', 45, '2025-08-14', 'Completed', 4, '2025-09-25 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1081, 56, NULL, 'Historical Cleaning', 60, '2025-07-08', 'Completed', 2, '2025-07-29 01:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1082, 50, NULL, 'Historical Cleaning', 60, '2025-09-11', 'Completed', 2, '2025-09-23 06:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1083, 9, NULL, 'Historical Cleaning', 60, '2025-09-22', 'Completed', 4, '2025-08-25 02:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1084, 25, NULL, 'Historical Cleaning', 60, '2025-07-01', 'Completed', 3, '2025-09-24 01:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1085, 34, NULL, 'Historical Cleaning', 60, '2025-08-07', 'Completed', 3, '2025-09-13 06:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1086, 37, NULL, 'Historical Cleaning', 45, '2025-09-16', 'Completed', 6, '2025-07-11 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1087, 73, NULL, 'Historical Cleaning', 60, '2025-08-28', 'Completed', 3, '2025-09-29 05:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1088, 50, NULL, 'Historical Cleaning', 45, '2025-07-24', 'Completed', 2, '2025-08-06 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1089, 20, NULL, 'Historical Cleaning', 45, '2025-07-30', 'Completed', 4, '2025-09-03 04:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1090, 75, NULL, 'Historical Cleaning', 60, '2025-09-05', 'Completed', 5, '2025-09-19 03:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1091, 68, NULL, 'Historical Cleaning', 60, '2025-09-15', 'Completed', 6, '2025-09-20 06:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1092, 80, NULL, 'Historical Cleaning', 60, '2025-07-06', 'Completed', 6, '2025-09-27 03:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1093, 55, NULL, 'Historical Cleaning', 45, '2025-07-21', 'Completed', 3, '2025-07-09 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1094, 38, NULL, 'Historical Cleaning', 60, '2025-07-31', 'Completed', 3, '2025-08-02 02:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1095, 70, NULL, 'Historical Cleaning', 60, '2025-07-12', 'Completed', 4, '2025-08-13 04:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1096, 55, NULL, 'Historical Cleaning', 60, '2025-08-03', 'Completed', 5, '2025-07-14 01:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1097, 80, NULL, 'Historical Cleaning', 60, '2025-09-29', 'Completed', 2, '2025-08-23 02:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1098, 39, NULL, 'Historical Cleaning', 45, '2025-08-05', 'Completed', 4, '2025-08-09 06:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1099, 79, NULL, 'Historical Cleaning', 60, '2025-07-03', 'Completed', 2, '2025-09-26 05:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1100, 26, NULL, 'Historical Cleaning', 60, '2025-07-02', 'Completed', 6, '2025-09-29 06:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1101, 49, NULL, 'Historical Cleaning', 60, '2025-07-26', 'Completed', 4, '2025-09-05 05:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1102, 17, NULL, 'Historical Cleaning', 60, '2025-09-27', 'Completed', 5, '2025-07-28 01:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1103, 61, NULL, 'Historical Cleaning', 45, '2025-07-07', 'Completed', 4, '2025-09-10 01:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1104, 4, NULL, 'Historical Cleaning', 60, '2025-08-27', 'Completed', 6, '2025-08-24 06:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1105, 12, NULL, 'Historical Cleaning', 60, '2025-08-30', 'Completed', 6, '2025-09-20 02:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1106, 53, NULL, 'Historical Cleaning', 45, '2025-09-24', 'Completed', 3, '2025-08-19 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1107, 15, NULL, 'Historical Cleaning', 45, '2025-08-06', 'Completed', 3, '2025-08-28 04:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1108, 53, NULL, 'Historical Cleaning', 45, '2025-08-21', 'Completed', 5, '2025-09-04 03:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1109, 22, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 3, '2025-07-27 01:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1110, 60, NULL, 'Historical Cleaning', 60, '2025-07-11', 'Completed', 2, '2025-07-07 05:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1111, 6, NULL, 'Historical Cleaning', 60, '2025-09-27', 'Completed', 5, '2025-07-14 06:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1112, 36, NULL, 'Historical Cleaning', 45, '2025-07-30', 'Completed', 3, '2025-09-07 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1113, 32, NULL, 'Historical Cleaning', 60, '2025-07-20', 'Completed', 2, '2025-09-04 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1114, 11, NULL, 'Historical Cleaning', 45, '2025-09-09', 'Completed', 5, '2025-07-24 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1115, 68, NULL, 'Historical Cleaning', 45, '2025-07-20', 'Completed', 4, '2025-08-27 06:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1116, 23, NULL, 'Historical Cleaning', 60, '2025-09-22', 'Completed', 5, '2025-07-28 03:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1117, 34, NULL, 'Historical Cleaning', 60, '2025-07-05', 'Completed', 2, '2025-09-16 03:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1118, 30, NULL, 'Historical Cleaning', 60, '2025-08-12', 'Completed', 4, '2025-08-21 05:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1119, 61, NULL, 'Historical Cleaning', 45, '2025-08-21', 'Completed', 4, '2025-08-16 01:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1120, 74, NULL, 'Historical Cleaning', 45, '2025-07-19', 'Completed', 4, '2025-09-03 06:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1121, 68, NULL, 'Historical Cleaning', 60, '2025-09-28', 'Completed', 3, '2025-09-09 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1122, 22, NULL, 'Historical Cleaning', 60, '2025-08-24', 'Completed', 6, '2025-09-27 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1123, 47, NULL, 'Historical Cleaning', 45, '2025-07-03', 'Completed', 3, '2025-08-24 04:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1124, 18, NULL, 'Historical Cleaning', 45, '2025-09-07', 'Completed', 3, '2025-07-11 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1125, 35, NULL, 'Historical Cleaning', 45, '2025-08-07', 'Completed', 5, '2025-08-05 06:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1126, 78, NULL, 'Historical Cleaning', 60, '2025-08-04', 'Completed', 4, '2025-09-22 03:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1127, 53, NULL, 'Historical Cleaning', 45, '2025-07-20', 'Completed', 4, '2025-08-24 02:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1128, 11, NULL, 'Historical Cleaning', 45, '2025-08-10', 'Completed', 5, '2025-09-16 05:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1129, 71, NULL, 'Historical Cleaning', 60, '2025-08-19', 'Completed', 4, '2025-08-06 02:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1130, 82, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 6, '2025-08-20 01:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1131, 76, NULL, 'Historical Cleaning', 45, '2025-07-22', 'Completed', 4, '2025-07-25 05:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1132, 20, NULL, 'Historical Cleaning', 60, '2025-07-11', 'Completed', 3, '2025-07-17 06:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1133, 73, NULL, 'Historical Cleaning', 45, '2025-09-02', 'Completed', 4, '2025-07-02 01:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1134, 33, NULL, 'Historical Cleaning', 45, '2025-07-11', 'Completed', 5, '2025-07-30 05:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1135, 80, NULL, 'Historical Cleaning', 45, '2025-08-22', 'Completed', 6, '2025-07-16 03:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1136, 16, NULL, 'Historical Cleaning', 45, '2025-07-16', 'Completed', 2, '2025-09-27 01:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1137, 65, NULL, 'Historical Cleaning', 60, '2025-07-30', 'Completed', 2, '2025-09-18 05:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1138, 7, NULL, 'Historical Cleaning', 45, '2025-09-10', 'Completed', 5, '2025-08-03 03:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1139, 51, NULL, 'Historical Cleaning', 45, '2025-07-05', 'Completed', 2, '2025-07-15 03:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1140, 47, NULL, 'Historical Cleaning', 60, '2025-09-01', 'Completed', 3, '2025-07-06 03:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1141, 48, NULL, 'Historical Cleaning', 45, '2025-08-07', 'Completed', 4, '2025-07-01 03:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1142, 32, NULL, 'Historical Cleaning', 45, '2025-09-12', 'Completed', 2, '2025-08-12 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1143, 40, NULL, 'Historical Cleaning', 45, '2025-09-20', 'Completed', 3, '2025-07-08 03:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1144, 21, NULL, 'Historical Cleaning', 45, '2025-09-17', 'Completed', 2, '2025-09-19 05:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1145, 82, NULL, 'Historical Cleaning', 45, '2025-08-02', 'Completed', 4, '2025-09-11 04:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1146, 76, NULL, 'Historical Cleaning', 60, '2025-09-28', 'Completed', 3, '2025-09-14 04:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1147, 70, NULL, 'Historical Cleaning', 60, '2025-07-20', 'Completed', 3, '2025-09-03 06:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1148, 40, NULL, 'Historical Cleaning', 60, '2025-08-09', 'Completed', 5, '2025-07-21 01:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1149, 36, NULL, 'Historical Cleaning', 60, '2025-09-20', 'Completed', 6, '2025-09-01 02:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1150, 24, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 2, '2025-08-29 05:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1151, 18, NULL, 'Historical Cleaning', 60, '2025-07-19', 'Completed', 4, '2025-08-29 06:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1152, 5, NULL, 'Historical Cleaning', 60, '2025-07-05', 'Completed', 3, '2025-09-14 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1153, 16, NULL, 'Historical Cleaning', 45, '2025-07-20', 'Completed', 4, '2025-07-15 03:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1154, 7, NULL, 'Historical Cleaning', 60, '2025-09-11', 'Completed', 4, '2025-09-13 01:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1155, 23, NULL, 'Historical Cleaning', 45, '2025-07-03', 'Completed', 2, '2025-09-18 03:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1156, 54, NULL, 'Historical Cleaning', 45, '2025-08-16', 'Completed', 2, '2025-08-30 05:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1157, 30, NULL, 'Historical Cleaning', 60, '2025-07-13', 'Completed', 6, '2025-07-22 06:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1158, 1, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 4, '2025-09-15 05:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1159, 56, NULL, 'Historical Cleaning', 45, '2025-08-07', 'Completed', 3, '2025-07-14 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1160, 36, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 2, '2025-09-14 01:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1161, 70, NULL, 'Historical Cleaning', 60, '2025-08-01', 'Completed', 2, '2025-09-01 02:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1162, 17, NULL, 'Historical Cleaning', 60, '2025-07-02', 'Completed', 6, '2025-07-25 01:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1163, 31, NULL, 'Historical Cleaning', 45, '2025-08-21', 'Completed', 4, '2025-09-19 02:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1164, 82, NULL, 'Historical Cleaning', 45, '2025-08-06', 'Completed', 5, '2025-07-15 01:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1165, 81, NULL, 'Historical Cleaning', 60, '2025-07-02', 'Completed', 3, '2025-07-15 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1166, 55, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 4, '2025-08-24 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1167, 49, NULL, 'Historical Cleaning', 60, '2025-09-14', 'Completed', 6, '2025-07-07 05:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1168, 41, NULL, 'Historical Cleaning', 60, '2025-08-21', 'Completed', 3, '2025-08-11 06:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1169, 15, NULL, 'Historical Cleaning', 60, '2025-07-27', 'Completed', 5, '2025-09-04 05:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1170, 55, NULL, 'Historical Cleaning', 45, '2025-07-28', 'Completed', 6, '2025-08-31 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1171, 29, NULL, 'Historical Cleaning', 60, '2025-08-12', 'Completed', 4, '2025-07-21 02:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1172, 57, NULL, 'Historical Cleaning', 60, '2025-08-27', 'Completed', 2, '2025-08-14 03:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1173, 20, NULL, 'Historical Cleaning', 45, '2025-09-21', 'Completed', 4, '2025-08-30 05:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1174, 38, NULL, 'Historical Cleaning', 60, '2025-08-08', 'Completed', 3, '2025-09-28 04:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1175, 45, NULL, 'Historical Cleaning', 45, '2025-07-26', 'Completed', 2, '2025-07-17 01:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1176, 20, NULL, 'Historical Cleaning', 45, '2025-07-31', 'Completed', 5, '2025-08-10 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1177, 80, NULL, 'Historical Cleaning', 60, '2025-09-17', 'Completed', 3, '2025-07-26 06:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1178, 59, NULL, 'Historical Cleaning', 60, '2025-09-01', 'Completed', 6, '2025-08-15 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1179, 65, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 4, '2025-07-05 05:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1180, 73, NULL, 'Historical Cleaning', 45, '2025-07-12', 'Completed', 6, '2025-09-27 04:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1181, 67, NULL, 'Historical Cleaning', 60, '2025-08-27', 'Completed', 3, '2025-07-17 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1182, 17, NULL, 'Historical Cleaning', 45, '2025-08-04', 'Completed', 4, '2025-09-03 03:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1183, 63, NULL, 'Historical Cleaning', 45, '2025-09-11', 'Completed', 2, '2025-08-17 02:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1184, 14, NULL, 'Historical Cleaning', 60, '2025-08-02', 'Completed', 3, '2025-08-31 02:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1185, 67, NULL, 'Historical Cleaning', 45, '2025-08-07', 'Completed', 6, '2025-08-28 01:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1186, 50, NULL, 'Historical Cleaning', 60, '2025-09-18', 'Completed', 5, '2025-07-15 04:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1187, 2, NULL, 'Historical Cleaning', 45, '2025-09-14', 'Completed', 2, '2025-07-20 03:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1188, 9, NULL, 'Historical Cleaning', 45, '2025-07-12', 'Completed', 6, '2025-07-25 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1189, 39, NULL, 'Historical Cleaning', 45, '2025-09-14', 'Completed', 6, '2025-07-02 01:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1190, 8, NULL, 'Historical Cleaning', 60, '2025-08-13', 'Completed', 4, '2025-07-06 02:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1191, 22, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 5, '2025-08-21 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1192, 40, NULL, 'Historical Cleaning', 45, '2025-09-13', 'Completed', 4, '2025-09-09 03:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1193, 16, NULL, 'Historical Cleaning', 45, '2025-08-29', 'Completed', 4, '2025-09-10 01:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1194, 61, NULL, 'Historical Cleaning', 45, '2025-07-01', 'Completed', 3, '2025-07-04 05:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1195, 9, NULL, 'Historical Cleaning', 45, '2025-07-18', 'Completed', 5, '2025-09-06 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1196, 7, NULL, 'Historical Cleaning', 45, '2025-08-23', 'Completed', 2, '2025-07-01 01:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1197, 59, NULL, 'Historical Cleaning', 60, '2025-09-11', 'Completed', 6, '2025-07-13 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1198, 36, NULL, 'Historical Cleaning', 60, '2025-07-25', 'Completed', 6, '2025-07-29 01:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1199, 43, NULL, 'Historical Cleaning', 60, '2025-08-14', 'Completed', 2, '2025-07-12 05:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1200, 67, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 5, '2025-07-16 01:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1201, 21, NULL, 'Historical Cleaning', 45, '2025-09-20', 'Completed', 2, '2025-09-12 05:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1202, 46, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 6, '2025-09-11 05:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1203, 69, NULL, 'Historical Cleaning', 45, '2025-09-12', 'Completed', 3, '2025-07-03 02:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1204, 26, NULL, 'Historical Cleaning', 45, '2025-09-12', 'Completed', 6, '2025-07-26 03:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1205, 63, NULL, 'Historical Cleaning', 60, '2025-07-18', 'Completed', 3, '2025-09-30 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1206, 56, NULL, 'Historical Cleaning', 45, '2025-07-26', 'Completed', 2, '2025-07-27 04:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1207, 41, NULL, 'Historical Cleaning', 45, '2025-07-25', 'Completed', 6, '2025-09-11 04:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1208, 18, NULL, 'Historical Cleaning', 60, '2025-09-30', 'Completed', 2, '2025-08-05 02:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1209, 44, NULL, 'Historical Cleaning', 60, '2025-09-12', 'Completed', 2, '2025-07-22 04:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1210, 41, NULL, 'Historical Cleaning', 60, '2025-08-07', 'Completed', 4, '2025-07-19 02:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1211, 50, NULL, 'Historical Cleaning', 60, '2025-07-08', 'Completed', 4, '2025-07-12 04:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1212, 29, NULL, 'Historical Cleaning', 45, '2025-09-14', 'Completed', 2, '2025-07-03 02:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1213, 41, NULL, 'Historical Cleaning', 60, '2025-07-06', 'Completed', 4, '2025-08-12 04:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1214, 79, NULL, 'Historical Cleaning', 60, '2025-09-11', 'Completed', 6, '2025-09-26 03:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1215, 72, NULL, 'Historical Cleaning', 45, '2025-07-22', 'Completed', 3, '2025-08-27 05:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1216, 6, NULL, 'Historical Cleaning', 60, '2025-09-04', 'Completed', 3, '2025-07-28 06:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1217, 12, NULL, 'Historical Cleaning', 45, '2025-07-15', 'Completed', 4, '2025-09-19 06:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1218, 74, NULL, 'Historical Cleaning', 60, '2025-07-08', 'Completed', 3, '2025-07-04 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1219, 44, NULL, 'Historical Cleaning', 60, '2025-07-07', 'Completed', 6, '2025-07-15 06:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1220, 51, NULL, 'Historical Cleaning', 60, '2025-08-05', 'Completed', 2, '2025-09-08 01:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1221, 60, NULL, 'Historical Cleaning', 60, '2025-07-20', 'Completed', 4, '2025-07-24 03:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1222, 10, NULL, 'Historical Cleaning', 45, '2025-07-16', 'Completed', 3, '2025-09-27 01:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1223, 17, NULL, 'Historical Cleaning', 45, '2025-07-09', 'Completed', 2, '2025-07-28 03:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1224, 16, NULL, 'Historical Cleaning', 45, '2025-07-31', 'Completed', 4, '2025-09-29 02:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1225, 68, NULL, 'Historical Cleaning', 60, '2025-09-12', 'Completed', 2, '2025-07-01 02:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1226, 81, NULL, 'Historical Cleaning', 45, '2025-09-13', 'Completed', 3, '2025-08-20 06:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1227, 80, NULL, 'Historical Cleaning', 60, '2025-08-08', 'Completed', 2, '2025-07-02 02:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1228, 15, NULL, 'Historical Cleaning', 60, '2025-08-16', 'Completed', 4, '2025-07-24 03:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1229, 36, NULL, 'Historical Cleaning', 45, '2025-07-25', 'Completed', 3, '2025-08-05 05:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1230, 69, NULL, 'Historical Cleaning', 60, '2025-09-01', 'Completed', 4, '2025-08-26 03:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1231, 54, NULL, 'Historical Cleaning', 60, '2025-08-28', 'Completed', 6, '2025-09-24 01:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1232, 37, NULL, 'Historical Cleaning', 60, '2025-08-23', 'Completed', 3, '2025-08-18 02:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1233, 75, NULL, 'Historical Cleaning', 60, '2025-09-19', 'Completed', 5, '2025-08-28 02:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1234, 36, NULL, 'Historical Cleaning', 45, '2025-09-10', 'Completed', 3, '2025-09-22 04:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1235, 61, NULL, 'Historical Cleaning', 45, '2025-08-30', 'Completed', 5, '2025-08-22 03:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1236, 40, NULL, 'Historical Cleaning', 45, '2025-08-20', 'Completed', 6, '2025-08-17 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1237, 24, NULL, 'Historical Cleaning', 60, '2025-08-23', 'Completed', 3, '2025-07-06 05:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1238, 28, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 5, '2025-09-05 05:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1239, 14, NULL, 'Historical Cleaning', 60, '2025-07-31', 'Completed', 5, '2025-09-25 03:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1240, 63, NULL, 'Historical Cleaning', 60, '2025-08-10', 'Completed', 4, '2025-07-22 03:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1241, 29, NULL, 'Historical Cleaning', 60, '2025-07-20', 'Completed', 2, '2025-07-02 06:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1242, 66, NULL, 'Historical Cleaning', 45, '2025-08-09', 'Completed', 3, '2025-07-11 01:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1243, 29, NULL, 'Historical Cleaning', 60, '2025-08-14', 'Completed', 5, '2025-09-10 03:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1244, 23, NULL, 'Historical Cleaning', 60, '2025-07-30', 'Completed', 5, '2025-07-05 03:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1245, 60, NULL, 'Historical Cleaning', 45, '2025-07-31', 'Completed', 2, '2025-08-02 02:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1246, 79, NULL, 'Historical Cleaning', 45, '2025-08-13', 'Completed', 4, '2025-09-08 03:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1247, 40, NULL, 'Historical Cleaning', 60, '2025-07-28', 'Completed', 4, '2025-07-10 04:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1248, 27, NULL, 'Historical Cleaning', 60, '2025-07-13', 'Completed', 2, '2025-09-26 04:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1249, 16, NULL, 'Historical Cleaning', 45, '2025-08-05', 'Completed', 2, '2025-07-11 06:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1250, 29, NULL, 'Historical Cleaning', 60, '2025-09-06', 'Completed', 6, '2025-09-15 02:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1251, 41, NULL, 'Historical Cleaning', 60, '2025-08-04', 'Completed', 6, '2025-09-08 05:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1252, 80, NULL, 'Historical Cleaning', 45, '2025-09-07', 'Completed', 4, '2025-09-24 01:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1253, 63, NULL, 'Historical Cleaning', 45, '2025-07-26', 'Completed', 2, '2025-07-25 04:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1254, 30, NULL, 'Historical Cleaning', 45, '2025-07-24', 'Completed', 2, '2025-07-11 05:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1255, 76, NULL, 'Historical Cleaning', 45, '2025-07-09', 'Completed', 4, '2025-09-29 01:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1256, 6, NULL, 'Historical Cleaning', 60, '2025-08-03', 'Completed', 6, '2025-08-16 02:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1257, 45, NULL, 'Historical Cleaning', 45, '2025-07-19', 'Completed', 5, '2025-08-01 04:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1258, 18, NULL, 'Historical Cleaning', 60, '2025-08-19', 'Completed', 3, '2025-09-26 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1259, 22, NULL, 'Historical Cleaning', 45, '2025-09-11', 'Completed', 5, '2025-07-28 03:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1260, 42, NULL, 'Historical Cleaning', 60, '2025-09-05', 'Completed', 2, '2025-09-04 02:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1261, 31, NULL, 'Historical Cleaning', 60, '2025-07-06', 'Completed', 5, '2025-09-12 01:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1262, 13, NULL, 'Historical Cleaning', 60, '2025-08-01', 'Completed', 6, '2025-09-02 04:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1263, 35, NULL, 'Historical Cleaning', 60, '2025-08-18', 'Completed', 5, '2025-08-24 05:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1264, 25, NULL, 'Historical Cleaning', 60, '2025-07-10', 'Completed', 4, '2025-07-27 03:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1265, 3, NULL, 'Historical Cleaning', 45, '2025-09-15', 'Completed', 6, '2025-07-13 04:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1266, 56, NULL, 'Historical Cleaning', 60, '2025-07-19', 'Completed', 6, '2025-07-16 05:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1267, 41, NULL, 'Historical Cleaning', 60, '2025-07-03', 'Completed', 6, '2025-08-14 05:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1268, 73, NULL, 'Historical Cleaning', 60, '2025-08-03', 'Completed', 4, '2025-08-08 06:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1269, 28, NULL, 'Historical Cleaning', 45, '2025-08-13', 'Completed', 2, '2025-09-25 03:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1270, 7, NULL, 'Historical Cleaning', 60, '2025-08-08', 'Completed', 2, '2025-09-08 01:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1271, 50, NULL, 'Historical Cleaning', 45, '2025-07-30', 'Completed', 6, '2025-09-13 01:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1272, 41, NULL, 'Historical Cleaning', 45, '2025-08-15', 'Completed', 3, '2025-09-09 03:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1273, 63, NULL, 'Historical Cleaning', 60, '2025-08-07', 'Completed', 6, '2025-07-07 05:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1274, 58, NULL, 'Historical Cleaning', 60, '2025-09-21', 'Completed', 3, '2025-08-21 01:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1275, 59, NULL, 'Historical Cleaning', 45, '2025-07-01', 'Completed', 6, '2025-07-06 02:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1276, 29, NULL, 'Historical Cleaning', 45, '2025-07-07', 'Completed', 3, '2025-07-19 03:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1277, 19, NULL, 'Historical Cleaning', 60, '2025-09-21', 'Completed', 4, '2025-08-21 02:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1278, 7, NULL, 'Historical Cleaning', 45, '2025-08-06', 'Completed', 2, '2025-09-22 04:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1279, 82, NULL, 'Historical Cleaning', 45, '2025-08-18', 'Completed', 3, '2025-09-22 05:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1280, 31, NULL, 'Historical Cleaning', 60, '2025-09-30', 'Completed', 2, '2025-07-05 05:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1281, 28, NULL, 'Historical Cleaning', 45, '2025-07-22', 'Completed', 4, '2025-08-21 01:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1282, 68, NULL, 'Historical Cleaning', 60, '2025-09-14', 'Completed', 3, '2025-08-06 06:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1283, 78, NULL, 'Historical Cleaning', 60, '2025-09-25', 'Completed', 6, '2025-09-12 06:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1284, 46, NULL, 'Historical Cleaning', 45, '2025-08-01', 'Completed', 5, '2025-07-10 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1285, 67, NULL, 'Historical Cleaning', 60, '2025-07-27', 'Completed', 4, '2025-08-12 03:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1286, 24, NULL, 'Historical Cleaning', 60, '2025-07-26', 'Completed', 3, '2025-09-05 01:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1287, 46, NULL, 'Historical Cleaning', 45, '2025-07-02', 'Completed', 4, '2025-09-11 04:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1288, 61, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 5, '2025-07-31 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1289, 55, NULL, 'Historical Cleaning', 60, '2025-09-02', 'Completed', 2, '2025-09-21 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1290, 12, NULL, 'Historical Cleaning', 45, '2025-07-03', 'Completed', 4, '2025-09-17 05:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1291, 73, NULL, 'Historical Cleaning', 45, '2025-08-24', 'Completed', 3, '2025-07-16 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1292, 25, NULL, 'Historical Cleaning', 45, '2025-09-18', 'Completed', 6, '2025-07-29 06:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1293, 79, NULL, 'Historical Cleaning', 60, '2025-08-23', 'Completed', 6, '2025-08-13 03:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1294, 31, NULL, 'Historical Cleaning', 60, '2025-07-03', 'Completed', 2, '2025-09-19 03:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1295, 71, NULL, 'Historical Cleaning', 60, '2025-07-24', 'Completed', 4, '2025-07-02 05:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1296, 40, NULL, 'Historical Cleaning', 45, '2025-07-22', 'Completed', 3, '2025-08-31 01:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1297, 56, NULL, 'Historical Cleaning', 45, '2025-07-26', 'Completed', 3, '2025-09-07 03:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1298, 44, NULL, 'Historical Cleaning', 60, '2025-07-26', 'Completed', 6, '2025-07-04 06:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1299, 40, NULL, 'Historical Cleaning', 60, '2025-07-21', 'Completed', 6, '2025-09-24 05:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1300, 56, NULL, 'Historical Cleaning', 60, '2025-09-27', 'Completed', 2, '2025-09-19 02:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1301, 25, NULL, 'Historical Cleaning', 45, '2025-09-30', 'Completed', 2, '2025-07-02 04:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1302, 33, NULL, 'Historical Cleaning', 60, '2025-07-26', 'Completed', 4, '2025-07-14 01:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1303, 10, NULL, 'Historical Cleaning', 60, '2025-07-20', 'Completed', 5, '2025-08-27 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1304, 16, NULL, 'Historical Cleaning', 60, '2025-09-01', 'Completed', 6, '2025-07-09 03:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1305, 65, NULL, 'Historical Cleaning', 45, '2025-08-11', 'Completed', 3, '2025-07-19 03:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1306, 55, NULL, 'Historical Cleaning', 60, '2025-07-08', 'Completed', 6, '2025-09-25 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1307, 3, NULL, 'Historical Cleaning', 60, '2025-07-25', 'Completed', 2, '2025-09-11 01:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1308, 71, NULL, 'Historical Cleaning', 60, '2025-07-28', 'Completed', 5, '2025-09-09 05:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1309, 9, NULL, 'Historical Cleaning', 60, '2025-08-23', 'Completed', 4, '2025-09-01 03:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1310, 14, NULL, 'Historical Cleaning', 45, '2025-08-02', 'Completed', 6, '2025-07-14 06:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1311, 42, NULL, 'Historical Cleaning', 45, '2025-07-24', 'Completed', 4, '2025-07-01 01:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1312, 56, NULL, 'Historical Cleaning', 60, '2025-07-22', 'Completed', 6, '2025-08-13 01:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1313, 77, NULL, 'Historical Cleaning', 60, '2025-08-20', 'Completed', 4, '2025-07-03 06:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1314, 39, NULL, 'Historical Cleaning', 60, '2025-07-27', 'Completed', 4, '2025-09-01 04:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1315, 74, NULL, 'Historical Cleaning', 45, '2025-07-08', 'Completed', 6, '2025-08-20 04:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1316, 12, NULL, 'Historical Cleaning', 45, '2025-08-29', 'Completed', 6, '2025-09-22 01:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1317, 64, NULL, 'Historical Cleaning', 60, '2025-09-06', 'Completed', 6, '2025-09-12 04:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1318, 2, NULL, 'Historical Cleaning', 45, '2025-08-11', 'Completed', 5, '2025-08-20 01:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1319, 65, NULL, 'Historical Cleaning', 60, '2025-09-01', 'Completed', 2, '2025-07-31 05:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1320, 32, NULL, 'Historical Cleaning', 60, '2025-09-06', 'Completed', 2, '2025-07-29 04:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1321, 53, NULL, 'Historical Cleaning', 45, '2025-08-19', 'Completed', 4, '2025-07-11 06:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1322, 44, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 2, '2025-08-13 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1323, 14, NULL, 'Historical Cleaning', 45, '2025-07-30', 'Completed', 6, '2025-09-17 04:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1324, 43, NULL, 'Historical Cleaning', 60, '2025-07-02', 'Completed', 5, '2025-09-24 01:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1325, 83, NULL, 'Historical Cleaning', 60, '2025-08-15', 'Completed', 6, '2025-09-17 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1326, 31, NULL, 'Historical Cleaning', 60, '2025-07-13', 'Completed', 6, '2025-07-05 01:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1327, 18, NULL, 'Historical Cleaning', 60, '2025-08-04', 'Completed', 5, '2025-08-21 06:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1328, 37, NULL, 'Historical Cleaning', 60, '2025-07-09', 'Completed', 5, '2025-09-02 04:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1329, 18, NULL, 'Historical Cleaning', 60, '2025-08-30', 'Completed', 5, '2025-08-09 06:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1330, 75, NULL, 'Historical Cleaning', 45, '2025-07-01', 'Completed', 2, '2025-07-13 01:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1331, 14, NULL, 'Historical Cleaning', 60, '2025-08-23', 'Completed', 3, '2025-09-21 04:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1332, 31, NULL, 'Historical Cleaning', 45, '2025-09-22', 'Completed', 3, '2025-09-29 01:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1333, 83, NULL, 'Historical Cleaning', 45, '2025-07-19', 'Completed', 6, '2025-09-05 04:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1334, 83, NULL, 'Historical Cleaning', 60, '2025-08-03', 'Completed', 5, '2025-09-11 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1335, 57, NULL, 'Historical Cleaning', 60, '2025-07-23', 'Completed', 4, '2025-07-21 01:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1336, 42, NULL, 'Historical Cleaning', 45, '2025-08-01', 'Completed', 4, '2025-08-17 02:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1337, 16, NULL, 'Historical Cleaning', 45, '2025-07-05', 'Completed', 4, '2025-07-26 04:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1338, 43, NULL, 'Historical Cleaning', 60, '2025-07-17', 'Completed', 3, '2025-08-31 01:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1339, 59, NULL, 'Historical Cleaning', 45, '2025-09-15', 'Completed', 5, '2025-08-07 04:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1340, 48, NULL, 'Historical Cleaning', 60, '2025-08-23', 'Completed', 5, '2025-08-06 01:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1341, 44, NULL, 'Historical Cleaning', 60, '2025-08-25', 'Completed', 2, '2025-09-15 05:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1342, 30, NULL, 'Historical Cleaning', 60, '2025-09-10', 'Completed', 3, '2025-07-23 01:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1343, 81, NULL, 'Historical Cleaning', 45, '2025-09-30', 'Completed', 5, '2025-07-26 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1344, 59, NULL, 'Historical Cleaning', 60, '2025-07-29', 'Completed', 5, '2025-09-15 01:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1345, 33, NULL, 'Historical Cleaning', 45, '2025-09-02', 'Completed', 3, '2025-07-09 01:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1346, 69, NULL, 'Historical Cleaning', 45, '2025-08-31', 'Completed', 6, '2025-09-04 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1347, 59, NULL, 'Historical Cleaning', 45, '2025-08-04', 'Completed', 4, '2025-09-02 03:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1348, 16, NULL, 'Historical Cleaning', 45, '2025-08-08', 'Completed', 2, '2025-08-05 04:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1349, 5, NULL, 'Historical Cleaning', 60, '2025-09-21', 'Completed', 5, '2025-07-13 06:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1350, 47, NULL, 'Historical Cleaning', 45, '2025-08-05', 'Completed', 6, '2025-08-09 06:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13');
+INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `estimated_duration_minutes`, `scheduled_date`, `status`, `assigned_team_id`, `started_at`, `created_at`, `updated_at`) VALUES
+(1351, 47, NULL, 'Historical Cleaning', 45, '2025-07-25', 'Completed', 5, '2025-07-17 02:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1352, 39, NULL, 'Historical Cleaning', 60, '2025-07-30', 'Completed', 2, '2025-07-12 01:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1353, 40, NULL, 'Historical Cleaning', 60, '2025-08-02', 'Completed', 3, '2025-09-14 03:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1354, 20, NULL, 'Historical Cleaning', 60, '2025-09-25', 'Completed', 6, '2025-09-20 06:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1355, 74, NULL, 'Historical Cleaning', 60, '2025-07-10', 'Completed', 2, '2025-07-10 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1356, 41, NULL, 'Historical Cleaning', 45, '2025-09-19', 'Completed', 5, '2025-09-30 01:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1357, 2, NULL, 'Historical Cleaning', 60, '2025-07-24', 'Completed', 2, '2025-09-01 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1358, 43, NULL, 'Historical Cleaning', 45, '2025-07-19', 'Completed', 6, '2025-08-05 05:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1359, 30, NULL, 'Historical Cleaning', 60, '2025-07-02', 'Completed', 5, '2025-09-29 06:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1360, 12, NULL, 'Historical Cleaning', 45, '2025-09-02', 'Completed', 3, '2025-08-31 02:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1361, 8, NULL, 'Historical Cleaning', 60, '2025-07-22', 'Completed', 6, '2025-07-22 03:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1362, 20, NULL, 'Historical Cleaning', 60, '2025-08-01', 'Completed', 2, '2025-07-11 04:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1363, 45, NULL, 'Historical Cleaning', 45, '2025-08-02', 'Completed', 5, '2025-08-28 05:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1364, 54, NULL, 'Historical Cleaning', 45, '2025-08-06', 'Completed', 3, '2025-07-24 02:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1365, 39, NULL, 'Historical Cleaning', 45, '2025-09-12', 'Completed', 5, '2025-07-12 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1366, 69, NULL, 'Historical Cleaning', 45, '2025-08-19', 'Completed', 3, '2025-09-07 01:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1367, 26, NULL, 'Historical Cleaning', 45, '2025-09-07', 'Completed', 6, '2025-07-08 04:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1368, 75, NULL, 'Historical Cleaning', 60, '2025-09-20', 'Completed', 5, '2025-07-30 05:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1369, 16, NULL, 'Historical Cleaning', 45, '2025-07-07', 'Completed', 2, '2025-07-26 06:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1370, 31, NULL, 'Historical Cleaning', 60, '2025-09-19', 'Completed', 5, '2025-07-29 05:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1371, 15, NULL, 'Historical Cleaning', 45, '2025-09-25', 'Completed', 6, '2025-07-31 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1372, 41, NULL, 'Historical Cleaning', 45, '2025-08-18', 'Completed', 3, '2025-08-06 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1373, 42, NULL, 'Historical Cleaning', 60, '2025-07-13', 'Completed', 2, '2025-07-11 04:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1374, 22, NULL, 'Historical Cleaning', 45, '2025-09-03', 'Completed', 5, '2025-07-19 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1375, 5, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 3, '2025-09-10 04:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1376, 23, NULL, 'Historical Cleaning', 60, '2025-07-17', 'Completed', 2, '2025-09-27 02:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1377, 6, NULL, 'Historical Cleaning', 60, '2025-07-26', 'Completed', 4, '2025-09-21 01:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1378, 3, NULL, 'Historical Cleaning', 45, '2025-09-23', 'Completed', 3, '2025-08-10 03:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1379, 69, NULL, 'Historical Cleaning', 45, '2025-08-05', 'Completed', 5, '2025-09-30 01:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1380, 32, NULL, 'Historical Cleaning', 60, '2025-08-20', 'Completed', 2, '2025-09-15 03:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1381, 39, NULL, 'Historical Cleaning', 60, '2025-08-16', 'Completed', 2, '2025-09-08 03:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1382, 43, NULL, 'Historical Cleaning', 60, '2025-09-07', 'Completed', 6, '2025-09-08 05:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1383, 76, NULL, 'Historical Cleaning', 60, '2025-07-22', 'Completed', 6, '2025-08-25 06:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1384, 40, NULL, 'Historical Cleaning', 45, '2025-08-01', 'Completed', 2, '2025-07-11 03:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1385, 51, NULL, 'Historical Cleaning', 60, '2025-08-30', 'Completed', 6, '2025-09-07 05:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1386, 79, NULL, 'Historical Cleaning', 60, '2025-09-04', 'Completed', 2, '2025-08-10 01:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1387, 78, NULL, 'Historical Cleaning', 45, '2025-07-27', 'Completed', 3, '2025-07-30 06:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1388, 60, NULL, 'Historical Cleaning', 60, '2025-08-01', 'Completed', 2, '2025-09-15 01:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1389, 77, NULL, 'Historical Cleaning', 60, '2025-07-18', 'Completed', 6, '2025-07-24 01:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1390, 67, NULL, 'Historical Cleaning', 60, '2025-07-31', 'Completed', 5, '2025-07-03 03:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1391, 10, NULL, 'Historical Cleaning', 60, '2025-09-16', 'Completed', 5, '2025-07-13 01:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1392, 69, NULL, 'Historical Cleaning', 60, '2025-07-13', 'Completed', 6, '2025-08-18 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1393, 12, NULL, 'Historical Cleaning', 45, '2025-07-04', 'Completed', 2, '2025-07-26 06:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1394, 8, NULL, 'Historical Cleaning', 60, '2025-09-09', 'Completed', 6, '2025-07-21 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1395, 9, NULL, 'Historical Cleaning', 60, '2025-07-19', 'Completed', 6, '2025-09-27 05:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1396, 47, NULL, 'Historical Cleaning', 60, '2025-07-25', 'Completed', 2, '2025-09-03 02:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1397, 33, NULL, 'Historical Cleaning', 45, '2025-07-19', 'Completed', 6, '2025-08-28 05:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1398, 8, NULL, 'Historical Cleaning', 45, '2025-08-21', 'Completed', 3, '2025-08-25 01:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1399, 1, NULL, 'Historical Cleaning', 60, '2025-07-21', 'Completed', 6, '2025-07-29 01:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1400, 75, NULL, 'Historical Cleaning', 60, '2025-08-23', 'Completed', 4, '2025-07-14 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1401, 39, NULL, 'Historical Cleaning', 60, '2025-09-01', 'Completed', 4, '2025-09-02 01:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1402, 72, NULL, 'Historical Cleaning', 60, '2025-09-28', 'Completed', 4, '2025-08-28 02:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1403, 38, NULL, 'Historical Cleaning', 45, '2025-08-20', 'Completed', 5, '2025-09-24 05:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1404, 17, NULL, 'Historical Cleaning', 60, '2025-09-29', 'Completed', 4, '2025-07-21 03:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1405, 51, NULL, 'Historical Cleaning', 60, '2025-07-03', 'Completed', 4, '2025-08-14 05:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1406, 41, NULL, 'Historical Cleaning', 45, '2025-07-09', 'Completed', 2, '2025-07-28 02:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1407, 53, NULL, 'Historical Cleaning', 60, '2025-07-06', 'Completed', 5, '2025-08-04 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1408, 11, NULL, 'Historical Cleaning', 45, '2025-07-24', 'Completed', 6, '2025-08-29 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1409, 54, NULL, 'Historical Cleaning', 60, '2025-08-04', 'Completed', 5, '2025-08-28 04:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1410, 63, NULL, 'Historical Cleaning', 60, '2025-07-05', 'Completed', 2, '2025-08-17 05:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1411, 45, NULL, 'Historical Cleaning', 45, '2025-08-05', 'Completed', 4, '2025-07-19 02:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1412, 45, NULL, 'Historical Cleaning', 60, '2025-08-17', 'Completed', 4, '2025-08-03 06:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1413, 73, NULL, 'Historical Cleaning', 60, '2025-07-24', 'Completed', 3, '2025-07-06 04:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1414, 3, NULL, 'Historical Cleaning', 60, '2025-09-22', 'Completed', 5, '2025-08-29 03:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1415, 42, NULL, 'Historical Cleaning', 60, '2025-09-15', 'Completed', 2, '2025-09-24 04:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1416, 79, NULL, 'Historical Cleaning', 45, '2025-08-03', 'Completed', 4, '2025-09-16 04:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1417, 55, NULL, 'Historical Cleaning', 60, '2025-09-02', 'Completed', 3, '2025-07-25 01:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1418, 16, NULL, 'Historical Cleaning', 60, '2025-09-25', 'Completed', 2, '2025-09-04 04:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1419, 17, NULL, 'Historical Cleaning', 60, '2025-09-12', 'Completed', 4, '2025-09-06 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1420, 51, NULL, 'Historical Cleaning', 60, '2025-07-20', 'Completed', 6, '2025-07-03 05:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1421, 65, NULL, 'Historical Cleaning', 60, '2025-08-04', 'Completed', 3, '2025-08-10 04:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1422, 27, NULL, 'Historical Cleaning', 60, '2025-08-12', 'Completed', 3, '2025-08-13 02:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1423, 23, NULL, 'Historical Cleaning', 45, '2025-09-03', 'Completed', 3, '2025-07-16 02:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1424, 16, NULL, 'Historical Cleaning', 60, '2025-09-08', 'Completed', 6, '2025-07-05 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1425, 82, NULL, 'Historical Cleaning', 60, '2025-08-22', 'Completed', 5, '2025-07-31 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1426, 57, NULL, 'Historical Cleaning', 60, '2025-08-28', 'Completed', 5, '2025-07-12 05:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1427, 46, NULL, 'Historical Cleaning', 60, '2025-07-06', 'Completed', 4, '2025-08-04 06:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1428, 44, NULL, 'Historical Cleaning', 60, '2025-08-11', 'Completed', 6, '2025-08-18 04:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1429, 53, NULL, 'Historical Cleaning', 60, '2025-07-02', 'Completed', 2, '2025-08-10 01:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1430, 11, NULL, 'Historical Cleaning', 60, '2025-09-02', 'Completed', 4, '2025-08-28 02:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1431, 2, NULL, 'Historical Cleaning', 60, '2025-08-03', 'Completed', 5, '2025-08-03 02:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1432, 29, NULL, 'Historical Cleaning', 45, '2025-07-05', 'Completed', 4, '2025-08-28 06:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1433, 2, NULL, 'Historical Cleaning', 45, '2025-07-16', 'Completed', 6, '2025-07-17 03:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1434, 83, NULL, 'Historical Cleaning', 45, '2025-08-13', 'Completed', 4, '2025-07-25 04:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1435, 63, NULL, 'Historical Cleaning', 45, '2025-08-22', 'Completed', 3, '2025-07-11 06:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1436, 53, NULL, 'Historical Cleaning', 45, '2025-09-19', 'Completed', 3, '2025-07-14 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1437, 57, NULL, 'Historical Cleaning', 45, '2025-07-25', 'Completed', 3, '2025-09-01 05:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1438, 34, NULL, 'Historical Cleaning', 60, '2025-09-30', 'Completed', 4, '2025-09-11 03:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1439, 82, NULL, 'Historical Cleaning', 60, '2025-09-10', 'Completed', 5, '2025-07-16 01:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1440, 70, NULL, 'Historical Cleaning', 60, '2025-07-04', 'Completed', 6, '2025-08-16 06:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1441, 5, NULL, 'Historical Cleaning', 60, '2025-07-09', 'Completed', 4, '2025-07-02 04:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1442, 60, NULL, 'Historical Cleaning', 45, '2025-09-11', 'Completed', 2, '2025-09-28 04:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1443, 36, NULL, 'Historical Cleaning', 45, '2025-09-21', 'Completed', 5, '2025-09-17 06:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1444, 64, NULL, 'Historical Cleaning', 60, '2025-09-16', 'Completed', 4, '2025-07-01 05:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1445, 62, NULL, 'Historical Cleaning', 60, '2025-08-08', 'Completed', 3, '2025-08-11 02:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1446, 68, NULL, 'Historical Cleaning', 45, '2025-09-13', 'Completed', 4, '2025-09-19 05:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1447, 45, NULL, 'Historical Cleaning', 45, '2025-07-20', 'Completed', 2, '2025-08-11 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1448, 49, NULL, 'Historical Cleaning', 45, '2025-08-16', 'Completed', 2, '2025-07-15 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1449, 77, NULL, 'Historical Cleaning', 60, '2025-08-13', 'Completed', 2, '2025-07-22 06:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1450, 59, NULL, 'Historical Cleaning', 45, '2025-09-10', 'Completed', 6, '2025-08-16 01:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1451, 75, NULL, 'Historical Cleaning', 45, '2025-07-05', 'Completed', 2, '2025-07-28 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1452, 43, NULL, 'Historical Cleaning', 60, '2025-07-22', 'Completed', 5, '2025-09-07 06:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1453, 75, NULL, 'Historical Cleaning', 60, '2025-07-18', 'Completed', 6, '2025-07-12 06:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1454, 8, NULL, 'Historical Cleaning', 60, '2025-09-30', 'Completed', 4, '2025-09-23 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1455, 59, NULL, 'Historical Cleaning', 45, '2025-07-18', 'Completed', 5, '2025-09-12 01:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1456, 58, NULL, 'Historical Cleaning', 45, '2025-07-03', 'Completed', 2, '2025-09-15 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1457, 56, NULL, 'Historical Cleaning', 45, '2025-08-12', 'Completed', 6, '2025-07-05 06:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1458, 44, NULL, 'Historical Cleaning', 45, '2025-09-20', 'Completed', 2, '2025-09-27 03:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1459, 58, NULL, 'Historical Cleaning', 45, '2025-08-03', 'Completed', 4, '2025-07-24 03:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1460, 77, NULL, 'Historical Cleaning', 60, '2025-07-01', 'Completed', 2, '2025-08-11 05:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1461, 14, NULL, 'Historical Cleaning', 60, '2025-08-19', 'Completed', 2, '2025-09-05 05:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1462, 30, NULL, 'Historical Cleaning', 60, '2025-07-10', 'Completed', 2, '2025-09-11 03:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1463, 73, NULL, 'Historical Cleaning', 60, '2025-08-09', 'Completed', 5, '2025-09-06 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1464, 28, NULL, 'Historical Cleaning', 60, '2025-08-28', 'Completed', 6, '2025-07-27 03:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1465, 5, NULL, 'Historical Cleaning', 60, '2025-08-21', 'Completed', 6, '2025-07-13 04:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1466, 1, NULL, 'Historical Cleaning', 60, '2025-09-19', 'Completed', 4, '2025-09-01 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1467, 43, NULL, 'Historical Cleaning', 60, '2025-07-21', 'Completed', 5, '2025-09-03 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1468, 38, NULL, 'Historical Cleaning', 45, '2025-09-17', 'Completed', 6, '2025-09-13 02:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1469, 74, NULL, 'Historical Cleaning', 60, '2025-09-28', 'Completed', 3, '2025-07-10 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1470, 44, NULL, 'Historical Cleaning', 60, '2025-08-31', 'Completed', 5, '2025-07-16 03:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1471, 38, NULL, 'Historical Cleaning', 60, '2025-08-15', 'Completed', 2, '2025-09-05 05:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1472, 67, NULL, 'Historical Cleaning', 45, '2025-09-29', 'Completed', 5, '2025-08-27 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1473, 46, NULL, 'Historical Cleaning', 45, '2025-09-28', 'Completed', 4, '2025-08-09 01:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1474, 66, NULL, 'Historical Cleaning', 45, '2025-08-14', 'Completed', 4, '2025-07-18 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1475, 49, NULL, 'Historical Cleaning', 45, '2025-08-15', 'Completed', 4, '2025-08-04 04:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1476, 69, NULL, 'Historical Cleaning', 60, '2025-07-14', 'Completed', 2, '2025-08-25 02:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1477, 56, NULL, 'Historical Cleaning', 60, '2025-07-18', 'Completed', 2, '2025-07-31 06:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1478, 80, NULL, 'Historical Cleaning', 45, '2025-08-11', 'Completed', 3, '2025-08-30 03:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1479, 24, NULL, 'Historical Cleaning', 45, '2025-08-11', 'Completed', 3, '2025-09-02 05:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1480, 39, NULL, 'Historical Cleaning', 60, '2025-07-13', 'Completed', 4, '2025-08-18 06:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1481, 21, NULL, 'Historical Cleaning', 45, '2025-07-02', 'Completed', 6, '2025-07-12 03:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1482, 1, NULL, 'Historical Cleaning', 45, '2025-08-28', 'Completed', 3, '2025-09-15 05:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1483, 17, NULL, 'Historical Cleaning', 60, '2025-08-09', 'Completed', 5, '2025-08-28 03:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1484, 76, NULL, 'Historical Cleaning', 60, '2025-09-16', 'Completed', 3, '2025-07-26 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1485, 49, NULL, 'Historical Cleaning', 45, '2025-07-19', 'Completed', 4, '2025-09-15 05:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1486, 52, NULL, 'Historical Cleaning', 45, '2025-08-10', 'Completed', 2, '2025-08-31 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1487, 47, NULL, 'Historical Cleaning', 60, '2025-09-05', 'Completed', 2, '2025-07-24 04:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1488, 7, NULL, 'Historical Cleaning', 60, '2025-08-11', 'Completed', 5, '2025-09-25 01:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1489, 60, NULL, 'Historical Cleaning', 45, '2025-07-04', 'Completed', 6, '2025-07-02 01:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1490, 8, NULL, 'Historical Cleaning', 60, '2025-08-10', 'Completed', 6, '2025-09-14 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1491, 81, NULL, 'Historical Cleaning', 60, '2025-07-18', 'Completed', 3, '2025-09-28 02:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1492, 60, NULL, 'Historical Cleaning', 60, '2025-08-14', 'Completed', 5, '2025-09-26 04:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1493, 65, NULL, 'Historical Cleaning', 60, '2025-09-05', 'Completed', 6, '2025-09-27 04:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1494, 41, NULL, 'Historical Cleaning', 60, '2025-09-28', 'Completed', 3, '2025-07-19 01:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1495, 79, NULL, 'Historical Cleaning', 45, '2025-08-30', 'Completed', 2, '2025-07-30 02:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1496, 38, NULL, 'Historical Cleaning', 60, '2025-09-06', 'Completed', 2, '2025-09-06 06:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1497, 60, NULL, 'Historical Cleaning', 60, '2025-07-30', 'Completed', 2, '2025-08-09 05:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1498, 59, NULL, 'Historical Cleaning', 60, '2025-07-31', 'Completed', 3, '2025-08-15 01:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1499, 54, NULL, 'Historical Cleaning', 60, '2025-08-15', 'Completed', 6, '2025-07-03 05:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1500, 48, NULL, 'Historical Cleaning', 60, '2025-07-08', 'Completed', 5, '2025-08-28 02:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1501, 44, NULL, 'Historical Cleaning', 45, '2025-07-07', 'Completed', 4, '2025-08-15 05:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1502, 38, NULL, 'Historical Cleaning', 60, '2025-09-28', 'Completed', 4, '2025-09-26 01:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1503, 45, NULL, 'Historical Cleaning', 60, '2025-08-04', 'Completed', 4, '2025-09-24 06:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1504, 43, NULL, 'Historical Cleaning', 45, '2025-08-28', 'Completed', 5, '2025-07-11 06:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1505, 15, NULL, 'Historical Cleaning', 60, '2025-07-23', 'Completed', 5, '2025-08-24 01:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1506, 46, NULL, 'Historical Cleaning', 60, '2025-07-29', 'Completed', 6, '2025-09-16 05:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1507, 58, NULL, 'Historical Cleaning', 60, '2025-07-30', 'Completed', 4, '2025-09-20 04:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1508, 43, NULL, 'Historical Cleaning', 60, '2025-07-28', 'Completed', 6, '2025-07-29 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1509, 56, NULL, 'Historical Cleaning', 45, '2025-07-05', 'Completed', 2, '2025-09-25 06:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1510, 76, NULL, 'Historical Cleaning', 45, '2025-09-01', 'Completed', 6, '2025-07-21 06:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1511, 6, NULL, 'Historical Cleaning', 60, '2025-08-28', 'Completed', 6, '2025-08-29 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1512, 31, NULL, 'Historical Cleaning', 60, '2025-09-13', 'Completed', 5, '2025-09-10 03:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1513, 69, NULL, 'Historical Cleaning', 60, '2025-08-11', 'Completed', 3, '2025-08-27 04:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1514, 51, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 4, '2025-07-12 06:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1515, 14, NULL, 'Historical Cleaning', 60, '2025-08-29', 'Completed', 2, '2025-09-03 03:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1516, 83, NULL, 'Historical Cleaning', 45, '2025-08-14', 'Completed', 5, '2025-09-03 04:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1517, 70, NULL, 'Historical Cleaning', 45, '2025-07-29', 'Completed', 6, '2025-08-27 02:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1518, 15, NULL, 'Historical Cleaning', 60, '2025-07-08', 'Completed', 6, '2025-08-13 01:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1519, 78, NULL, 'Historical Cleaning', 60, '2025-09-11', 'Completed', 4, '2025-09-13 02:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1520, 57, NULL, 'Historical Cleaning', 60, '2025-08-14', 'Completed', 3, '2025-09-01 06:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1521, 3, NULL, 'Historical Cleaning', 45, '2025-07-02', 'Completed', 4, '2025-07-06 04:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1522, 11, NULL, 'Historical Cleaning', 45, '2025-09-10', 'Completed', 4, '2025-08-18 02:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1523, 57, NULL, 'Historical Cleaning', 60, '2025-07-13', 'Completed', 2, '2025-09-14 02:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1524, 25, NULL, 'Historical Cleaning', 60, '2025-09-14', 'Completed', 6, '2025-08-22 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1525, 3, NULL, 'Historical Cleaning', 60, '2025-08-20', 'Completed', 6, '2025-08-13 01:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1526, 72, NULL, 'Historical Cleaning', 45, '2025-07-04', 'Completed', 2, '2025-09-04 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1527, 80, NULL, 'Historical Cleaning', 60, '2025-09-17', 'Completed', 3, '2025-09-02 02:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1528, 45, NULL, 'Historical Cleaning', 60, '2025-08-26', 'Completed', 2, '2025-07-25 03:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1529, 77, NULL, 'Historical Cleaning', 60, '2025-07-31', 'Completed', 5, '2025-09-28 02:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1530, 67, NULL, 'Historical Cleaning', 45, '2025-08-13', 'Completed', 2, '2025-08-11 03:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1531, 38, NULL, 'Historical Cleaning', 45, '2025-07-07', 'Completed', 3, '2025-09-08 02:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1532, 43, NULL, 'Historical Cleaning', 45, '2025-09-05', 'Completed', 3, '2025-09-22 06:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1533, 27, NULL, 'Historical Cleaning', 45, '2025-08-22', 'Completed', 2, '2025-07-30 05:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1534, 65, NULL, 'Historical Cleaning', 45, '2025-09-21', 'Completed', 6, '2025-08-27 01:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1535, 52, NULL, 'Historical Cleaning', 60, '2025-08-08', 'Completed', 5, '2025-09-07 01:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1536, 12, NULL, 'Historical Cleaning', 60, '2025-09-23', 'Completed', 2, '2025-09-11 05:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1537, 15, NULL, 'Historical Cleaning', 60, '2025-07-05', 'Completed', 5, '2025-08-27 01:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1538, 66, NULL, 'Historical Cleaning', 60, '2025-08-16', 'Completed', 5, '2025-07-29 02:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1539, 10, NULL, 'Historical Cleaning', 60, '2025-08-30', 'Completed', 2, '2025-09-22 03:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1540, 53, NULL, 'Historical Cleaning', 45, '2025-09-12', 'Completed', 5, '2025-07-05 03:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1541, 74, NULL, 'Historical Cleaning', 45, '2025-07-22', 'Completed', 5, '2025-08-02 01:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1542, 30, NULL, 'Historical Cleaning', 45, '2025-09-01', 'Completed', 4, '2025-09-06 03:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1543, 74, NULL, 'Historical Cleaning', 45, '2025-09-27', 'Completed', 2, '2025-09-18 05:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1544, 24, NULL, 'Historical Cleaning', 60, '2025-08-24', 'Completed', 6, '2025-07-05 05:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1545, 39, NULL, 'Historical Cleaning', 60, '2025-07-05', 'Completed', 2, '2025-08-19 06:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1546, 61, NULL, 'Historical Cleaning', 60, '2025-07-15', 'Completed', 3, '2025-09-06 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1547, 69, NULL, 'Historical Cleaning', 60, '2025-08-31', 'Completed', 5, '2025-09-12 01:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1548, 34, NULL, 'Historical Cleaning', 45, '2025-09-30', 'Completed', 3, '2025-09-09 02:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1549, 55, NULL, 'Historical Cleaning', 60, '2025-08-05', 'Completed', 5, '2025-08-16 04:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1550, 35, NULL, 'Historical Cleaning', 60, '2025-08-13', 'Completed', 5, '2025-08-02 05:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1551, 73, NULL, 'Historical Cleaning', 45, '2025-08-04', 'Completed', 4, '2025-07-21 03:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1552, 28, NULL, 'Historical Cleaning', 60, '2025-07-08', 'Completed', 3, '2025-09-05 03:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1553, 35, NULL, 'Historical Cleaning', 60, '2025-09-04', 'Completed', 5, '2025-08-04 04:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1554, 83, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 3, '2025-08-16 06:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1555, 53, NULL, 'Historical Cleaning', 45, '2025-07-18', 'Completed', 3, '2025-07-19 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1556, 27, NULL, 'Historical Cleaning', 60, '2025-07-29', 'Completed', 4, '2025-09-24 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1557, 79, NULL, 'Historical Cleaning', 60, '2025-07-25', 'Completed', 3, '2025-08-28 04:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1558, 14, NULL, 'Historical Cleaning', 60, '2025-09-03', 'Completed', 3, '2025-08-13 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1559, 22, NULL, 'Historical Cleaning', 60, '2025-07-28', 'Completed', 6, '2025-08-01 06:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1560, 79, NULL, 'Historical Cleaning', 45, '2025-07-24', 'Completed', 6, '2025-08-12 04:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1561, 75, NULL, 'Historical Cleaning', 45, '2025-08-27', 'Completed', 3, '2025-09-18 01:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1562, 60, NULL, 'Historical Cleaning', 45, '2025-09-20', 'Completed', 5, '2025-09-06 06:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1563, 28, NULL, 'Historical Cleaning', 45, '2025-09-02', 'Completed', 3, '2025-07-03 02:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1564, 65, NULL, 'Historical Cleaning', 60, '2025-08-28', 'Completed', 3, '2025-08-31 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1565, 64, NULL, 'Historical Cleaning', 60, '2025-07-31', 'Completed', 4, '2025-09-17 01:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1566, 30, NULL, 'Historical Cleaning', 45, '2025-09-08', 'Completed', 3, '2025-08-16 04:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1567, 6, NULL, 'Historical Cleaning', 60, '2025-08-03', 'Completed', 4, '2025-09-17 03:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1568, 37, NULL, 'Historical Cleaning', 45, '2025-08-20', 'Completed', 4, '2025-09-26 03:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1569, 52, NULL, 'Historical Cleaning', 60, '2025-07-29', 'Completed', 5, '2025-08-01 05:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1570, 67, NULL, 'Historical Cleaning', 60, '2025-07-25', 'Completed', 5, '2025-08-23 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1571, 31, NULL, 'Historical Cleaning', 60, '2025-09-11', 'Completed', 4, '2025-08-19 06:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1572, 45, NULL, 'Historical Cleaning', 60, '2025-08-19', 'Completed', 3, '2025-07-21 04:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1573, 32, NULL, 'Historical Cleaning', 45, '2025-09-14', 'Completed', 3, '2025-09-18 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1574, 40, NULL, 'Historical Cleaning', 60, '2025-09-28', 'Completed', 4, '2025-07-31 03:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1575, 82, NULL, 'Historical Cleaning', 45, '2025-09-04', 'Completed', 2, '2025-08-19 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1576, 2, NULL, 'Historical Cleaning', 45, '2025-09-07', 'Completed', 5, '2025-09-09 01:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1577, 41, NULL, 'Historical Cleaning', 45, '2025-08-21', 'Completed', 3, '2025-08-06 06:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1578, 14, NULL, 'Historical Cleaning', 60, '2025-07-18', 'Completed', 5, '2025-07-25 02:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1579, 26, NULL, 'Historical Cleaning', 45, '2025-08-08', 'Completed', 3, '2025-07-17 01:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1580, 68, NULL, 'Historical Cleaning', 60, '2025-09-12', 'Completed', 5, '2025-09-09 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1581, 73, NULL, 'Historical Cleaning', 60, '2025-09-08', 'Completed', 2, '2025-09-19 06:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1582, 35, NULL, 'Historical Cleaning', 45, '2025-08-12', 'Completed', 6, '2025-08-30 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1583, 24, NULL, 'Historical Cleaning', 60, '2025-08-13', 'Completed', 2, '2025-07-18 01:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1584, 80, NULL, 'Historical Cleaning', 60, '2025-07-15', 'Completed', 3, '2025-09-26 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1585, 30, NULL, 'Historical Cleaning', 45, '2025-09-20', 'Completed', 3, '2025-09-22 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1586, 31, NULL, 'Historical Cleaning', 45, '2025-08-22', 'Completed', 3, '2025-09-13 04:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1587, 54, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 2, '2025-07-31 04:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1588, 40, NULL, 'Historical Cleaning', 60, '2025-09-10', 'Completed', 3, '2025-09-03 05:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1589, 47, NULL, 'Historical Cleaning', 45, '2025-08-19', 'Completed', 4, '2025-09-22 02:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1590, 31, NULL, 'Historical Cleaning', 45, '2025-09-18', 'Completed', 6, '2025-09-05 03:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1591, 41, NULL, 'Historical Cleaning', 45, '2025-09-22', 'Completed', 6, '2025-09-27 03:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1592, 75, NULL, 'Historical Cleaning', 60, '2025-09-15', 'Completed', 5, '2025-07-14 03:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1593, 33, NULL, 'Historical Cleaning', 60, '2025-07-15', 'Completed', 6, '2025-07-24 02:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1594, 81, NULL, 'Historical Cleaning', 60, '2025-08-03', 'Completed', 2, '2025-07-03 06:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1595, 9, NULL, 'Historical Cleaning', 60, '2025-09-18', 'Completed', 4, '2025-09-03 04:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1596, 62, NULL, 'Historical Cleaning', 45, '2025-07-16', 'Completed', 3, '2025-07-28 02:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1597, 4, NULL, 'Historical Cleaning', 60, '2025-09-26', 'Completed', 6, '2025-07-27 03:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1598, 11, NULL, 'Historical Cleaning', 45, '2025-09-03', 'Completed', 5, '2025-07-04 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1599, 35, NULL, 'Historical Cleaning', 45, '2025-07-08', 'Completed', 2, '2025-09-20 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1600, 43, NULL, 'Historical Cleaning', 60, '2025-09-27', 'Completed', 4, '2025-07-07 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1601, 10, NULL, 'Historical Cleaning', 60, '2025-08-20', 'Completed', 6, '2025-08-29 06:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1602, 37, NULL, 'Historical Cleaning', 45, '2025-08-14', 'Completed', 2, '2025-07-28 06:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1603, 80, NULL, 'Historical Cleaning', 45, '2025-09-10', 'Completed', 3, '2025-07-10 01:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1604, 5, NULL, 'Historical Cleaning', 60, '2025-09-24', 'Completed', 6, '2025-09-02 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1605, 76, NULL, 'Historical Cleaning', 45, '2025-09-17', 'Completed', 6, '2025-07-06 01:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1606, 9, NULL, 'Historical Cleaning', 45, '2025-07-19', 'Completed', 3, '2025-08-23 02:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1607, 66, NULL, 'Historical Cleaning', 45, '2025-08-26', 'Completed', 5, '2025-09-01 04:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1608, 54, NULL, 'Historical Cleaning', 60, '2025-09-30', 'Completed', 4, '2025-09-17 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1609, 25, NULL, 'Historical Cleaning', 45, '2025-07-24', 'Completed', 4, '2025-08-04 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1610, 12, NULL, 'Historical Cleaning', 45, '2025-08-07', 'Completed', 6, '2025-07-01 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1611, 80, NULL, 'Historical Cleaning', 60, '2025-07-25', 'Completed', 6, '2025-08-14 01:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1612, 35, NULL, 'Historical Cleaning', 60, '2025-09-16', 'Completed', 6, '2025-09-12 04:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1613, 64, NULL, 'Historical Cleaning', 60, '2025-08-15', 'Completed', 5, '2025-08-26 01:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1614, 77, NULL, 'Historical Cleaning', 60, '2025-07-11', 'Completed', 3, '2025-09-20 01:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1615, 46, NULL, 'Historical Cleaning', 45, '2025-08-14', 'Completed', 5, '2025-07-31 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1616, 10, NULL, 'Historical Cleaning', 60, '2025-07-03', 'Completed', 3, '2025-08-14 05:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1617, 77, NULL, 'Historical Cleaning', 60, '2025-08-22', 'Completed', 6, '2025-07-10 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1618, 64, NULL, 'Historical Cleaning', 45, '2025-09-14', 'Completed', 2, '2025-07-28 04:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1619, 44, NULL, 'Historical Cleaning', 60, '2025-09-23', 'Completed', 6, '2025-08-25 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1620, 74, NULL, 'Historical Cleaning', 45, '2025-07-24', 'Completed', 2, '2025-07-20 02:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1621, 25, NULL, 'Historical Cleaning', 45, '2025-08-17', 'Completed', 4, '2025-08-30 01:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1622, 33, NULL, 'Historical Cleaning', 45, '2025-08-01', 'Completed', 3, '2025-08-01 05:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1623, 73, NULL, 'Historical Cleaning', 45, '2025-08-24', 'Completed', 4, '2025-07-25 02:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1624, 81, NULL, 'Historical Cleaning', 45, '2025-08-21', 'Completed', 6, '2025-07-15 04:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1625, 6, NULL, 'Historical Cleaning', 60, '2025-08-13', 'Completed', 6, '2025-09-26 03:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1626, 53, NULL, 'Historical Cleaning', 60, '2025-08-23', 'Completed', 2, '2025-09-05 01:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1627, 21, NULL, 'Historical Cleaning', 60, '2025-07-29', 'Completed', 3, '2025-09-01 04:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `task_performance_histories`
+--
+
+CREATE TABLE `task_performance_histories` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `task_id` bigint(20) UNSIGNED NOT NULL,
+  `estimated_duration_minutes` int(11) NOT NULL,
+  `actual_duration_minutes` int(11) NOT NULL,
+  `completed_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `task_performance_histories`
+--
+
+INSERT INTO `task_performance_histories` (`id`, `task_id`, `estimated_duration_minutes`, `actual_duration_minutes`, `completed_at`, `created_at`, `updated_at`) VALUES
+(2, 1003, 60, 52, '2025-07-31 06:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(3, 1004, 45, 55, '2025-08-19 06:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(4, 1005, 60, 62, '2025-09-25 06:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(5, 1006, 45, 52, '2025-08-12 05:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(6, 1007, 60, 63, '2025-07-02 04:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(7, 1008, 60, 68, '2025-09-01 04:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(8, 1009, 60, 60, '2025-07-29 07:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(9, 1010, 60, 69, '2025-09-03 06:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(10, 1011, 45, 43, '2025-08-18 04:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(11, 1012, 60, 67, '2025-09-02 03:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(12, 1013, 60, 49, '2025-08-14 02:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(13, 1014, 45, 51, '2025-07-13 07:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(14, 1015, 60, 68, '2025-09-11 02:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(15, 1016, 60, 64, '2025-07-25 05:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(16, 1017, 60, 49, '2025-07-04 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(17, 1018, 45, 52, '2025-07-18 05:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(18, 1019, 60, 64, '2025-09-11 02:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(19, 1020, 45, 50, '2025-08-03 02:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(20, 1021, 60, 57, '2025-07-16 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(21, 1022, 60, 64, '2025-09-09 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(22, 1023, 60, 58, '2025-07-06 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(23, 1024, 60, 50, '2025-09-05 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(24, 1025, 45, 42, '2025-08-02 01:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(25, 1026, 60, 58, '2025-09-30 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(26, 1027, 60, 55, '2025-08-30 06:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(27, 1028, 45, 53, '2025-07-21 03:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(28, 1029, 45, 57, '2025-07-01 02:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(29, 1030, 60, 56, '2025-07-16 02:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(30, 1031, 60, 59, '2025-07-12 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(31, 1032, 45, 53, '2025-08-05 02:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(32, 1033, 60, 54, '2025-09-24 03:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(33, 1034, 60, 53, '2025-07-06 01:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(34, 1035, 60, 59, '2025-08-15 05:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(35, 1036, 45, 37, '2025-07-17 04:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(36, 1037, 45, 42, '2025-09-16 01:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(37, 1038, 45, 44, '2025-07-09 05:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(38, 1039, 60, 53, '2025-08-25 04:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(39, 1040, 60, 57, '2025-09-29 02:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(40, 1041, 45, 51, '2025-09-07 06:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(41, 1042, 60, 64, '2025-08-09 07:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(42, 1043, 45, 45, '2025-07-15 07:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(43, 1044, 45, 47, '2025-07-27 05:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(44, 1045, 45, 46, '2025-08-14 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(45, 1046, 45, 53, '2025-09-07 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(46, 1047, 45, 50, '2025-08-29 03:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(47, 1048, 45, 53, '2025-09-13 03:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(48, 1049, 45, 44, '2025-07-28 05:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(49, 1050, 60, 47, '2025-07-16 05:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(50, 1051, 60, 53, '2025-07-28 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(51, 1052, 60, 53, '2025-08-30 05:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(52, 1053, 60, 57, '2025-08-24 02:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(53, 1054, 60, 59, '2025-09-18 07:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(54, 1055, 45, 41, '2025-09-21 03:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(55, 1056, 60, 61, '2025-08-20 02:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(56, 1057, 45, 54, '2025-08-04 06:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(57, 1058, 60, 70, '2025-08-07 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(58, 1059, 60, 73, '2025-07-26 06:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(59, 1060, 45, 40, '2025-09-11 04:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(60, 1061, 60, 52, '2025-09-26 05:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(61, 1062, 60, 62, '2025-08-14 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(62, 1063, 60, 72, '2025-07-01 04:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(63, 1064, 60, 70, '2025-07-10 07:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(64, 1065, 45, 52, '2025-09-25 07:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(65, 1066, 45, 45, '2025-09-29 07:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(66, 1067, 45, 51, '2025-09-05 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(67, 1068, 45, 43, '2025-08-31 04:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(68, 1069, 45, 46, '2025-07-09 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(69, 1070, 45, 43, '2025-07-25 06:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(70, 1071, 45, 48, '2025-09-04 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(71, 1072, 60, 64, '2025-09-29 03:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(72, 1073, 60, 60, '2025-08-20 06:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(73, 1074, 45, 40, '2025-07-25 06:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(74, 1075, 45, 51, '2025-09-15 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(75, 1076, 45, 44, '2025-07-18 01:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(76, 1077, 45, 55, '2025-07-19 05:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(77, 1078, 45, 41, '2025-09-09 04:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(78, 1079, 45, 37, '2025-08-22 03:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(79, 1080, 45, 49, '2025-09-25 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(80, 1081, 60, 64, '2025-07-29 02:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(81, 1082, 60, 74, '2025-09-23 07:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(82, 1083, 60, 62, '2025-08-25 03:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(83, 1084, 60, 58, '2025-09-24 02:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(84, 1085, 60, 72, '2025-09-13 07:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(85, 1086, 45, 44, '2025-07-11 04:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(86, 1087, 60, 51, '2025-09-29 07:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(87, 1088, 45, 52, '2025-08-06 06:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(88, 1089, 45, 49, '2025-09-03 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(89, 1090, 60, 57, '2025-09-19 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(90, 1091, 60, 57, '2025-09-20 07:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(91, 1092, 60, 51, '2025-09-27 03:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(92, 1093, 45, 57, '2025-07-09 05:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(93, 1094, 60, 64, '2025-08-02 03:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(94, 1095, 60, 58, '2025-08-13 05:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(95, 1096, 60, 58, '2025-07-14 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(96, 1097, 60, 77, '2025-08-23 03:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(97, 1098, 45, 49, '2025-08-09 06:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(98, 1099, 60, 66, '2025-09-26 06:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(99, 1100, 60, 55, '2025-09-29 07:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(100, 1101, 60, 64, '2025-09-05 06:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(101, 1102, 60, 55, '2025-07-28 02:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(102, 1103, 45, 52, '2025-09-10 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(103, 1104, 60, 52, '2025-08-24 07:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(104, 1105, 60, 51, '2025-09-20 03:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(105, 1106, 45, 44, '2025-08-19 06:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(106, 1107, 45, 42, '2025-08-28 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(107, 1108, 45, 41, '2025-09-04 04:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(108, 1109, 60, 61, '2025-07-27 02:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(109, 1110, 60, 63, '2025-07-07 06:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(110, 1111, 60, 56, '2025-07-14 07:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(111, 1112, 45, 40, '2025-09-07 07:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(112, 1113, 60, 65, '2025-09-04 07:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(113, 1114, 45, 48, '2025-07-24 06:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(114, 1115, 45, 48, '2025-08-27 07:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(115, 1116, 60, 67, '2025-07-28 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(116, 1117, 60, 69, '2025-09-16 04:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(117, 1118, 60, 62, '2025-08-21 06:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(118, 1119, 45, 47, '2025-08-16 01:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(119, 1120, 45, 44, '2025-09-03 07:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(120, 1121, 60, 63, '2025-09-09 03:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(121, 1122, 60, 57, '2025-09-27 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(122, 1123, 45, 37, '2025-08-24 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(123, 1124, 45, 52, '2025-07-11 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(124, 1125, 45, 47, '2025-08-05 06:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(125, 1126, 60, 64, '2025-09-22 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(126, 1127, 45, 45, '2025-08-24 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(127, 1128, 45, 40, '2025-09-16 06:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(128, 1129, 60, 59, '2025-08-06 03:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(129, 1130, 60, 56, '2025-08-20 01:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(130, 1131, 45, 46, '2025-07-25 06:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(131, 1132, 60, 71, '2025-07-17 07:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(132, 1133, 45, 40, '2025-07-02 02:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(133, 1134, 45, 40, '2025-07-30 06:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(134, 1135, 45, 38, '2025-07-16 04:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(135, 1136, 45, 56, '2025-09-27 02:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(136, 1137, 60, 70, '2025-09-18 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(137, 1138, 45, 49, '2025-08-03 04:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(138, 1139, 45, 56, '2025-07-15 04:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(139, 1140, 60, 78, '2025-07-06 05:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(140, 1141, 45, 41, '2025-07-01 04:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(141, 1142, 45, 51, '2025-08-12 04:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(142, 1143, 45, 45, '2025-07-08 03:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(143, 1144, 45, 50, '2025-09-19 06:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(144, 1145, 45, 43, '2025-09-11 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(145, 1146, 60, 48, '2025-09-14 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(146, 1147, 60, 76, '2025-09-03 07:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(147, 1148, 60, 60, '2025-07-21 03:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(148, 1149, 60, 58, '2025-09-01 03:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(149, 1150, 60, 71, '2025-08-29 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(150, 1151, 60, 61, '2025-08-29 07:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(151, 1152, 60, 58, '2025-09-14 07:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(152, 1153, 45, 49, '2025-07-15 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(153, 1154, 60, 57, '2025-09-13 02:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(154, 1155, 45, 54, '2025-09-18 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(155, 1156, 45, 55, '2025-08-30 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(156, 1157, 60, 58, '2025-07-22 07:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(157, 1158, 60, 64, '2025-09-15 06:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(158, 1159, 45, 45, '2025-07-14 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(159, 1160, 60, 67, '2025-09-14 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(160, 1161, 60, 68, '2025-09-01 03:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(161, 1162, 60, 52, '2025-07-25 02:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(162, 1163, 45, 41, '2025-09-19 03:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(163, 1164, 45, 47, '2025-07-15 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(164, 1165, 60, 70, '2025-07-15 08:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(165, 1166, 60, 61, '2025-08-24 06:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(166, 1167, 60, 56, '2025-07-07 06:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(167, 1168, 60, 58, '2025-08-11 07:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(168, 1169, 60, 56, '2025-09-04 06:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(169, 1170, 45, 44, '2025-08-31 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(170, 1171, 60, 65, '2025-07-21 03:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(171, 1172, 60, 66, '2025-08-14 04:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(172, 1173, 45, 44, '2025-08-30 06:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(173, 1174, 60, 57, '2025-09-28 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(174, 1175, 45, 53, '2025-07-17 01:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(175, 1176, 45, 48, '2025-08-10 03:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(176, 1177, 60, 65, '2025-07-26 07:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(177, 1178, 60, 63, '2025-08-15 07:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(178, 1179, 60, 61, '2025-07-05 06:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(179, 1180, 45, 39, '2025-09-27 05:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(180, 1181, 60, 55, '2025-07-17 03:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(181, 1182, 45, 53, '2025-09-03 04:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(182, 1183, 45, 53, '2025-08-17 02:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(183, 1184, 60, 66, '2025-08-31 03:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(184, 1185, 45, 41, '2025-08-28 01:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(185, 1186, 60, 57, '2025-07-15 05:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(186, 1187, 45, 53, '2025-07-20 04:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(187, 1188, 45, 38, '2025-07-25 07:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(188, 1189, 45, 40, '2025-07-02 01:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(189, 1190, 60, 63, '2025-07-06 03:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(190, 1191, 60, 59, '2025-08-21 07:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(191, 1192, 45, 47, '2025-09-09 04:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(192, 1193, 45, 43, '2025-09-10 02:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(193, 1194, 45, 51, '2025-07-04 06:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(194, 1195, 45, 45, '2025-09-06 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(195, 1196, 45, 50, '2025-07-01 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(196, 1197, 60, 51, '2025-07-13 04:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(197, 1198, 60, 55, '2025-07-29 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(198, 1199, 60, 66, '2025-07-12 06:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(199, 1200, 60, 62, '2025-07-16 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(200, 1201, 45, 47, '2025-09-12 06:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(201, 1202, 60, 54, '2025-09-11 06:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(202, 1203, 45, 42, '2025-07-03 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(203, 1204, 45, 38, '2025-07-26 04:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(204, 1205, 60, 60, '2025-09-30 06:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(205, 1206, 45, 56, '2025-07-27 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(206, 1207, 45, 34, '2025-09-11 04:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(207, 1208, 60, 67, '2025-08-05 03:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(208, 1209, 60, 65, '2025-07-22 06:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(209, 1210, 60, 56, '2025-07-19 03:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(210, 1211, 60, 63, '2025-07-12 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(211, 1212, 45, 48, '2025-07-03 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(212, 1213, 60, 61, '2025-08-12 05:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(213, 1214, 60, 55, '2025-09-26 04:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(214, 1215, 45, 49, '2025-08-27 05:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(215, 1216, 60, 62, '2025-07-28 07:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(216, 1217, 45, 48, '2025-09-19 07:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(217, 1218, 60, 56, '2025-07-04 07:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(218, 1219, 60, 59, '2025-07-15 07:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(219, 1220, 60, 66, '2025-09-08 02:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(220, 1221, 60, 59, '2025-07-24 05:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(221, 1222, 45, 52, '2025-09-27 02:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(222, 1223, 45, 51, '2025-07-28 04:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(223, 1224, 45, 44, '2025-09-29 03:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(224, 1225, 60, 62, '2025-07-01 03:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(225, 1226, 45, 46, '2025-08-20 07:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(226, 1227, 60, 68, '2025-07-02 03:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(227, 1228, 60, 58, '2025-07-24 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(228, 1229, 45, 36, '2025-08-05 06:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(229, 1230, 60, 61, '2025-08-26 05:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(230, 1231, 60, 54, '2025-09-24 02:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(231, 1232, 60, 49, '2025-08-18 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(232, 1233, 60, 60, '2025-08-28 03:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(233, 1234, 45, 46, '2025-09-22 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(234, 1235, 45, 45, '2025-08-22 04:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(235, 1236, 45, 44, '2025-08-17 04:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(236, 1237, 60, 65, '2025-07-06 06:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(237, 1238, 60, 59, '2025-09-05 06:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(238, 1239, 60, 56, '2025-09-25 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(239, 1240, 60, 62, '2025-07-22 04:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(240, 1241, 60, 73, '2025-07-02 07:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(241, 1242, 45, 47, '2025-07-11 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(242, 1243, 60, 57, '2025-09-10 04:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(243, 1244, 60, 56, '2025-07-05 04:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(244, 1245, 45, 55, '2025-08-02 03:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(245, 1246, 45, 43, '2025-09-08 04:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(246, 1247, 60, 69, '2025-07-10 05:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(247, 1248, 60, 66, '2025-09-26 05:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(248, 1249, 45, 50, '2025-07-11 07:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(249, 1250, 60, 50, '2025-09-15 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(250, 1251, 60, 64, '2025-09-08 06:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(251, 1252, 45, 41, '2025-09-24 02:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(252, 1253, 45, 52, '2025-07-25 05:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(253, 1254, 45, 56, '2025-07-11 05:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(254, 1255, 45, 45, '2025-09-29 02:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(255, 1256, 60, 50, '2025-08-16 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(256, 1257, 45, 44, '2025-08-01 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(257, 1258, 60, 70, '2025-09-26 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(258, 1259, 45, 43, '2025-07-28 03:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(259, 1260, 60, 65, '2025-09-04 04:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(260, 1261, 60, 64, '2025-09-12 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(261, 1262, 60, 48, '2025-09-02 04:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(262, 1263, 60, 61, '2025-08-24 06:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(263, 1264, 60, 58, '2025-07-27 04:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(264, 1265, 45, 48, '2025-07-13 05:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(265, 1266, 60, 58, '2025-07-16 05:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(266, 1267, 60, 49, '2025-08-14 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(267, 1268, 60, 62, '2025-08-08 07:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(268, 1269, 45, 53, '2025-09-25 04:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(269, 1270, 60, 67, '2025-09-08 02:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(270, 1271, 45, 37, '2025-09-13 02:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(271, 1272, 45, 42, '2025-09-09 04:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(272, 1273, 60, 50, '2025-07-07 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(273, 1274, 60, 65, '2025-08-21 02:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(274, 1275, 45, 45, '2025-07-06 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(275, 1276, 45, 48, '2025-07-19 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(276, 1277, 60, 56, '2025-08-21 03:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(277, 1278, 45, 49, '2025-09-22 04:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(278, 1279, 45, 53, '2025-09-22 05:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(279, 1280, 60, 67, '2025-07-05 06:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(280, 1281, 45, 41, '2025-08-21 02:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(281, 1282, 60, 60, '2025-08-06 07:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(282, 1283, 60, 57, '2025-09-12 06:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(283, 1284, 45, 41, '2025-07-10 02:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(284, 1285, 60, 58, '2025-08-12 05:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(285, 1286, 60, 67, '2025-09-05 02:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(286, 1287, 45, 49, '2025-09-11 05:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(287, 1288, 60, 62, '2025-07-31 07:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(288, 1289, 60, 72, '2025-09-21 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(289, 1290, 45, 46, '2025-09-17 06:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(290, 1291, 45, 41, '2025-07-16 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(291, 1292, 45, 45, '2025-07-29 07:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(292, 1293, 60, 58, '2025-08-13 04:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(293, 1294, 60, 65, '2025-09-19 04:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(294, 1295, 60, 56, '2025-07-02 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(295, 1296, 45, 48, '2025-08-31 02:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(296, 1297, 45, 52, '2025-09-07 04:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(297, 1298, 60, 53, '2025-07-04 07:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(298, 1299, 60, 62, '2025-09-24 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(299, 1300, 60, 70, '2025-09-19 03:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(300, 1301, 45, 49, '2025-07-02 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(301, 1302, 60, 59, '2025-07-14 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(302, 1303, 60, 57, '2025-08-27 05:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(303, 1304, 60, 58, '2025-07-09 04:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(304, 1305, 45, 58, '2025-07-19 04:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(305, 1306, 60, 52, '2025-09-25 05:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(306, 1307, 60, 63, '2025-09-11 02:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(307, 1308, 60, 61, '2025-09-09 06:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(308, 1309, 60, 63, '2025-09-01 04:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(309, 1310, 45, 38, '2025-07-14 07:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(310, 1311, 45, 47, '2025-07-01 02:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(311, 1312, 60, 56, '2025-08-13 02:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(312, 1313, 60, 57, '2025-07-03 07:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(313, 1314, 60, 63, '2025-09-01 06:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(314, 1315, 45, 41, '2025-08-20 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(315, 1316, 45, 35, '2025-09-22 02:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(316, 1317, 60, 50, '2025-09-12 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(317, 1318, 45, 47, '2025-08-20 02:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(318, 1319, 60, 70, '2025-07-31 06:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(319, 1320, 60, 67, '2025-07-29 06:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(320, 1321, 45, 41, '2025-07-11 06:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(321, 1322, 60, 64, '2025-08-13 04:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(322, 1323, 45, 45, '2025-09-17 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(323, 1324, 60, 60, '2025-09-24 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(324, 1325, 60, 49, '2025-09-17 07:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(325, 1326, 60, 57, '2025-07-05 02:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(326, 1327, 60, 60, '2025-08-21 07:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(327, 1328, 60, 56, '2025-09-02 05:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(328, 1329, 60, 62, '2025-08-09 07:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(329, 1330, 45, 54, '2025-07-13 02:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(330, 1331, 60, 56, '2025-09-21 05:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(331, 1332, 45, 63, '2025-09-29 02:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(332, 1333, 45, 38, '2025-09-05 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(333, 1334, 60, 63, '2025-09-11 04:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(334, 1335, 60, 60, '2025-07-21 02:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(335, 1336, 45, 46, '2025-08-17 03:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(336, 1337, 45, 46, '2025-07-26 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(337, 1338, 60, 50, '2025-08-31 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(338, 1339, 45, 47, '2025-08-07 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(339, 1340, 60, 60, '2025-08-06 02:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(340, 1341, 60, 71, '2025-09-15 06:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(341, 1342, 60, 66, '2025-07-23 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(342, 1343, 45, 49, '2025-07-26 06:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(343, 1344, 60, 57, '2025-09-15 02:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(344, 1345, 45, 44, '2025-07-09 02:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(345, 1346, 45, 41, '2025-09-04 04:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(346, 1347, 45, 52, '2025-09-02 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(347, 1348, 45, 47, '2025-08-05 04:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(348, 1349, 60, 64, '2025-07-13 07:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(349, 1350, 45, 39, '2025-08-09 07:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(350, 1351, 45, 42, '2025-07-17 03:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(351, 1352, 60, 67, '2025-07-12 02:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(352, 1353, 60, 64, '2025-09-14 04:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(353, 1354, 60, 50, '2025-09-20 06:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(354, 1355, 60, 71, '2025-07-10 04:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(355, 1356, 45, 42, '2025-09-30 01:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(356, 1357, 60, 73, '2025-09-01 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(357, 1358, 45, 37, '2025-08-05 06:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(358, 1359, 60, 57, '2025-09-29 07:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(359, 1360, 45, 45, '2025-08-31 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(360, 1361, 60, 54, '2025-07-22 04:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(361, 1362, 60, 71, '2025-07-11 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(362, 1363, 45, 45, '2025-08-28 05:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(363, 1364, 45, 52, '2025-07-24 03:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(364, 1365, 45, 37, '2025-07-12 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(365, 1366, 45, 46, '2025-09-07 02:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(366, 1367, 45, 40, '2025-07-08 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(367, 1368, 60, 57, '2025-07-30 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(368, 1369, 45, 60, '2025-07-26 07:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(369, 1370, 60, 54, '2025-07-29 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(370, 1371, 45, 36, '2025-07-31 05:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(371, 1372, 45, 54, '2025-08-06 03:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(372, 1373, 60, 70, '2025-07-11 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(373, 1374, 45, 41, '2025-07-19 07:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(374, 1375, 60, 53, '2025-09-10 06:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(375, 1376, 60, 74, '2025-09-27 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(376, 1377, 60, 59, '2025-09-21 02:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(377, 1378, 45, 41, '2025-08-10 04:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(378, 1379, 45, 48, '2025-09-30 02:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(379, 1380, 60, 68, '2025-09-15 05:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(380, 1381, 60, 67, '2025-09-08 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(381, 1382, 60, 58, '2025-09-08 06:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(382, 1383, 60, 54, '2025-08-25 07:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(383, 1384, 45, 45, '2025-07-11 04:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(384, 1385, 60, 57, '2025-09-07 06:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(385, 1386, 60, 71, '2025-08-10 03:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(386, 1387, 45, 39, '2025-07-30 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(387, 1388, 60, 67, '2025-09-15 02:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(388, 1389, 60, 55, '2025-07-24 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(389, 1390, 60, 63, '2025-07-03 04:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(390, 1391, 60, 56, '2025-07-13 02:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(391, 1392, 60, 54, '2025-08-18 03:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(392, 1393, 45, 53, '2025-07-26 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(393, 1394, 60, 54, '2025-07-21 07:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(394, 1395, 60, 57, '2025-09-27 06:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(395, 1396, 60, 62, '2025-09-03 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(396, 1397, 45, 41, '2025-08-28 06:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(397, 1398, 45, 49, '2025-08-25 02:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(398, 1399, 60, 57, '2025-07-29 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(399, 1400, 60, 60, '2025-07-14 03:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(400, 1401, 60, 67, '2025-09-02 02:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(401, 1402, 60, 61, '2025-08-28 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(402, 1403, 45, 48, '2025-09-24 05:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(403, 1404, 60, 61, '2025-07-21 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(404, 1405, 60, 64, '2025-08-14 06:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(405, 1406, 45, 49, '2025-07-28 03:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(406, 1407, 60, 62, '2025-08-04 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(407, 1408, 45, 45, '2025-08-29 07:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(408, 1409, 60, 64, '2025-08-28 05:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(409, 1410, 60, 71, '2025-08-17 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(410, 1411, 45, 49, '2025-07-19 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(411, 1412, 60, 61, '2025-08-03 07:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(412, 1413, 60, 67, '2025-07-06 05:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(413, 1414, 60, 67, '2025-08-29 04:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(414, 1415, 60, 77, '2025-09-24 06:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(415, 1416, 45, 47, '2025-09-16 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(416, 1417, 60, 62, '2025-07-25 02:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(417, 1418, 60, 71, '2025-09-04 05:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(418, 1419, 60, 60, '2025-09-06 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(419, 1420, 60, 49, '2025-07-03 06:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(420, 1421, 60, 77, '2025-08-10 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(421, 1422, 60, 54, '2025-08-13 03:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(422, 1423, 45, 53, '2025-07-16 03:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(423, 1424, 60, 64, '2025-07-05 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(424, 1425, 60, 55, '2025-07-31 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(425, 1426, 60, 62, '2025-07-12 06:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(426, 1427, 60, 59, '2025-08-04 07:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(427, 1428, 60, 60, '2025-08-18 05:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(428, 1429, 60, 73, '2025-08-10 03:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(429, 1430, 60, 56, '2025-08-28 03:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(430, 1431, 60, 64, '2025-08-03 03:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(431, 1432, 45, 45, '2025-08-28 07:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(432, 1433, 45, 42, '2025-07-17 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(433, 1434, 45, 50, '2025-07-25 05:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(434, 1435, 45, 42, '2025-07-11 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(435, 1436, 45, 31, '2025-07-14 06:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(436, 1437, 45, 47, '2025-09-01 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(437, 1438, 60, 58, '2025-09-11 04:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(438, 1439, 60, 56, '2025-07-16 01:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(439, 1440, 60, 48, '2025-08-16 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(440, 1441, 60, 61, '2025-07-02 05:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(441, 1442, 45, 49, '2025-09-28 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(442, 1443, 45, 43, '2025-09-17 07:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(443, 1444, 60, 60, '2025-07-01 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(444, 1445, 60, 55, '2025-08-11 03:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(445, 1446, 45, 48, '2025-09-19 06:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(446, 1447, 45, 50, '2025-08-11 07:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(447, 1448, 45, 53, '2025-07-15 06:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(448, 1449, 60, 68, '2025-07-22 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(449, 1450, 45, 39, '2025-08-16 01:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(450, 1451, 45, 49, '2025-07-28 06:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(451, 1452, 60, 56, '2025-09-07 07:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(452, 1453, 60, 48, '2025-07-12 07:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(453, 1454, 60, 58, '2025-09-23 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(454, 1455, 45, 46, '2025-09-12 02:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(455, 1456, 45, 48, '2025-09-15 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(456, 1457, 45, 45, '2025-07-05 06:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(457, 1458, 45, 54, '2025-09-27 03:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(458, 1459, 45, 41, '2025-07-24 03:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(459, 1460, 60, 67, '2025-08-11 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(460, 1461, 60, 66, '2025-09-05 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(461, 1462, 60, 66, '2025-09-11 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(462, 1463, 60, 65, '2025-09-06 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(463, 1464, 60, 57, '2025-07-27 04:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(464, 1465, 60, 58, '2025-07-13 04:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(465, 1466, 60, 53, '2025-09-01 07:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(466, 1467, 60, 68, '2025-09-03 04:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(467, 1468, 45, 41, '2025-09-13 03:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(468, 1469, 60, 69, '2025-07-10 03:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(469, 1470, 60, 56, '2025-07-16 04:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(470, 1471, 60, 69, '2025-09-05 06:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(471, 1472, 45, 53, '2025-08-27 05:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(472, 1473, 45, 44, '2025-08-09 01:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(473, 1474, 45, 50, '2025-07-18 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(474, 1475, 45, 39, '2025-08-04 05:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(475, 1476, 60, 76, '2025-08-25 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(476, 1477, 60, 70, '2025-07-31 07:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(477, 1478, 45, 59, '2025-08-30 04:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(478, 1479, 45, 54, '2025-09-02 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(479, 1480, 60, 61, '2025-08-18 07:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(480, 1481, 45, 42, '2025-07-12 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(481, 1482, 45, 51, '2025-09-15 06:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(482, 1483, 60, 63, '2025-08-28 05:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(483, 1484, 60, 60, '2025-07-26 03:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(484, 1485, 45, 47, '2025-09-15 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(485, 1486, 45, 53, '2025-08-31 06:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(486, 1487, 60, 66, '2025-07-24 05:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(487, 1488, 60, 68, '2025-09-25 02:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(488, 1489, 45, 37, '2025-07-02 01:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(489, 1490, 60, 57, '2025-09-14 06:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(490, 1491, 60, 72, '2025-09-28 03:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(491, 1492, 60, 61, '2025-09-26 05:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(492, 1493, 60, 56, '2025-09-27 04:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(493, 1494, 60, 64, '2025-07-19 02:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(494, 1495, 45, 56, '2025-07-30 02:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(495, 1496, 60, 74, '2025-09-06 07:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(496, 1497, 60, 73, '2025-08-09 06:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(497, 1498, 60, 62, '2025-08-15 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(498, 1499, 60, 48, '2025-07-03 06:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(499, 1500, 60, 63, '2025-08-28 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(500, 1501, 45, 50, '2025-08-15 06:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(501, 1502, 60, 65, '2025-09-26 02:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(502, 1503, 60, 60, '2025-09-24 07:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(503, 1504, 45, 47, '2025-07-11 07:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(504, 1505, 60, 61, '2025-08-24 02:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(505, 1506, 60, 50, '2025-09-16 06:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(506, 1507, 60, 57, '2025-09-20 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(507, 1508, 60, 54, '2025-07-29 07:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(508, 1509, 45, 54, '2025-09-25 07:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(509, 1510, 45, 48, '2025-07-21 07:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(510, 1511, 60, 58, '2025-08-29 06:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(511, 1512, 60, 59, '2025-09-10 04:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(512, 1513, 60, 69, '2025-08-27 06:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(513, 1514, 60, 58, '2025-07-12 06:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(514, 1515, 60, 65, '2025-09-03 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(515, 1516, 45, 43, '2025-09-03 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(516, 1517, 45, 43, '2025-08-27 02:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(517, 1518, 60, 58, '2025-08-13 02:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(518, 1519, 60, 65, '2025-09-13 03:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(519, 1520, 60, 51, '2025-09-01 07:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(520, 1521, 45, 46, '2025-07-06 05:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(521, 1522, 45, 48, '2025-08-18 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(522, 1523, 60, 65, '2025-09-14 03:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(523, 1524, 60, 53, '2025-08-22 06:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(524, 1525, 60, 55, '2025-08-13 02:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(525, 1526, 45, 51, '2025-09-04 03:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(526, 1527, 60, 66, '2025-09-02 03:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(527, 1528, 60, 64, '2025-07-25 04:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(528, 1529, 60, 56, '2025-09-28 03:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(529, 1530, 45, 49, '2025-08-11 04:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(530, 1531, 45, 43, '2025-09-08 03:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(531, 1532, 45, 44, '2025-09-22 07:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(532, 1533, 45, 53, '2025-07-30 06:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(533, 1534, 45, 41, '2025-08-27 02:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(534, 1535, 60, 52, '2025-09-07 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(535, 1536, 60, 73, '2025-09-11 06:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(536, 1537, 60, 64, '2025-08-27 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(537, 1538, 60, 65, '2025-07-29 03:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(538, 1539, 60, 72, '2025-09-22 04:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(539, 1540, 45, 39, '2025-07-05 03:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(540, 1541, 45, 50, '2025-08-02 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(541, 1542, 45, 48, '2025-09-06 04:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(542, 1543, 45, 49, '2025-09-18 06:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(543, 1544, 60, 57, '2025-07-05 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(544, 1545, 60, 71, '2025-08-19 07:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(545, 1546, 60, 48, '2025-09-06 07:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(546, 1547, 60, 63, '2025-09-12 02:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(547, 1548, 45, 36, '2025-09-09 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(548, 1549, 60, 64, '2025-08-16 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(549, 1550, 60, 61, '2025-08-02 06:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(550, 1551, 45, 54, '2025-07-21 04:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(551, 1552, 60, 59, '2025-09-05 04:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(552, 1553, 60, 64, '2025-08-04 05:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(553, 1554, 60, 63, '2025-08-16 07:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(554, 1555, 45, 49, '2025-07-19 03:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(555, 1556, 60, 63, '2025-09-24 07:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(556, 1557, 60, 56, '2025-08-28 05:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(557, 1558, 60, 55, '2025-08-13 07:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(558, 1559, 60, 58, '2025-08-01 07:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(559, 1560, 45, 41, '2025-08-12 05:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(560, 1561, 45, 40, '2025-09-18 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(561, 1562, 45, 48, '2025-09-06 06:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(562, 1563, 45, 42, '2025-07-03 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(563, 1564, 60, 63, '2025-08-31 05:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(564, 1565, 60, 57, '2025-09-17 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(565, 1566, 45, 54, '2025-08-16 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(566, 1567, 60, 58, '2025-09-17 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(567, 1568, 45, 44, '2025-09-26 04:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(568, 1569, 60, 58, '2025-08-01 06:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13');
+INSERT INTO `task_performance_histories` (`id`, `task_id`, `estimated_duration_minutes`, `actual_duration_minutes`, `completed_at`, `created_at`, `updated_at`) VALUES
+(569, 1570, 60, 61, '2025-08-23 07:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(570, 1571, 60, 62, '2025-08-19 07:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(571, 1572, 60, 64, '2025-07-21 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(572, 1573, 45, 43, '2025-09-18 07:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(573, 1574, 60, 61, '2025-07-31 04:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(574, 1575, 45, 55, '2025-08-19 07:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(575, 1576, 45, 40, '2025-09-09 01:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(576, 1577, 45, 47, '2025-08-06 07:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(577, 1578, 60, 62, '2025-07-25 03:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(578, 1579, 45, 44, '2025-07-17 02:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(579, 1580, 60, 56, '2025-09-09 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(580, 1581, 60, 73, '2025-09-19 07:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(581, 1582, 45, 42, '2025-08-30 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(582, 1583, 60, 64, '2025-07-18 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(583, 1584, 60, 69, '2025-09-26 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(584, 1585, 45, 46, '2025-09-22 07:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(585, 1586, 45, 53, '2025-09-13 05:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(586, 1587, 60, 63, '2025-07-31 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(587, 1588, 60, 71, '2025-09-03 06:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(588, 1589, 45, 50, '2025-09-22 03:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(589, 1590, 45, 42, '2025-09-05 03:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(590, 1591, 45, 45, '2025-09-27 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(591, 1592, 60, 68, '2025-07-14 04:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(592, 1593, 60, 56, '2025-07-24 03:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(593, 1594, 60, 71, '2025-07-03 07:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(594, 1595, 60, 63, '2025-09-03 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(595, 1596, 45, 36, '2025-07-28 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(596, 1597, 60, 53, '2025-07-27 03:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(597, 1598, 45, 41, '2025-07-04 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(598, 1599, 45, 54, '2025-09-20 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(599, 1600, 60, 63, '2025-07-07 05:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(600, 1601, 60, 56, '2025-08-29 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(601, 1602, 45, 55, '2025-07-28 07:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(602, 1603, 45, 49, '2025-07-10 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(603, 1604, 60, 50, '2025-09-02 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(604, 1605, 45, 45, '2025-07-06 02:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(605, 1606, 45, 37, '2025-08-23 03:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(606, 1607, 45, 40, '2025-09-01 05:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(607, 1608, 60, 64, '2025-09-17 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(608, 1609, 45, 43, '2025-08-04 07:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(609, 1610, 45, 39, '2025-07-01 06:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(610, 1611, 60, 48, '2025-08-14 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(611, 1612, 60, 55, '2025-09-12 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(612, 1613, 60, 58, '2025-08-26 02:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(613, 1614, 60, 51, '2025-09-20 02:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(614, 1615, 45, 40, '2025-07-31 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(615, 1616, 60, 64, '2025-08-14 07:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(616, 1617, 60, 56, '2025-07-10 07:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(617, 1618, 45, 54, '2025-07-28 05:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(618, 1619, 60, 59, '2025-08-25 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(619, 1620, 45, 51, '2025-07-20 03:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(620, 1621, 45, 47, '2025-08-30 01:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(621, 1622, 45, 45, '2025-08-01 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(622, 1623, 45, 41, '2025-07-25 03:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(623, 1624, 45, 37, '2025-07-15 04:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(624, 1625, 60, 53, '2025-09-26 04:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(625, 1626, 60, 68, '2025-09-05 02:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(626, 1627, 60, 64, '2025-09-01 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(1025, 2, 60, 40, '2025-10-02 19:33:07', '2025-10-02 19:33:07', '2025-10-02 19:33:07');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `team_members`
+--
+
+CREATE TABLE `team_members` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `daily_team_id` bigint(20) UNSIGNED NOT NULL,
+  `employee_id` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `team_members`
+--
+
+INSERT INTO `team_members` (`id`, `daily_team_id`, `employee_id`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, '2025-10-02 18:52:17', '2025-10-02 18:52:17'),
+(2, 1, 8, '2025-10-02 18:52:17', '2025-10-02 18:52:17');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('admin','employee','external_client') NOT NULL,
+  `remember_token` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`) VALUES
+(1, 'Admin', 'admin@opticrew.com', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(2, 'Vincent Rey Digol', 'vincentreydigol@finnoys.com', NULL, '$2y$10$imi1zHLwUCdLQOg5.k39w.7XiWvU6DOoBcIjwSD624Q07XQqAzTQa', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(3, 'Martin Yvann Leonardo', 'martinyvannleonardo@finnoys.com', NULL, '$2y$10$fEn6ftE4hV6qwLE6Pu7i5uTTpwHeEKyXtviZ7oTI7mh2hKzE660GS', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(4, 'Earl Leonardo', 'earlleonardo@finnoys.com', NULL, '$2y$10$UyZcyuwzjz1SrB6dPNZ3J.hCGWcCJ9ixAA0NP59Y7n9tkR/1JGdDW', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(5, 'Merlyn Guzman', 'merlynguzman@finnoys.com', NULL, '$2y$10$KpT8QxYAqhp9HwVke31Wz.TEFENNoGFJQFdjhKUyyDJnFccFetEBi', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(6, 'Aries Guzman', 'ariesguzman@finnoys.com', NULL, '$2y$10$h85peir4XiLSdbJKuonExOoegZi/SBqQRGQ0xSYR5CzaERjEa2N3S', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(7, 'Bella Ostan', 'bellaostan@finnoys.com', NULL, '$2y$10$Zwd38lfJ4T5iG8JVXSxhBusbyZG/V4UWW8CePueSyXBh/IsY9D2Ju', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(8, 'Jennylyn Saballero', 'jennylynsaballero@finnoys.com', NULL, '$2y$10$zFxo49djPY3wMpN51qiYiOVxkkofeQ0RYRROfaphiP.cfs5BvHMQq', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(9, 'Rizza Estrella ', 'rizzaestrella@finnoys.com', NULL, '$2y$10$eH52zyHzV/ka6DJ1I/jIEegO6v7Bhtz3X6Tu51W7qzOCzg3.weuBy', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(10, 'Cherrylyn Morales ', 'cherrylynmorales@finnoys.com', NULL, '$2y$10$1swK95thyuDIKhCj1CDFJ.T591GF9ysJ4KvKJRaTfAiV7QTdU9Yaa', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(11, 'John Carl Morales', 'johncarlmorales@finnoys.com', NULL, '$2y$10$rLfpy6PWrrJYqVOkZUyFa.cLOLrTwLbKfkdp7tAS/vLQUotLTYOhi', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(12, 'John Kevin Morales', 'johnkevinmorales@finnoys.com', NULL, '$2y$10$/CV5zvi4rk3qSqg6JuYsme9FU7O06qgGq2eKBtDTSJXGhSPRAUAt.', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `cars`
+--
+ALTER TABLE `cars`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `clients`
+--
+ALTER TABLE `clients`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `clients_user_id_foreign` (`user_id`);
+
+--
+-- Indexes for table `contracted_clients`
+--
+ALTER TABLE `contracted_clients`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `contracted_clients_name_unique` (`name`);
+
+--
+-- Indexes for table `daily_team_assignments`
+--
+ALTER TABLE `daily_team_assignments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `daily_team_assignments_car_id_foreign` (`car_id`),
+  ADD KEY `daily_team_assignments_contracted_client_id_foreign` (`contracted_client_id`);
+
+--
+-- Indexes for table `employees`
+--
+ALTER TABLE `employees`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `employees_user_id_foreign` (`user_id`);
+
+--
+-- Indexes for table `employee_schedules`
+--
+ALTER TABLE `employee_schedules`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `employee_schedules_employee_id_work_date_unique` (`employee_id`,`work_date`);
+
+--
+-- Indexes for table `locations`
+--
+ALTER TABLE `locations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `locations_contracted_client_id_foreign` (`contracted_client_id`);
+
+--
+-- Indexes for table `migrations`
+--
+ALTER TABLE `migrations`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `personal_access_tokens`
+--
+ALTER TABLE `personal_access_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  ADD KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`);
+
+--
+-- Indexes for table `tasks`
+--
+ALTER TABLE `tasks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tasks_location_id_foreign` (`location_id`),
+  ADD KEY `tasks_client_id_foreign` (`client_id`),
+  ADD KEY `tasks_assigned_team_id_foreign` (`assigned_team_id`);
+
+--
+-- Indexes for table `task_performance_histories`
+--
+ALTER TABLE `task_performance_histories`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `task_performance_histories_task_id_foreign` (`task_id`);
+
+--
+-- Indexes for table `team_members`
+--
+ALTER TABLE `team_members`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `team_members_daily_team_id_foreign` (`daily_team_id`),
+  ADD KEY `team_members_employee_id_foreign` (`employee_id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `users_email_unique` (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `cars`
+--
+ALTER TABLE `cars`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `clients`
+--
+ALTER TABLE `clients`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `contracted_clients`
+--
+ALTER TABLE `contracted_clients`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `daily_team_assignments`
+--
+ALTER TABLE `daily_team_assignments`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `employees`
+--
+ALTER TABLE `employees`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT for table `employee_schedules`
+--
+ALTER TABLE `employee_schedules`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `locations`
+--
+ALTER TABLE `locations`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
+
+--
+-- AUTO_INCREMENT for table `migrations`
+--
+ALTER TABLE `migrations`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `personal_access_tokens`
+--
+ALTER TABLE `personal_access_tokens`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tasks`
+--
+ALTER TABLE `tasks`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2026;
+
+--
+-- AUTO_INCREMENT for table `task_performance_histories`
+--
+ALTER TABLE `task_performance_histories`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1026;
+
+--
+-- AUTO_INCREMENT for table `team_members`
+--
+ALTER TABLE `team_members`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `clients`
+--
+ALTER TABLE `clients`
+  ADD CONSTRAINT `clients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `daily_team_assignments`
+--
+ALTER TABLE `daily_team_assignments`
+  ADD CONSTRAINT `daily_team_assignments_car_id_foreign` FOREIGN KEY (`car_id`) REFERENCES `cars` (`id`),
+  ADD CONSTRAINT `daily_team_assignments_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`);
+
+--
+-- Constraints for table `employees`
+--
+ALTER TABLE `employees`
+  ADD CONSTRAINT `employees_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_schedules`
+--
+ALTER TABLE `employee_schedules`
+  ADD CONSTRAINT `employee_schedules_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `locations`
+--
+ALTER TABLE `locations`
+  ADD CONSTRAINT `locations_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `tasks`
+--
+ALTER TABLE `tasks`
+  ADD CONSTRAINT `tasks_assigned_team_id_foreign` FOREIGN KEY (`assigned_team_id`) REFERENCES `daily_team_assignments` (`id`),
+  ADD CONSTRAINT `tasks_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
+  ADD CONSTRAINT `tasks_location_id_foreign` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`);
+
+--
+-- Constraints for table `task_performance_histories`
+--
+ALTER TABLE `task_performance_histories`
+  ADD CONSTRAINT `task_performance_histories_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `team_members`
+--
+ALTER TABLE `team_members`
+  ADD CONSTRAINT `team_members_daily_team_id_foreign` FOREIGN KEY (`daily_team_id`) REFERENCES `daily_team_assignments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `team_members_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
