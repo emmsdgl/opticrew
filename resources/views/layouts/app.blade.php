@@ -37,6 +37,10 @@
                     <a href="{{ route('admin.simulation') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('admin.simulation') ? 'bg-indigo-800' : 'text-indigo-200' }} hover:bg-indigo-800 hover:text-white transition">
                         <i class="fas fa-cogs mr-3"></i> Algorithm Simulation
                     </a>
+
+                    <a href="{{ route('admin.analytics.employees') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('admin.analytics.employees') ? 'bg-indigo-800' : 'text-indigo-200' }} hover:bg-indigo-800 hover:text-white transition">
+                        <i class="fas fa-chart-line mr-3"></i> Employee Analytics
+                    </a>
                     {{-- Add other admin links here later --}}
                 </div>
                 @endif
