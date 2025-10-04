@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 03, 2025 at 06:12 AM
+-- Generation Time: Oct 04, 2025 at 04:10 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -167,7 +167,15 @@ INSERT INTO `employee_schedules` (`id`, `employee_id`, `work_date`, `is_day_off`
 (6, 7, '2025-10-03', 1, '2025-10-02 18:52:08', '2025-10-02 18:52:08'),
 (7, 9, '2025-10-03', 1, '2025-10-02 18:52:09', '2025-10-02 18:52:09'),
 (8, 10, '2025-10-03', 1, '2025-10-02 18:52:10', '2025-10-02 18:52:10'),
-(9, 11, '2025-10-03', 1, '2025-10-02 18:52:10', '2025-10-02 18:52:10');
+(9, 11, '2025-10-03', 1, '2025-10-02 18:52:10', '2025-10-02 18:52:10'),
+(10, 2, '2025-10-04', 1, '2025-10-04 03:16:52', '2025-10-04 03:16:52'),
+(11, 4, '2025-10-04', 1, '2025-10-04 03:16:54', '2025-10-04 03:16:54'),
+(12, 6, '2025-10-04', 1, '2025-10-04 03:16:55', '2025-10-04 03:16:55'),
+(13, 8, '2025-10-04', 1, '2025-10-04 03:16:57', '2025-10-04 03:16:57'),
+(14, 10, '2025-10-04', 1, '2025-10-04 03:16:58', '2025-10-04 03:16:58'),
+(15, 1, '2025-11-04', 1, '2025-10-04 06:05:30', '2025-10-04 06:05:30'),
+(16, 1, '2025-11-03', 1, '2025-10-04 06:05:31', '2025-10-04 06:05:31'),
+(17, 1, '2025-10-01', 1, '2025-10-04 06:05:41', '2025-10-04 06:05:41');
 
 -- --------------------------------------------------------
 
@@ -1635,8 +1643,19 @@ CREATE TABLE `team_members` (
 --
 
 INSERT INTO `team_members` (`id`, `daily_team_id`, `employee_id`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, '2025-10-02 18:52:17', '2025-10-02 18:52:17'),
-(2, 1, 8, '2025-10-02 18:52:17', '2025-10-02 18:52:17');
+(15, 1, 1, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(16, 1, 8, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(17, 2, 2, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(18, 2, 7, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(19, 3, 3, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(20, 3, 6, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(21, 3, 11, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(22, 4, 4, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(23, 4, 9, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(24, 5, 5, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(25, 5, 10, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(26, 6, 1, '2025-10-04 13:48:41', '2025-10-04 13:48:41'),
+(27, 6, 3, '2025-10-04 13:48:41', '2025-10-04 13:48:41');
 
 -- --------------------------------------------------------
 
@@ -1798,7 +1817,7 @@ ALTER TABLE `contracted_clients`
 -- AUTO_INCREMENT for table `daily_team_assignments`
 --
 ALTER TABLE `daily_team_assignments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `employees`
@@ -1810,7 +1829,7 @@ ALTER TABLE `employees`
 -- AUTO_INCREMENT for table `employee_schedules`
 --
 ALTER TABLE `employee_schedules`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `locations`
@@ -1834,7 +1853,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2026;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2061;
 
 --
 -- AUTO_INCREMENT for table `task_performance_histories`
@@ -1846,7 +1865,7 @@ ALTER TABLE `task_performance_histories`
 -- AUTO_INCREMENT for table `team_members`
 --
 ALTER TABLE `team_members`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `users`
