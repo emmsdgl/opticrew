@@ -16,17 +16,18 @@ class EmployeeAnalytics extends Component
             $query->where('is_day_off', true)->whereMonth('work_date', now()->month);
         }])->get();
     
-        // After loading employees, we will manually attach their performance history.
-        // This is more explicit and easier to debug.
         foreach ($employees as $employee) {
             // Find all team IDs this employee has ever been a part of.
             $teamIds = TeamMember::where('employee_id', $employee->id)->pluck('daily_team_id');
             
-            // Find all tasks assigned to those teams.
-            $taskIds = Task::whereIn('assigned_team_id', $teamIds)->pluck('id');
+            // Find all COMPLETED tasks assigned to those teams.
+            $completedTasks = Task::whereIn('assigned_team_id', $teamIds)
+                                  ->where('status', 'Completed')
+                                  ->with('performanceHistory') // Eager load the history
+                                  ->get();
             
-            // Now, get all performance history for those tasks.
-            $employee->performanceHistories = TaskPerformanceHistory::whereIn('task_id', $taskIds)->get();
+            // Now, we attach the tasks themselves, not just the history.
+            $employee->completedTasks = $completedTasks;
         }
     
         return view('livewire.admin.employee-analytics', [
