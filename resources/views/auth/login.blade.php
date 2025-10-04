@@ -41,7 +41,7 @@
                         <!-- Email/Username Input -->
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-semibold mb-2" for="email">
-                                Email (Emma) / Username (EmmaLeonardo)
+                                Email / Username
                             </label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3">

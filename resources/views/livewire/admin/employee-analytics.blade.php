@@ -31,19 +31,33 @@
 
                     <!-- Work Efficiency Calculation -->
                     @php
-                        // The data is now directly available!
-                        $allHistory = $employee->performanceHistories;
-
-                        $totalTasks = $allHistory->count();
+                        $completedTasks = $employee->completedTasks;
+                        $totalTasks = $completedTasks->count(); // Count all completed tasks
                         $avgDifference = 0;
                         $efficiencyScore = 100;
 
                         if ($totalTasks > 0) {
-                            $totalDifference = $allHistory->sum(fn($h) => $h->estimated_duration_minutes - $h->actual_duration_minutes);
-                            $avgDifference = $totalDifference / $totalTasks;
+                            $totalDifference = 0;
+                            $totalEfficiencyRatio = 0;
+                            $tasksWithHistory = 0;
 
-                            $totalEfficiencyRatio = $allHistory->sum(fn($h) => $h->actual_duration_minutes > 0 ? $h->estimated_duration_minutes / $h->actual_duration_minutes : 1);
-                            $efficiencyScore = ($totalEfficiencyRatio / $totalTasks) * 100;
+                            foreach($completedTasks as $task) {
+                                if ($task->performanceHistory) {
+                                    $history = $task->performanceHistory;
+                                    $totalDifference += ($history->estimated_duration_minutes - $history->actual_duration_minutes);
+                                    if ($history->actual_duration_minutes > 0) {
+                                        $totalEfficiencyRatio += ($history->estimated_duration_minutes / $history->actual_duration_minutes);
+                                    } else {
+                                        $totalEfficiencyRatio += 1;
+                                    }
+                                    $tasksWithHistory++;
+                                }
+                            }
+
+                            if ($tasksWithHistory > 0) {
+                                $avgDifference = $totalDifference / $tasksWithHistory;
+                                $efficiencyScore = ($totalEfficiencyRatio / $tasksWithHistory) * 100;
+                            }
                         }
                     @endphp
 
