@@ -35,4 +35,9 @@ class Task extends Model
     {
         return $this->belongsTo(DailyTeamAssignment::class, 'assigned_team_id');
     }
+
+    public function performanceHistory()
+    {
+        return $this->hasOne(TaskPerformanceHistory::class);
+    }
 }
