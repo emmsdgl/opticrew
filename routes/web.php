@@ -7,6 +7,7 @@ use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
 use App\Http\Livewire\Admin\TaskList;
 use App\Http\Livewire\Admin\SimulationDashboard; // Add this at the top
+use App\Http\Livewire\Admin\EmployeeAnalytics;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,8 @@ Route::get('/', function () {
         ->name('admin.dashboard');
 
             Route::get('/admin/simulation', SimulationDashboard::class)->name('admin.simulation');
+
+    Route::get('/admin/analytics/employees', EmployeeAnalytics::class)->name('admin.analytics.employees');
 
 
     Route::get('/employee/dashboard', EmployeeDashboard::class)
