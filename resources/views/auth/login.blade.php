@@ -11,7 +11,7 @@
 </head>
 <style>
     /* FONTS */
-    @font-face {
+    /* @font-face {
         font-family: 'fam-regular';
         src: url('/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
         font-weight: normal;
@@ -30,11 +30,10 @@
         src: url('/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
         font-weight: bold;
         font-style: italic;
-    }
+    } */
 
     * {
         color: #071957;
-        font-family: 'fam-regular';
     }
 
     #container-2 {
@@ -142,7 +141,6 @@
 
     #login-header {
         font-size: 2.8rem;
-        font-family: 'fam-bold';
         margin-top: 0.5em;
     }
 
@@ -167,19 +165,16 @@
         font-style: italic;
     }
 
-    #header1 {
-        font-family: 'fam-bold';
-    }
 </style>
 
-<body>
+<body class="font-sans font-normal text-base">
     <div class="flex flex-col md:flex-row min-h-screen w-full">
         <!-- INTERACTIVE PICTURE START-->
         <div class="container-1 hidden md:flex flex-col justify-center w-full md:w-1/2 lg:w-1/2"
             style="width:60%; padding:2em;">
             <div id="container-1-2" class="p-2 md:p-12 h-full flex flex-col justify-center items-center rounded-3xl"
                 style="background-image: url({{ asset('/images/backgrounds/login_bg2.svg') }});background-size: cover;padding:5em;">
-                <h1 id="header1" class=" md:text-4xl lg:text-5xl font-bold text-white mb-4 text-left " style="width: 90%;">
+                <h1 id="header1" class=" md:text-4xl lg:text-5xl font-sans font-bold text-white mb-4 text-left " style="width: 90%;">
                     One-stop booking for<span>
                         <p id="spotless_text" style="color:#0077FF"> a spotless space</p>
                     </span></h1>
@@ -193,22 +188,22 @@
         <div id="container-2" class="w-full md:w-1/2 flex justify-center items-center">
             <form action="/login" method="POST" class="space-y-4">
                 <div id="container-2-1">
-                    <h1 id="login-header">Log In</h1>
+                    <h1 id="login-header" class="font-sans font-bold mb-6">Log In</h1>
                     <p id="login-header2" class="text-base pb-6">Welcome to Fin-noys</p>
                 </div>
 
                 <!-- EMAIL FIELD -->
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon pr-6 pl-2"></i>
-                    <input type="text" id="input-username" name="email" class="bg-gray-100">
-                    <label for="input-username" class="text-gray-400 text-sm fam-regular">Email/Username</label>
+                    <input type="text" id="input-username" name="email" class="pl-12 font-sans font-normal bg-gray-100">
+                    <label for="input-username" class="text-gray-400 text-sm font-sans">Email/Username</label>
                 </div>
 
                 <!-- PASSWORD FIELD -->
                 <div class="input-group">
                     <i class="fa-solid fa-key icon pr-6 pl-2"></i>
                     <input type="password" id="input-password" name="password" class="bg-gray-100">
-                    <label for="input-password" class="text-gray-400 text-sm fam-regular">Password</label>
+                    <label for="input-password" class="text-gray-400 text-sm  font-sans">Password</label>
                 </div>
 
                 <div id="container-2-layer" class="text-sm">
