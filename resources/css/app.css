@@ -1,3 +1,22 @@
+@font-face {
+  font-family: 'FamiljenGrotesk';
+  src: url('/public/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'FamiljenGrotesk';
+  src: url('/public/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
+  font-style: bold;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'FamiljenGrotesk';
+  src: url('/public/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
+  font-style: italic;
+  font-display: swap;
+}
+ 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -17,8 +17,8 @@ use App\Http\Livewire\Admin\EmployeeAnalytics;
 */
 
 Route::get('/', action: function () {
-    return view('auth.login');
-})->name('login');
+    return view('admin-dash');
+})->name('admin-dash');
 
 
 // 2. Define the routes for your dashboards, protected by login middleware.
