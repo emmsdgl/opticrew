@@ -1,15 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Features;
+use Livewire\Volt\Volt;
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController; // Import the controller
 use App\Http\Livewire\Admin\TaskDashboard;
 use App\Http\Livewire\Admin\TaskList;
-use App\Http\Livewire\Admin\ScheduleManager;
 use App\Http\Livewire\Admin\SimulationDashboard;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
+use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
 use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -17,10 +19,10 @@ use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
 |--------------------------------------------------------------------------
 */
 
-// 1. Make the login page the very first page of the site.
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+Route::get('/', action: function () {
+    return view('auth.login');
+})->name('login');
+
 
 // 2. Define the routes for your dashboards, protected by login middleware.
 // Only logged-in users can access these pages.
@@ -32,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
     // The "Job Creation" dashboard
     Route::get('/admin/dashboard', function () {
         return view('admin-dashboard');
-    })->middleware(['auth'])->name('admin.dashboard');
+    })->middleware(['auth'])->name(name: 'admin.dashboard');
 
     // The "Tasks" list page (we can create this later, for now it points to Job Creation)
     Route::get('/admin/dashboard', TaskDashboard::class)

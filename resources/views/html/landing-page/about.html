@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <link rel="stylesheet" href="./assets/vendor/leaflet/dist/leaflet.css">
+    <title>About</title>
+</head>
+<style>
+    @font-face {
+        font-family: 'fam-regular';
+        src: url('/public/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'fam-bold';
+        src: url('/public/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'fam-bold-italic';
+        src: url('/public/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    * {
+        color: #071957;
+        font-family: 'fam-regular';
+    }
+
+    .flip-card .flip-inner {
+        transform: rotateY(0deg);
+    }
+
+    .flip-card.flipped .flip-inner {
+        transform: rotateY(180deg);
+    }
+
+    /* For 3D rotation */
+    .rotate-y-180 {
+        transform: rotateY(180deg);
+    }
+
+    .hs-leaflet.leaflet-touch .leaflet-control-layers,
+    .hs-leaflet.leaflet-touch .leaflet-bar {
+        border-width: 0px;
+    }
+
+    .hs-leaflet.leaflet-touch .leaflet-bar a {
+        line-height: 1.5;
+        background-color: rgba(255, 255, 255, .8);
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+
+    .hs-leaflet.leaflet-touch .leaflet-bar a:first-child,
+    .hs-leaflet.leaflet-touch .leaflet-bar a:last-child {
+        border-radius: 8px;
+    }
+
+    .hs-leaflet .leaflet-control-zoom-in,
+    .hs-leaflet .leaflet-control-zoom-out {
+        font-weight: 400;
+        font-size: 18px;
+        color: #1f2937;
+        text-indent: 0px;
+    }
+
+    .hs-leaflet .leaflet-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .hs-leaflet .leaflet-bar a {
+        border-width: 0;
+    }
+
+    .hs-leaflet .leaflet-bar a:hover,
+    .hs-leaflet .leaflet-bar a:focus {
+        background-color: #e5e7eb;
+    }
+
+    .hs-leaflet .leaflet-popup-content-wrapper,
+    .hs-leaflet .leaflet-popup-tip {
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .hs-leaflet .leaflet-popup-tip {
+        border-radius: 4px;
+    }
+
+    .hs-leaflet.leaflet-container a.leaflet-popup-close-button {
+        top: -10px;
+        right: -10px;
+        border-radius: 9999px;
+        background-color: #f3f4f6;
+        color: #1f2937;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .hs-leaflet.leaflet-container a.leaflet-popup-close-button:hover {
+        background-color: #f3f4f6;
+    }
+
+    .hs-leaflet-unstyled-popover .leaflet-popup-content-wrapper {
+        display: flex;
+    }
+
+    .hs-leaflet-unstyled-popover .leaflet-popup-content {
+        padding: 0;
+        margin: 0;
+        background: none;
+        line-height: normal;
+        border-radius: 0;
+        font-size: inherit;
+        min-height: auto;
+    }
+
+    /* body {
+        background-image: url(/public/images/backgrounds/aboutpage-bg.svg);
+        background-size: cover;
+        background-repeat: no-repeat;
+    } */
+</style>
+
+<body class="m-0 p-0 overflow-x-hidden transition-all duration-500
+         sm:!bg-image-none sm:bg-white/80 sm:backdrop-blur-sm
+         lg:bg-[url('/public/images/backgrounds/aboutpage-bg.svg')] lg:bg-cover lg:bg-no-repeat">
+
+    <!-- NAVBAR -->
+    <header class="inset-x-0 top-0 z-50">
+        <nav aria-label="Global" class="flex items-center justify-between p-6 lg:px-8">
+            <div class="flex lg:flex-1">
+                <a href="#" class="-m-1.5 p-1.5">
+                    <span class="sr-only"></span>
+                    <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                </a>
+            </div>
+            <div class="flex lg:hidden">
+                <button type="button" command="show-modal" commandfor="mobile-menu"
+                    class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-200">
+                    <span class="sr-only">Open main menu</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon"
+                        aria-hidden="true" class="size-6">
+                        <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+            <div class="hidden lg:flex lg:gap-x-12">
+                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Home</a>
+                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">About</a>
+                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Services</a>
+                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Price Quotation</a>
+            </div>
+            <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+                <span aria-hidden="true"></span>
+            </div>
+        </nav>
+        <el-dialog>
+            <dialog id="mobile-menu" class="backdrop:bg-transparent lg:hidden">
+                <div tabindex="0" class="fixed inset-0 focus:outline-none">
+                    <el-dialog-panel
+                        class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-blue-100 bg-blend-color-multiply  p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-100/10">
+                        <div class="flex items-center justify-between">
+                            <a href="#" class="-m-1.5 p-1.5">
+                                <span class="sr-only">Fin-noys</span>
+                                <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                            </a>
+                            <button type="button" command="close" commandfor="mobile-menu"
+                                class="-m-2.5 rounded-md p-2.5 text-gray-200">
+                                <span class="sr-only">Close menu</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                    data-slot="icon" aria-hidden="true" class="size-6">
+                                    <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mt-6 flow-root">
+                            <div class="-my-6 divide-y divide-white/10">
+                                <div class="space-y-2 py-6">
+                                    <a href="#"
+                                        class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Home</a>
+                                    <a href="#"
+                                        class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">About</a>
+                                    <a href="#"
+                                        class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Services</a>
+                                    <a href="#"
+                                        class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Pricing
+                                        Quotation</a>
+                                </div>
+                                <div class="py-6">
+                                    <a href="#"
+                                        class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 text-blue-950 hover:bg-blue-600/10">Log
+                                        in</a>
+                                </div>
+                            </div>
+                        </div>
+                    </el-dialog-panel>
+                </div>
+            </dialog>
+        </el-dialog>
+    </header>
+    <!-- NAVBAR -->
+
+    <section id="container-1"
+        class="relative flex flex-col items-center justify-center text-center w-[90%] md:w-[70%] mx-auto py-12 sm:py-24 min-h-[80vh]">
+        <div class="absolute" style="top: 22%; left: -35%;">
+            <img src="/public/images/icons/cleaning_bucket.svg" class="w-73 h-73 hidden md:block sm:block">
+        </div>
+        <div class="absolute" style="top: -20%; right: -40%;">
+            <img src="/public/images/icons/cleaning_spray.svg" class="w-73 h-73 hidden md:block sm:block">
+        </div>
+
+        <h1 id="header-1" class="text-6xl tracking-normal text-blue-950 p-10 sm:text-6xl">
+            <p class="mb-6 text-[12px] text-blue-500 text-pretty font-bold sm:text-base w-[75%] mx-auto text-center">
+                Hello there,
+            </p>
+            We are
+            <span id="cleanliness" class="text-blue-500 font-bold inline-flex items-center">
+                <span id="spark" class="mr-3">
+                    <img src="/public/images/icons/single-sparkle.svg" alt="" class="h-12 w-auto">
+                </span>
+                Fin-noys
+            </span>
+            <br>
+            <p class="mt-6 text-[12px] text-pretty sm:text-base w-[75%] mx-auto text-center">
+                Your hassle-free buddy for a sparkling clean space.
+            </p>
+
+        </h1>
+        <p class="mt-3 text-[12px] text-pretty sm:text-base w-[75%] mx-auto text-justify">
+            Fin-noys is a professional cleaning services provider with extensive experience in the hospitality industry.
+            Our well-trained and professional cleaning staff are dedicated to maintaining a clean, healthy environment
+            and ensuring a secure efficient cleaning process.
+        </p>
+        <div class="absolute hidden lg:block w-90 p-6 rounded-2xl shadow-xl frosted-card text-center"
+            style="top: 25%; right: -15%;">
+            <div class="absolute -top-3 left-1/4 -translate-x-1/2 h-6 w-6 rounded-full"><img
+                    src="/public/images/backgrounds/gradient-circle.svg"></div>
+            <p class="text-sm mt-0">
+                “ Commitment to quality cleaning services. “
+            </p>
+        </div>
+
+        <div class="absolute hidden lg:block w-85 p-6 rounded-2xl shadow-xl frosted-card text-center"
+            style="top: 25%; left: -2%; transform: translateX(-50%);">
+            <div class="absolute -top-3 left-1/4 -translate-x-1/2 h-6 w-6 rounded-full"><img
+                    src="/public/images/backgrounds/gradient-circle.svg"></div>
+            <p class="text-sm">
+                “ Flexible and responsive to your needs. “
+            </p>
+        </div>
+        <div class="absolute hidden lg:block w-85 p-6 rounded-2xl shadow-xl frosted-card text-center"
+            style="top: 89%; left: 13%; transform: translateX(-50%);">
+            <div class="absolute -top-3 left-1/4 -translate-x-1/2 h-6 w-6 rounded-full"><img
+                    src="/public/images/backgrounds/gradient-circle.svg"></div>
+            <p class="text-sm">
+                “ Proven track record in hotel and holiday cottages cleaning services. “
+            </p>
+        </div>
+        <div class="absolute hidden lg:block w-72 p-6 rounded-2xl shadow-xl frosted-card text-center"
+            style="top: 80%; left: 95%; transform: translateX(-50%);">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 h-6 w-6 rounded-full"><img
+                    src="/public/images/backgrounds/gradient-circle.svg"></div>
+            <p class="text-sm">
+                “ Wide range of cleaning services. “
+            </p>
+        </div>
+    </section>
+
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white/70 to-white/20 pointer-events-none">
+    </div>
+
+    <!-- FOUNDERS SECTION -->
+    <section id="container-2" class="relative flex flex-col lg:flex-row justify-center items-center 
+           bg-gradient-to-b from-transparent via-white/60 to-white/80
+           backdrop-blur-sm border-none gap-0 px-6 sm:px-12 py-20 
+           mt-32 min-h-[80vh] sm:min-h-[100vh] transition-all duration-700">
+
+        <!-- Soft glow overlay at the bottom -->
+        <div
+            class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white/70 to-transparent pointer-events-none">
+        </div>
+
+        <!-- Text Section -->
+        <div class="flex flex-col text-center lg:text-left w-3/5">
+            <div class="mb-8 ml-32 sm:mb-12">
+                <h2 class="text-blue-500 font-[fam-bold] text-base mb-8 sm:mb-8 mt-2">Introducing the Founders of
+                    Fin-noys
+                </h2>
+                <h1 class="text-2xl sm:text-4xl md:text-5xl font-[fam-bold] leading-snug">
+                    Cleaning is more than a <br>task;
+                    <span class="text-blue-500 font-[fam-bold]">it’s a promise of comfort and care</span>
+                    <img src="/public/images/icons/single-sparkle.svg" alt=""
+                        class="inline-block h-8 sm:h-10 align-middle">
+                </h1>
+                <p class="font-[fam-bold] text-base text-blue-500 mt-8 mb-8 sm:text-base">Meet Fin-noys</p>
+                <!-- Founders Grid -->
+                <div class="flex flex-row gap-12 justify-between max-w-full text-center lg:text-left mx-auto lg:mx-0">
+                    <div class="flex flex-col justify-center items-center lg:items-center">
+                        <p class="font-[fam-bold] text-[#071957] text-base sm:text-base">Merlyn Guzman</p>
+                        <p class="font-[fam-regular] text-[#0718576d] text-base sm:text-base">Founder of Fin-noys</p>
+                    </div>
+                    <div class="flex flex-col justify-center items-center lg:items-center">
+                        <p class="font-[fam-bold] text-[#071957] text-base sm:text-base">Emman Digol</p>
+                        <p class="font-[fam-regular] text-[#0718576d] text-base sm:text-base">Co-Founder of Fin-noys</p>
+                    </div>
+                    <div class="flex flex-col justify-center items-center lg:items-center">
+                        <p class="font-[fam-bold] text-[#071957] text-base sm:text-base">Hired Cleaners</p>
+                        <p class="font-[fam-regular] text-[#0718576d] text-base sm:text-base">Employees of Fin-noys</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Flip Cards -->
+        <div class="w-1/2 lg:w-1/2 flex flex-wrap justify-center lg:justify-center">
+
+            <!-- Circular Flip Card -->
+            <div class="flip-card w-[400px] h-[400px] cursor-pointer transition-all duration-700">
+                <div
+                    class="flip-inner relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d]">
+
+                    <!-- Front -->
+                    <div
+                        class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden bg-[url('/public/images/people/team-member-bg.svg')] bg-center bg-[length:155%] bg-no-repeat [backface-visibility:hidden]">
+                        <img src="/public/images/people/team-member.svg" alt="Founder 1"
+                            class="absolute inset-0 w-full h-full object-cover rounded-full">
+                    </div>
+
+                    <!-- Back -->
+                    <div
+                        class="absolute inset-0 flex flex-col items-center justify-center text-center p-4 rounded-full backdrop-blur-sm bg-transparent rotate-y-180 [backface-visibility:hidden]">
+                        <h3 class="text-base font-[fam-bold] text-[#071957] mb-1 drop-shadow-md">Merlyn Guzman</h3>
+                        <p class="text-sm text-[#071957] leading-relaxed px-3">
+                            Founder of Fin-noys. Dedicated to maintaining comfort, care, and excellence in every clean
+                            space.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="container-3"
+        class="flex flex-col w-full lg:flex-row items-center justify-center gap-10 sm:gap-16 py-16 backdrop-blur-sm border-none min-h-[80vh] bg-white ml-0">
+        <!-- Map -->
+        <div
+            class="w-[600px] ml-12 mr-12 lg:mr-20 flex-1 sm:w-[400px] h-[600px] sm:h-[600px] overflow-hidden border-none">
+            <div id="hs-grayscale-leaflet" class="h-[600px] hs-leaflet z-10">
+                <iframe
+                    src="https://www.openstreetmap.org/export/embed.html?bbox=24.926%2C60.168%2C24.936%2C60.174&amp;layer=mapnik&amp;marker=60.1710%2C24.9315"
+                    class="w-full h-full border-0 rounded-xl" loading="lazy"></iframe>
+            </div>
+
+        </div>
+
+        <!-- Contact Info -->
+        <div class="text-center flex-1 lg:text-left">
+            <h3 class="text-5xl font-[fam-bold] text-[#071957] mb-12">Get In Touch</h3>
+            <ul class="space-y-8 text-sm sm:text-base">
+                <li class="flex flex-row gap-2">
+                    <i class="fa-solid fa-location-dot text-blue-500 mr-2 text-2xl w-8 h-8"></i>
+                    <div class="pl-4">
+                        <span id="headoffice" class="font-[fam-bold]">Head Office</span>
+                        <br>Saariselantie 6 C10, Saariselka 99830 Finland
+                    </div>
+                </li>
+
+                <li class="flex flex-row gap-2">
+                    <i class="fa-solid fa-envelope text-blue-500 mr-2 text-2xl w-8 h-8"></i>
+                    <div class="pl-4">
+                        <span id="email" class="font-[fam-bold]">Email us at</span><br>
+                        finnoys0823@gmail.com
+                    </div>
+                </li>
+                <li class="flex flex-row gap-2">
+                    <i class="fa-solid fa-phone text-blue-500 mr-2 text-2xl w-8 h-8"></i>
+                    <div class="pl-4">
+                        <span id="contacts" class="font-[fam-bold]">Contact us at</span><br>
+                        Service Center: 09288515619
+                    </div>
+                </li>
+
+                <li class="flex flex-col justify-center lg:justify-start gap-4 pt-4 pl-16">
+                    <span id="follow" class="font-[fam-bold]">Follow us on</span>
+                    <div class="flex flex-row gap-6">
+                        <a href="#" class="text-blue-500 hover:text-blue-700">
+                            <i class="fa-brands fa-facebook fa-lg text-3xl"></i>
+                        </a>
+                        <a href="#" class="text-blue-500 hover:text-blue-700">
+                            <i class="fa-brands fa-whatsapp fa-lg text-3xl"></i>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
+</body>
+<script>
+    document.querySelectorAll('.flip-card').forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('flipped');
+        });
+    });
+
+    window.addEventListener('load', () => {
+        (function () {
+            const map = L.map('hs-grayscale-leaflet', {
+                center: [51.5074, -0.1278],
+                zoom: 14,
+                // Prevent dragging over the limit
+                maxBounds: [
+                    [40, -10],
+                    [60, 10]
+                ],
+                maxBoundsViscosity: 1.0
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19,
+                minZoom: 2,
+                attribution: '© <a href="https://carto.com/attributions">CARTO</a>'
+            }).addTo(map);
+
+            L.marker([51.5074, -0.1278]).bindPopup('This is London, UK.').addTo(map);
+        })();
+    });
+
+</script>
+
+</html>
