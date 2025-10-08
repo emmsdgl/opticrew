@@ -69,7 +69,7 @@
                             </p>
                             <p class="text-sm text-gray-600">on average over {{ $totalTasks }} tasks</p>
                             <div class="w-full bg-gray-200 rounded-full h-2.5 mt-3">
-                                <div class="h-2.5 rounded-full {{ $efficiencyScore >= 100 ? 'bg-green-500' : 'bg-red-500' }}" style="width: {{ min(100, $efficiencyScore) }}%"></div>
+                                <div class="h-2.5 rounded-full {{ $efficiencyScore >= 100 ? 'bg-green-500' : 'bg-red-500' }}" style="width: {{ min(100, $efficiencyScore) }}%;"></div>
                             </div>
                             <p class="text-lg font-bold text-gray-800 mt-1">{{ round($efficiencyScore) }}%</p>
                             <p class="text-xs text-gray-500">Efficiency Score</p>

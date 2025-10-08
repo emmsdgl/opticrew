@@ -1,13 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthenticatedSessionController; // Import the controller
-use App\Http\Livewire\Admin\TaskDashboard; // <-- Make sure this is at the top of the file
-use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
-use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
+
+use App\Http\Livewire\Admin\TaskDashboard;
 use App\Http\Livewire\Admin\TaskList;
-use App\Http\Livewire\Admin\SimulationDashboard; // Add this at the top
+use App\Http\Livewire\Admin\ScheduleManager;
+use App\Http\Livewire\Admin\SimulationDashboard;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
+use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
+use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -23,28 +25,41 @@ Route::get('/', function () {
 // 2. Define the routes for your dashboards, protected by login middleware.
 // Only logged-in users can access these pages.
 
+// --- AUTHENTICATED ROUTES ---
+Route::middleware(['auth'])->group(function () {
+
+    // --- ADMIN ROUTES ---
+    // The "Job Creation" dashboard
     Route::get('/admin/dashboard', function () {
         return view('admin-dashboard');
     })->middleware(['auth'])->name('admin.dashboard');
 
-    Route::get('/admin/schedules', ScheduleManager::class)
-        ->middleware(['auth'])
-        ->name('admin.schedules');
-
+    // The "Tasks" list page (we can create this later, for now it points to Job Creation)
     Route::get('/admin/dashboard', TaskDashboard::class)
         ->middleware(['auth'])
         ->name('admin.dashboard');
+    
+    Route::get('/admin/tasks', TaskList::class)->name('admin.tasks');
 
-            Route::get('/admin/simulation', SimulationDashboard::class)->name('admin.simulation');
+    // The "Schedules" manager
+    Route::get('/admin/schedules', ScheduleManager::class)->name('admin.schedules');
 
+    // The "Algorithm Simulation" page
+    Route::get('/admin/simulation', SimulationDashboard::class)->name('admin.simulation');
+
+    // The "Employee Analytics" page
     Route::get('/admin/analytics/employees', EmployeeAnalytics::class)->name('admin.analytics.employees');
 
+    // THIS IS THE CORRECTED ROUTE for the Scheduling Log
+    Route::get('/admin/scheduling-log', SchedulingLog::class)->name('admin.scheduling-log');
 
+
+    // --- EMPLOYEE ROUTES ---
     Route::get('/employee/dashboard', EmployeeDashboard::class)
         ->middleware(['auth'])
         ->name('employee.dashboard');
 
-    Route::get('/admin/tasks', TaskList::class)->name('admin.tasks');
+});
 
     // Add dashboard for external clients later
     // Route::get('/client/dashboard', ...)->name('client.dashboard');
