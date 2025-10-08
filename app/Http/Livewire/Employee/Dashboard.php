@@ -8,6 +8,7 @@ use App\Models\EmployeeSchedule;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\TaskPerformanceHistory; // <-- ADD THIS AT THE TOP
+use App\Models\Attendance; // Import the new model
 
 
 class Dashboard extends Component
@@ -16,11 +17,49 @@ class Dashboard extends Component
     public $futureTasks; // <-- ADD THIS NEW PROPERTY
     public $schedules;
     public $currentDate;
+    public $currentAttendance; // <-- ADD THIS NEW PROPERTY
 
     public function mount()
     {
         $this->currentDate = Carbon::now();
+        $this->loadCurrentAttendance();
         $this->loadTasksAndSchedule();
+    }
+
+    // New method to check the current clock-in status
+    public function loadCurrentAttendance()
+    {
+        $employeeId = Auth::user()->employee->id;
+        $this->currentAttendance = Attendance::where('employee_id', $employeeId)
+            ->whereNull('clock_out') // Find an open attendance record
+            ->latest('clock_in')
+            ->first();
+    }
+
+    // New method for the clock-in button
+    public function clockIn()
+    {
+        Attendance::create([
+            'employee_id' => Auth::user()->employee->id,
+            'clock_in' => now(),
+        ]);
+        $this->loadCurrentAttendance(); // Refresh the status
+    }
+
+    // New method for the clock-out button
+    public function clockOut()
+    {
+        if ($this->currentAttendance) {
+            $clockInTime = new Carbon($this->currentAttendance->clock_in);
+            $clockOutTime = now();
+            $minutesWorked = $clockInTime->diffInMinutes($clockOutTime);
+
+            $this->currentAttendance->update([
+                'clock_out' => $clockOutTime,
+                'total_minutes_worked' => $minutesWorked,
+            ]);
+            $this->loadCurrentAttendance(); // Refresh the status
+        }
     }
 
     public function loadTasksAndSchedule()

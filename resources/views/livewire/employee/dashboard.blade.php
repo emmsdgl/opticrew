@@ -3,9 +3,30 @@
     <main class="flex-1 overflow-y-auto">
         <!-- Header -->
         <header class="bg-white shadow-sm">
-            <div class="px-8 py-4">
-                <h2 class="text-2xl font-bold text-gray-800">Hello, {{ Auth::user()->name }}</h2>
-                <p class="text-gray-600 mt-1">Here is your task schedule.</p>
+            <div class="flex items-center justify-between px-8 py-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Hello, {{ Auth::user()->name }}</h2>
+                    <p class="text-gray-600 mt-1">Here is your task schedule.</p>
+                </div>
+
+                <!-- ADD THIS CLOCK IN/OUT BUTTON BLOCK -->
+                <div>
+                    @if ($currentAttendance)
+                        <!-- Clocked In State -->
+                        <div class="text-right">
+                            <p class="text-sm text-green-600">Clocked in at: {{ \Carbon\Carbon::parse($currentAttendance->clock_in)->format('h:i A') }}</p>
+                            <button wire:click="clockOut" class="mt-2 bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600">
+                                Clock Out
+                            </button>
+                        </div>
+                    @else
+                        <!-- Clocked Out State -->
+                        <button wire:click="clockIn" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">
+                            Clock In
+                        </button>
+                    @endif
+                </div>
+                <!-- END OF BLOCK -->
             </div>
         </header>
 
