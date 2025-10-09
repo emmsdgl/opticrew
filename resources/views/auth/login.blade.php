@@ -186,7 +186,9 @@
         <!-- INTERACTIVE PICTURE END-->
         <!-- LOG IN CONTENTS -->
         <div id="container-2" class="w-full md:w-1/2 flex justify-center items-center">
-            <form action="/login" method="POST" class="space-y-4">
+            <form action="{{ route('login') }}" method="POST" class="space-y-4">
+                @csrf
+
                 <div id="container-2-1">
                     <h1 id="login-header" class="font-sans font-bold mb-6">Log In</h1>
                     <p id="login-header2" class="text-base pb-6">Welcome to Fin-noys</p>
