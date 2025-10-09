@@ -40,6 +40,12 @@ class TaskDashboard extends Component
         // 2. Call the new Optimization Service to run the logic.
         $result = $optimizer->run($this->serviceDate, $this->selectedLocations);
 
+        // // --- TEMPORARY DEBUGGING STEP ---
+        // if ($result['status'] === 'error') {
+        //     dd($result['message']); // Die and dump the exact error message
+        // }
+        // // --- END DEBUGGING STEP ---
+
         // 3. Display the result message to the user.
         if ($result['status'] === 'success') {
             session()->flash('message', $result['message']);

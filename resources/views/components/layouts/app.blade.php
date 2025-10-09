@@ -42,6 +42,9 @@
                     <a href="{{ route('admin.analytics.employees') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('admin.analytics.employees') ? 'bg-indigo-800' : 'text-indigo-200' }} hover:bg-indigo-800 hover:text-white transition">
                         <i class="fas fa-chart-line mr-3"></i> Employee Analytics
                     </a>
+                    <a href="{{ route('admin.scheduling-log') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('admin.scheduling-log') ? 'bg-indigo-800' : 'text-indigo-200' }} hover:bg-indigo-800 hover:text-white transition">
+                        <i class="fas fa-file-alt mr-3"></i> Scheduling Log
+                    </a>
                 </div>
                 @endif
 

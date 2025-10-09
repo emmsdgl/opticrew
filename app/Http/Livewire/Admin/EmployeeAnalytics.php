@@ -29,7 +29,7 @@ class EmployeeAnalytics extends Component
             // Now, we attach the tasks themselves, not just the history.
             $employee->completedTasks = $completedTasks;
         }
-    
+
         return view('livewire.admin.employee-analytics', [
             'employees' => $employees,
         ])->layout('layouts.app');
