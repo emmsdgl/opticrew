@@ -24,7 +24,7 @@
         <nav class="mt-6 space-y-1">
                 @foreach($navOptions as $nav)
                     <a href="{{ $nav['href'] ?? '#' }}"
-                       class="flex items-center px-3 py-3.5 text-sm font-medium rounded-lg hover:bg-[#2A6DFA] text-white dark:hover:bg-[#2A6DFA] text-">
+                       class="flex items-center px-3 py-3.5 text-sm font-medium rounded-lg hover:bg-[#2A6DFA] hover:text-white dark:hover:bg-[#2A6DFA] dark:hover:text-white">
                         <i class="fa-solid {{ $nav['icon'] }} w-5"></i>
                         <span class="ml-8 nav-label">{{ $nav['label'] }}</span>
                     </a>
@@ -52,8 +52,8 @@
 
     <!-- Footer -->
     <div class="border-t border-[#D1D1D1] dark:border-[#334155]">
-        <a href="#" class="flex items-center m-3 text-sm text-gray-500 dark:text-gray-400 hover:hover:bg-[#2A6DFA]"> <i
-                class="fa-solid fa-arrow-right-from-bracket w-5"></i> <span class="logout-label ml-8">Logout</span>
+        <a href="#" class="flex items-center m-3 text-sm text-gray-500 hover:font-bold hover:dark:hover:text-[#e51919] dark:hover:text-[#e51919] transition-all 3s dark:text-gray-400 "> <i
+                class="fa-solid fa-arrow-right-from-bracket w-5"></i> <span class="logout-label ml-8 transition-all 3s">Logout</span>
         </a>
     </div>
 </aside>
