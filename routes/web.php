@@ -9,6 +9,7 @@ use App\Http\Livewire\Admin\TaskDashboard;
 use App\Http\Livewire\Admin\TaskList;
 use App\Http\Livewire\Admin\SimulationDashboard;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
+use App\Http\Livewire\Admin\PayrollReport;
 use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
 use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
@@ -60,6 +61,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/employee/dashboard', EmployeeDashboard::class)
         ->middleware(['auth'])
         ->name('employee.dashboard');
+
+    Route::get('/admin/reports', \App\Http\Livewire\Admin\Reports::class)->name('admin.reports');
+    
+    Route::get('/admin/payroll', PayrollReport::class)->name('admin.payroll');
 
 });
 
