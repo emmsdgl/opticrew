@@ -312,4 +312,46 @@ Project Meeting 2 Transcription
 8. **Task Status Monitoring**: Track if a task is completed or pending, useful for iterative scheduling and follow-up
 
 
+Algorithm Flow:
+flowchart TD
+
+%% === RULE-BASED PREPROCESSING LAYER === %%
+A0([Start]) --> A1[Apply Rule-Based Checks]
+A1 -->|Task within service area?| A2{Pass?}
+A2 -->|No| A3([Reject Task])
+A2 -->|Yes| A4[Check Certification Requirement]
+A4 -->|No| A3
+A4 -->|Yes| A5[Check Deadline Feasibility]
+A5 -->|No| A3
+A5 -->|Yes| A6([Task Accepted])
+
+A6 --> A7([Output: Constraint-Filtered Tasks])
+A7 --> B0([Proceed to Genetic Algorithm])
+
+%% === GENETIC ALGORITHM INITIALIZATION === %%
+subgraph B [Genetic Algorithm Layer]
+    B0 --> B1[Define Chromosome Structure<br/>(Employee, Task, Time Slot)]
+    B1 --> B2[Compute Workforce Size & Team Size per Task]
+    B2 --> B3[Apply Constraints<br/>(limit by computed sizes)]
+    B3 --> B4[Generate Initial Population<br/>(50% heuristic + 50% random)]
+    B4 --> B5[Apply Rule-Based Validation<br/>(Skill, Time, License)]
+    B5 --> B6[Evaluate Fitness<br/>(Cost, Travel, Workload, Satisfaction)]
+
+    %% === GA LOOP === %%
+    subgraph C [Evaluation & Optimization Loop]
+        C1[Compute Metrics<br/>(Idle Time, Work Hours, Labor Cost, Balance)]
+        C2[Selection of Parents]
+        C3[Crossover (Mix Parent Schedules)]
+        C4[Mutation (Introduce Random Changes)]
+        C5[Compute Diversity & Fitness Improvement]
+        C6{Improvement High?}
+        C6 -->|Yes| C7([Output Optimized Schedule])
+        C6 -->|No| C8[Regenerate / Repeat GA Loop]
+        C8 --> C2
+    end
+
+    B6 --> C1
+end
+
+C7 --> Z([Final Optimized Workforce Schedule])
 
