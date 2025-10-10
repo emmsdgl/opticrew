@@ -6,49 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.tailwindcss.com"></script> 
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
         @font-face {
             font-family: 'fam-regular';
-            src: url('/public/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
+            src: url('/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
             font-weight: normal;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'fam-bold';
-            src: url('/public/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
+            src: url('/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
             font-weight: normal;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'fam-bold-italic';
-            src: url('/public/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
+            src: url('/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
             font-weight: normal;
             font-style: normal;
         }
 
-        * {
-            color: #071957;
-            font-family: 'fam-regular';
-        }
-
         body {
-            background-image: url(/public/images/backgrounds/login_bg.svg);
+            background-image: url(/images/backgrounds/login_bg.svg);
             background-size: cover;
         }
-
-        /* --- Custom Stepper Styles from new component --- */
 
         /* Override font for the stepper for a modern look */
         #stepper-container * {
@@ -156,7 +147,6 @@
         #form-head {
             font-size: 1.8rem;
             text-align: center;
-            font-family: 'fam-bold-italic';
         }
 
         .input-container {
@@ -316,13 +306,13 @@
     </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 font-sans">
     <div id="header-container"
         class="items-center justify-between p-3 lg:px-8 inset-x-0 top-0 z-50 w-full hidden lg:flex lg:gap-x-12">
         <div id="logo-container" class=" mt-3 ml-6">
             <a href="#" class="-m-1.5 p-1.5">
                 <span class="sr-only"></span>
-                <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt="" class="h-20 w-auto">
             </a>
         </div>
 
@@ -341,8 +331,8 @@
                         </svg> <span id="step-1-number" class="text-white text-sm absolute">1</span>
                     </div>
                     <div class="mt-4 text-center step-text hidden sm:block">
-                        <h3 class="font-medium leading-tight text-gray-800 text-sm">Basic Details</h3>
-                        <p class="text-xs text-gray-500">Step 1</p>
+                        <h3 class="font-sans font-medium leading-tight text-gray-800 text-sm">Basic Details</h3>
+                        <p class="font-sans font-normal text-xs text-gray-500">Step 1</p>
                     </div>
                 </div>
 
@@ -394,7 +384,7 @@
         <div id="container-2" class="w-full p-20">
 
             <div id="step-1" class="step-content">
-                <h1 id="form-head" class="mb-4 w-full text-center ">Tell Us About You</h1>
+                <h1 id="form-head" class="mb-4 w-full text-center font-sans font-medium italic">Tell Us About You</h1>
                 <form
                     class="w-full space-y-4 pr-20 pl-20 max-md:flex-row pr-7 pl-7 items-center text-center max-sm:pr-1 pl-0">
                     <div id="name-layer" class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
@@ -424,7 +414,7 @@
                             <i
                                 class="fas fa-calendar-day absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                         </div>
-                        <input datepicker id="datepicker-inline" datepicker-format="mm-dd-yyyy" type="text"
+                        <input datepicker id="datepicker" datepicker-format="mm-dd-yyyy" type="text"
                             class="input-field w-full text-sm pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                             placeholder="mm - dd - yyyy">
                         <label for="input-bdate">Birthdate</label>
@@ -436,7 +426,7 @@
                         <!-- Country Code Dropdown -->
                         <div class="custom-dropdown-container w-full sm:w-36">
                             <button id="dropdown-btn" type="button" class="custom-dropdown-btn">
-                                <img id="selected-flag" src="/public/images/icons/philippine_flag.png"
+                                <img id="selected-flag" src="{{asset('/images/icons/philippine_flag.png')}}"
                                     alt="Philippine Flag" class="h-4 w-auto mr-2">
                                 <span id="selected-code" class="text-sm">+63</span>
                                 <span
@@ -450,14 +440,14 @@
                             </button>
                             <div id="dropdown-list" class="custom-dropdown-list">
                                 <div class="custom-dropdown-item" data-value="+63"
-                                    data-flag="/public/images/icons/philippine_flag.png">
-                                    <img src="/public/images/icons/philippine_flag.png" alt="Philippine Flag"
+                                    data-flag="{{asset('/images/icons/philippine_flag.png')}}">
+                                    <img src="{{asset('/images/icons/philippine_flag.png')}}" alt="Philippine Flag"
                                         class="h-4 w-auto mr-2">
                                     <span class="text-sm">+63 Philippines</span>
                                 </div>
                                 <div class="custom-dropdown-item" data-value="+358"
-                                    data-flag="/public/images/icons/finland-flag.svg">
-                                    <img src="/public/images/icons/finland-flag.svg" alt="Finland Flag"
+                                    data-flag="{{asset('/images/icons/finland-flag.svg')}}">
+                                    <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag"
                                         class="h-4 w-auto mr-2">
                                     <span class="text-sm">+358 Finland</span>
                                 </div>

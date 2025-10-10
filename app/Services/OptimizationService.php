@@ -89,6 +89,7 @@ class OptimizationService
             }
     
             // === PHASE 2: STRATEGIC ALLOCATION ===
+            // === EQUATION FOR TOTAL WORKLOAD (ALL TASKS) ===
             $totalWorkload = $locationsToClean->sum('base_cleaning_duration_minutes');
             $sortedClients = $tasksByClient->sortByDesc(fn($locations) => 
                 $locations->sum('base_cleaning_duration_minutes')
