@@ -6,15 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.tailwindcss.com"></script> 
-    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
 
     <style>
         @font-face {
@@ -317,8 +313,7 @@
 </head>
 
 <body class="bg-gray-50">
-    <div id="header-container"
-        class="items-center justify-between p-3 lg:px-8 inset-x-0 top-0 z-50 w-full hidden lg:flex lg:gap-x-12">
+    <div id="header-container" class="items-center justify-between p-3 lg:px-8 inset-x-0 top-0 z-50 w-full hidden lg:flex lg:gap-x-12">
         <div id="logo-container" class=" mt-3 ml-6">
             <a href="#" class="-m-1.5 p-1.5">
                 <span class="sr-only"></span>
@@ -817,7 +812,7 @@
 
                     // Reset classes
                     indicator.classList.remove('current-step', 'completed-step', 'pending-step');
-                    iconContainer.classList.remove('bg-blue-300', 'bg-green-500', 'bg-blue-300');
+                    iconContainer.classList.remove('bg-blue-300', 'bg-green-500', 'bg-blue-300'); 
 
                     if (isCompleted) {
                         indicator.classList.add('completed-step');
