@@ -1,4 +1,4 @@
-<!-- <nav x-data="{ open: false }" class="bg-indigo-900 border-b border-indigo-800">
+<nav x-data="{ open: false }" class="bg-indigo-900 border-b border-indigo-800">
     // Primary Navigation Menu
     <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col h-screen">
@@ -65,4 +65,4 @@
             </div>
         </div>
     </div>
-</nav> -->
+</nav>

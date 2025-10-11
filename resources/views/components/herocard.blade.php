@@ -11,7 +11,7 @@
     <div class="w-full lg:w-2/3 pl-0 lg:pl-12 text-center lg:text-left z-10">
         <h5
             class="mb-4 text-3xl sm:text-3xl md:text-3xl lg:text-3xl font-sans font-bold tracking-tight text-white">
-            Hello, <span id="headername" class="ml-1">{{ $headerName }}</span>
+            Hello,<span id="headername" class="ml-1">{{ $headerName }}</span>
         </h5>
         <p id="headerdesc"
            class="text-sm sm:text-sm md:text-sm font-sans font-normal text-white opacity-90 max-w-[90%] mx-auto lg:mx-0">
