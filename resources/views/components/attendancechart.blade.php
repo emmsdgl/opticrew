@@ -1,5 +1,4 @@
-<div
-    class="mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-md p-6 flex flex-col items-center space-y-4">
+<div class="mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-md p-6 flex flex-col items-center space-y-10">
     <!-- Gauge Container -->
     <div id="gauge" class="relative w-56 h-28 flex items-center justify-center">
         <svg viewBox="0 0 200 100" class="w-full h-full">
@@ -12,9 +11,9 @@
     </div>
 
     <!-- Progress Details -->
-    <div class="w-full space-y-2">
+    <div class="w-full space-y-6">
         <div>
-            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+            <div class="flex mb-3 justify-between text-sm text-gray-600 dark:text-gray-300">
                 <span>Present</span><span>10/50</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
@@ -23,7 +22,7 @@
         </div>
 
         <div>
-            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+            <div class="flex mb-3 justify-between text-sm text-gray-600 dark:text-gray-300">
                 <span>Expected Workforce</span><span>50</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
@@ -32,7 +31,7 @@
         </div>
 
         <div>
-            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+            <div class="flex mb-3 justify-between text-sm text-gray-600 dark:text-gray-300">
                 <span>Absent</span><span>40/50</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
@@ -55,7 +54,7 @@
         const innerRadius = 70;   // inner circle radius
         const outerWidth = 20;    // width of segment at outer edge (top)
         const innerWidth = 8;     // width of segment at inner edge (bottom)
-        const angleStep = Math.PI / (totalSegments - 1); // angle gap per segment
+        const angleStep = Math.PI / (totalSegments - 0.3); // angle gap per segment
         const cornerRadius = 6;
         const outerAngleOffset = 0.05;
         const innerAngleOffset = 0.12;
@@ -93,8 +92,8 @@
             path.setAttribute("fill", "#E5E7EB");
             path.setAttribute("stroke-linejoin", "round");
             path.setAttribute("stroke-linecap", "round");
-            path.setAttribute("rx", "4");
-            path.setAttribute("ry", "2");
+            path.setAttribute("rx", "25");
+            path.setAttribute("ry", "20");
             gauge.appendChild(path);
 
         }
@@ -107,8 +106,8 @@
             if (current < fillSegments) {
                 const path = gauge.children[current];
                 const hue = 217; // blue tone
-                const lightness = 65 - (current * 30) / totalSegments; // gradient effect
-                path.setAttribute("fill", `hsl(${hue}, 90%, ${lightness}%)`);
+                const lightness = 75 - (current * 30) / totalSegments; // gradient effect
+                path.setAttribute("fill", `hsl(${hue}, 95%, ${lightness}%)`);
                 current++;
             } else {
                 clearInterval(interval);
