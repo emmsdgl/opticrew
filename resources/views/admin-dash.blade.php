@@ -6,7 +6,11 @@
             <!-- Inner Up - Dashboard Header -->
             <div
                 class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
-                <x-herocard :headerName="'Sushmita'" :headerDesc="'Welcome to the admin dashboard. Track tasks and manage them in the dashboard'" :headerIcon="'hero-employer'" />
+                <x-herocard 
+                :headerName="$admin->full_name ?? 'Admin'"
+                :headerDesc="'Welcome to the admin dashboard. Track tasks and manage them in the dashboard'"
+                :headerIcon="'hero-employer'"
+                />
             </div>
             <!-- Inner Middle - Calendar -->
             <div

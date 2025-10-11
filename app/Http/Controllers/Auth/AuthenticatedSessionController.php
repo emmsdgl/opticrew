@@ -17,36 +17,24 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        return view('login');
     }
 
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request)
+    public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
-
-        // --- THIS IS THE NEW LOGIC ---
-        $user = Auth::user();
-
+    
+        $user = $request->user();
+    
         if ($user->role === 'admin') {
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->route('admin.dashboard');
         }
-
-        if ($user->role === 'employee') {
-            return redirect()->intended(route('employee.dashboard'));
-        }
-
-        // Add logic for 'external_client' here later
-        // if ($user->role === 'external_client') {
-        //     return redirect()->intended(route('client.dashboard'));
-        // }
-
-        // A fallback in case a user has no role or a new role is added
-        return redirect('/'); 
+    
+        return redirect()->route('employee.dashboard');
     }
 
     /**

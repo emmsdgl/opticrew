@@ -67,7 +67,7 @@
         @php
             // If controller or view didn't supply $navOptions / $teams, provide safe defaults.
             $navOptions = $navOptions ?? [
-                ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '/home'],
+                ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '#'],
                 ['label' => 'Accounts', 'icon' => 'fa-users', 'href' => '/users'],
                 ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => '/projects'],
                 ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/calendar'],
@@ -80,7 +80,7 @@
 
         <!-- ADMIN SIDEBAR CONTENTS-->
         <x-sidebar :navOptions="[
-        ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '/home'],
+        ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '#'],
         ['label' => 'Teams', 'icon' => 'fa-users', 'href' => '/users'],
         ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => '/projects'],
         ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/calendar'],
@@ -184,5 +184,4 @@
     </script>
     @stack('scripts')
 </body>
-
 </html>

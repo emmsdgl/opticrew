@@ -185,7 +185,7 @@
                                             Total Estimated Workload: {{ $teamSchedule['estimated_duration'] ?? 0 }} minutes
                                         </p>
                                         <p class="text-sm font-bold text-blue-700 mt-1">
-                                            Predicted Workload: {{ $teamSchedule['predicted_workload'] ?? 0 }} minutes
+                                            Predicted Workload Duration: {{ $teamSchedule['predicted_workload'] ?? 0 }} minutes
                                         </p>
                                     </div>
                                 @endforeach

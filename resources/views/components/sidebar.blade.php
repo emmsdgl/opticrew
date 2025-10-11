@@ -52,8 +52,17 @@
 
     <!-- Footer -->
     <div class="border-t border-[#D1D1D1] dark:border-[#334155]">
-        <a href="#" class="flex items-center m-3 text-sm text-gray-500 hover:font-bold hover:dark:hover:text-[#e51919] dark:hover:text-[#e51919] transition-all 3s dark:text-gray-400 "> <i
-                class="fa-solid fa-arrow-right-from-bracket w-5"></i> <span class="logout-label ml-8 transition-all 3s">Logout</span>
-        </a>
+        <!-- Logout Form -->
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+
+            <a href="{{ route('logout') }}"
+            onclick="event.preventDefault(); this.closest('form').submit();"
+            class="flex items-center m-3 text-sm text-gray-500 hover:font-bold hover:dark:hover:text-[#e51919] dark:hover:text-[#e51919] transition-all 3s dark:text-gray-400">
+
+                <i class="fa-solid fa-arrow-right-from-bracket w-5"></i>
+                <span class="logout-label ml-8 transition-all 3s">Logout</span>
+            </a>
+        </form>
     </div>
 </aside>

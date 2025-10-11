@@ -659,7 +659,7 @@
             });
             document.getElementById('back1-btn').addEventListener('click', (e) => {
                 e.preventDefault();
-                window.location.href = '/resources/views/login';
+                window.location.href = '/login';
 
             });
             dropdownBtn.addEventListener('click', () => {
