@@ -1,306 +1,107 @@
-// {{-- resources/views/admin/dashboard.blade.php --}}
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('title', 'Admin Dashboard - Cleaning Company')
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
+    <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
 
-@section('content')
-<div class="min-h-screen bg-gray-100">
-    <!-- Header -->
-    <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-500">Welcome to the Cleaning Company Management System</p>
-        </div>
-    </header>
+</head>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="px-4 py-6 sm:px-0">
-            <!-- Overview Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Task Overview Cards -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Tasks</dt>
-                                    <dd>
-                                        <div class="text-lg font-medium text-gray-900">128</div>
-                                    </dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-5 py-3">
-                        <div class="text-sm">
-                            <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all tasks</a>
-                        </div>
-                    </div>
-                </div>
+<body>
+<div class="w-full max-w-sm mx-auto bg-transparent p-6 flex flex-col items-center space-y-4 font-sans">
+  <!-- Gauge Container -->
+  <div id="gauge" class="relative w-56 h-28 flex items-center justify-center">
+    <svg viewBox="0 0 200 100" class="w-full h-full">
+      <!-- Segments -->
+      <g id="segments"></g>
+    </svg>
+    <div class="absolute bottom-0 flex flex-col items-center translate-y-6">
+      <span id="percentage" class="text-3xl font-semibold text-[#081032] dark:text-gray-100">0%</span>
+      <span class="text-sm text-[#A4A4A4] dark:text-gray-400">Attendance Rate</span>
+    </div>
+  </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Completed Today</dt>
-                                    <dd>
-                                        <div class="text-lg font-medium text-gray-900">45</div>
-                                    </dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-5 py-3">
-                        <div class="text-sm">
-                            <a href="#" class="font-medium text-green-600 hover:text-green-500">View details</a>
-                        </div>
-                    </div>
-                </div>
+  <!-- Progress Details -->
+  <div class="w-full space-y-2">
+    <div>
+      <div class="flex justify-between text-sm text-[#081032] dark:text-gray-300">
+        <span>Present</span><span>10/50</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="bg-blue-500 h-2.5 rounded-full" style="width: 20%;"></div>
+      </div>
+    </div>
 
-                <!-- Attendance Overview Cards -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Present Employees</dt>
-                                    <dd>
-                                        <div class="text-lg font-medium text-gray-900">32</div>
-                                    </dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-5 py-3">
-                        <div class="text-sm">
-                            <a href="#" class="font-medium text-yellow-600 hover:text-yellow-500">Attendance report</a>
-                        </div>
-                    </div>
-                </div>
+    <div>
+      <div class="flex justify-between text-sm text-[#081032] dark:text-gray-300">
+        <span>Expected Workforce</span><span>50</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="bg-blue-900 h-2.5 rounded-full" style="width: 100%;"></div>
+      </div>
+    </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Absent Today</dt>
-                                    <dd>
-                                        <div class="text-lg font-medium text-gray-900">3</div>
-                                    </dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-5 py-3">
-                        <div class="text-sm">
-                            <a href="#" class="font-medium text-red-600 hover:text-red-500">View absentees</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Calendar Section -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Calendar</h3>
-                        <div class="grid grid-cols-7 gap-1 text-center text-xs font-medium leading-5 text-gray-500">
-                            <div>Sun</div>
-                            <div>Mon</div>
-                            <div>Tue</div>
-                            <div>Wed</div>
-                            <div>Thu</div>
-                            <div>Fri</div>
-                            <div>Sat</div>
-                        </div>
-                        <div class="grid grid-cols-7 gap-1 mt-2 text-sm">
-                            <!-- Sample calendar days; in a real app, use a library like FullCalendar or loop through dates -->
-                            @for ($i = 1; $i <= 31; $i++)
-                                <div class="p-1 {{ $i % 7 == 0 ? 'text-red-500' : '' }} {{ $i == date('j') ? 'bg-blue-100 rounded' : '' }}">
-                                    {{ $i }}
-                                    @if($i == 15 || $i == 20)
-                                        <div class="text-xs bg-green-200 rounded-full mt-0.5">Task</div>
-                                    @endif
-                                </div>
-                            @endfor
-                        </div>
-                        <div class="mt-4">
-                            <a href="#" class="text-blue-600 hover:text-blue-500 text-sm font-medium">View full calendar</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Assigned Teams Today Section -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Assigned Teams Today</h3>
-                        <ul class="divide-y divide-gray-200">
-                            <!-- Sample data; fetch from DB in real app -->
-                            <li class="py-4 flex justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Team Alpha</p>
-                                    <p class="text-sm text-gray-500">Office Building A - 9 AM</p>
-                                </div>
-                                <span class="text-sm font-semibold text-green-600">Active</span>
-                            </li>
-                            <li class="py-4 flex justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Team Beta</p>
-                                    <p class="text-sm text-gray-500">Residential Complex - 2 PM</p>
-                                </div>
-                                <span class="text-sm font-semibold text-yellow-600">Pending</span>
-                            </li>
-                            <li class="py-4 flex justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Team Gamma</p>
-                                    <p class="text-sm text-gray-500">Hospital Wing B - 6 PM</p>
-                                </div>
-                                <span class="text-sm font-semibold text-green-600">Active</span>
-                            </li>
-                        </ul>
-                        <div class="mt-4">
-                            <a href="#" class="text-blue-600 hover:text-blue-500 text-sm font-medium">Manage teams</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Task Overview Section (Expanded) -->
-                <div class="lg:col-span-2 bg-white overflow-hidden shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Task Overview</h3>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <!-- Sample rows -->
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Clean Office Floors</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Team Alpha</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-10-15</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Window Washing</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Team Beta</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">In Progress</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-10-16</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Restroom Sanitization</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Team Gamma</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Pending</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-10-17</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-4">
-                            <a href="#" class="text-blue-600 hover:text-blue-500 text-sm font-medium">View all tasks</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Attendance Overview Section -->
-                <div class="lg:col-span-2 bg-white overflow-hidden shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Attendance Overview</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                            <!-- Simple bar-like representation; use Chart.js for real charts -->
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-500">Morning Shift</h4>
-                                <div class="bg-gray-200 h-8 rounded mt-2">
-                                    <div class="bg-green-500 h-8 rounded" style="width: 85%"></div>
-                                </div>
-                                <p class="text-sm text-gray-600 mt-1">27/30 present</p>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-500">Afternoon Shift</h4>
-                                <div class="bg-gray-200 h-8 rounded mt-2">
-                                    <div class="bg-yellow-500 h-8 rounded" style="width: 70%"></div>
-                                </div>
-                                <p class="text-sm text-gray-600 mt-1">21/30 present</p>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-500">Evening Shift</h4>
-                                <div class="bg-gray-200 h-8 rounded mt-2">
-                                    <div class="bg-blue-500 h-8 rounded" style="width: 90%"></div>
-                                </div>
-                                <p class="text-sm text-gray-600 mt-1">27/30 present</p>
-                            </div>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-in</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <!-- Sample rows -->
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">John Doe</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Morning</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Present</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">9:05 AM</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Jane Smith</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Afternoon</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Absent</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-4">
-                            <a href="#" class="text-blue-600 hover:text-blue-500 text-sm font-medium">Full attendance log</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+    <div>
+      <div class="flex justify-between text-sm text-[#081032] dark:text-gray-300">
+        <span>Absent</span><span>40/50</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="bg-blue-400 h-2.5 rounded-full" style="width: 80%;"></div>
+      </div>
+    </div>
+  </div>
 </div>
-@endsection
+
+</body>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const totalSegments = 20; // number of blocks
+  const gauge = document.getElementById("segments");
+  const percentageText = document.getElementById("percentage");
+  const attendanceRate = 70.8; // Change this dynamically if needed
+
+  // Create segments (half circle)
+  for (let i = 0; i < totalSegments; i++) {
+    const angle = (Math.PI * i) / (totalSegments - 1); // radians
+    const x = 100 + 80 * Math.cos(angle - Math.PI); // radius 80
+    const y = 100 + 80 * Math.sin(angle - Math.PI);
+    const rectWidth = 8, rectHeight = 18;
+
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", x - rectWidth / 2);
+    rect.setAttribute("y", y - rectHeight / 2);
+    rect.setAttribute("width", rectWidth);
+    rect.setAttribute("height", rectHeight);
+    rect.setAttribute("rx", 3);
+    rect.setAttribute("ry", 3);
+    rect.setAttribute("fill", "#E5E7EB");
+    rect.setAttribute("transform", `rotate(${(angle * 180) / Math.PI - 90}, ${x}, ${y})`);
+    gauge.appendChild(rect);
+  }
+
+  // Animate fill
+  const fillSegments = Math.round((attendanceRate / 100) * totalSegments);
+  let current = 0;
+
+  const interval = setInterval(() => {
+    if (current < fillSegments) {
+      const rect = gauge.children[current];
+      const colorStep = 400 + (current / totalSegments) * 400; // lighter to darker blue
+      rect.setAttribute("fill", `hsl(217, 91%, ${65 - (current * 25) / totalSegments}%)`);
+      current++;
+    } else {
+      clearInterval(interval);
+    }
+
+    const displayedPercent = Math.min((current / totalSegments) * 100, attendanceRate).toFixed(1);
+    percentageText.textContent = `${displayedPercent}%`;
+  }, 100);
+});
+</script>
+
+</html>

@@ -5,7 +5,7 @@
 ])
 
 <div
-    class="flex flex-col lg:flex-row align-items-center justify-center w-full max-w-full min-h-full px-6 py-10 gap-6 bg-[#2A6DFA] border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 relative">
+    class="flex flex-col h-parent lg:flex-row align-items-center justify-center w-full max-w-full min-h-full px-6 py-10 gap-6 bg-[#2A6DFA] border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 relative">
 
     <!-- Left content -->
     <div class="w-full lg:w-2/3 pl-0 lg:pl-12 text-center lg:text-left z-10">
