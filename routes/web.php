@@ -14,6 +14,7 @@ use App\Http\Livewire\Admin\PayrollReport;
 use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
 use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,9 +31,11 @@ Route::get('/', action: function () {
 Route::middleware(['auth'])->group(function () {
 
     // --- ADMIN ROUTES ---
-    Route::get('/admin/dashboard', function () {
-        return view('admin-dash');
-    })->middleware(['auth'])->name(name: 'admin.dashboard');
+    // Route::get('/admin/dashboard', function () {
+    //     return view('admin-dash');
+    // })->middleware(['auth'])->name(name: 'admin.dashboard');
+    
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Route::get('/admin/dashboard', TaskDashboard::class)
     //     ->middleware(['auth'])

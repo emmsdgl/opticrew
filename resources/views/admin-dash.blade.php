@@ -35,7 +35,12 @@
                 <p class="text-sm font-sans font-bold w-full text-left">
                     Attendance Chart
                 </p>
-                <x-attendancechart />
+                <x-attendancechart
+                    :totalEmployees="$totalEmployees"
+                    :presentEmployees="$presentEmployees"
+                    :absentEmployees="$absentEmployees"
+                    :attendanceRate="$attendanceRate"
+                />
             </div>
 
             <!-- Inner Down - Attendance Particulars -->
