@@ -1,3 +1,10 @@
+@props([
+    'totalEmployees' => 0,
+    'presentEmployees' => 0,
+    'absentEmployees' => 0,
+    'attendanceRate' => 0,
+])
+
 <div class="mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-md p-6 flex flex-col items-center space-y-10">
     <!-- Gauge Container -->
     <div id="gauge" class="relative w-56 h-28 flex items-center justify-center">
@@ -14,16 +21,21 @@
     <div class="w-full space-y-6">
         <div>
             <div class="flex mb-3 justify-between text-sm text-gray-600 dark:text-gray-300">
-                <span>Present</span><span>10/50</span>
+                <span>Present</span>
+                {{-- DYNAMIC DATA --}}
+                <span>{{ $presentEmployees }}/{{ $totalEmployees }}</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="bg-blue-500 h-2.5 rounded-full" style="width: 20%;"></div>
+                {{-- DYNAMIC DATA --}}
+                <div class="bg-blue-500 h-2.5 rounded-full" style="width: {{ $attendanceRate }}%;"></div>
             </div>
         </div>
 
         <div>
             <div class="flex mb-3 justify-between text-sm text-gray-600 dark:text-gray-300">
-                <span>Expected Workforce</span><span>50</span>
+                <span>Expected Workforce</span>
+                {{-- DYNAMIC DATA --}}
+                <span>{{ $totalEmployees }}</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
                 <div class="bg-blue-900 h-2.5 rounded-full" style="width: 100%;"></div>
@@ -32,10 +44,13 @@
 
         <div>
             <div class="flex mb-3 justify-between text-sm text-gray-600 dark:text-gray-300">
-                <span>Absent</span><span>40/50</span>
+                <span>Absent</span>
+                {{-- DYNAMIC DATA --}}
+                <span>{{ $absentEmployees }}/{{ $totalEmployees }}</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="bg-blue-400 h-2.5 rounded-full" style="width: 80%;"></div>
+                {{-- DYNAMIC DATA: Calculate absent percentage --}}
+                <div class="bg-blue-400 h-2.5 rounded-full" style="width: {{ $totalEmployees > 0 ? ($absentEmployees / $totalEmployees) * 100 : 0 }}%;"></div>
             </div>
         </div>
     </div>
@@ -47,7 +62,9 @@
         const percentageText = document.getElementById("percentage");
 
         const totalSegments = 14;     // number of wedge blocks
-        const attendanceRate = 70.8;  // change this dynamically if needed
+        
+        // DYNAMIC DATA: Pass the attendance rate from PHP to JavaScript
+        const attendanceRate = @json($attendanceRate ?? 0);
 
         // Shape parameters
         const outerRadius = 90;   // outer circle radius
@@ -99,7 +116,8 @@
         }
 
         // Animate segments fill
-        const fillSegments = Math.round((attendanceRate / 100) * totalSegments);
+        const rate = parseFloat(attendanceRate) || 0;
+        const fillSegments = Math.round((rate / 100) * totalSegments);
         let current = 0;
 
         const interval = setInterval(() => {
@@ -115,9 +133,15 @@
 
             const displayedPercent = Math.min(
                 (current / totalSegments) * 100,
-                attendanceRate
-            ).toFixed(1);
-            percentageText.textContent = `${displayedPercent}%`;
+                rate
+            );
+
+            // Ensure final display is the precise rate
+            if (current >= fillSegments) {
+                percentageText.textContent = `${rate.toFixed(1)}%`;
+            } else {
+                 percentageText.textContent = `${displayedPercent.toFixed(1)}%`;
+            }
         }, 100);
     });
 </script>
