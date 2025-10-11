@@ -23,13 +23,8 @@ use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
 
 //FOR ADMIN DASHBOARD SHOWING
 Route::get('/', action: function () {
-    return view('admin-dash');
-})->name('admin-dash');
-
-//FOR EMPLOYEE DASHBOARD SHOWING
-// Route::get('/', action: function () {
-//     return view('employee-dash');
-// })->name('employee-dash');
+    return view('login');
+})->name('login');
 
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {

@@ -9,7 +9,8 @@
         </button>
 
         <button class="text-gray-500 dark:text-gray-300 hover:text-indigo-500 transition-colors">
-            <i class="fa-solid fa-inbox text-lg"></i> </button>
+            <i class="fa-solid fa-inbox text-lg"></i>
+        </button>
 
         <!-- Theme Toggle -->
         <button id="theme-toggle"
@@ -20,7 +21,16 @@
 
         <div class="flex items-center space-x-3">
             <img src="https://i.pravatar.cc/40" alt="User" class="w-8 h-8 rounded-full">
-            <span class="text-sm font-medium">Admin</span>
+            
+            {{-- This is the dynamic part --}}
+            @auth
+                {{-- Explode the full name by space and take the first part (the first name) --}}
+                <span class="text-sm font-medium">{{ explode(' ', auth()->user()->name)[0] }}</span>
+            @else
+                {{-- Fallback for guests or if user is not logged in --}}
+                <span class="text-sm font-medium">Guest</span>
+            @endauth
+
             <i class="fa-solid fa-caret-down text-gray-400 dark:text-gray-500"></i>
         </div>
     </div>
