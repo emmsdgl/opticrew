@@ -20,13 +20,15 @@ use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
 |--------------------------------------------------------------------------
 */
 
+//FOR ADMIN DASHBOARD SHOWING
 Route::get('/', action: function () {
-    return view('login');
-})->name('login');
+    return view('admin-dash');
+})->name('admin-dash');
 
-
-// 2. Define the routes for your dashboards, protected by login middleware.
-// Only logged-in users can access these pages.
+//FOR EMPLOYEE DASHBOARD SHOWING
+// Route::get('/', action: function () {
+//     return view('employee-dash');
+// })->name('employee-dash');
 
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {
@@ -71,9 +73,14 @@ Route::middleware(['auth'])->group(function () {
     // Add dashboard for external clients later
     // Route::get('/client/dashboard', ...)->name('client.dashboard');
 
+    //ALL ROUTES FOR BUTTONS
     Route::get('/signup', function () {
     return view('signup');
 })->name('signup');
+
+    Route::get('/admin-dash', function () {
+    return view('admin-dash');
+})->name('admin-dash');
 
 
 // 3. This brings in all the necessary authentication routes like /login, /logout, /register etc.

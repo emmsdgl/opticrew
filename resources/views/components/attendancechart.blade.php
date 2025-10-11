@@ -1,0 +1,124 @@
+<div
+    class="mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-md p-6 flex flex-col items-center space-y-4">
+    <!-- Gauge Container -->
+    <div id="gauge" class="relative w-56 h-28 flex items-center justify-center">
+        <svg viewBox="0 0 200 100" class="w-full h-full">
+            <g id="segments"></g>
+        </svg>
+        <div class="absolute bottom-0 flex flex-col items-center translate-y-6">
+            <span id="percentage" class="text-3xl font-semibold text-gray-900 dark:text-gray-100">0%</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Attendance Rate</span>
+        </div>
+    </div>
+
+    <!-- Progress Details -->
+    <div class="w-full space-y-2">
+        <div>
+            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+                <span>Present</span><span>10/50</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-500 h-2.5 rounded-full" style="width: 20%;"></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+                <span>Expected Workforce</span><span>50</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-900 h-2.5 rounded-full" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+                <span>Absent</span><span>40/50</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-400 h-2.5 rounded-full" style="width: 80%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const gauge = document.getElementById("segments");
+        const percentageText = document.getElementById("percentage");
+
+        const totalSegments = 14;     // number of wedge blocks
+        const attendanceRate = 70.8;  // change this dynamically if needed
+
+        // Shape parameters
+        const outerRadius = 90;   // outer circle radius
+        const innerRadius = 70;   // inner circle radius
+        const outerWidth = 20;    // width of segment at outer edge (top)
+        const innerWidth = 8;     // width of segment at inner edge (bottom)
+        const angleStep = Math.PI / (totalSegments - 1); // angle gap per segment
+        const cornerRadius = 6;
+        const outerAngleOffset = 0.05;
+        const innerAngleOffset = 0.12;
+
+        // Build each segment
+        for (let i = 0; i < totalSegments; i++) {
+            const angle = Math.PI - i * angleStep;
+            const centerX = 100;
+            const centerY = 100;
+
+            const angleOffset = 0.08; // controls curvature of each segment
+
+            // Outer (top) arc points
+            const x1 = centerX + outerRadius * Math.cos(angle - angleOffset);
+            const y1 = centerY - outerRadius * Math.sin(angle - angleOffset);
+            const x2 = centerX + outerRadius * Math.cos(angle + angleOffset);
+            const y2 = centerY - outerRadius * Math.sin(angle + angleOffset);
+
+            // Inner (bottom) arc points
+            const x3 = centerX + innerRadius * Math.cos(angle + angleOffset);
+            const y3 = centerY - innerRadius * Math.sin(angle + angleOffset);
+            const x4 = centerX + innerRadius * Math.cos(angle - angleOffset);
+            const y4 = centerY - innerRadius * Math.sin(angle - angleOffset);
+
+            const pathData = `
+      M ${x1} ${y1}
+      L ${x2} ${y2}
+      L ${x3} ${y3}
+      L ${x4} ${y4}
+      Z
+    `;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", pathData);
+            path.setAttribute("fill", "#E5E7EB");
+            path.setAttribute("stroke-linejoin", "round");
+            path.setAttribute("stroke-linecap", "round");
+            path.setAttribute("rx", "4");
+            path.setAttribute("ry", "2");
+            gauge.appendChild(path);
+
+        }
+
+        // Animate segments fill
+        const fillSegments = Math.round((attendanceRate / 100) * totalSegments);
+        let current = 0;
+
+        const interval = setInterval(() => {
+            if (current < fillSegments) {
+                const path = gauge.children[current];
+                const hue = 217; // blue tone
+                const lightness = 65 - (current * 30) / totalSegments; // gradient effect
+                path.setAttribute("fill", `hsl(${hue}, 90%, ${lightness}%)`);
+                current++;
+            } else {
+                clearInterval(interval);
+            }
+
+            const displayedPercent = Math.min(
+                (current / totalSegments) * 100,
+                attendanceRate
+            ).toFixed(1);
+            percentageText.textContent = `${displayedPercent}%`;
+        }, 100);
+    });
+</script>
