@@ -6,9 +6,9 @@
     'icon' => ''
 ])
 
-<div class="relative w-full mb-6">
+<div class="input-container w-full relative">
     <!-- Icon -->
-    <i class="fa-solid {{ $icon }} absolute top-1/2 left-3 -translate-y-1/2 text-blue-600"></i>
+    <i class="fa-solid {{ $icon }} absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 z-10"></i>
 
     <!-- Input -->
     <input
@@ -16,46 +16,98 @@
         id="{{ $inputId }}"
         name="{{ $inputName }}"
         placeholder=" "
-        class="peer w-full rounded-lg bg-gray-100 px-10 pt-5 pb-2 border border-transparent
-               focus:border-blue-600 outline-none transition-colors duration-200"
+        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl border border-transparent
+               focus:outline-none focus:border-blue-500 text-gray-700"
     />
 
-    <!-- Label -->
-    <label for="{{ $inputId }}"
-        class="absolute left-10 top-4 text-gray-500 text-sm font-sans
-               transition-all duration-200 ease-in-out
-               peer-placeholder-shown:top-5 peer-placeholder-shown:text-gray-400
-               peer-placeholder-shown:text-sm
-               peer-focus:top-0 peer-focus:text-xs peer-focus:text-blue-600
-               bg-white px-1">
+    <!-- Floating Label -->
+    <label for="{{ $inputId }}" class="input-label">
         {{ $label }}
     </label>
 </div>
 
+@push('styles')
+<style>
+    .input-container {
+        margin-bottom: 1.5rem;
+    }
 
+    .input-container .input-field {
+        padding-left: 3rem;
+        padding-top: 0.875rem;
+        padding-bottom: 0.875rem;
+        padding-right: 1rem;
+    }
+
+    .input-container .input-label {
+        position: absolute;
+        left: 3rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        pointer-events: none;
+        transition: all 0.2s ease-out;
+        font-size: 0.875rem;
+        background-color: transparent;
+        padding: 0;
+    }
+
+    /* Floated label state - sits ON the border */
+    .input-container .input-field:focus + .input-label,
+    .input-container .input-field:not(:placeholder-shown) + .input-label {
+        top: 0;
+        left: 2rem;
+        transform: translateY(-50%);
+        font-size: 0.75rem;
+        color: #0077FF;
+        background-color: white;
+        padding: 0 0.25rem;
+    }
+
+    /* Hide placeholder when typing or focused */
+    .input-container .input-field:focus::placeholder,
+    .input-container .input-field:not(:placeholder-shown)::placeholder {
+        color: transparent;
+    }
+
+    /* Focus border */
+    .input-container .input-field:focus {
+        border-color: #0077FF;
+    }
+</style>
+@endpush
+
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('input-username');
-    const label = document.querySelector('label[for="input-username"]');
+    const input = document.getElementById(@json($inputId));
+    if (!input) return;
 
-    // Add class on focus
-    input.addEventListener('focus', () => {
-        label.classList.add('text-blue-600', 'top-0', 'text-xs');
-        label.classList.remove('text-gray-400');
-    });
+    const label = document.querySelector(`label[for="${@json($inputId)}"]`);
+    if (!label) return;
 
-    // Handle blur (when user clicks away)
-    input.addEventListener('blur', () => {
-        if (input.value.trim() === '') {
-            // Return label to original position
-            label.classList.remove('text-blue-600', 'top-0', 'text-xs');
-            label.classList.add('text-gray-400', 'top-5', 'text-sm');
+    // Handle pre-filled fields or autofill
+    const checkValue = () => {
+        if (input.value.trim() !== '') {
+            // Has value - ensure label stays floated
+            label.style.top = '0';
+            label.style.left = '1rem';
+            label.style.transform = 'translateY(-50%)';
+            label.style.fontSize = '0.75rem';
+            label.style.color = '#0077FF';
+            label.style.backgroundColor = 'white';
+            label.style.padding = '0 0.25rem';
         }
-    });
+    };
 
-    // Maintain floating position if value pre-filled (like during edit)
-    if (input.value.trim() !== '') {
-        label.classList.add('text-blue-600', 'top-0', 'text-xs');
-    }
+    // Check on load
+    checkValue();
+
+    // Check on input
+    input.addEventListener('input', checkValue);
+
+    // Check on blur
+    input.addEventListener('blur', checkValue);
 });
 </script>
+@endpush
