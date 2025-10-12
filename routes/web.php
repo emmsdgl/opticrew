@@ -24,8 +24,11 @@ use App\Http\Controllers\DashboardController;
 
 //FOR ADMIN DASHBOARD SHOWING
 Route::get('/', action: function () {
-    return view('login');
-})->name('login');
+    return view('forgot-pass');
+})->name('forgot-pass');
+// Route::get('/', action: function () {
+//     return view('login');
+// })->name('login');
 
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {

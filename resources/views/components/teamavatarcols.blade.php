@@ -15,7 +15,7 @@
       >
     @endforeach
 
-    <span class="extra-count hidden relative z-20 inline-flex items-center justify-center h-8 min-w-[2rem] px-2 text-xs font-medium leading-none rounded-full bg-gray-100 border-2 border-white dark:bg-gray-700 dark:border-gray-800">
+    <span class="extra-count relative z-20 inline-flex items-center justify-center h-8 min-w-[2rem] px-2 text-xs font-medium leading-none rounded-full bg-gray-100 border-2 border-white dark:bg-gray-700 dark:border-gray-800">
       +0
     </span>
   </div>

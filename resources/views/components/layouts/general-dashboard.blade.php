@@ -1,14 +1,22 @@
+<!-- THIS IS THE DASHBOARD LAYOUT FOR ALL THE MODULE DASHBOARD -->
+@props([
+    'title' => ''    
+])
+
 <!DOCTYPE html>
 <html lang="en" class="transition-colors duration-300">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>{{$title}}</title>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
     <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
+    <script src="https://unpkg.com/flowbite@latest/dist/flowbite.min.js"></script>
+
+
 </head>
 <style>
     #page-loader {
@@ -64,38 +72,17 @@
 <body onload="document.getElementById('page-loader').style.display='none'" role="status"
     class="bg-[#F3F3F3] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300">
     <div class="flex min-h-screen">
-        @php
-            // If controller or view didn't supply $navOptions / $teams, provide safe defaults.
-            $navOptions = $navOptions ?? [
-                ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '#'],
-                ['label' => 'Accounts', 'icon' => 'fa-users', 'href' => '/users'],
-                ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => '/projects'],
-                ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/calendar'],
-                ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/analytics'],
-                ['label' => 'Reports', 'icon' => 'fa-file-lines', 'href' => '/reports'],
-            ];
-
-            $teams = $teams ?? ['HR Team', 'Tech Team'];
-        @endphp
-
-        <!-- ADMIN SIDEBAR CONTENTS-->
-        <x-sidebar :navOptions="[
-        ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '#'],
-        ['label' => 'Teams', 'icon' => 'fa-users', 'href' => '/users'],
-        ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => '/projects'],
-        ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/calendar'],
-        ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/analytics'],
-        ['label' => 'Accounts', 'icon' => 'fa-file-lines', 'href' => '/reports']
-    ]" :teams="['HR Team', 'Tech Team']" />
+        {{$sidebar}}
 
         <!-- MAIN CONTENT -->
         <main class="flex-1 flex flex-col transition-colors duration-300">
 
             <!-- DASHBOARD HEADER CONTENTS -->
             <x-header />
+            
             <!-- DASHBOARD PANEL CONTENTS -->
             {{ $slot }}
-            
+
         </main>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/js/all.min.js"></script>
@@ -184,4 +171,5 @@
     </script>
     @stack('scripts')
 </body>
+
 </html>
