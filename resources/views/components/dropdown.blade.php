@@ -15,8 +15,8 @@
     <button 
         id="{{ $uniqueId }}_button"
         type="button"
-        class="bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none 
-               focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-3 inline-flex items-center gap-2
+        class="bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none
+               focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-3 inline-flex justify-between items-center gap-2
                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-blue-800 transition-all duration-300">
         <span class="text-gray-700 dark:text-white text-xs font-normal">{{ $label }}</span>
         <span id="{{ $uniqueId }}_selected" class="text-gray-700 dark:text-white text-xs font-normal">{{ $default }}</span>
@@ -38,7 +38,7 @@
     <!-- Dropdown Menu -->
     <div 
         id="{{ $uniqueId }}_menu"
-        class="absolute right-0 top-full mt-2 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-lg w-40
+        class="absolute right-0 w-full top-full mt-2 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-lg w-40
                opacity-0 invisible transform scale-y-0 origin-top transition-all duration-300 dark:bg-gray-700">
         <ul class="py-2 text-xs text-gray-700 dark:text-white">
             @foreach ($options as $option)

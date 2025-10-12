@@ -166,7 +166,6 @@
 
                     <label for="input-password" class="text-[#07185788] text-sm font-sans">Password</label>
 
-                    <!-- 👁️ Eye toggle button -->
                     <button type="button" id="togglePassword"
                         class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-blue-500 focus:outline-none">
                         <i class="fa-solid fa-eye pr-3"></i>

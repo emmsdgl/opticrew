@@ -1,53 +1,43 @@
+@props([
+    'title' => ''
+])
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset</title>
-    <!-- Tailwind CSS CDN -->
+    <title>{{$title}}</title>
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CDN for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
         body {
-            background-color: url(/public/images/backgrounds/login_bg.svg); /* A simple, modern background color */
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
-        #header-1, #step-number {
-            font-family: 'fam-bold';
+        
+        #header-1, #step-number, #step-number-1, #step-number-2, #step-number-3 {
             color: #0077FF;
         }
+        
         #header-1-2 {
-            font-family: 'fam-bold';
             color: #07185778;
         }
+        
         #header-2 {
-            font-family: 'fam-bold';
             color: #071957;
         }
+        
         #header-3 {
-            font-family: 'fam-regular';
             color: #07185778;
             text-align: justify;
         }
+        
         #header-container {
             padding: 1em;
             margin-top: 2em;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        #pasres-main-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 85vh;
         }
         
         /* Floating Label Specific Styles */
@@ -82,20 +72,10 @@
             padding-bottom: 0.8rem;
         }
 
-        /* Correct Style for the select dropdown floating label */
-        .input-container .select-field:focus + label,
-        .input-container .select-field:not([value=""]) + label {
-            top: -0.8rem;
-            left: 1rem;
-            font-size: 0.75rem;
-            color: #0077FF;
-            background-color: white;
-            padding: 0 0.25rem;
-        }
-
         .input-container .input-field:focus::placeholder {
             color: transparent;
         }
+        
         .input-container .input-field:not(:placeholder-shown)::placeholder {
             color: transparent;
         }
@@ -128,53 +108,50 @@
             border-color: #0077FF;
             box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.2);
         }
-        
-        /* Responsive OTP inputs */
     </style>
 </head>
-@props([
-    'title' => ''
-])
 
-<!DOCTYPE html>
-<html lang="en">
+<body class="flex flex-col justify-start items-center min-h-screen bg-[url('/images/backgrounds/login_bg.svg')] bg-cover bg-center bg-no-repeat bg-fixed gap-3">
+      <!-- 🔹 Header with logo + back button -->
+    <header class="absolute top-0 left-0 w-full flex justify-between items-center px-12 py-8">
+        <div class="flex items-center gap-2">
+            <span class="text-[#0077FF]"><img src="/images/finnoys-text-logo-light.svg" alt="" class="h-20 w-auto"></span>
+        </div>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{$title}}</title>
-    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
-    <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
-    <script src="https://unpkg.com/flowbite@latest/dist/flowbite.min.js"></script>
-</head>
+        <button 
+            onclick="history.back()" 
+            class="flex items-center gap-2 text-[#0077FF] hover:text-blue-700 transition-colors duration-200 text-sm font-medium">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+    </header>
 
-<body class="flex flex-col justify-start items-center p-4 md:p-8">
-    <div id="pasres-main-container" class="w-full max-w-sm md:max-w-lg lg:max-w-xl p-6 md:p-10 flex flex-col items-center text-center">
+
+<div id="pasres-main-container" class="w-full gap-8 max-w-sm md:max-w-lg lg:max-w-screen md:p-10 flex flex-col items-center text-center min-h-screen justify-center">
+        
+        <!-- STEP 1 Content -->
+        <div id="step1" class="step-content w-full">
             {{ $slot1 }}
         </div>
-            <!-- STEP 2 Content -->
-        <div id="step2" class="step-content hidden">
+
+        <!-- STEP 2 Content -->
+        <div id="step2" class="step-content w-full hidden">
             {{ $slot2 }}
         </div>
 
-            <!-- STEP 3 Content -->
-        <div id="step3" class="step-content hidden">
+        <!-- STEP 3 Content -->
+        <div id="step3" class="step-content w-full hidden">
             {{ $slot3 }}
         </div>
-
-        <!-- Progress Bar (outside of step content container) -->
-        <div id="stepctr-container-2" class="mt-12 ">
-            <div id="progress-container" class="w-full flex justify-center space-x-2 p-6">
-                <div class="h-1.5 w-32 rounded-full bg-blue-600"></div>
-                <div class="h-1.5 w-32 rounded-full bg-gray-300"></div>
-                <div class="h-1.5 w-32 rounded-full bg-gray-300"></div>
+        
+        <!-- Progress Bar -->
+        <div id="stepctr-container-2" class="w-full mt-8">
+            <div id="progress-container" class="w-full flex justify-center space-x-2">
+                <div class="progress-bar h-1.5 w-32 rounded-full bg-blue-600"></div>
+                <div class="progress-bar h-1.5 w-32 rounded-full bg-gray-300"></div>
+                <div class="progress-bar h-1.5 w-32 rounded-full bg-gray-300"></div>
             </div>
         </div>
-
     </div>
-@push('scripts')
 
     <script>
         // Centralized step management
@@ -183,8 +160,10 @@
 
         // Function to update the UI based on the current step
         function updateUI() {
+            console.log('Current Step:', currentStep);
+            
             // Update progress bar
-            const bars = document.querySelectorAll("#progress-container div");
+            const bars = document.querySelectorAll(".progress-bar");
             bars.forEach((bar, index) => {
                 if (index + 1 <= currentStep) {
                     bar.classList.remove("bg-gray-300");
@@ -195,20 +174,33 @@
                 }
             });
             
-            // Update step number text
-            document.querySelector('#step-number-1').innerText = currentStep;
-            document.querySelector('#step-number-2').innerText = currentStep;
-            document.querySelector('#step-number-3').innerText = currentStep;
+            // Update step number text if they exist
+            const stepNumber1 = document.querySelector('#step-number-1');
+            const stepNumber2 = document.querySelector('#step-number-2');
+            const stepNumber3 = document.querySelector('#step-number-3');
+            
+            if (stepNumber1) stepNumber1.innerText = currentStep;
+            if (stepNumber2) stepNumber2.innerText = currentStep;
+            if (stepNumber3) stepNumber3.innerText = currentStep;
 
             // Show/hide content for each step
-            const stepContents = document.querySelectorAll('.step-content');
-            stepContents.forEach((content, index) => {
-                if (index + 1 === currentStep) {
-                    content.classList.remove('hidden');
-                } else {
-                    content.classList.add('hidden');
-                }
-            });
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            
+            // Hide all steps first
+            if (step1) step1.classList.add('hidden');
+            if (step2) step2.classList.add('hidden');
+            if (step3) step3.classList.add('hidden');
+            
+            // Show current step
+            if (currentStep === 1 && step1) {
+                step1.classList.remove('hidden');
+            } else if (currentStep === 2 && step2) {
+                step2.classList.remove('hidden');
+            } else if (currentStep === 3 && step3) {
+                step3.classList.remove('hidden');
+            }
         }
 
         // Functions to navigate between steps
@@ -218,6 +210,7 @@
                 updateUI();
             }
         }
+        
         function prevStep() {
             if (currentStep > 1) {
                 currentStep--;
@@ -225,91 +218,81 @@
             }
         }
         
-        // Initial UI update
-        updateUI();
-
-        // Attach event listeners for navigation buttons
-        document.getElementById('next1-btn').addEventListener('click', nextStep);
-        document.getElementById('next2-btn').addEventListener('click', nextStep);
-        document.getElementById('back1-btn').addEventListener('click', prevStep);
-        // document.getElementById('back2-btn').addEventListener('click', prevStep);
-        document.getElementById('back3-btn').addEventListener('click', prevStep);
-
-        // --- Step 1 Specific Functionality (Dropdown) ---
-        const dropdownButton = document.getElementById('security-question-button');
-        const dropdownMenu = document.getElementById('security-question-dropdown');
-        const menuItems = dropdownMenu.querySelectorAll('a');
-        
-        // Hidden input to store the selected value
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'security_question';
-        // Append the hidden input to the form
-        dropdownButton.parentNode.appendChild(hiddenInput);
-
-        // Toggle dropdown visibility on button click
-        dropdownButton.addEventListener('click', () => {
-            dropdownMenu.classList.toggle('hidden');
-        });
-
-        // Handle selection of a dropdown item
-        menuItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const selectedValue = item.getAttribute('data-value');
-                const selectedText = item.textContent;
-
-                // Update the button text with the selected question
-                dropdownButton.textContent = selectedText;
-                // Hide the dropdown menu
-                dropdownMenu.classList.add('hidden');
-                // Update the hidden input's value for form submission
-                hiddenInput.value = selectedValue;
-            });
-        });
-        
-        // Close the dropdown if the user clicks outside
-        document.addEventListener('click', (e) => {
-            if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                dropdownMenu.classList.add('hidden');
-            }
-        });
-        
-        // --- Step 2 Specific Functionality (OTP) ---
-        const otpInputs = document.querySelectorAll('#otp-container input');
-        otpInputs.forEach((input, index) => {
-            input.addEventListener('input', (e) => {
-                // Move focus to the next input
-                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
-                    otpInputs[index + 1].focus();
-                }
-            });
-            input.addEventListener('keydown', (e) => {
-                // Handle backspace to move to previous input
-                if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
-                    otpInputs[index - 1].focus();
-                }
-            });
-        });
-
-        // --- Step 3 Specific Functionality (Password Toggles) ---
-        function setupPasswordToggle(toggleButtonId, passwordInputId) {
-            const toggleButton = document.getElementById(toggleButtonId);
-            const passwordInput = document.getElementById(passwordInputId);
-
-            if (toggleButton && passwordInput) {
-                toggleButton.addEventListener('click', function() {
-                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                    passwordInput.setAttribute('type', type);
-                    this.classList.toggle('fa-eye');
-                    this.classList.toggle('fa-eye-slash');
+        // Initial UI update on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUI();
+            
+            // Attach event listeners for navigation buttons
+            const next1Btn = document.getElementById('next1-btn');
+            const next2Btn = document.getElementById('next2-btn');
+            const back1Btn = document.getElementById('back1-btn');
+            const back3Btn = document.getElementById('back3-btn');
+            
+            if (next1Btn) {
+                next1Btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    nextStep();
                 });
             }
-        }
-        setupPasswordToggle('togglePassword', 'input-new-password');
-        setupPasswordToggle('toggleConfirmPassword', 'input-confirm-password');
-        </script>
-@endpush
+            
+            if (next2Btn) {
+                next2Btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    nextStep();
+                });
+            }
+            
+            if (back1Btn) {
+                back1Btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    prevStep();
+                });
+            }
+            
+            if (back3Btn) {
+                back3Btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    prevStep();
+                });
+            }
+
+            // --- Step 2 Specific Functionality (OTP) ---
+            const otpInputs = document.querySelectorAll('#otp-container input');
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    // Move focus to the next input
+                    if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+                input.addEventListener('keydown', (e) => {
+                    // Handle backspace to move to previous input
+                    if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+            });
+
+            // --- Step 3 Specific Functionality (Password Toggles) ---
+            function setupPasswordToggle(toggleButtonId, passwordInputId) {
+                const toggleButton = document.getElementById(toggleButtonId);
+                const passwordInput = document.getElementById(passwordInputId);
+
+                if (toggleButton && passwordInput) {
+                    toggleButton.addEventListener('click', function() {
+                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                        passwordInput.setAttribute('type', type);
+                        this.classList.toggle('fa-eye');
+                        this.classList.toggle('fa-eye-slash');
+                    });
+                }
+            }
+            setupPasswordToggle('togglePassword', 'input-new-password');
+            setupPasswordToggle('toggleConfirmPassword', 'input-confirm-password');
+        });
+    </script>
+    
+    @stack('scripts')
 </body>
 
-</html></html>
+</html>
