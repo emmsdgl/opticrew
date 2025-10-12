@@ -146,7 +146,7 @@
             <form action="{{ route('login') }}" method="POST" class="space-y-4 w-1/2">
                 @csrf
 
-                <div id="container-2-1" class="flex flex-col align-items-center">
+                <div id="container-2-1" class="flex flex-col align-items-center mb-8">
                     <h1 id="login-header" class="font-sans font-bold text-5xl mb-3 text-[#081032]">Log In</h1>
                     <p id="login-header2" class="text-[#07185788] font-sans font-normal text-base mb-3">Welcome to Fin-noys</p>
                 </div>

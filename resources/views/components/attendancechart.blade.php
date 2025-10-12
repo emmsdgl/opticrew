@@ -5,7 +5,7 @@
     'attendanceRate' => 0,
 ])
 
-<div class="mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-md p-6 flex flex-col items-center space-y-10">
+<div class="mx-auto p-6 flex flex-col items-center space-y-10">
     <!-- Gauge Container -->
     <div id="gauge" class="relative w-56 h-28 flex items-center justify-center">
         <svg viewBox="0 0 200 100" class="w-full h-full">
