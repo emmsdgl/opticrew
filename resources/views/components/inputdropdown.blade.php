@@ -31,11 +31,11 @@
               transition-transform duration-200 z-10 pointer-events-none rotate-180"></i>
 
     <!-- Dropdown Menu -->
-    <div 
-        id="{{ $uniqueId }}_menu"
-        class="absolute left-0 right-0 top-full mt-2 z-20 bg-white border border-gray-200 rounded-xl shadow-lg
-               opacity-0 invisible transform scale-y-95 origin-top transition-all duration-200 
-               dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
+<div 
+    id="{{ $uniqueId }}_menu"
+    class="absolute left-0 right-0 top-full mt-2 z-[9999] bg-white border border-gray-200 rounded-xl shadow-lg
+           opacity-0 invisible transform scale-y-95 origin-top transition-all duration-200 
+           dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
         <ul class="py-2">
             @foreach ($options as $option)
                 <li>

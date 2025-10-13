@@ -24,8 +24,8 @@ use App\Http\Controllers\DashboardController;
 
 //FOR ADMIN DASHBOARD SHOWING
 Route::get('/', action: function () {
-    return view('forgot-pass');
-})->name('forgot-pass');
+    return view('admin-tasks');
+})->name('admin-tasks');
 // Route::get('/', action: function () {
 //     return view('login');
 // })->name('login');
@@ -85,6 +85,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/signup', function () {
     return view('signup');
     })->name('signup');
+
+    Route::get('/admin-dash', function () {
+    return view('admin-dash');
+    })->name('admin-dash');
+
+
+    Route::get('/admin-tasks', function () {
+    return view('admin-tasks');
+    })->name('admin-tasks');
 
 
 // 3. This brings in all the necessary authentication routes like /login, /logout, /register etc.

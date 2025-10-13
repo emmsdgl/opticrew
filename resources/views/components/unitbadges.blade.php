@@ -15,26 +15,29 @@
 
 @push('scripts')
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Select all unitbadges containers
-    const containers = document.querySelectorAll(".unitbadges");
+function initUnitBadges() {
+    document.querySelectorAll(".unitbadges").forEach(container => {
+        if (container.dataset.initialized === "true") return; // avoid re-running on same instance
+        container.dataset.initialized = "true";
 
-    containers.forEach(container => {
         const badges = container.querySelectorAll(".badge");
         const extra = container.querySelector(".extraCount");
+        if (!badges.length || !extra) return;
 
         function updateVisibleBadges() {
-            // Reset
+            // Skip hidden containers (e.g., inside x-show=false)
+            if (container.offsetParent === null) return;
+
             badges.forEach(b => b.classList.remove("hidden"));
             extra.classList.add("hidden");
             extra.textContent = "";
 
-            let containerWidth = container.offsetWidth;
+            const containerWidth = container.offsetWidth;
             let totalWidth = 0;
             let hiddenCount = 0;
 
             badges.forEach(badge => {
-                totalWidth += badge.offsetWidth + 8; // include margin/gap
+                totalWidth += badge.offsetWidth + 8;
                 if (totalWidth > containerWidth) {
                     badge.classList.add("hidden");
                     hiddenCount++;
@@ -47,10 +50,26 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // Run on load and resize
-        updateVisibleBadges();
+        // Run on next tick (ensures visibility after Alpine renders)
+        queueMicrotask(updateVisibleBadges);
+
+        // Recalculate on window resize
         window.addEventListener("resize", updateVisibleBadges);
+
+        // Recalculate when container becomes visible (e.g. modal opens)
+        const observer = new MutationObserver(() => {
+            if (container.offsetParent !== null) updateVisibleBadges();
+        });
+        observer.observe(container, { attributes: true, attributeFilter: ['class', 'style'] });
     });
+}
+
+// Run on page load
+document.addEventListener("DOMContentLoaded", initUnitBadges);
+
+// Also re-init after Alpine DOM updates
+document.addEventListener("alpine:init", () => {
+    Alpine.effect(() => queueMicrotask(initUnitBadges));
 });
 </script>
 @endpush
