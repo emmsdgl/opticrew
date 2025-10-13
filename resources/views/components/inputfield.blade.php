@@ -1,4 +1,5 @@
 @props([
+    'xModel' => '',      
     'label' => '',
     'inputId' => '',
     'inputName' => '',

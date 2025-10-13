@@ -1,6 +1,6 @@
 <!-- THIS IS THE DASHBOARD LAYOUT FOR ALL THE MODULE DASHBOARD -->
 @props([
-    'title' => ''    
+    'title' => ''
 ])
 
 <!DOCTYPE html>
@@ -12,6 +12,7 @@
     <title>{{$title}}</title>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
     <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
     <script src="https://unpkg.com/flowbite@latest/dist/flowbite.min.js"></script>
@@ -77,7 +78,7 @@
         <!-- MAIN CONTENT -->
         <main class="flex-1 flex flex-col transition-colors duration-300">
 
-            <!-- DASHBOARD HEADER CONTENTS -->
+<!-- DASHBOARD HEADER CONTENTS -->
             <x-header />
             
             <!-- DASHBOARD PANEL CONTENTS -->
