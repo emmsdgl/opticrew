@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let totalWidth = 0;
             let hiddenCount = 0;
 
-            const visibleLimit = 4; 
+            const visibleLimit = 3; 
 
             avatars.forEach((avatar, i) => {
                 if (i < visibleLimit) {
