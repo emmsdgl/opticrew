@@ -24,8 +24,8 @@ use App\Http\Controllers\DashboardController;
 
 //FOR ADMIN DASHBOARD SHOWING
 Route::get('/', action: function () {
-    return view('admin-tasks');
-})->name('admin-tasks');
+    return view('employee-dash');
+})->name('employee-dash');
 // Route::get('/', action: function () {
 //     return view('login');
 // })->name('login');

@@ -24,15 +24,10 @@
             <!-- Inner Up - Task Calendar -->
             <x-taskcalendar />
             <div
-            class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
+            class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-40 sm:h-56 md:h-64 lg:h-full">
             <x-kanbanboard/>
             </div>
             <!-- Inner Middle - Kanban Tasks -->
-            <div
-            class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
-            <x-tasklist/>
-        </div>
-            <!-- Inner End - List -->
         </div>
 
     </section>
