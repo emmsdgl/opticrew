@@ -29,10 +29,10 @@
         </div>
 
         <!-- ApexCharts Radial Chart -->
-        <div class="relative z-10 w-full h-full" id="{{ $chartId }}"></div>
+        <div class="relative w-full h-full" id="{{ $chartId }}"></div>
 
         <!-- Custom Center Label (overlays the chart) -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div class="text-center">
                 <div class="text-3xl font-bold text-gray-900 dark:text-gray-100" 
                      id="{{ $chartId }}-total">0</div>
@@ -43,7 +43,7 @@
 
     <!-- Floating Info Card -->
     <div class="absolute top-4 left-4 bg-gray-900 dark:bg-gray-800 text-white rounded-lg px-3 py-2 
-                shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-95 z-30 flex items-center gap-2">
+                shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-95 z-5 flex items-center gap-2">
         <div class="flex items-center gap-1.5">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
             <span class="text-xs font-medium">Goal Sessions</span>
