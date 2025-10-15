@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 08, 2025 at 08:24 PM
+-- Generation Time: Oct 15, 2025 at 10:24 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -1428,7 +1428,6 @@ INSERT INTO `attendances` (`id`, `employee_id`, `clock_in`, `clock_out`, `total_
 (1382, 4, '2025-10-04 06:56:18', '2025-10-04 07:54:18', 58, '2025-10-04 06:56:08', '2025-10-04 07:55:13'),
 (1383, 4, '2025-10-04 06:56:20', '2025-10-04 07:54:20', 58, '2025-10-04 06:56:08', '2025-10-04 07:55:14'),
 (1384, 4, '2025-10-04 06:56:21', '2025-10-04 07:54:21', 58, '2025-10-04 06:56:08', '2025-10-04 07:55:15'),
-(1385, 3, '2025-10-04 06:56:17', '2025-10-04 06:56:17', 0, '2025-10-04 06:56:08', '2025-10-04 06:57:14'),
 (1386, 3, '2025-10-04 06:56:17', '2025-10-04 06:57:17', 1, '2025-10-04 06:56:08', '2025-10-04 06:58:10'),
 (1387, 3, '2025-10-04 06:56:18', '2025-10-04 07:54:18', 58, '2025-10-04 06:56:08', '2025-10-04 07:55:13'),
 (1388, 3, '2025-10-04 06:56:18', '2025-10-04 07:54:18', 58, '2025-10-04 06:56:08', '2025-10-04 07:55:13'),
@@ -1467,11 +1466,25 @@ INSERT INTO `cars` (`id`, `car_name`, `is_available`, `created_at`, `updated_at`
 CREATE TABLE `clients` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
-  `client_type` enum('personal','company') NOT NULL,
-  `company_name` varchar(255) DEFAULT NULL,
+  `first_name` varchar(255) NOT NULL,
+  `last_name` varchar(255) NOT NULL,
+  `middle_initial` varchar(5) DEFAULT NULL,
+  `birthdate` date DEFAULT NULL,
+  `phone_number` varchar(20) DEFAULT NULL,
+  `security_question_1` varchar(255) DEFAULT NULL,
+  `security_answer_1` varchar(255) DEFAULT NULL,
+  `security_question_2` varchar(255) DEFAULT NULL,
+  `security_answer_2` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `clients`
+--
+
+INSERT INTO `clients` (`id`, `user_id`, `first_name`, `last_name`, `middle_initial`, `birthdate`, `phone_number`, `security_question_1`, `security_answer_1`, `security_question_2`, `security_answer_2`, `created_at`, `updated_at`) VALUES
+(1, 13, 'Emmaus', 'Digol', 'L', '2004-09-23', '9602790025', 'pet_name', '$2y$10$9teflEeavHDD/O0QeGMVQ.2AWHsZvgQPu1z0g0GAhb1nuH2M.1dgu', 'best_friend', '$2y$10$GmVkvp2HvwAOcf2jFy2n3O.Hw9w.OWD99xcY9qD.hufdDajbvY2IS', '2025-10-15 00:20:16', '2025-10-15 00:20:16');
 
 -- --------------------------------------------------------
 
@@ -1520,7 +1533,12 @@ INSERT INTO `daily_team_assignments` (`id`, `assignment_date`, `car_id`, `contra
 (4, '2025-07-01', 3, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
 (5, '2025-07-01', 1, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
 (6, '2025-07-01', 2, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(14, '2025-10-04', 1, 1, '2025-10-04 06:56:08', '2025-10-04 06:56:08');
+(14, '2025-10-04', 1, 1, '2025-10-04 06:56:08', '2025-10-04 06:56:08'),
+(198, '2025-10-11', 1, 1, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(199, '2025-10-11', 1, 1, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(200, '2025-10-11', 2, 2, '2025-10-09 22:14:41', '2025-10-09 22:14:41'),
+(201, '2025-10-11', 2, 2, '2025-10-09 22:14:41', '2025-10-09 22:14:41'),
+(202, '2025-10-11', 2, 2, '2025-10-09 22:14:41', '2025-10-09 22:14:41');
 
 -- --------------------------------------------------------
 
@@ -1601,12 +1619,12 @@ INSERT INTO `employee_schedules` (`id`, `employee_id`, `work_date`, `is_day_off`
 (51, 2, '2025-10-08', 1, '2025-10-07 03:52:44', '2025-10-07 03:52:44'),
 (52, 3, '2025-10-08', 1, '2025-10-07 03:52:45', '2025-10-07 03:52:45'),
 (54, 8, '2025-10-08', 1, '2025-10-07 03:52:51', '2025-10-07 03:52:51'),
-(55, 2, '2025-10-10', 1, '2025-10-07 08:46:55', '2025-10-07 08:46:55'),
-(56, 3, '2025-10-10', 1, '2025-10-07 08:46:57', '2025-10-07 08:46:57'),
 (57, 4, '2025-10-10', 1, '2025-10-07 08:47:02', '2025-10-07 08:47:02'),
 (58, 11, '2025-10-10', 1, '2025-10-07 08:47:13', '2025-10-07 08:47:13'),
 (59, 9, '2025-10-09', 1, '2025-10-07 20:09:18', '2025-10-07 20:09:18'),
-(60, 10, '2025-10-09', 1, '2025-10-07 20:09:19', '2025-10-07 20:09:19');
+(60, 10, '2025-10-09', 1, '2025-10-07 20:09:19', '2025-10-07 20:09:19'),
+(61, 2, '2025-10-10', 1, '2025-10-09 22:13:32', '2025-10-09 22:13:32'),
+(62, 3, '2025-10-10', 1, '2025-10-09 22:13:33', '2025-10-09 22:13:33');
 
 -- --------------------------------------------------------
 
@@ -1791,7 +1809,8 @@ CREATE TABLE `scheduling_logs` (
 
 INSERT INTO `scheduling_logs` (`id`, `schedule_date`, `log_data`, `created_at`, `updated_at`) VALUES
 (33, '2025-10-08', '{\"service_date\":\"2025-10-08\",\"inputs\":{\"location_ids\":[79]},\"steps\":[{\"title\":\"Available Employees\",\"count\":8,\"data\":[\"Vincent Rey Digol\",\"Merlyn Guzman\",\"Aries Guzman\",\"Bella Ostan\",\"Jennylyn Saballero\",\"Cherrylyn Morales \",\"John Carl Morales\",\"John Kevin Morales\"]},{\"title\":\"Employee Allocation for Kakslauttanen\",\"count\":4,\"data\":[\"Merlyn Guzman\",\"John Carl Morales\",\"Bella Ostan\",\"Jennylyn Saballero\"]},{\"title\":\"Employee Allocation for Aikamatkat\",\"count\":4,\"data\":[\"Vincent Rey Digol\",\"Aries Guzman\",\"John Kevin Morales\",\"Cherrylyn Morales \"]},{\"title\":\"Team Formation for Kakslauttanen\",\"count\":2,\"data\":[[\"Merlyn Guzman\",\"Bella Ostan\"],[\"John Carl Morales\",\"Jennylyn Saballero\"]]},{\"title\":\"Greedy Algorithm Result for Kakslauttanen\",\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Small Cabin #1\",\"Small Cabin #3\",\"Small Cabin #5\",\"Small Cabin #7\",\"Small Cabin #9\",\"Small Cabin #10\",\"Small Cabin #12\",\"Big Cabin #6\",\"Igloo #1\",\"Igloo #2\"],\"total_tasks\":10,\"estimated_duration\":570,\"team_efficiency\":\"121%\",\"predicted_workload\":470},{\"team_members\":[{\"name\":\"John Carl Morales\",\"efficiency\":1.0096148636851658},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Small Cabin #2\",\"Small Cabin #4\",\"Small Cabin #6\",\"Small Cabin #8\",\"Small Cabin #11\",\"Medium Cabin #4\",\"Turf Chamber\",\"Igloo #20\"],\"total_tasks\":8,\"estimated_duration\":465,\"team_efficiency\":\"94%\",\"predicted_workload\":494}]},{\"title\":\"Genetic Algorithm Result for Kakslauttanen\",\"fitness_score\":0.3082,\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Igloo #2\",\"Small Cabin #6\",\"Small Cabin #1\",\"Small Cabin #10\",\"Small Cabin #11\",\"Medium Cabin #4\",\"Small Cabin #3\",\"Small Cabin #12\",\"Turf Chamber\",\"Small Cabin #2\"],\"total_tasks\":10,\"estimated_duration\":585,\"team_efficiency\":\"121%\",\"predicted_workload\":483},{\"team_members\":[{\"name\":\"John Carl Morales\",\"efficiency\":1.0096148636851658},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Small Cabin #4\",\"Small Cabin #7\",\"Small Cabin #5\",\"Small Cabin #8\",\"Small Cabin #9\",\"Big Cabin #6\",\"Igloo #20\",\"Igloo #1\"],\"total_tasks\":8,\"estimated_duration\":450,\"team_efficiency\":\"94%\",\"predicted_workload\":478}]},{\"title\":\"Team Formation for Aikamatkat\",\"count\":2,\"data\":[[\"Vincent Rey Digol\",\"Cherrylyn Morales \"],[\"Aries Guzman\",\"John Kevin Morales\"]]},{\"title\":\"Greedy Algorithm Result for Aikamatkat\",\"data\":[{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Cherrylyn Morales \",\"efficiency\":0.9871810509994557}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #6\",\"Panimo Cabins #8\",\"Voursa 3A and 3B\",\"Raahenmaja\"],\"total_tasks\":5,\"estimated_duration\":300,\"team_efficiency\":\"105%\",\"predicted_workload\":286},{\"team_members\":[{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658},{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #7\",\"Metsakoti A\",\"Moitakuru C31 and C32\"],\"total_tasks\":4,\"estimated_duration\":240,\"team_efficiency\":\"100%\",\"predicted_workload\":240}]},{\"title\":\"Genetic Algorithm Result for Aikamatkat\",\"fitness_score\":0.042,\"data\":[{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Cherrylyn Morales \",\"efficiency\":0.9871810509994557}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #6\",\"Panimo Cabins #8\",\"Voursa 3A and 3B\",\"Raahenmaja\"],\"total_tasks\":5,\"estimated_duration\":300,\"team_efficiency\":\"105%\",\"predicted_workload\":286},{\"team_members\":[{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658},{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #7\",\"Metsakoti A\",\"Moitakuru C31 and C32\"],\"total_tasks\":4,\"estimated_duration\":240,\"team_efficiency\":\"100%\",\"predicted_workload\":240}]}]}', '2025-10-07 19:39:41', '2025-10-07 19:39:41'),
-(34, '2025-10-09', '{\"service_date\":\"2025-10-09\",\"inputs\":{\"location_ids\":[1,7,13,19,25,31,37,43,49,55,59,60,61,62,63]},\"steps\":[{\"title\":\"Available Employees\",\"count\":9,\"data\":[\"Vincent Rey Digol\",\"Martin Yvann Leonardo\",\"Earl Leonardo\",\"Merlyn Guzman\",\"Aries Guzman\",\"Bella Ostan\",\"Jennylyn Saballero\",\"Rizza Estrella \",\"John Kevin Morales\"]},{\"title\":\"Employee Allocation for Kakslauttanen\",\"count\":4,\"data\":[\"Merlyn Guzman\",\"Vincent Rey Digol\",\"Aries Guzman\",\"Bella Ostan\"]},{\"title\":\"Employee Allocation for Aikamatkat\",\"count\":5,\"data\":[\"Earl Leonardo\",\"Rizza Estrella \",\"John Kevin Morales\",\"Martin Yvann Leonardo\",\"Jennylyn Saballero\"]},{\"title\":\"Team Formation for Kakslauttanen\",\"count\":2,\"data\":[[\"Merlyn Guzman\",\"Bella Ostan\"],[\"Vincent Rey Digol\",\"Aries Guzman\"]]},{\"title\":\"Greedy Algorithm Result for Kakslauttanen\",\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Small Cabin #1\",\"Medium Cabin #1\",\"Big Cabin #7\",\"Igloo #1\",\"Igloo #13\"],\"total_tasks\":5,\"estimated_duration\":270,\"team_efficiency\":\"121%\",\"predicted_workload\":223},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Small Cabin #7\",\"Big Cabin #1\",\"Big Cabin #13\",\"Igloo #7\",\"Igloo #19\"],\"total_tasks\":5,\"estimated_duration\":270,\"team_efficiency\":\"106%\",\"predicted_workload\":255}]},{\"title\":\"Genetic Algorithm Result for Kakslauttanen\",\"fitness_score\":0.2763,\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Medium Cabin #1\",\"Big Cabin #13\",\"Big Cabin #1\",\"Igloo #1\",\"Small Cabin #1\"],\"total_tasks\":5,\"estimated_duration\":285,\"team_efficiency\":\"121%\",\"predicted_workload\":235},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Big Cabin #7\",\"Igloo #19\",\"Small Cabin #7\",\"Igloo #7\",\"Igloo #13\"],\"total_tasks\":5,\"estimated_duration\":255,\"team_efficiency\":\"106%\",\"predicted_workload\":240}]},{\"title\":\"Team Formation for Aikamatkat\",\"count\":2,\"data\":[[\"Earl Leonardo\",\"Rizza Estrella \",\"Jennylyn Saballero\"],[\"John Kevin Morales\",\"Martin Yvann Leonardo\"]]},{\"title\":\"Greedy Algorithm Result for Aikamatkat\",\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #3\",\"Panimo Cabins #5\"],\"total_tasks\":3,\"estimated_duration\":180,\"team_efficiency\":\"117%\",\"predicted_workload\":154},{\"team_members\":[{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049},{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #4\"],\"total_tasks\":2,\"estimated_duration\":120,\"team_efficiency\":\"93%\",\"predicted_workload\":129}]},{\"title\":\"Genetic Algorithm Result for Aikamatkat\",\"fitness_score\":0.0734,\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #3\",\"Panimo Cabins #5\"],\"total_tasks\":3,\"estimated_duration\":180,\"team_efficiency\":\"117%\",\"predicted_workload\":154},{\"team_members\":[{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049},{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #4\"],\"total_tasks\":2,\"estimated_duration\":120,\"team_efficiency\":\"93%\",\"predicted_workload\":129}]}]}', '2025-10-07 20:10:03', '2025-10-07 20:10:03');
+(34, '2025-10-09', '{\"service_date\":\"2025-10-09\",\"inputs\":{\"location_ids\":[1,7,13,19,25,31,37,43,49,55,59,60,61,62,63]},\"steps\":[{\"title\":\"Available Employees\",\"count\":9,\"data\":[\"Vincent Rey Digol\",\"Martin Yvann Leonardo\",\"Earl Leonardo\",\"Merlyn Guzman\",\"Aries Guzman\",\"Bella Ostan\",\"Jennylyn Saballero\",\"Rizza Estrella \",\"John Kevin Morales\"]},{\"title\":\"Employee Allocation for Kakslauttanen\",\"count\":4,\"data\":[\"Merlyn Guzman\",\"Vincent Rey Digol\",\"Aries Guzman\",\"Bella Ostan\"]},{\"title\":\"Employee Allocation for Aikamatkat\",\"count\":5,\"data\":[\"Earl Leonardo\",\"Rizza Estrella \",\"John Kevin Morales\",\"Martin Yvann Leonardo\",\"Jennylyn Saballero\"]},{\"title\":\"Team Formation for Kakslauttanen\",\"count\":2,\"data\":[[\"Merlyn Guzman\",\"Bella Ostan\"],[\"Vincent Rey Digol\",\"Aries Guzman\"]]},{\"title\":\"Greedy Algorithm Result for Kakslauttanen\",\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Small Cabin #1\",\"Medium Cabin #1\",\"Big Cabin #7\",\"Igloo #1\",\"Igloo #13\"],\"total_tasks\":5,\"estimated_duration\":270,\"team_efficiency\":\"121%\",\"predicted_workload\":223},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Small Cabin #7\",\"Big Cabin #1\",\"Big Cabin #13\",\"Igloo #7\",\"Igloo #19\"],\"total_tasks\":5,\"estimated_duration\":270,\"team_efficiency\":\"106%\",\"predicted_workload\":255}]},{\"title\":\"Genetic Algorithm Result for Kakslauttanen\",\"fitness_score\":0.2763,\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Medium Cabin #1\",\"Big Cabin #13\",\"Big Cabin #1\",\"Igloo #1\",\"Small Cabin #1\"],\"total_tasks\":5,\"estimated_duration\":285,\"team_efficiency\":\"121%\",\"predicted_workload\":235},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Big Cabin #7\",\"Igloo #19\",\"Small Cabin #7\",\"Igloo #7\",\"Igloo #13\"],\"total_tasks\":5,\"estimated_duration\":255,\"team_efficiency\":\"106%\",\"predicted_workload\":240}]},{\"title\":\"Team Formation for Aikamatkat\",\"count\":2,\"data\":[[\"Earl Leonardo\",\"Rizza Estrella \",\"Jennylyn Saballero\"],[\"John Kevin Morales\",\"Martin Yvann Leonardo\"]]},{\"title\":\"Greedy Algorithm Result for Aikamatkat\",\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #3\",\"Panimo Cabins #5\"],\"total_tasks\":3,\"estimated_duration\":180,\"team_efficiency\":\"117%\",\"predicted_workload\":154},{\"team_members\":[{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049},{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #4\"],\"total_tasks\":2,\"estimated_duration\":120,\"team_efficiency\":\"93%\",\"predicted_workload\":129}]},{\"title\":\"Genetic Algorithm Result for Aikamatkat\",\"fitness_score\":0.0734,\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #3\",\"Panimo Cabins #5\"],\"total_tasks\":3,\"estimated_duration\":180,\"team_efficiency\":\"117%\",\"predicted_workload\":154},{\"team_members\":[{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049},{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #4\"],\"total_tasks\":2,\"estimated_duration\":120,\"team_efficiency\":\"93%\",\"predicted_workload\":129}]}]}', '2025-10-07 20:10:03', '2025-10-07 20:10:03'),
+(35, '2025-10-11', '{\"service_date\":\"2025-10-11\",\"inputs\":{\"location_ids\":[49,55,1,7,13,19,25,31,37,43,2,8,14,20,26,32,38,44,50,56,59,65,71]},\"steps\":[{\"title\":\"Available Employees\",\"count\":11,\"data\":[\"Vincent Rey Digol\",\"Martin Yvann Leonardo\",\"Earl Leonardo\",\"Merlyn Guzman\",\"Aries Guzman\",\"Bella Ostan\",\"Jennylyn Saballero\",\"Rizza Estrella \",\"Cherrylyn Morales \",\"John Carl Morales\",\"John Kevin Morales\"]},{\"title\":\"Employee Allocation for Kakslauttanen\",\"count\":5,\"data\":[\"Merlyn Guzman\",\"Vincent Rey Digol\",\"Aries Guzman\",\"John Kevin Morales\",\"Cherrylyn Morales \"]},{\"title\":\"Employee Allocation for Aikamatkat\",\"count\":6,\"data\":[\"Earl Leonardo\",\"Rizza Estrella \",\"John Carl Morales\",\"Bella Ostan\",\"Martin Yvann Leonardo\",\"Jennylyn Saballero\"]},{\"title\":\"Team Formation for Kakslauttanen\",\"count\":2,\"data\":[[\"Merlyn Guzman\",\"Cherrylyn Morales \",\"John Kevin Morales\"],[\"Vincent Rey Digol\",\"Aries Guzman\"]]},{\"title\":\"Greedy Algorithm Result for Kakslauttanen\",\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Cherrylyn Morales \",\"efficiency\":0.9871810509994557},{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Small Cabin #1\",\"Small Cabin #7\",\"Medium Cabin #1\",\"Big Cabin #1\",\"Big Cabin #7\",\"Big Cabin #13\",\"Igloo #1\",\"Igloo #7\",\"Igloo #13\",\"Igloo #19\"],\"total_tasks\":10,\"estimated_duration\":540,\"team_efficiency\":\"114%\",\"predicted_workload\":475},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Small Cabin #2\",\"Small Cabin #8\",\"Medium Cabin #2\",\"Big Cabin #2\",\"Big Cabin #8\",\"Queen Suite #1\",\"Igloo #2\",\"Igloo #8\",\"Igloo #14\",\"Igloo #20\"],\"total_tasks\":10,\"estimated_duration\":540,\"team_efficiency\":\"106%\",\"predicted_workload\":509}]},{\"title\":\"Genetic Algorithm Result for Kakslauttanen\",\"fitness_score\":0.2256,\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Cherrylyn Morales \",\"efficiency\":0.9871810509994557},{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Medium Cabin #2\",\"Big Cabin #2\",\"Queen Suite #1\",\"Igloo #2\",\"Igloo #1\",\"Igloo #14\",\"Big Cabin #13\",\"Small Cabin #8\",\"Big Cabin #7\",\"Small Cabin #7\"],\"total_tasks\":10,\"estimated_duration\":555,\"team_efficiency\":\"114%\",\"predicted_workload\":488},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Igloo #20\",\"Big Cabin #8\",\"Igloo #13\",\"Igloo #19\",\"Igloo #7\",\"Igloo #8\",\"Small Cabin #1\",\"Medium Cabin #1\",\"Small Cabin #2\",\"Big Cabin #1\"],\"total_tasks\":10,\"estimated_duration\":525,\"team_efficiency\":\"106%\",\"predicted_workload\":495}]},{\"title\":\"Team Formation for Aikamatkat\",\"count\":3,\"data\":[[\"Earl Leonardo\",\"Rizza Estrella \"],[\"John Carl Morales\",\"Bella Ostan\"],[\"Martin Yvann Leonardo\",\"Jennylyn Saballero\"]]},{\"title\":\"Greedy Algorithm Result for Aikamatkat\",\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35}],\"assigned_tasks\":[\"Panimo Cabins #1\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"131%\",\"predicted_workload\":46},{\"team_members\":[{\"name\":\"John Carl Morales\",\"efficiency\":1.0096148636851658},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Panimo Cabins #7\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"100%\",\"predicted_workload\":60},{\"team_members\":[{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Metsakoti A\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"87%\",\"predicted_workload\":69}]},{\"title\":\"Genetic Algorithm Result for Aikamatkat\",\"fitness_score\":0.0948,\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35}],\"assigned_tasks\":[\"Panimo Cabins #1\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"131%\",\"predicted_workload\":46},{\"team_members\":[{\"name\":\"John Carl Morales\",\"efficiency\":1.0096148636851658},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Panimo Cabins #7\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"100%\",\"predicted_workload\":60},{\"team_members\":[{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Metsakoti A\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"87%\",\"predicted_workload\":69}]}]}', '2025-10-09 22:14:41', '2025-10-09 22:14:41');
 
 -- --------------------------------------------------------
 
@@ -2451,7 +2470,30 @@ INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `esti
 (2069, 3, NULL, 'Standard Cleaning', 60, '2025-10-04', 'Completed', 14, '2025-10-04 06:56:18', '2025-10-04 06:56:08', '2025-10-04 07:55:13'),
 (2070, 7, NULL, 'Standard Cleaning', 60, '2025-10-04', 'Completed', 14, '2025-10-04 06:56:18', '2025-10-04 06:56:08', '2025-10-04 07:55:13'),
 (2071, 8, NULL, 'Standard Cleaning', 60, '2025-10-04', 'Completed', 14, '2025-10-04 06:56:20', '2025-10-04 06:56:08', '2025-10-04 07:55:14'),
-(2072, 9, NULL, 'Standard Cleaning', 60, '2025-10-04', 'Completed', 14, '2025-10-04 06:56:21', '2025-10-04 06:56:08', '2025-10-04 07:55:15');
+(2072, 9, NULL, 'Standard Cleaning', 60, '2025-10-04', 'Completed', 14, '2025-10-04 06:56:21', '2025-10-04 06:56:08', '2025-10-04 07:55:15'),
+(3351, 14, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3352, 20, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3353, 32, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3354, 38, NULL, 'Standard Cleaning', 45, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3355, 37, NULL, 'Standard Cleaning', 45, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3356, 50, NULL, 'Standard Cleaning', 45, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3357, 31, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3358, 8, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3359, 25, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3360, 7, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 198, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3361, 56, NULL, 'Standard Cleaning', 45, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3362, 26, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3363, 49, NULL, 'Standard Cleaning', 45, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3364, 55, NULL, 'Standard Cleaning', 45, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3365, 43, NULL, 'Standard Cleaning', 45, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3366, 44, NULL, 'Standard Cleaning', 45, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3367, 1, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3368, 13, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3369, 2, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3370, 19, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 199, NULL, '2025-10-09 22:14:40', '2025-10-09 22:14:40'),
+(3371, 59, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 200, NULL, '2025-10-09 22:14:41', '2025-10-09 22:14:41'),
+(3372, 65, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 201, NULL, '2025-10-09 22:14:41', '2025-10-09 22:14:41'),
+(3373, 71, NULL, 'Standard Cleaning', 60, '2025-10-11', 'Scheduled', 202, NULL, '2025-10-09 22:14:41', '2025-10-09 22:14:41');
 
 -- --------------------------------------------------------
 
@@ -3167,7 +3209,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Admin', 'admin@opticrew.com', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(1, 'Admin', 'admin@opticrew.com', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', 'BKU6ZeSaBJTXZ9dryq3g6ZrW7AEQfrorkMLnvwILJd0Gzfp8T3SS7QspI26z', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
 (2, 'Vincent Rey Digol', 'vincentreydigol@finnoys.com', NULL, '$2y$10$imi1zHLwUCdLQOg5.k39w.7XiWvU6DOoBcIjwSD624Q07XQqAzTQa', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
 (3, 'Martin Yvann Leonardo', 'martinyvannleonardo@finnoys.com', NULL, '$2y$10$fEn6ftE4hV6qwLE6Pu7i5uTTpwHeEKyXtviZ7oTI7mh2hKzE660GS', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
 (4, 'Earl Leonardo', 'earlleonardo@finnoys.com', NULL, '$2y$10$UyZcyuwzjz1SrB6dPNZ3J.hCGWcCJ9ixAA0NP59Y7n9tkR/1JGdDW', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
@@ -3178,7 +3220,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `ro
 (9, 'Rizza Estrella ', 'rizzaestrella@finnoys.com', NULL, '$2y$10$eH52zyHzV/ka6DJ1I/jIEegO6v7Bhtz3X6Tu51W7qzOCzg3.weuBy', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
 (10, 'Cherrylyn Morales ', 'cherrylynmorales@finnoys.com', NULL, '$2y$10$1swK95thyuDIKhCj1CDFJ.T591GF9ysJ4KvKJRaTfAiV7QTdU9Yaa', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
 (11, 'John Carl Morales', 'johncarlmorales@finnoys.com', NULL, '$2y$10$rLfpy6PWrrJYqVOkZUyFa.cLOLrTwLbKfkdp7tAS/vLQUotLTYOhi', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
-(12, 'John Kevin Morales', 'johnkevinmorales@finnoys.com', NULL, '$2y$10$/CV5zvi4rk3qSqg6JuYsme9FU7O06qgGq2eKBtDTSJXGhSPRAUAt.', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46');
+(12, 'John Kevin Morales', 'johnkevinmorales@finnoys.com', NULL, '$2y$10$/CV5zvi4rk3qSqg6JuYsme9FU7O06qgGq2eKBtDTSJXGhSPRAUAt.', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(13, 'client1', 'emmausldigol@gmail.com', NULL, '$2y$10$JQRFECJ5oaXbH7SQ8Ir9iuGGULU0wpAOpxv7d2iLwnSf3hJkGFWNO', 'external_client', NULL, '2025-10-15 00:20:16', '2025-10-15 00:20:16');
 
 --
 -- Indexes for dumped tables
@@ -3306,7 +3349,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `attendances`
 --
 ALTER TABLE `attendances`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2048;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2049;
 
 --
 -- AUTO_INCREMENT for table `cars`
@@ -3318,7 +3361,7 @@ ALTER TABLE `cars`
 -- AUTO_INCREMENT for table `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `contracted_clients`
@@ -3330,7 +3373,7 @@ ALTER TABLE `contracted_clients`
 -- AUTO_INCREMENT for table `daily_team_assignments`
 --
 ALTER TABLE `daily_team_assignments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=198;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=206;
 
 --
 -- AUTO_INCREMENT for table `employees`
@@ -3342,7 +3385,7 @@ ALTER TABLE `employees`
 -- AUTO_INCREMENT for table `employee_schedules`
 --
 ALTER TABLE `employee_schedules`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `locations`
@@ -3372,13 +3415,13 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `scheduling_logs`
 --
 ALTER TABLE `scheduling_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3351;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3377;
 
 --
 -- AUTO_INCREMENT for table `task_performance_histories`
@@ -3390,13 +3433,13 @@ ALTER TABLE `task_performance_histories`
 -- AUTO_INCREMENT for table `team_members`
 --
 ALTER TABLE `team_members`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=411;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=429;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Constraints for dumped tables
