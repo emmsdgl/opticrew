@@ -4,7 +4,7 @@
     @php
         $navOptions = [
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('client.dashboard')],
-            ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/client-appointments'],
+            ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => route('client.appointments')],
             ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => '/reports'],
             ['label' => 'Feedbacks', 'icon' => 'fa-chart-line', 'href' => '/analytics']
         ];

@@ -5,17 +5,18 @@ use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
 use Illuminate\Support\Facades\Auth;
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController; // Import the controller
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\ClientRegistrationController;
+use App\Http\Controllers\Auth\ForgotPasswordController; 
 
 use App\Http\Livewire\Admin\TaskDashboard;
 use App\Http\Livewire\Admin\TaskList;
 use App\Http\Livewire\Admin\SimulationDashboard;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 use App\Http\Livewire\Admin\PayrollReport;
-use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
-use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
+use App\Http\Livewire\Admin\ScheduleManager;
+use App\Http\Livewire\Admin\SchedulingLog;
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
 use App\Http\Controllers\AppointmentList;
 
@@ -87,6 +88,19 @@ Route::middleware(['auth'])->group(function () {
         return view('client-dash', compact('client'));
         
     })->middleware('auth')->name('client.dashboard');
+    
+    Route::get('/client/appointments', function () {
+        $user = Auth::user(); 
+        
+        // Fetch all appointments for the current client
+        $appointments = $user->client->appointments()
+                            ->orderBy('scheduled_date', 'asc') // Show upcoming/recent first
+                            ->get();
+    
+        // Pass the fetched data to the new view file
+        return view('client-appointments', compact('appointments'));
+        
+    })->middleware('auth')->name('client.appointments');
 });
 
     //ALL ROUTES FOR BUTTONS
@@ -103,6 +117,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/signup/send-otp', [ClientRegistrationController::class, 'sendOtp'])->middleware('guest');
     Route::post('/signup/verify-otp', [ClientRegistrationController::class, 'verifyOtp'])->middleware('guest');
 
-
+    Route::get('/forgotpassword', [ForgotPasswordController::class, 'showForgotPasswordForm'])->name('forgot.password');
+    Route::post('/forgotpassword/get-questions', [ForgotPasswordController::class, 'getSecurityQuestions'])->name('password.getQuestions');
+    Route::post('/forgotpassword/verify-account', [ForgotPasswordController::class, 'verifyAccountAndSendOtp'])->name('password.verifyAccount');
+    Route::post('/forgotpassword/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verifyOtp');
+    Route::post('/forgotpassword/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset.submit');
+        
 // It was added automatically by 'php artisan breeze:install'
 require __DIR__ . '/auth.php';
