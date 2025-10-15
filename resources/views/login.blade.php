@@ -177,7 +177,7 @@
                         <input type="checkbox" name="remember">
                         <span>Remember Me</span>
                     </label>
-                    <a href="/forgot-password" class="text-blue-600 hover:underline text-sm">Forgot Password?</a>
+                    <a href="{{ route('forgot.password') }}" class="text-blue-600 hover:underline text-sm">Forgot Password?</a>
                 </div>
 
                 <input type="submit" id="btn-login" class="text-sm font-sans font-semibold" value="Login">
@@ -242,5 +242,4 @@
         });
     </script>
 </body>
-
 </html>

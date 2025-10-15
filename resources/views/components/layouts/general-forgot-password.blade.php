@@ -8,6 +8,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>{{$title}}</title>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -153,146 +155,381 @@
         </div>
     </div>
 
+    <!-- @push('scripts') -->
     <script>
-        // Centralized step management
-        let currentStep = 1;
-        const totalSteps = 3;
-
-        // Function to update the UI based on the current step
-        function updateUI() {
-            console.log('Current Step:', currentStep);
-            
-            // Update progress bar
-            const bars = document.querySelectorAll(".progress-bar");
-            bars.forEach((bar, index) => {
-                if (index + 1 <= currentStep) {
-                    bar.classList.remove("bg-gray-300");
-                    bar.classList.add("bg-blue-600");
-                } else {
-                    bar.classList.remove("bg-blue-600");
-                    bar.classList.add("bg-gray-300");
-                }
-            });
-            
-            // Update step number text if they exist
-            const stepNumber1 = document.querySelector('#step-number-1');
-            const stepNumber2 = document.querySelector('#step-number-2');
-            const stepNumber3 = document.querySelector('#step-number-3');
-            
-            if (stepNumber1) stepNumber1.innerText = currentStep;
-            if (stepNumber2) stepNumber2.innerText = currentStep;
-            if (stepNumber3) stepNumber3.innerText = currentStep;
-
-            // Show/hide content for each step
-            const step1 = document.getElementById('step1');
-            const step2 = document.getElementById('step2');
-            const step3 = document.getElementById('step3');
-            
-            // Hide all steps first
-            if (step1) step1.classList.add('hidden');
-            if (step2) step2.classList.add('hidden');
-            if (step3) step3.classList.add('hidden');
-            
-            // Show current step
-            if (currentStep === 1 && step1) {
-                step1.classList.remove('hidden');
-            } else if (currentStep === 2 && step2) {
-                step2.classList.remove('hidden');
-            } else if (currentStep === 3 && step3) {
-                step3.classList.remove('hidden');
-            }
-        }
-
-        // Functions to navigate between steps
-        function nextStep() {
-            if (currentStep < totalSteps) {
-                currentStep++;
-                updateUI();
-            }
-        }
+    (function() {
+        'use strict';
         
-        function prevStep() {
-            if (currentStep > 1) {
-                currentStep--;
-                updateUI();
-            }
+        console.log("🚀 SCRIPT STARTED - Forgot Password Flow");
+
+        // Wait for DOM to be fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeForgotPassword);
+        } else {
+            initializeForgotPassword();
         }
-        
-        // Initial UI update on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            updateUI();
-            
-            // Attach event listeners for navigation buttons
+
+        function initializeForgotPassword() {
+            console.log("✅ DOM Ready - Initializing...");
+
+            // Get all elements
+            const emailInput = document.getElementById('email');
+            const securityDropdown = document.getElementById('dropdown-security-questions');
+            const securityAnswer = document.getElementById('security_answer');
             const next1Btn = document.getElementById('next1-btn');
             const next2Btn = document.getElementById('next2-btn');
             const back1Btn = document.getElementById('back1-btn');
+            const back2Btn = document.getElementById('back2-btn');
             const back3Btn = document.getElementById('back3-btn');
-            
-            if (next1Btn) {
-                next1Btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    nextStep();
-                });
+            const step3Form = document.getElementById('step3-form');
+            const resendLink = document.getElementById('resend-otp-link');
+
+            // Verify elements exist
+            console.log("📝 Elements found:", {
+                emailInput: !!emailInput,
+                securityDropdown: !!securityDropdown,
+                next1Btn: !!next1Btn
+            });
+
+            if (!emailInput || !securityDropdown) {
+                console.error("❌ CRITICAL: Required elements not found!");
+                return;
             }
-            
-            if (next2Btn) {
-                next2Btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    nextStep();
-                });
+
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!csrfToken) {
+                console.error("❌ CSRF token not found!");
+                alert("Configuration error: CSRF token missing. Please refresh the page.");
+                return;
             }
-            
-            if (back1Btn) {
-                back1Btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    prevStep();
+            console.log("🔐 CSRF Token found:", csrfToken.substring(0, 10) + "...");
+
+            let currentStep = 1;
+            const steps = document.querySelectorAll('.step-content');
+
+            // ========== UTILITY FUNCTIONS ==========
+            function updateStepView() {
+                console.log("📍 Updating view to step:", currentStep);
+                steps.forEach((step, index) => {
+                    step.classList.toggle('hidden', index + 1 !== currentStep);
                 });
-            }
-            
-            if (back3Btn) {
-                back3Btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    prevStep();
+                
+                const bars = document.querySelectorAll(".progress-bar");
+                bars.forEach((bar, index) => {
+                    if (index + 1 <= currentStep) {
+                        bar.classList.remove("bg-gray-300");
+                        bar.classList.add("bg-blue-600");
+                    } else {
+                        bar.classList.remove("bg-blue-600");
+                        bar.classList.add("bg-gray-300");
+                    }
                 });
             }
 
-            // --- Step 2 Specific Functionality (OTP) ---
-            const otpInputs = document.querySelectorAll('#otp-container input');
+            function showError(message) {
+                alert(message);
+                console.error("❌ Error:", message);
+            }
+
+            function showSuccess(message) {
+                alert(message);
+                console.log("✅ Success:", message);
+            }
+
+            // ========== STEP 1: LOAD SECURITY QUESTIONS ==========
+            let questionsLoaded = false;
+
+            emailInput.addEventListener('blur', async function() {
+                const email = this.value.trim();
+                console.log("📧 Email blur event - Value:", email);
+                
+                if (!email) {
+                    console.log("⚠️ Email is empty, skipping fetch");
+                    securityDropdown.innerHTML = '<option value="" disabled selected>Enter your email first...</option>';
+                    questionsLoaded = false;
+                    return;
+                }
+
+                console.log("🔄 Fetching security questions for:", email);
+                securityDropdown.innerHTML = '<option value="" disabled selected>Loading questions...</option>';
+                securityDropdown.disabled = true;
+
+                try {
+                    const response = await fetch("{{ route('password.getQuestions') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ email: email })
+                    });
+
+                    console.log("📡 Response status:", response.status);
+                    const data = await response.json();
+                    console.log("📦 Response data:", data);
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Could not fetch security questions');
+                    }
+
+                    // Populate dropdown
+                    securityDropdown.innerHTML = '<option value="" disabled selected>Select a Security Question</option>';
+                    securityDropdown.innerHTML += `<option value="${data.questions.q1.key}">${data.questions.q1.text}</option>`;
+                    securityDropdown.innerHTML += `<option value="${data.questions.q2.key}">${data.questions.q2.text}</option>`;
+                    securityDropdown.disabled = false;
+                    questionsLoaded = true;
+                    
+                    console.log("✅ Security questions loaded successfully");
+
+                } catch (error) {
+                    console.error("❌ Fetch error:", error);
+                    securityDropdown.innerHTML = `<option value="" disabled selected>${error.message}</option>`;
+                    securityDropdown.disabled = true;
+                    questionsLoaded = false;
+                }
+            });
+
+            // Add change event for debugging
+            emailInput.addEventListener('change', function() {
+                console.log("📧 Email changed to:", this.value);
+            });
+
+            // ========== STEP 1: VERIFY & SEND OTP ==========
+            next1Btn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                console.log("🔘 Submit button clicked");
+
+                const email = emailInput.value.trim();
+                const question = securityDropdown.value;
+                const answer = securityAnswer.value.trim();
+
+                console.log("📋 Form values:", { email, question, answer: answer ? "***" : "" });
+
+                if (!email) {
+                    showError('Please enter your email address.');
+                    emailInput.focus();
+                    return;
+                }
+
+                if (!questionsLoaded || !question) {
+                    showError('Please select a security question.');
+                    securityDropdown.focus();
+                    return;
+                }
+
+                if (!answer) {
+                    showError('Please enter your security answer.');
+                    securityAnswer.focus();
+                    return;
+                }
+
+                const button = this;
+                button.disabled = true;
+                button.textContent = 'Verifying...';
+                console.log("🔄 Sending verification request...");
+
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('security_question', question);
+                formData.append('security_answer', answer);
+
+                try {
+                    const response = await fetch("{{ route('password.verifyAccount') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    console.log("📡 Verify response:", response.status, data);
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Verification failed');
+                    }
+
+                    showSuccess(data.message);
+                    currentStep = 2;
+                    updateStepView();
+                    startResendTimer();
+
+                } catch (error) {
+                    showError(error.message);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Submit';
+                }
+            });
+
+            back1Btn.addEventListener('click', () => {
+                window.location.href = "{{ route('login') }}";
+            });
+
+            // ========== STEP 2: OTP HANDLING ==========
+            const otpInputs = document.querySelectorAll('.otp-input');
             otpInputs.forEach((input, index) => {
                 input.addEventListener('input', (e) => {
-                    // Move focus to the next input
                     if (e.target.value.length === 1 && index < otpInputs.length - 1) {
                         otpInputs[index + 1].focus();
                     }
                 });
                 input.addEventListener('keydown', (e) => {
-                    // Handle backspace to move to previous input
-                    if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                    if (e.key === "Backspace" && e.target.value.length === 0 && index > 0) {
                         otpInputs[index - 1].focus();
                     }
                 });
             });
 
-            // --- Step 3 Specific Functionality (Password Toggles) ---
-            function setupPasswordToggle(toggleButtonId, passwordInputId) {
-                const toggleButton = document.getElementById(toggleButtonId);
-                const passwordInput = document.getElementById(passwordInputId);
+            next2Btn.addEventListener('click', async function() {
+                let otp = '';
+                otpInputs.forEach(input => otp += input.value);
 
-                if (toggleButton && passwordInput) {
-                    toggleButton.addEventListener('click', function() {
-                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                        passwordInput.setAttribute('type', type);
+                if (otp.length !== 6) {
+                    showError('Please enter the complete 6-digit OTP.');
+                    return;
+                }
+
+                const button = this;
+                button.disabled = true;
+                button.textContent = 'Verifying...';
+
+                try {
+                    const response = await fetch("{{ route('password.verifyOtp') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({ otp: otp })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'OTP verification failed');
+                    }
+
+                    showSuccess(data.message);
+                    currentStep = 3;
+                    updateStepView();
+
+                } catch (error) {
+                    showError(error.message);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Verify OTP';
+                }
+            });
+
+            back2Btn.addEventListener('click', () => {
+                currentStep = 1;
+                updateStepView();
+            });
+
+            // Resend OTP
+            resendLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (this.style.pointerEvents === 'none') return;
+                next1Btn.click();
+            });
+
+            // ========== STEP 3: RESET PASSWORD ==========
+            step3Form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const button = document.getElementById('submit-reset-btn');
+                button.disabled = true;
+                button.textContent = 'Resetting...';
+
+                const formData = new FormData(this);
+
+                try {
+                    const response = await fetch("{{ route('password.reset.submit') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Password reset failed');
+                    }
+
+                    showSuccess(data.message);
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 1000);
+
+                } catch (error) {
+                    showError(error.message);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Reset Password';
+                }
+            });
+
+            back3Btn.addEventListener('click', () => {
+                currentStep = 2;
+                updateStepView();
+            });
+
+            // Password toggles
+            function setupPasswordToggle(toggleId, passwordId) {
+                const toggle = document.getElementById(toggleId);
+                const password = document.getElementById(passwordId);
+
+                if (toggle && password) {
+                    toggle.addEventListener('click', function() {
+                        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                        password.setAttribute('type', type);
                         this.classList.toggle('fa-eye');
                         this.classList.toggle('fa-eye-slash');
                     });
                 }
             }
+
             setupPasswordToggle('togglePassword', 'input-new-password');
             setupPasswordToggle('toggleConfirmPassword', 'input-confirm-password');
-        });
+
+            // Resend timer
+            let timerInterval;
+            function startResendTimer() {
+                let seconds = 30;
+                const timerElement = document.getElementById('timer');
+                resendLink.style.pointerEvents = 'none';
+                resendLink.style.color = '#9ca3af';
+
+                timerElement.textContent = ` in ${seconds}s`;
+
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    seconds--;
+                    timerElement.textContent = ` in ${seconds}s`;
+                    if (seconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerElement.textContent = '';
+                        resendLink.style.pointerEvents = 'auto';
+                        resendLink.style.color = '';
+                    }
+                }, 1000);
+            }
+
+            // Initialize
+            updateStepView();
+            console.log("✅ Initialization complete");
+        }
+    })();
     </script>
-    
+    <!-- @endpush -->
     @stack('scripts')
 </body>
-
 </html>
