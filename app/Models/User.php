@@ -22,7 +22,21 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
+
+    // Define the relationship
+    public function client(): HasOne
+    {
+        return $this->hasOne(Client::class);
+    }
+
+    public function employee(): HasOne
+    {
+        // This tells Laravel that a User has one Employee,
+        // linked by the 'user_id' column in the 'employees' table.
+        return $this->hasOne(Employee::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -43,10 +57,4 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function employee(): HasOne
-    {
-        // This tells Laravel that a User has one Employee,
-        // linked by the 'user_id' column in the 'employees' table.
-        return $this->hasOne(Employee::class);
-    }
 }

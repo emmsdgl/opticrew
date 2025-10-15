@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -382,242 +383,209 @@
             </div>
         </div>
         <div id="container-2" class="w-full p-20">
+            <!-- START: Copy from here -->
+            <form method="POST" action="{{ route('register.client') }}">
+                @csrf
 
-            <div id="step-1" class="step-content">
-                <h1 id="form-head" class="mb-4 w-full text-center font-sans font-medium italic">Tell Us About You</h1>
-                <form
-                    class="w-full space-y-4 pr-20 pl-20 max-md:flex-row pr-7 pl-7 items-center text-center max-sm:pr-1 pl-0">
-                    <div id="name-layer" class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
-                        <div class="input-container flex-1">
-                            <input type="text" id="input-fname" placeholder=" "
-                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                name="fname" required>
-                            <label for="input-fname">First Name</label>
-                        </div>
-                        <div class="input-container flex-1">
-                            <input type="text" id="input-lname" placeholder=" "
-                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                name="lname" required>
-                            <label for="input-lname">Last Name</label>
-                        </div>
-                        <div class="input-container w-[7rem] max-sm:w-full">
-                            <input type="text" id="input-mname" placeholder=" "
-                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                name="mname" required>
-                            <label for="input-mname">M.I.</label>
-                        </div>
-                    </div>
-
-                    <!-- Birthdate -->
-                    <div class="input-container relative w-full">
-                        <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-                            <i
-                                class="fas fa-calendar-day absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        </div>
-                        <input datepicker id="datepicker" datepicker-format="mm-dd-yyyy" type="text"
-                            class="input-field w-full text-sm pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                            placeholder="mm - dd - yyyy">
-                        <label for="input-bdate">Birthdate</label>
-                    </div>
-
-                    <!-- Phone Number -->
-                    <div
-                        class="input-container w-full flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-3">
-                        <!-- Country Code Dropdown -->
-                        <div class="custom-dropdown-container w-full sm:w-36">
-                            <button id="dropdown-btn" type="button" class="custom-dropdown-btn">
-                                <img id="selected-flag" src="{{asset('/images/icons/philippine_flag.png')}}"
-                                    alt="Philippine Flag" class="h-4 w-auto mr-2">
-                                <span id="selected-code" class="text-sm">+63</span>
-                                <span
-                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </span>
-                            </button>
-                            <div id="dropdown-list" class="custom-dropdown-list">
-                                <div class="custom-dropdown-item" data-value="+63"
-                                    data-flag="{{asset('/images/icons/philippine_flag.png')}}">
-                                    <img src="{{asset('/images/icons/philippine_flag.png')}}" alt="Philippine Flag"
-                                        class="h-4 w-auto mr-2">
-                                    <span class="text-sm">+63 Philippines</span>
-                                </div>
-                                <div class="custom-dropdown-item" data-value="+358"
-                                    data-flag="{{asset('/images/icons/finland-flag.svg')}}">
-                                    <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag"
-                                        class="h-4 w-auto mr-2">
-                                    <span class="text-sm">+358 Finland</span>
-                                </div>
+                <!-- ====================================================== -->
+                <!--                       STEP 1                           -->
+                <!-- ====================================================== -->
+                <div id="step-1" class="step-content">
+                    <h1 id="form-head" class="mb-4 w-full text-center font-sans font-medium italic">Tell Us About You</h1>
+                    
+                    <div class="space-y-4">
+                        <div id="name-layer" class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
+                            <div class="input-container flex-1">
+                                <input type="text" id="input-fname" placeholder=" "
+                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                    name="first_name" value="{{ old('first_name') }}" required>
+                                <label for="input-fname">First Name</label>
+                            </div>
+                            @error('first_name')
+                                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                            @enderror
+                            <div class="input-container flex-1">
+                                <input type="text" id="input-lname" placeholder=" "
+                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                    name="last_name" required>
+                                <label for="input-lname">Last Name</label>
+                            </div>
+                            <div class="input-container w-[7rem] max-sm:w-full">
+                                <input type="text" id="input-mname" placeholder=" "
+                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                    name="middle_initial">
+                                <label for="input-mname">M.I.</label>
                             </div>
                         </div>
-                        <div class="flex-1 input-container w-full">
-                            <input type="tel" id="input-phone" placeholder="9xxxxxxxxx"
+
+                        <!-- Birthdate -->
+                        <div class="input-container relative w-full">
+                            <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+                                <i class="fas fa-calendar-day absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            </div>
+                            <input datepicker id="datepicker" name="birthdate" datepicker-format="mm-dd-yyyy" type="text"
+                                class="input-field w-full text-sm pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                placeholder="mm - dd - yyyy" required>
+                            <label for="datepicker">Birthdate</label>
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="input-container w-full flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-3">
+                            <div class="custom-dropdown-container w-full sm:w-36">
+                                <button id="dropdown-btn" type="button" class="custom-dropdown-btn">
+                                    <img id="selected-flag" src="{{asset('/images/icons/philippine_flag.png')}}" alt="Philippine Flag" class="h-4 w-auto mr-2">
+                                    <span id="selected-code" class="text-sm">+63</span>
+                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                    </span>
+                                </button>
+                                <div id="dropdown-list" class="custom-dropdown-list">
+                                    <div class="custom-dropdown-item" data-value="+63" data-flag="{{asset('/images/icons/philippine_flag.png')}}">
+                                        <img src="{{asset('/images/icons/philippine_flag.png')}}" alt="Philippine Flag" class="h-4 w-auto mr-2">
+                                        <span class="text-sm">+63 Philippines</span>
+                                    </div>
+                                    <div class="custom-dropdown-item" data-value="+358" data-flag="{{asset('/images/icons/finland-flag.svg')}}">
+                                        <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag" class="h-4 w-auto mr-2">
+                                        <span class="text-sm">+358 Finland</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-1 input-container w-full">
+                                <input type="tel" id="input-phone" placeholder="9xxxxxxxxx"
+                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                    name="phone_number" required>
+                                <label for="input-phone">Phone Number</label>
+                            </div>
+                        </div>
+
+                        <div class="input-container w-full relative">
+                            <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="email" id="input-email" placeholder=" "
                                 class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                name="phone" required>
-                            <label for="input-phone">Phone Number</label>
-                        </div>
-                    </div>
-
-
-                    <div class="input-container w-full relative">
-                        <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        <input type="email" id="input-email" placeholder=" "
-                            class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                            name="email" required>
-                        <label for="input-email">Email Address</label>
-                    </div>
-
-                    <div id="buttons-container" class="flex justify-center gap-4 mt-6">
-                        <button id="back1-btn" type="button"
-                            class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Cancel</button>
-
-                        <button type="submit" id="next-1"
-                            class="w-full px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Confirm</button>
-                    </div>
-                </form>
-            </div>
-
-            <div id="step-2" class="step-content hidden">
-                <form class="w-full space-y-4 pr-20 pl-20" onsubmit="return false;">
-                    <h1 id="form-head" class="mb-4">OTP Verification</h1>
-                    <form class="w-full space-y-4 pr-20 pl-20">
-                        <div id="header-container">
-                            <p id="header-3" class="text-sm md:text-sm lg:text-sm"> To verify your provided email
-                                address. Please enter the one-time pin (OTP) that we sent to <span id="email_address"
-                                    class="font-bold text-blue-600">lcsanbuenaventura.2002@gmail.com</span> </p>
+                                name="email" required>
+                            <label for="input-email">Email Address</label>
                         </div>
 
-                        <div id="form-container">
-                            <form class="w-full space-y-6">
-                                <div id="otp-container">
-                                    <input id="otp1" type="text" maxlength="1" pattern="\d" inputmode="numeric">
-                                    <input id="otp2" type="text" maxlength="1" pattern="\d" inputmode="numeric">
-                                    <input id="otp3" type="text" maxlength="1" pattern="\d" inputmode="numeric">
-                                    <input id="otp4" type="text" maxlength="1" pattern="\d" inputmode="numeric">
-                                    <input id="otp5" type="text" maxlength="1" pattern="\d" inputmode="numeric">
-                                    <input id="otp6" type="text" maxlength="1" pattern="\d" inputmode="numeric">
-                                </div>
-                                <div id="buttons-container" class="flex justify-center gap-4 mt-6">
-                                    <button id="back2-btn" type="button"
-                                        class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
-
-                                    <button type="button" id="next-2"
-                                        class="w-full px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Verify
-                                        OTP</button>
-                                </div>
-
-                                <p id="resend-label" class="text-sm text-center w-full mt-4">Didn't receive an OTP?
-                                    <span><a href="/" class="text-blue-600 font-bold">Resend Code</a></span> <span
-                                        id="timer">in 28 seconds</span>
-                                </p>
-                            </form>
-                        </div>
-                    </form>
-            </div>
-
-            <div id="step-3" class="step-content hidden">
-                <h1 id="form-head" class="mb-4">Set up your security questions</h1>
-                <form class="w-full space-y-4 pr-20 pl-20" onsubmit="return false;">
-                    <div class="input-container w-full max-w-md mx-auto relative">
-                        <i
-                            class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        <button type="button" id="dropdown-secques1"
-                            class="security-question-btn1 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
-                            Select a security question
-                        </button>
-                        <div
-                            class="security-question-dropdown z-10 absolute left-0 right-0 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-md w-full">
-                            <ul class="py-2 text-sm text-gray-700">
-                                <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
-                                        data-value="father_name">What is your father's name?</a></li>
-                                <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
-                                        data-value="pet_name">What is the name of your first pet?</a></li>
-                                <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
-                                        data-value="birth_city">In what city were you born?</a></li>
-                                <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
-                                        data-value="school_name">What was the name of your first school?</a></li>
-                            </ul>
+                        <div id="buttons-container" class="flex justify-center gap-4 mt-6">
+                            <button id="back1-btn" type="button" class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Cancel</button>
+                            <button type="button" id="next-1" class="w-full px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Confirm</button>
                         </div>
                     </div>
+                </div>
 
-                    <div class="input-container w-full max-w-md mx-auto">
-                        <i class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        <input type="secans-1" id="input-secans-1" placeholder=" "
-                            class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                            name="secans-1" required>
-                        <label for="input-secans-1">Security Question Answer</label>
-                    </div>
+                <!-- ====================================================== -->
+                <!--                       STEP 2                           -->
+                <!-- ====================================================== -->
+                <div id="step-2" class="step-content hidden">
+                    <div class="space-y-4">
+                        <h1 id="form-head" class="mb-4">OTP Verification</h1>
+                        <div>
+                            <p class="text-sm text-center"> To verify your provided email address, please enter the one-time pin (OTP) that we sent to <span id="email_address" class="font-bold text-blue-600">your.email@example.com</span> </p>
+                        </div>
 
-
-                    <div class="input-container w-full max-w-md mx-auto relative">
-                        <i
-                            class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        <button type="button" id="dropdown-secques2"
-                            class="security-question-btn2 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
-                            Select a security question
-                        </button>
-                        <div
-                            class="security-question-dropdown z-10 absolute left-0 right-0 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-md w-full">
-                            <ul class="py-2 text-sm text-gray-700">
-                                <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
-                                        data-value="car_model">What was your first car model?</a></li>
-                                <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
-                                        data-value="best_friend">What is the name of your best friend?</a></li>
-                                <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
-                                        data-value="teacher_name">Who was your favorite teacher?</a></li>
-                            </ul>
+                        <div>
+                            <div id="otp-container">
+                                <input id="otp1" type="text" maxlength="1" pattern="\d" inputmode="numeric">
+                                <input id="otp2" type="text" maxlength="1" pattern="\d" inputmode="numeric">
+                                <input id="otp3" type="text" maxlength="1" pattern="\d" inputmode="numeric">
+                                <input id="otp4" type="text" maxlength="1" pattern="\d" inputmode="numeric">
+                                <input id="otp5" type="text" maxlength="1" pattern="\d" inputmode="numeric">
+                                <input id="otp6" type="text" maxlength="1" pattern="\d" inputmode="numeric">
+                            </div>
+                            <div class="flex justify-center gap-4 mt-6">
+                                <button id="back2-btn" type="button" class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
+                                <button type="button" id="next-2" class="w-full px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Verify OTP</button>
+                            </div>
+                            <p id="resend-label" class="text-sm text-center w-full mt-4">Didn't receive an OTP?
+                                <span><a href="#" class="text-blue-600 font-bold">Resend Code</a></span> <span id="timer"></span>
+                            </p>
                         </div>
                     </div>
+                </div>
 
-                    <div class="input-container w-full max-w-md mx-auto">
-                        <i class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        <input type="secans-2" id="input-secans-2" placeholder=" "
-                            class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                            name="secans-2" required>
-                        <label for="input-secans-2">Security Question Answer</label>
-                    </div>
-                    <h1 id="form-head" class="mb-4 p-6">Let's Get Your Account Ready</h1>
-                    <div class="input-container w-full max-w-md mx-auto">
-                        <i class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        <input type="username" id="input-username" placeholder=" "
-                            class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                            name="username" required>
-                        <label for="input-username">Username</label>
-                    </div>
-                    <div class="input-container w-full max-w-md mx-auto relative">
-                        <i class="fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        <input type="password" id="input-new-password" placeholder=" "
-                            class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                            name="password" required>
-                        <label for="input-new-password">New Password</label>
-                        <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-                            id="togglePassword"></i>
-                    </div>
-                    <div class="input-container w-full max-w-md mx-auto relative">
-                        <i
-                            class="fas fa-square-check absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                        <input type="password" id="input-confirm-password" placeholder=" "
-                            class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                            name="confirm_password" required>
-                        <label for="input-confirm-password">Confirm New Password</label>
-                        <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
-                            id="toggleConfirmPassword"></i>
-                    </div>
+                <!-- ====================================================== -->
+                <!--                       STEP 3                           -->
+                <!-- ====================================================== -->
+                <div id="step-3" class="step-content hidden">
+                    <div class="w-full space-y-4">
+                        <h1 id="form-head" class="mb-4">Set up your security questions</h1>
+                        <div class="input-container w-full max-w-md mx-auto relative">
+                            <i class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <button type="button" id="dropdown-secques1" class="security-question-btn1 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
+                                Select a security question
+                            </button>
+                            <div class="security-question-dropdown z-10 absolute left-0 right-0 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-md w-full">
+                                <ul class="py-2 text-sm text-gray-700">
+                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200" data-value="pet_name">What is the name of your first pet?</a></li>
+                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200" data-value="birth_city">In what city were you born?</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="input-container w-full max-w-md mx-auto">
+                            <i class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="text" id="input-secans-1" placeholder=" " class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="security_answer_1" required>
+                            <label for="input-secans-1">Security Question Answer</label>
+                        </div>
+                        @error('security_answer_1')
+                            <p class="text-red-500 text-xs text-center max-w-md mx-auto">{{ $message }}</p>
+                        @enderror
 
-                    <div id="buttons-container" class="flex flex-col sm:flex-row justify-center gap-4 mt-6 w-full pt-4">
-                        <button id="back3-btn" type="button"
-                            class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
-                        <button type="submit" id="next-3"
-                            class="w-full sm:w-auto px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center">Create
-                            Account</button>
+                        <div class="input-container w-full max-w-md mx-auto relative">
+                            <i class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <button type="button" id="dropdown-secques2" class="security-question-btn2 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
+                                Select a security question
+                            </button>
+                            <div class="security-question-dropdown z-10 absolute left-0 right-0 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-md w-full">
+                                <ul class="py-2 text-sm text-gray-700">
+                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200" data-value="best_friend">What is the name of your best friend?</a></li>
+                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200" data-value="teacher_name">Who was your favorite teacher?</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="input-container w-full max-w-md mx-auto">
+                            <i class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="text" id="input-secans-2" placeholder=" " class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="security_answer_2" required>
+                            <label for="input-secans-2">Security Question Answer</label>
+                        </div>
+                        @error('security_answer_2')
+                            <p class="text-red-500 text-xs text-center max-w-md mx-auto">{{ $message }}</p>
+                        @enderror
+                        
+                        <h1 id="form-head" class="mb-4 p-6">Let's Get Your Account Ready</h1>
+                        <div class="input-container w-full max-w-md mx-auto">
+                            <i class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="text" id="input-username" placeholder=" " class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="username" value="{{ old('username') }}" required>
+                            <label for="input-username">Username</label>
+                        </div>
+                        @error('username')
+                            <p class="text-red-500 text-xs text-center max-w-md mx-auto">{{ $message }}</p>
+                        @enderror
+
+                        <div class="input-container w-full max-w-md mx-auto relative">
+                            <i class="fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="password" id="input-new-password" placeholder=" " class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="password" autocomplete="new-password" required>
+                            <label for="input-new-password">New Password</label>
+                            <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" id="togglePassword"></i>
+                        </div>
+                        <div class="input-container w-full max-w-md mx-auto relative">
+                            <i class="fas fa-square-check absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="password" id="input-confirm-password" placeholder=" " class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="password_confirmation" autocomplete="new-password" required>
+                            <label for="input-confirm-password">Confirm New Password</label>
+                            <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" id="toggleConfirmPassword"></i>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6 w-full pt-4">
+                            <button id="back3-btn" type="button" class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
+                            <button type="submit" id="next-3" class="w-full sm:w-auto px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center">Create Account</button>
+                        </div>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
+            <!-- END: Copy until here -->
         </div>
+
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // STEP 1 SCRIPT
@@ -625,7 +593,19 @@
             const dropdownList = document.getElementById('dropdown-list');
             const selectedFlag = document.getElementById('selected-flag');
             const selectedCode = document.getElementById('selected-code');
-            const birthdateInput = document.getElementById('datepicker-inline');
+            const birthdateInput = document.getElementById('datepicker');
+
+            if (birthdateInput) {
+                birthdateInput.addEventListener('focus', () => {
+                    birthdateInput.type = 'text';
+                });
+
+                birthdateInput.addEventListener('blur', () => {
+                    if (!birthdateInput.value) {
+                        birthdateInput.type = 'text';
+                    }
+                });
+            }
 
             // FIXED: Initialize completion flags
             let isStep1Completed = false;
@@ -854,7 +834,7 @@
                 // --- Form 1 Inputs ---
                 const fName = document.getElementById('input-fname');
                 const lName = document.getElementById('input-lname');
-                const bDate = document.getElementById('datepicker-inline'); // Corrected ID from 'input-mname' in original checkFormCompletion logic
+                const bDate = document.getElementById('datepicker');
                 const phone = document.getElementById('input-phone');
                 const email = document.getElementById('input-email');
 
@@ -1018,7 +998,7 @@
             setupOTPAutoAdvance();
 
             const allFormInputs = document.querySelectorAll(
-                '#input-fname, #input-lname, #datepicker-inline, #input-phone, #input-email, ' +
+                '#input-fname, #input-lname, #datepicker, #input-phone, #input-email, ' +
                 '#otp1, #otp2, #otp3, #otp4, #otp5, #otp6, ' +
                 '#input-secans-1, #input-secans-2, #input-username, #input-new-password, #input-confirm-password'
             );
@@ -1028,43 +1008,175 @@
             });
             checkFormCompletion();
 
+            // Function to display the entered email on Step 2
+            function updateEmailDisplay() {
+                const emailInput = document.getElementById('input-email').value;
+                document.getElementById('email_address').textContent = emailInput;
+            }
 
-            // Stepper Navigation - FIXED LOGIC
+            let timerInterval; // To hold the interval ID
+
+            function startResendTimer() {
+                let seconds = 28; // Countdown from 28 seconds
+                const timerElement = document.getElementById('timer');
+                const resendLink = document.querySelector('#resend-label a');
+
+                // Disable the link immediately
+                resendLink.style.pointerEvents = 'none';
+                resendLink.style.color = '#9ca3af'; // Make it look disabled (gray)
+
+                timerElement.textContent = `in ${seconds} seconds`;
+
+                timerInterval = setInterval(() => {
+                    seconds--;
+                    timerElement.textContent = `in ${seconds} seconds`;
+
+                    if (seconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerElement.textContent = ''; // Hide the timer text
+                        resendLink.style.pointerEvents = 'auto'; // Re-enable the link
+                        resendLink.style.color = ''; // Restore original color
+                    }
+                }, 1000);
+            }
+
+            function handleResendOtp() {
+                // This function will be called when the user clicks "Resend Code"
+                // It's very similar to the next-1 button's logic
+                
+                // Optional: show a sending state
+                alert('Sending a new OTP...');
+
+                const email = document.getElementById('input-email').value;
+
+                fetch('/signup/send-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ email: email })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to send new OTP.');
+                    return response.json();
+                })
+                .then(data => {
+                    alert('A new OTP has been sent to your email.');
+                    startResendTimer(); // Restart the timer
+                })
+                .catch(error => {
+                    alert(error.message);
+                });
+            }
+
+            // Stepper Navigation with AJAX
             document.getElementById('next-1').addEventListener('click', (e) => {
                 e.preventDefault();
                 const { isForm1Complete } = checkFormCompletion();
-                // Only proceed if Form 1 is actually complete
+
                 if (isForm1Complete) {
-                    isStep1Completed = true; // Set step 1 as completed
-                    currentStep = 2;
-                    updateStepper();
+                    // Show a loading state if you want
+                    e.target.textContent = 'Sending...';
+                    e.target.disabled = true;
+
+                    const email = document.getElementById('input-email').value;
+
+                    fetch('/signup/send-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ email: email })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw err; });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        isStep1Completed = true;
+                        currentStep = 2;
+                        updateEmailDisplay(); // Update the email on the OTP screen
+                        updateStepper();
+                        startResendTimer();
+                    })
+                    .catch(error => {
+                        // Handle errors, like if the email is already taken
+                        let errorMessage = "An error occurred. Please try again.";
+                        if (error.errors && error.errors.email) {
+                            errorMessage = error.errors.email[0];
+                        }
+                        alert(errorMessage);
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        e.target.textContent = 'Confirm';
+                        e.target.disabled = false;
+                    });
+
                 } else {
                     alert("Please complete all required fields for Basic Details correctly.");
                 }
             });
-
+            
             document.getElementById('next-2').addEventListener('click', (e) => {
                 e.preventDefault();
                 const { isOTPComplete } = checkFormCompletion();
-                // Only proceed if Form 2 (OTP) is complete
+                
                 if (isOTPComplete) {
-                    isStep2Completed = true; // Set step 2 as completed
-                    currentStep = 3;
-                    updateStepper();
+                    e.target.textContent = 'Verifying...';
+                    e.target.disabled = true;
+
+                    const otpDigits = [
+                        document.getElementById('otp1').value,
+                        document.getElementById('otp2').value,
+                        document.getElementById('otp3').value,
+                        document.getElementById('otp4').value,
+                        document.getElementById('otp5').value,
+                        document.getElementById('otp6').value
+                    ];
+
+                    fetch('/signup/verify-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ otp: otpDigits })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw err; });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        isStep2Completed = true;
+                        currentStep = 3;
+                        updateStepper();
+                    })
+                    .catch(error => {
+                        alert(error.message || "Invalid OTP. Please try again.");
+                    })
+                    .finally(() => {
+                        e.target.textContent = 'Verify OTP';
+                        e.target.disabled = false;
+                    });
+
                 } else {
                     alert("Please enter the complete 6-digit OTP.");
                 }
             });
 
             document.getElementById('next-3').addEventListener('click', (e) => {
-                e.preventDefault();
                 const { isForm3Complete } = checkFormCompletion();
-                // Only set complete if Form 3 is valid
-                if (isForm3Complete) {
-                    isStep3Completed = true; // Set step 3 as completed
-                    updateStepper();
-                    alert("Account Created Successfully!");
-                } else {
+
+                // If the form is NOT complete, prevent the submission and show an alert.
+                if (!isForm3Complete) {
+                    e.preventDefault(); 
                     alert("Please complete all required fields for Account Setup correctly.");
                 }
             });
@@ -1083,7 +1195,6 @@
                         dropdownMenu.classList.toggle('hidden');
                     });
                 }
-
 
                 // Handle selection of a dropdown item
                 menuItems.forEach(item => {
