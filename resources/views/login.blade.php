@@ -151,10 +151,10 @@
                     <p id="login-header2" class="text-[#07185788] font-sans font-normal text-base mb-3">Welcome to Fin-noys</p>
                 </div>
 
-                <!-- EMAIL FIELD -->
+                <!-- USERNAME FIELD -->
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon"></i>
-                    <input type="text" id="input-username" name="email" class="bg-gray-100">
+                    <input type="text" id="input-username" name="login" class="bg-gray-100">
                     <label for="input-username" class="text-[#07185788] text-sm font-sans">Email/Username</label>
                 </div>
 

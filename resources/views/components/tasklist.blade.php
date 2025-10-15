@@ -1,11 +1,18 @@
 @props([
-    'tasks' => [],            // Array of tasks
-    'editable' => false,      // Enable inline editing of titles
-    'showAvatar' => true,     // Show or hide avatar
-    'onToggle' => '',         // JS function name to call when toggled
+    'tasks' => [],
+    'editable' => false,
+    'showAvatar' => true,
+    'onToggle' => '',
 ])
 
-<div x-data="{ tasks: @js($tasks) }" class="w-full">
+{{-- Convert collection to array for Alpine --}}
+@php
+    $tasksArray = $tasks instanceof \Illuminate\Support\Collection ? $tasks->toArray() : $tasks;
+@endphp
+
+<div x-data="{ tasks: [] }" 
+     x-init="tasks = {{ json_encode(array_values($tasksArray)) }}"
+     class="w-full">
     <template x-for="(task, index) in tasks" :key="task.id">
         <div
             class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 
@@ -64,7 +71,7 @@
                      class="rounded-full w-7 h-7 border border-gray-300 dark:border-gray-600">
                 @endif
 
-                <!-- Custom Slot (for buttons, etc.) -->
+                <!-- Custom Slot -->
                 <div>
                     {{ $slot }}
                 </div>

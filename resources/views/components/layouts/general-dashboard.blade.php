@@ -26,6 +26,8 @@
           document.documentElement.classList.remove('dark');
         }
     </script>
+
+    @livewireStyles 
 </head>
 <style>
     #page-loader {
@@ -180,6 +182,7 @@
         });
     </script>
     @stack('scripts')
+    @livewireScripts
 </body>
 
 </html>

@@ -3,35 +3,65 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Task;
 use App\Models\Attendance;
+use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // 1. Get the total number of employees (expected workforce)
-        // Adjust the query if you need to filter by role, etc.
+        // === ATTENDANCE DATA ===
         $totalEmployees = User::where('role', 'employee')->count();
-
-        // 2. Get the number of employees present today
-        $presentEmployees = Attendance::whereDate('created_at', Carbon::today())
-                                    ->distinct('employee_id')
-                                    ->count('employee_id');
-
-        // 3. Calculate absent employees
+        $presentEmployees = Attendance::whereDate('clock_in', Carbon::today())
+            ->distinct('employee_id')
+            ->count('employee_id');
         $absentEmployees = $totalEmployees - $presentEmployees;
-
-        // 4. Calculate attendance rate (handle division by zero)
         $attendanceRate = ($totalEmployees > 0) ? ($presentEmployees / $totalEmployees) * 100 : 0;
 
-        // 5. Pass all the data to the view
+        // === TASK DATA (This is the new part) ===
+        $tasksFromDb = Task::with(['location.contractedClient', 'client.user'])
+            ->orderBy('scheduled_date', 'desc')
+            ->take(10)
+            ->get();
+
+        $tasks = $tasksFromDb->map(function ($task) {
+            $title = 'Task without Client';
+
+            if ($task->location && $task->location->contractedClient) {
+                $title = $task->location->contractedClient->name;
+            } elseif ($task->client) {
+                $title = $task->client->first_name . ' ' . $task->client->last_name;
+            }
+
+            return [
+                'id' => $task->id,
+                'title' => $title,
+                'category' => $task->task_description,
+                'date' => Carbon::parse($task->scheduled_date)->format('M d'),
+                'startTime' => $task->started_at ? Carbon::parse($task->started_at)->format('g:i a') : 'TBD',
+                'avatar' => 'https://i.pravatar.cc/30?u=' . $task->id,
+                'done' => $task->status === 'Completed',
+            ];
+        });
+        
+        $taskCount = Task::count();
+    
+        // === ADMIN DATA ===
+        $admin = Auth::user()->employee;
+    
+        // === PASS ALL DATA TO THE VIEW ===
         return view('admin-dash', [
-            'totalEmployees'   => $totalEmployees,
+            'totalEmployees' => $totalEmployees,
             'presentEmployees' => $presentEmployees,
-            'absentEmployees'  => $absentEmployees,
-            'attendanceRate'   => $attendanceRate,
+            'absentEmployees' => $absentEmployees,
+            'attendanceRate' => number_format($attendanceRate, 2),
+            'tasks' => $tasks,             // <-- Pass tasks
+            'taskCount' => $taskCount,       // <-- Pass taskCount
+            'admin' => $admin              // <-- Pass admin info
         ]);
     }
 }

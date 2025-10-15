@@ -24,9 +24,9 @@ class Client extends Model
         'security_answer_2',
     ];
 
-    // // Define the inverse relationship
-    // public function user(): BelongsTo
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
+    // Define the inverse relationship
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }
