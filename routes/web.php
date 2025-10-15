@@ -6,6 +6,9 @@ use Livewire\Volt\Volt;
 use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController; // Import the controller
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Auth\ClientRegistrationController;
+
 use App\Http\Livewire\Admin\TaskDashboard;
 use App\Http\Livewire\Admin\TaskList;
 use App\Http\Livewire\Admin\SimulationDashboard;
@@ -14,8 +17,11 @@ use App\Http\Livewire\Admin\PayrollReport;
 use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
 use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
+<<<<<<< HEAD
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AppointmentList;
+=======
+>>>>>>> 254e89c628236fa10953e31516250a6e903d7793
 
 /*
 |--------------------------------------------------------------------------
@@ -83,6 +89,7 @@ Route::get('/', action: function () {
 // Add dashboard for external clients later
 // Route::get('/client/dashboard', ...)->name('client.dashboard');
 
+<<<<<<< HEAD
 //ALL ROUTES FOR BUTTONS
 Route::get('/signup', function () {
     return view('signup');
@@ -96,6 +103,36 @@ Route::get('/admin-dash', function () {
 Route::get('/admin-tasks', function () {
     return view('admin-tasks');
 })->name('admin-tasks');
+=======
+    //ALL ROUTES FOR BUTTONS
+    Route::get('/signup', function () {
+        return view('signup');
+        })->middleware('guest')->name('signup');
+
+    // ADD THIS NEW POST ROUTE to handle the form submission
+    Route::post('/signup', [ClientRegistrationController::class, 'store'])
+        ->middleware('guest')
+        ->name('register.client');
+        
+    // ADD these two routes
+    Route::post('/signup/send-otp', [ClientRegistrationController::class, 'sendOtp'])->middleware('guest');
+    Route::post('/signup/verify-otp', [ClientRegistrationController::class, 'verifyOtp'])->middleware('guest');
+
+    // ADD A PLACEHOLDER ROUTE for the client dashboard
+    Route::get('/client/dashboard', function() {
+        return "Welcome to the Client Dashboard!"; // Replace this with a view later
+        })->middleware('auth')->name('client.dashboard');
+
+
+    Route::get('/admin-dash', function () {
+        return view('admin-dash');
+        })->name('admin-dash');
+
+
+    Route::get('/admin-tasks', function () {
+        return view('admin-tasks');
+        })->name('admin-tasks');
+>>>>>>> 254e89c628236fa10953e31516250a6e903d7793
 
 // It was added automatically by 'php artisan breeze:install'
 require __DIR__ . '/auth.php';
