@@ -6,7 +6,7 @@
     'onItemClick' => '',        // JS function name for click handler
 ])
 
-<div x-data="appointmentList()" class="w-full space-y-3">
+<div x-data="appointmentList()" class="w-full space-y-5">
     <template x-for="(appointment, index) in appointments" :key="appointment.id">
         <div
             @click="handleClick(appointment)"

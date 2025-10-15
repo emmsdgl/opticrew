@@ -33,7 +33,34 @@
             <x-labelwithvalue label="Schedule" count="" />
             <div
                 class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
+                @php
+                    $appointments = [
+                        [
+                            'id' => 1,
+                            'title' => 'Deep Cleaning',
+                            'location' => 'Cabin 1',
+                            'status' => 'in_progress',
+                            'duration' => '02 h 30 m',
+                            'progress' => 30,
+                            'date' => '2025-07-07',
+                            'time' => '10:00 AM'
+                        ],
+                        [
+                            'id' => 2, // Changed to 2 (you had duplicate id: 1)
+                            'title' => 'Deep Cleaning',
+                            'location' => 'Cabin 1',
+                            'status' => 'incomplete',
+                            'duration' => '02 h 30 m',
+                            'progress' => 50,
+                            'date' => '2025-07-07',
+                            'time' => '10:00 AM'
+                        ],
+                    ];
+                @endphp
 
+                <x-appointmentlistitem :appointments="$appointments" :editable="false" :show-progress="true"
+                    :show-duration="true" on-item-click="handleAppointmentClick">
+                </x-appointmentlistitem>
             </div>
         </div>
 
@@ -45,7 +72,7 @@
                 <x-labelwithvalue label="Tasks Summary" count="" />
                 @php
                     $timeOptions = ['Yesterday', 'Today', 'Last 7 days', 'Last 30 days'];
-                   @endphp
+                @endphp
 
                 <x-dropdown :options="$timeOptions" default="This Day" id="dropdown-time" />
 
@@ -53,29 +80,34 @@
 
             <!-- Inner Up - Tasks Summary -->
             <div
-                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-56 sm:h-56 md:h-64">
-                @php
-                    $chartData = [
-                        'done' => 70,
-                        'inProgress' => 20,
-                        'toDo' => 10
-                    ];
-                @endphp
+                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-64 sm:h-1/2 md:h-1/2">
 
-                <x-radialchart :chartData="$chartData" chartId="task-chart" title="Last 7 days" />
+                <x-radialchart :chart-data="[
+                    'done' => 88,
+                    'inProgress' => 65,
+                    'toDo' => 42
+                ]" chart-id="task-chart" title="Last 7 days" :labels="[
+                    'done' => 'Done',
+                    'inProgress' => 'In Progress',
+                    'toDo' => 'To Do'
+                ]" :colors="[
+                    'done' => '#2A6DFA',
+                    'inProgress' => '#2AC9FA',
+                    'toDo' => '#0028B3'
+                ]" />
             </div>
 
             <x-labelwithvalue label="Your To-Do List" count="(5)" />
 
             <!-- Inner Down - Tasks Particulars -->
             <div
-                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-56 sm:h-56 md:h-56 overflow-y-auto">
+                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto sm:h-56 md:h-auto overflow-y-auto">
 
                 <div class="w-full flex flex-col">
                     @php
                         $tasks = [
                             [
-                                'title' => 'Fix Homepage Bug',
+                                'title' => 'Full Daily Cleaning',
                                 'company' => 'Webify Inc.',
                                 'subtitle' => 'Frontend Development',
                                 'date' => 'Oct 15, 2025',
@@ -83,7 +115,7 @@
                                 'iconBg' => 'bg-blue-100',
                             ],
                             [
-                                'title' => 'Client Proposal Draft',
+                                'title' => 'Daily Room Cleaning',
                                 'company' => 'PitchDeck Co.',
                                 'subtitle' => 'Content Strategy',
                                 'date' => 'Oct 16, 2025',
@@ -104,4 +136,5 @@
             </div>
         </div>
     </section>
-    </x-layouts.employee-dashboard>
+    </x-layouts.general-dashboard>
+    @stack('scripts')
