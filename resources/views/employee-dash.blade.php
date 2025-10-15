@@ -33,32 +33,7 @@
             <x-labelwithvalue label="Schedule" count="" />
             <div
                 class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
-                @php
-                    $appointments = [
-                        [
-                            'id' => 1,
-                            'title' => 'Deep Cleaning',
-                            'location' => 'Cabin 1',
-                            'status' => 'in_progress',
-                            'duration' => '02 h 30 m',
-                            'progress' => 30,
-                            'date' => '2025-07-07',
-                            'time' => '10:00 AM'
-                        ],
-                        [
-                            'id' => 2, // Changed to 2 (you had duplicate id: 1)
-                            'title' => 'Deep Cleaning',
-                            'location' => 'Cabin 1',
-                            'status' => 'incomplete',
-                            'duration' => '02 h 30 m',
-                            'progress' => 50,
-                            'date' => '2025-07-07',
-                            'time' => '10:00 AM'
-                        ],
-                    ];
-                @endphp
-
-                <x-appointmentlistitem :appointments="$appointments" :editable="false" :show-progress="true"
+                <x-appointmentlistitem :appointments="$dailySchedule->all()" :editable="false" :show-progress="true"
                     :show-duration="true" on-item-click="handleAppointmentClick">
                 </x-appointmentlistitem>
             </div>
@@ -71,10 +46,10 @@
             <div class="flex flex-row justify-between w-full">
                 <x-labelwithvalue label="Tasks Summary" count="" />
                 @php
-                    $timeOptions = ['Yesterday', 'Today', 'Last 7 days', 'Last 30 days'];
+                    $timeOptions = ['All', 'Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
                 @endphp
 
-                <x-dropdown :options="$timeOptions" default="This Day" id="dropdown-time" />
+                <x-dropdown :options="$timeOptions" :default="$period" id="dropdown-time" />
 
             </div>
 
@@ -82,11 +57,7 @@
             <div
                 class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-64 sm:h-1/2 md:h-1/2">
 
-                <x-radialchart :chart-data="[
-                    'done' => 88,
-                    'inProgress' => 65,
-                    'toDo' => 42
-                ]" chart-id="task-chart" title="Last 7 days" :labels="[
+                <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
                     'done' => 'Done',
                     'inProgress' => 'In Progress',
                     'toDo' => 'To Do'
@@ -97,44 +68,51 @@
                 ]" />
             </div>
 
-            <x-labelwithvalue label="Your To-Do List" count="(5)" />
+            <x-labelwithvalue label="Your To-Do List" count="({{ count($todoList) }})" />
 
             <!-- Inner Down - Tasks Particulars -->
             <div
                 class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto sm:h-56 md:h-auto overflow-y-auto">
 
                 <div class="w-full flex flex-col">
-                    @php
-                        $tasks = [
-                            [
-                                'title' => 'Full Daily Cleaning',
-                                'company' => 'Webify Inc.',
-                                'subtitle' => 'Frontend Development',
-                                'date' => 'Oct 15, 2025',
-                                'dueTime' => '5:00 PM',
-                                'iconBg' => 'bg-blue-100',
-                            ],
-                            [
-                                'title' => 'Daily Room Cleaning',
-                                'company' => 'PitchDeck Co.',
-                                'subtitle' => 'Content Strategy',
-                                'date' => 'Oct 16, 2025',
-                                'dueTime' => '2:30 PM',
-                                'iconBg' => 'bg-green-100',
-                            ],
-                        ];
-                    @endphp
-
                     <div class="space-y-4">
-                        @foreach($tasks as $task)
-                            <x-todolistitem :task="$task" />
+                        @foreach($todoList as $task)
+                            <x-todolistitem :task="(array)$task" />
                         @endforeach
                     </div>
-
-
                 </div>
             </div>
         </div>
     </section>
-    </x-layouts.general-dashboard>
-    @stack('scripts')
+</x-layouts.general-dashboard>
+@push('scripts')
+<script>
+    // This script handles the Tasks Summary filter dropdown.
+    document.addEventListener('DOMContentLoaded', function () {
+        // Find the button that triggers the dropdown. We assume it has a 'data-dropdown-toggle' attribute.
+        const dropdownButton = document.querySelector('[data-dropdown-toggle="dropdown-time"]');
+        const dropdownMenu = document.getElementById('dropdown-time');
+
+        if (dropdownButton && dropdownMenu) {
+            // Listen for clicks on the entire dropdown menu.
+            dropdownMenu.addEventListener('click', function(event) {
+                
+                // Find the specific item that was clicked (could be a link or any other element).
+                const target = event.target.closest('a, button, li'); // Make it flexible
+
+                if (target) {
+                    // Get the text content of the clicked item.
+                    const selectedPeriod = target.textContent.trim();
+                    
+                    if (selectedPeriod) {
+                        const currentUrl = new URL(window.location.href);
+                        currentUrl.searchParams.set('period', selectedPeriod);
+                        window.location.href = currentUrl.toString();
+                    }
+                }
+            });
+        }
+    });
+</script>
+@endpush
+@stack('scripts')
