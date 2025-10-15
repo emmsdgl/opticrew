@@ -1,6 +1,7 @@
 <!-- Topbar -->
 <header class="flex items-center justify-between px-6 h-20 border-b border-gray-50 dark:border-gray-700">
     <div class="flex items-center w-full max-w-3xl">
+        {{-- Search bar or other content can go here --}}
     </div>
 
     <div class="flex items-center space-x-6">
@@ -12,9 +13,10 @@
             <i class="fa-solid fa-inbox text-lg"></i>
         </button>
 
-        <!-- Theme Toggle -->
+        <!-- Theme Toggle Button -->
         <button id="theme-toggle"
             class="relative bg-gray-200 dark:bg-gray-800 px-3 py-2 rounded-full transition rotate-once">
+            {{-- The icon will be updated by the JavaScript --}}
             <i id="theme-icon"
                 class="fi fi-rr-brightness text-yellow-300 text-lg transition-transform duration-500"></i>
         </button>
@@ -22,12 +24,9 @@
         <div class="flex items-center space-x-3">
             <img src="https://i.pravatar.cc/40" alt="User" class="w-8 h-8 rounded-full">
             
-            {{-- This is the dynamic part --}}
             @auth
-                {{-- Explode the full name by space and take the first part (the first name) --}}
                 <span class="text-sm font-medium">{{ explode(' ', auth()->user()->name)[0] }}</span>
             @else
-                {{-- Fallback for guests or if user is not logged in --}}
                 <span class="text-sm font-medium">Guest</span>
             @endauth
 
