@@ -10,15 +10,21 @@
     <div>
         <!-- Logo + toggle -->
         <div class="flex items-center justify-between h-20 px-4 border-b border-[#D1D1D1] dark:border-[#334155]">
-            <div class="flex items-center space-x-3">
-                <img src="/public/images/finnoys-text-logo.svg"
-                class="h-20 flex flex-col justify-center w-full sidebar-logo" alt="logo">
-                </div>
- 
-                    <button id="sidebar-toggle" class="text-gray-600 dark:text-gray-300 hover:hover:bg-[#2A6DFA]">
-                    <i class="fi fi-rr-angle-small-left text-lg"></i>
-                </button>
-                </div>
+            <div class="flex items-center">
+                <!-- Light Mode Logo (visible by default, hidden in dark mode) -->
+                <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
+                     class="block dark:hidden h-20 w-auto sidebar-logo" 
+                     alt="Fin-Noys Light Logo">
+                
+                <!-- Dark Mode Logo (hidden by default, visible in dark mode) -->
+                <img src="{{ asset('images/finnoys-text-logo.svg') }}"
+                     class="hidden dark:block h-20 w-auto sidebar-logo" 
+                     alt="Fin-Noys Dark Logo">
+            </div>
+            <button id="sidebar-toggle" class="text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1">
+                <i class="fi fi-rr-angle-small-left text-lg"></i>
+            </button>
+        </div>
 
         <!-- Nav -->
         <nav class="mt-6 space-y-1">
