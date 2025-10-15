@@ -15,6 +15,7 @@ use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
 use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AppointmentList;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,28 +23,29 @@ use App\Http\Controllers\DashboardController;
 |--------------------------------------------------------------------------
 */
 
+// Route::get('/', [AppointmentList::class, 'index'])->name('client-dash');
+
 //FOR ADMIN DASHBOARD SHOWING
 Route::get('/', action: function () {
-    return view('employee-dash');
-})->name('employee-dash');
+    return view('client-dash');
+})->name('client-dash');
 // Route::get('/', action: function () {
-//     return view('login');
-// })->name('login');
-
-// --- AUTHENTICATED ROUTES ---
-Route::middleware(['auth'])->group(function () {
-
-    // --- ADMIN ROUTES ---
+    //     return view('login');
+    // })->name('login');
+    
+    // --- AUTHENTICATED ROUTES ---
+    Route::middleware(['auth'])->group(function () {
+        
+        // --- ADMIN ROUTES ---
     // Route::get('/admin/dashboard', function () {
     //     return view('admin-dash');
     // })->middleware(['auth'])->name(name: 'admin.dashboard');
-    
-    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     // Route::get('/admin/dashboard', TaskDashboard::class)
     //     ->middleware(['auth'])
     //     ->name('admin.dashboard');
-    
+
     Route::get('/admin/tasks', TaskList::class)->name('admin.tasks');
 
     // The "Schedules" manager
@@ -64,38 +66,36 @@ Route::middleware(['auth'])->group(function () {
 
         // 1. Get the currently authenticated user.
         $user = Auth::user();
-    
+
         // 2. Get the associated employee record using the relationship we just defined.
         $employee = $user->employee;
-    
+
         // 3. Pass the $employee variable to the view.
         return view('employee-dash', compact('employee'));
-    
+
     })->middleware(['auth'])->name('employee.dashboard');
-    
+
     Route::get('/admin/reports', \App\Http\Livewire\Admin\Reports::class)->name('admin.reports');
-    
+
     Route::get('/admin/payroll', PayrollReport::class)->name('admin.payroll');
 });
 
-    // Add dashboard for external clients later
-    // Route::get('/client/dashboard', ...)->name('client.dashboard');
+// Add dashboard for external clients later
+// Route::get('/client/dashboard', ...)->name('client.dashboard');
 
-    //ALL ROUTES FOR BUTTONS
-    Route::get('/signup', function () {
+//ALL ROUTES FOR BUTTONS
+Route::get('/signup', function () {
     return view('signup');
-    })->name('signup');
+})->name('signup');
 
-    Route::get('/admin-dash', function () {
+Route::get('/admin-dash', function () {
     return view('admin-dash');
-    })->name('admin-dash');
+})->name('admin-dash');
 
 
-    Route::get('/admin-tasks', function () {
+Route::get('/admin-tasks', function () {
     return view('admin-tasks');
-    })->name('admin-tasks');
+})->name('admin-tasks');
 
-
-// 3. This brings in all the necessary authentication routes like /login, /logout, /register etc.
 // It was added automatically by 'php artisan breeze:install'
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
