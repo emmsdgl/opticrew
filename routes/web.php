@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\Auth\ClientRegistrationController;
 use App\Http\Controllers\Auth\ForgotPasswordController; 
 
@@ -62,19 +63,7 @@ Route::middleware(['auth'])->group(function () {
 
 
     // --- EMPLOYEE ROUTES ---
-    Route::get('/employee/dashboard', function () {
-
-        // 1. Get the currently authenticated user.
-        $user = Auth::user();
-
-        // 2. Get the associated employee record using the relationship we just defined.
-        $employee = $user->employee;
-
-        // 3. Pass the $employee variable to the view.
-        return view('employee-dash', compact('employee'));
-
-    })->middleware(['auth'])->name('employee.dashboard');
-
+    Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])->middleware('auth')->name('employee.dashboard');
     
     // --- CLIENT ROUTES ---
     Route::get('/client/dashboard', function() {
