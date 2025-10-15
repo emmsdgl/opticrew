@@ -17,11 +17,7 @@ use App\Http\Livewire\Admin\PayrollReport;
 use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
 use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
-<<<<<<< HEAD
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AppointmentList;
-=======
->>>>>>> 254e89c628236fa10953e31516250a6e903d7793
 
 /*
 |--------------------------------------------------------------------------
@@ -33,8 +29,8 @@ use App\Http\Controllers\AppointmentList;
 
 //FOR ADMIN DASHBOARD SHOWING
 Route::get('/', action: function () {
-    return view('client-dash');
-})->name('client-dash');
+    return view('employee-dash');
+})->name('employee-dash');
 // Route::get('/', action: function () {
     //     return view('login');
     // })->name('login');
@@ -89,21 +85,6 @@ Route::get('/', action: function () {
 // Add dashboard for external clients later
 // Route::get('/client/dashboard', ...)->name('client.dashboard');
 
-<<<<<<< HEAD
-//ALL ROUTES FOR BUTTONS
-Route::get('/signup', function () {
-    return view('signup');
-})->name('signup');
-
-Route::get('/admin-dash', function () {
-    return view('admin-dash');
-})->name('admin-dash');
-
-
-Route::get('/admin-tasks', function () {
-    return view('admin-tasks');
-})->name('admin-tasks');
-=======
     //ALL ROUTES FOR BUTTONS
     Route::get('/signup', function () {
         return view('signup');
@@ -132,7 +113,6 @@ Route::get('/admin-tasks', function () {
     Route::get('/admin-tasks', function () {
         return view('admin-tasks');
         })->name('admin-tasks');
->>>>>>> 254e89c628236fa10953e31516250a6e903d7793
 
 // It was added automatically by 'php artisan breeze:install'
 require __DIR__ . '/auth.php';
