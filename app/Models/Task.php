@@ -26,18 +26,21 @@ class Task extends Model
     ];
 
     // --- YOUR RELATIONSHIPS ARE ALREADY HERE, WHICH IS GOOD ---
-    public function location()
-    {
+    public function location() {
         return $this->belongsTo(Location::class);
     }
 
-    public function team()
-    {
-        return $this->belongsTo(DailyTeamAssignment::class, 'assigned_team_id');
+    public function client() {
+        return $this->belongsTo(Client::class);
     }
 
-    public function performanceHistory()
-    {
-        return $this->hasOne(TaskPerformanceHistory::class);
-    }
+    // public function team()
+    // {
+    //     return $this->belongsTo(DailyTeamAssignment::class, 'assigned_team_id');
+    // }
+
+    // public function performanceHistory()
+    // {
+    //     return $this->hasOne(TaskPerformanceHistory::class);
+    // }
 }
