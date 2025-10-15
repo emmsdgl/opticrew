@@ -38,7 +38,7 @@
     <!-- Dropdown Menu -->
     <div 
         id="{{ $uniqueId }}_menu"
-        class="absolute right-0 w-full top-full mt-2 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-lg w-40
+        class="absolute right-0 w-full top-full mt-2 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-lg
                opacity-0 invisible transform scale-y-0 origin-top transition-all duration-300 dark:bg-gray-700">
         <ul class="py-2 text-xs text-gray-700 dark:text-white">
             @foreach ($options as $option)
@@ -101,3 +101,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endpush
+@stack('scripts')
