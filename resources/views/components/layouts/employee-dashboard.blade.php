@@ -62,7 +62,7 @@
 
         <!-- EMPLOYEE SIDEBAR CONTENTS-->
         <x-sidebar :navOptions="[
-        ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '/home'],
+        ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '/employee/dashboard'],
         ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => '/users'],
         ['label' => 'Attendance', 'icon' => 'fa-users', 'href' => '/projects'],
         ['label' => 'Schedule', 'icon' => 'fa-calendar', 'href' => '/calendar'],
