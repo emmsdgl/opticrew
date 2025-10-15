@@ -1,4 +1,4 @@
-<x-layouts.general-dashboard :title="'Client Dashboard'">
+<x-layouts.general-dashboard :title="'Client Appointments'">
 
     @slot('sidebar')
     @php
@@ -25,7 +25,9 @@
                 <x-herocard :headerName="$client->full_name ?? 'Client'" :headerDesc="'Welcome to the dashboard. What needs cleaning today?'" :headerIcon="'hero-client'" />
             </div>
             <!-- Inner Middle - Calendar -->
-                <x-labelwithvalue label="My Calendar" count="" />
+            <p class="text-sm font-sans font-bold mr-2">
+                My Calendar
+            </p>
             <div
                 class="w-full mb-6 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto sm:h-72 md:h-80 lg:h-auto">
                 <x-calendar />

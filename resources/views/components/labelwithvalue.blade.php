@@ -1,6 +1,6 @@
 @props(['label' => '', 'count' => ''])
 
-<div class="flex flex-row">
+<div class="flex flex-row items-center">
     <p class="text-sm font-sans font-bold mr-2">
         {{ $label }}
     </p>
