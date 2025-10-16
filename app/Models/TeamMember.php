@@ -22,7 +22,7 @@ class TeamMember extends Model
     // DEFINE YOUR RELATIONSHIPS
     public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
     public function team()
