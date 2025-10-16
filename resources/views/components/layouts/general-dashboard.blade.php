@@ -19,6 +19,7 @@
     <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
     <script src="https://unpkg.com/flowbite@latest/dist/flowbite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- In your layout file before </body> -->
 
     <!-- SCRIPT TO APPLY THE SAVED THEME ON PAGE LOAD -->
     <script>
