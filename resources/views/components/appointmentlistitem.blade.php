@@ -1,151 +1,192 @@
 @props([
-    'appointments' => [],       // Array of appointments
-    'editable' => false,        // Enable inline editing
-    'showProgress' => true,     // Show progress bar
-    'showDuration' => true,     // Show estimated duration
-    'onItemClick' => '',        // JS function name for click handler
+    'records' => [],
+    'showHeader' => true,
 ])
 
-<div x-data="appointmentList()" class="w-full space-y-5">
-    <template x-for="(appointment, index) in appointments" :key="appointment.id">
-        <div
-            @click="handleClick(appointment)"
-            class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-200 
-                   dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow cursor-pointer group">
+<div class="w-full overflow-x-auto">
+    <!-- Table Header -->
+    @if($showHeader)
+    <div class="hidden md:grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-800 
+                border-b border-gray-200 dark:border-gray-700 rounded-lg">
+        <div class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+            Status
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M5 12a1 1 0 102 0V6.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L5 6.414V12zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"/>
+            </svg>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+            Date
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M5 12a1 1 0 102 0V6.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L5 6.414V12zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"/>
+            </svg>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+            Time In
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M5 12a1 1 0 102 0V6.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L5 6.414V12zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"/>
+            </svg>
+        </div>
+        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Time Out</div>
+        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Meal Break</div>
+        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Action</div>
+    </div>
+    @endif
+
+    <!-- Table Body -->
+    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+        @foreach($records as $index => $record)
+        <div x-data="attendanceRow({{ $index }}, @js($record))" 
+             class="grid grid-cols-1 md:grid-cols-6 gap-4 px-6 py-4 bg-white dark:bg-gray-900 
+                    hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+             :class="{ 'border-2 border-blue-500': isHighlighted }">
             
-            <!-- Left Section: Status Badge + Title + Duration -->
-            <div class="flex items-center gap-4 flex-1 min-w-0">
-                
-                <!-- Status Badge -->
-                <div class="flex-shrink-0">
-                    <template x-if="appointment.status === 'in_progress'">
+            <!-- Status Badge -->
+            <div class="flex items-center gap-2">
+                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400">Status:</span>
+                <template x-if="status === 'present'">
+                    <x-badge 
+                        label="Present" 
+                        colorClass="bg-[#2FBC0020] text-[#2FBC00]" 
+                        size="text-xs" />
+                </template>
+                <template x-if="status === 'late'">
                         <x-badge 
-                            label="In Progress" 
+                            label="Late" 
                             colorClass="bg-[#FF7F0020] text-[#FF7F00]" 
                             size="text-xs" />
-                    </template>
-                    <template x-if="appointment.status === 'complete'">
+                </template>
+                <template x-if="status === 'absent'">
                         <x-badge 
-                            label="Completed" 
-                            colorClass="bg-[#2FBC0020] text-[#2FBC00]" 
-                            size="text-xs" />
-                    </template>
-                    <template x-if="appointment.status === 'incomplete'">
-                        <x-badge 
-                            label="Incomplete" 
+                            label="Absent" 
                             colorClass="bg-[#FE1E2820] text-[#FE1E28]" 
                             size="text-xs" />
-                    </template>
-                </div>
-
-                <!-- Title and Location -->
-                <div class="flex-1 min-w-0">
-                    <template x-if="{{ $editable ? 'true' : 'false' }}">
-                        <input 
-                            type="text"
-                            x-model="appointment.title"
-                            class="w-full bg-transparent border-b border-gray-300 focus:border-blue-500 
-                                   focus:outline-none text-gray-900 dark:text-gray-100 font-medium"
-                            @click.stop>
-                    </template>
-                    
-                    <template x-if="{{ $editable ? 'false' : 'true' }}">
-                        <h3 class="text-gray-900 dark:text-gray-100 font-semibold text-base"
-                            x-text="appointment.title"></h3>
-                    </template>
-                    
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5" 
-                       x-text="appointment.location"></p>
-                </div>
-
-                <!-- Estimated Duration -->
-                @if ($showDuration)
-                <div class="flex-shrink-0 text-left" x-show="appointment.duration">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                        Estimated Duration
-                    </p>
-                    <p class="text-sm text-gray-900 dark:text-gray-100 font-semibold mt-0.5"
-                       x-text="appointment.duration"></p>
-                </div>
-                @endif
+                </template>
             </div>
 
-            <!-- Right Section: Progress + Date/Time -->
-            <div class="flex items-center gap-6 flex-shrink-0 ml-6">
-                
-                <!-- Progress Bar -->
-                @if ($showProgress)
-                <div class="flex items-center gap-3" x-show="appointment.progress !== undefined">
-                    <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 min-w-[3rem]"
-                          x-text="appointment.progress + '%'"></span>
-                    <div class="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div 
-                            class="h-full bg-blue-500 rounded-full transition-all duration-300"
-                            :style="`width: ${appointment.progress}%`">
-                        </div>
-                    </div>
-                </div>
-                @endif
+            <!-- Date -->
+            <div class="flex flex-col">
+                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Date:</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="date"></span>
+                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="dayOfWeek"></span>
+            </div>
 
-                <!-- Date and Time -->
-                <div class="text-right">
-                    <p class="text-sm text-gray-900 dark:text-gray-100 font-medium"
-                       x-text="formatDate(appointment.date)"></p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5"
-                       x-text="appointment.time"></p>
-                </div>
+            <!-- Time In -->
+            <div class="flex flex-col">
+                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Time In:</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="timeIn || '-'"></span>
+                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="timeInNote"></span>
+            </div>
 
-                <!-- Custom Slot -->
-                <div class="flex items-center gap-2">
-                    {{ $slot }}
-                </div>
+            <!-- Time Out -->
+            <div class="flex flex-col">
+                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Time Out:</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="timeOut || '-'"></span>
+                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="timeOutNote"></span>
+            </div>
+
+            <!-- Meal Break -->
+            <div class="flex flex-col">
+                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Meal Break:</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="mealBreak || '-'"></span>
+                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="mealBreakDuration"></span>
+            </div>
+
+            <!-- Action Button -->
+            <div class="flex items-start">
+                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Action:</span>
+                <button
+                    @click="handleAction()"
+                    :disabled="isTimedOut"
+                    class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                    :class="isTimedOut 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600' 
+                        : (timedIn 
+                            ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600' 
+                            : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600')"
+                    x-text="buttonText">
+                </button>
             </div>
         </div>
-    </template>
+        @endforeach
+    </div>
 
     <!-- Empty State -->
-    <div x-show="appointments.length === 0" 
-         class="text-center py-12 text-gray-500 dark:text-gray-400">
+    @if(count($records) === 0)
+    <div class="text-center py-12 text-gray-500 dark:text-gray-400">
         <i class="fa-regular fa-calendar-xmark text-4xl mb-3"></i>
-        <p>No appointments scheduled</p>
+        <p>No attendance records found</p>
     </div>
+    @endif
 </div>
-
+@push('scripts')
 <script>
-function appointmentList() {
+function attendanceRow(index, record) {
     return {
-        appointments: @js($appointments),
+        status: record.status || 'absent',
+        date: record.date || '',
+        dayOfWeek: record.dayOfWeek || '',
+        timeIn: record.timeIn || null,
+        timeInNote: record.timeInNote || '',
+        timeOut: record.timeOut || null,
+        timeOutNote: record.timeOutNote || '',
+        mealBreak: record.mealBreak || null,
+        mealBreakDuration: record.mealBreakDuration || '',
+        timedIn: record.timedIn || false,
+        isTimedOut: record.isTimedOut || false,
+        isHighlighted: false,
         
-        formatStatus(status) {
-            const statusMap = {
-                'in_progress': 'In Progress',
-                'complete': 'Complete',
-                'pending': 'Pending',
-                'scheduled': 'Scheduled'
-            };
-            return statusMap[status] || status;
+        get buttonText() {
+            if (this.isTimedOut) return 'Timed Out';
+            return this.timedIn ? 'Time Out' : 'Time In';
         },
         
-        formatDate(date) {
-            if (!date) return '';
-            const d = new Date(date);
-            return d.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                year: 'numeric' 
-            });
-        },
-        
-        handleClick(appointment) {
-            @if($onItemClick)
-                if (typeof window['{{ $onItemClick }}'] === 'function') {
-                    window['{{ $onItemClick }}'](appointment);
-                }
-            @endif
+        handleAction() {
+            if (this.isTimedOut) return;
             
-            // Emit Alpine event
-            this.$dispatch('appointment-clicked', appointment);
+            const now = new Date();
+            const currentTime = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            
+            if (!this.timedIn) {
+                // Time In action
+                this.timeIn = currentTime;
+                this.timedIn = true;
+                this.status = 'present';
+                this.isHighlighted = true;
+                
+                // Calculate if early or late (example: expected time is 9:00 AM)
+                const hour = now.getHours();
+                if (hour < 9) {
+                    this.timeInNote = Math.abs(9 - hour) + ' h early';
+                } else if (hour > 9) {
+                    this.timeInNote = (hour - 9) + ' h late';
+                    this.status = 'late';
+                } else {
+                    this.timeInNote = 'On time';
+                }
+                
+                // Emit event for parent component
+                this.$dispatch('time-in', { index, time: currentTime });
+                
+                // Remove highlight after animation
+                setTimeout(() => {
+                    this.isHighlighted = false;
+                }, 2000);
+            } else {
+                // Time Out action
+                this.timeOut = currentTime;
+                this.isTimedOut = true;
+                this.timeOutNote = '';
+                
+                // Emit event for parent component
+                this.$dispatch('time-out', { index, time: currentTime });
+            }
         }
     }
 }
 </script>
+@endpush
+@stack('scripts')
