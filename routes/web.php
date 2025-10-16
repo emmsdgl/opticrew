@@ -29,8 +29,8 @@ use App\Http\Controllers\AppointmentList;
 
 //FOR ADMIN DASHBOARD SHOWING
 Route::get('/', action: function () {
-    return view('employee-dash');
-})->name('employee-dash');
+    return view('employee-attendance');
+})->name('employee-attendance');
 // Route::get('/', action: function () {
     //     return view('login');
     // })->name('login');

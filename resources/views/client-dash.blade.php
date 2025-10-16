@@ -77,11 +77,11 @@
 
         <!-- Right Panel - Attendance Overview -->
         <div
-            class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+            class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto p-6">
 
             <!-- Inner Up - Recommendation Service List -->
             <div
-                class="w-full flex flex-col overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-72 sm:h-72 md:h-auto">
+                class="w-full flex flex-col overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
                 <x-labelwithvalue label="Recommended Services For You" count="(4)" />
                 @php
                     $services = [
