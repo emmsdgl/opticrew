@@ -28,7 +28,7 @@
                         <div class="mt-1 flex justify-between items-center gap-1 text-sm text-gray-400">
                             <p class="text-base py-1.5 font-sans font-bold text-gray-800 dark:text-gray-100"
                                 x-text="task.title"></p>
-                            <x-teamavatarcols :teamName="'Team 2'" :members="['member-1', 'member-2', 'member-3', 'member-4', 'member-5', 'member6', 'member7', 'member8']" />
+                            <x-teamavatarcols :teamName="'Team 2'" :members="['member-1', 'member-2', 'member-3', 'member-4', 'member-5']" />
 
                         </div>
 

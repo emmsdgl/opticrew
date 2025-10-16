@@ -31,13 +31,18 @@ class Task extends Model
     }
 
     public function client() {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class, 'client_id');
     }
+    
+    public function contractedClient() {
+        return $this->belongsTo(ContractedClient::class, 'contracted_client_id');
+    }
+    
 
-    // public function team()
-    // {
-    //     return $this->belongsTo(DailyTeamAssignment::class, 'assigned_team_id');
-    // }
+    public function team()
+    {
+        return $this->belongsTo(DailyTeamAssignment::class, 'assigned_team_id');
+    }
 
     // public function performanceHistory()
     // {

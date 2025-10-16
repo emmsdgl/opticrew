@@ -10,15 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\Auth\ClientRegistrationController;
 use App\Http\Controllers\Auth\ForgotPasswordController; 
-
-use App\Http\Livewire\Admin\TaskDashboard;
-use App\Http\Livewire\Admin\TaskList;
-use App\Http\Livewire\Admin\SimulationDashboard;
-use App\Http\Livewire\Admin\EmployeeAnalytics;
-use App\Http\Livewire\Admin\PayrollReport;
-use App\Http\Livewire\Admin\ScheduleManager;
-use App\Http\Livewire\Admin\SchedulingLog;
-use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentList;
 
 /*
@@ -26,9 +18,6 @@ use App\Http\Controllers\AppointmentList;
 | Web Routes
 |--------------------------------------------------------------------------
 */
-
-    // Route::get('/', [AppointmentList::class, 'index'])->name('client-dash');
-
     Route::get('/', action: function () {
         return view('login');
     })->name('login');
@@ -39,32 +28,25 @@ Route::middleware(['auth'])->group(function () {
     // --- ADMIN ROUTES ---
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
-    Route::get('/admin/tasks', function () {
-        return view('admin-tasks');
-        })->name('admin.tasks');
-
-    // Route::get('/admin/tasks', TaskList::class)->name('admin.tasks');
-
-    Route::get('/admin/reports', \App\Http\Livewire\Admin\Reports::class)->name('admin.reports');
-
-    Route::get('/admin/payroll', PayrollReport::class)->name('admin.payroll');
-
-    // The "Schedules" manager
-    Route::get('/admin/schedules', ScheduleManager::class)->name('admin.schedules');
-
-    // The "Algorithm Simulation" page
-    Route::get('/admin/simulation', SimulationDashboard::class)->name('admin.simulation');
-
-    // The "Employee Analytics" page
-    Route::get('/admin/analytics/employees', EmployeeAnalytics::class)->name('admin.analytics.employees');
-
-    // THIS IS THE CORRECTED ROUTE for the Scheduling Log
-    Route::get('/admin/scheduling-log', SchedulingLog::class)->name('admin.scheduling-log');
+    // Display task calendar and kanban board
+    Route::get('/tasks', [TaskController::class, 'index'])->name('admin.tasks');
+    
+    // Create new task from calendar
+    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
+    
+    // Get all clients (for refreshing dropdown)
+    Route::get('/tasks/clients', [TaskController::class, 'getClients'])->name('tasks.clients');
+    
+    // Add external client from order
+    Route::post('/tasks/add-external-client', [TaskController::class, 'addExternalClientFromOrder'])
+        ->name('tasks.add-external-client');
+});
 
 
     // --- EMPLOYEE ROUTES ---
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])->middleware('auth')->name('employee.dashboard');
-    
+
+
     // --- CLIENT ROUTES ---
     Route::get('/client/dashboard', function() {
         // 1. Get the currently authenticated user.
@@ -82,15 +64,13 @@ Route::middleware(['auth'])->group(function () {
         $user = Auth::user(); 
         
         // Fetch all appointments for the current client
-        $appointments = $user->client->appointments()
-                            ->orderBy('scheduled_date', 'asc') // Show upcoming/recent first
-                            ->get();
+        $appointments = $user->client->appointments() ->orderBy('scheduled_date', 'asc') ->get();
     
         // Pass the fetched data to the new view file
         return view('client-appointments', compact('appointments'));
         
     })->middleware('auth')->name('client.appointments');
-});
+
 
     //ALL ROUTES FOR BUTTONS
     Route::get('/signup', function () {
@@ -102,7 +82,6 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('guest')
         ->name('register.client');
         
-    // ADD these two routes
     Route::post('/signup/send-otp', [ClientRegistrationController::class, 'sendOtp'])->middleware('guest');
     Route::post('/signup/verify-otp', [ClientRegistrationController::class, 'verifyOtp'])->middleware('guest');
 
