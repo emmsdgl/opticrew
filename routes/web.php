@@ -30,8 +30,8 @@ use App\Http\Controllers\AppointmentList;
     // Route::get('/', [AppointmentList::class, 'index'])->name('client-dash');
 
     Route::get('/', action: function () {
-        return view('login');
-    })->name('login');
+        return view('client-appointments');
+    })->name('client-appointments');
     
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {

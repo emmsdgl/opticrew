@@ -25,7 +25,7 @@
                 <x-herocard :headerName="$client->first_name ?? 'Client'" :headerDesc="'Welcome to the dashboard. What needs cleaning today?'" :headerIcon="'hero-client'" />
             </div>
             <!-- Inner Middle - Calendar -->
-                <x-labelwithvalue label="My Calendar" count="" />
+            <x-labelwithvalue label="My Calendar" count="" />
             <div
                 class="w-full mb-6 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto sm:h-72 md:h-80 lg:h-auto">
                 <x-calendar />
@@ -80,8 +80,7 @@
             class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto p-6">
 
             <!-- Inner Up - Recommendation Service List -->
-            <div
-                class="w-full flex flex-col overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
+            <div class="w-full flex flex-col overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
                 <x-labelwithvalue label="Recommended Services For You" count="(4)" />
                 @php
                     $services = [
@@ -108,8 +107,6 @@
 
                 <!-- Just pass the array -->
                 <x-servicecard :services="$services" />
-
-
             </div>
 
         </div>
