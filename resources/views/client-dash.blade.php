@@ -80,35 +80,39 @@
             class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto p-6">
 
             <!-- Inner Up - Recommendation Service List -->
+            <x-labelwithvalue label="Recommended Services For You" count="(4)" />
             <div class="w-full flex flex-col overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
-                <x-labelwithvalue label="Recommended Services For You" count="(4)" />
-                @php
-                    $services = [
-                        [
-                            'title' => 'Hotel Cleaning',
-                            'badge' => 'Top Choice',
-                            'ratingCount' => 4,
-                            'description' => 'Room Cleaning, Linen Cleaning, Window Cleaning, Rug Cleaning',
-                        ],
-                        [
-                            'title' => 'Office Cleaning',
-                            'badge' => 'Popular',
-                            'ratingCount' => 5,
-                            'description' => 'Desk Sanitization, Floor Cleaning, Trash Removal',
-                        ],
-                        [
-                            'title' => 'Residential Cleaning',
-                            'badge' => 'New',
-                            'ratingCount' => 6,
-                            'description' => 'General Housekeeping, Kitchen Cleaning, Bathroom Disinfection',
-                        ],
-                    ];
-                @endphp
+                <div
+                    class="flex flex-col gap-6 p-2 overflow-y-auto snap-x snap-mandatory scroll-smooth scrollbar-custom w-full">
+                    @php
+                        $services = [
+                            [
+                                'title' => 'Hotel Cleaning',
+                                'badge' => 'Top Choice',
+                                'rating' => 4.4,
+                                'description' => 'Room Cleaning, Linen Cleaning, Window Cleaning, Rug Cleaning',
+                            ],
+                            [
+                                'title' => 'Office Cleaning',
+                                'badge' => 'Popular',
+                                'rating' => 4.7,
+                                'description' => 'Desk Sanitization, Floor Cleaning, Trash Removal',
+                            ],
+                            [
+                                'title' => 'Carpet Deep Cleaning',
+                                'badge' => 'Recommended',
+                                'rating' => 4.9,
+                                'description' => 'Carpet Shampooing, Vacuuming, and Odor Removal',
+                            ],
+                        ];
+                    @endphp
 
-                <!-- Just pass the array -->
-                <x-servicecard :services="$services" />
+                    @foreach($services as $service)
+                        <div class="snap-start shrink-0 w-[300px]">
+                            <x-servicecard :service="$service" onBook="handleBook" onFavorite="handleFavorite" />
+                        </div>
+                    @endforeach
+                </div>
             </div>
-
-        </div>
     </section>
 </x-layouts.general-dashboard>

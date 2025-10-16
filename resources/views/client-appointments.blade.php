@@ -112,49 +112,48 @@
         </div>
         <!-- Inner Panel - Services Container -->
         <x-labelwithvalue label="Explore Our Services" count="(5)" />
-        <div
-            class="flex flex-row gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-2 overflow-x-auto">
-            @php
-                $services = [
-                    [
-                        'title' => 'Hotel Cleaning',
-                        'badge' => 'Top Choice',
-                        'rating' => 4.4,
-                        'description' => 'Room Cleaning, Linen Cleaning, Window Cleaning, Rug Cleaning',
-                    ],
-                    [
-                        'title' => 'Office Cleaning',
-                        'badge' => 'Popular',
-                        'rating' => 4.7,
-                        'description' => 'Desk Sanitization, Floor Cleaning, Trash Removal',
-                    ],
-                    [
-                        'title' => 'Office Cleaning',
-                        'badge' => 'Popular',
-                        'rating' => 4.7,
-                        'description' => 'Desk Sanitization, Floor Cleaning, Trash Removal',
-                    ],
-                    [
-                        'title' => 'Office Cleaning',
-                        'badge' => 'Popular',
-                        'rating' => 4.7,
-                        'description' => 'Desk Sanitization, Floor Cleaning, Trash Removal',
-                    ],
-                    [
-                        'title' => 'Carpet Deep Cleaning',
-                        'badge' => 'Recommended',
-                        'rating' => 4.9,
-                        'description' => 'Carpet Shampooing, Vacuuming, and Odor Removal',
-                    ],
-                ];
-            @endphp
 
-<div class="flex gap-6 p-6 overflow-x-auto max-w-full">
-    @foreach($services as $service)
-        <x-servicecard :service="$service" onBook="handleBook" onFavorite="handleFavorite" />
-    @endforeach
-</div>
-        </div>
+            <div class="grid grid-cols-3 gap-3 overflow-x-auto px-6 py-4"
+                style="max-width: 100%;">
+                @php
+                    $services = [
+                        [
+                            'title' => 'Hotel Cleaning',
+                            'badge' => 'Top Choice',
+                            'rating' => 4.4,
+                            'description' => 'Room Cleaning, Linen Cleaning, Window Cleaning, Rug Cleaning',
+                        ],
+                        [
+                            'title' => 'Office Cleaning',
+                            'badge' => 'Popular',
+                            'rating' => 4.7,
+                            'description' => 'Desk Sanitization, Floor Cleaning, Trash Removal',
+                        ],
+                        [
+                            'title' => 'Window Cleaning',
+                            'badge' => 'Popular',
+                            'rating' => 4.6,
+                            'description' => 'Exterior/Interior window cleaning for all types of buildings',
+                        ],
+                        [
+                            'title' => 'Full Facility Cleaning',
+                            'badge' => 'Top Rated',
+                            'rating' => 4.8,
+                            'description' => 'Full floor sanitization, restocking, and trash removal',
+                        ],
+                        [
+                            'title' => 'Carpet Deep Cleaning',
+                            'badge' => 'Recommended',
+                            'rating' => 4.9,
+                            'description' => 'Carpet Shampooing, Vacuuming, and Odor Removal',
+                        ],
+                    ];
+                @endphp
+
+                @foreach($services as $service)
+                        <x-servicecard :service="$service" onBook="handleBook" onFavorite="handleFavorite" />
+                @endforeach
+            </div>
     </section>
 </x-layouts.general-dashboard>
 @stack('scripts')
