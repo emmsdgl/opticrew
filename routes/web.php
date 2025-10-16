@@ -5,17 +5,19 @@ use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
 use Illuminate\Support\Facades\Auth;
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController; // Import the controller
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\Auth\ClientRegistrationController;
+use App\Http\Controllers\Auth\ForgotPasswordController; 
 
 use App\Http\Livewire\Admin\TaskDashboard;
 use App\Http\Livewire\Admin\TaskList;
 use App\Http\Livewire\Admin\SimulationDashboard;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 use App\Http\Livewire\Admin\PayrollReport;
-use App\Http\Livewire\Admin\ScheduleManager; // Add this at the top
-use App\Http\Livewire\Admin\SchedulingLog; // <-- Make sure this is imported
+use App\Http\Livewire\Admin\ScheduleManager;
+use App\Http\Livewire\Admin\SchedulingLog;
 use App\Http\Livewire\Employee\Dashboard as EmployeeDashboard;
 use App\Http\Controllers\AppointmentList;
 
@@ -25,30 +27,27 @@ use App\Http\Controllers\AppointmentList;
 |--------------------------------------------------------------------------
 */
 
-// Route::get('/', [AppointmentList::class, 'index'])->name('client-dash');
+    // Route::get('/', [AppointmentList::class, 'index'])->name('client-dash');
 
-//FOR ADMIN DASHBOARD SHOWING
-Route::get('/', action: function () {
-    return view('employee-attendance');
-})->name('employee-attendance');
-// Route::get('/', action: function () {
-    //     return view('login');
-    // })->name('login');
+    Route::get('/', action: function () {
+        return view('login');
+    })->name('login');
     
-    // --- AUTHENTICATED ROUTES ---
-    Route::middleware(['auth'])->group(function () {
+// --- AUTHENTICATED ROUTES ---
+Route::middleware(['auth'])->group(function () {
         
-        // --- ADMIN ROUTES ---
-    // Route::get('/admin/dashboard', function () {
-    //     return view('admin-dash');
-    // })->middleware(['auth'])->name(name: 'admin.dashboard');
-
+    // --- ADMIN ROUTES ---
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    // Route::get('/admin/dashboard', TaskDashboard::class)
-    //     ->middleware(['auth'])
-    //     ->name('admin.dashboard');
 
-    Route::get('/admin/tasks', TaskList::class)->name('admin.tasks');
+    Route::get('/admin/tasks', function () {
+        return view('admin-tasks');
+        })->name('admin.tasks');
+
+    // Route::get('/admin/tasks', TaskList::class)->name('admin.tasks');
+
+    Route::get('/admin/reports', \App\Http\Livewire\Admin\Reports::class)->name('admin.reports');
+
+    Route::get('/admin/payroll', PayrollReport::class)->name('admin.payroll');
 
     // The "Schedules" manager
     Route::get('/admin/schedules', ScheduleManager::class)->name('admin.schedules');
@@ -64,26 +63,34 @@ Route::get('/', action: function () {
 
 
     // --- EMPLOYEE ROUTES ---
-    Route::get('/employee/dashboard', function () {
-
+    Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])->middleware('auth')->name('employee.dashboard');
+    
+    // --- CLIENT ROUTES ---
+    Route::get('/client/dashboard', function() {
         // 1. Get the currently authenticated user.
         $user = Auth::user();
-
-        // 2. Get the associated employee record using the relationship we just defined.
-        $employee = $user->employee;
-
-        // 3. Pass the $employee variable to the view.
-        return view('employee-dash', compact('employee'));
-
-    })->middleware(['auth'])->name('employee.dashboard');
-
-    Route::get('/admin/reports', \App\Http\Livewire\Admin\Reports::class)->name('admin.reports');
-
-    Route::get('/admin/payroll', PayrollReport::class)->name('admin.payroll');
+    
+        // 2. Get the associated client record using the relationship.
+        $client = $user->client;
+    
+        // 3. Pass the $client variable to the view.
+        return view('client-dash', compact('client'));
+        
+    })->middleware('auth')->name('client.dashboard');
+    
+    Route::get('/client/appointments', function () {
+        $user = Auth::user(); 
+        
+        // Fetch all appointments for the current client
+        $appointments = $user->client->appointments()
+                            ->orderBy('scheduled_date', 'asc') // Show upcoming/recent first
+                            ->get();
+    
+        // Pass the fetched data to the new view file
+        return view('client-appointments', compact('appointments'));
+        
+    })->middleware('auth')->name('client.appointments');
 });
-
-// Add dashboard for external clients later
-// Route::get('/client/dashboard', ...)->name('client.dashboard');
 
     //ALL ROUTES FOR BUTTONS
     Route::get('/signup', function () {
@@ -99,20 +106,11 @@ Route::get('/', action: function () {
     Route::post('/signup/send-otp', [ClientRegistrationController::class, 'sendOtp'])->middleware('guest');
     Route::post('/signup/verify-otp', [ClientRegistrationController::class, 'verifyOtp'])->middleware('guest');
 
-    // ADD A PLACEHOLDER ROUTE for the client dashboard
-    Route::get('/client/dashboard', function() {
-        return "Welcome to the Client Dashboard!"; // Replace this with a view later
-        })->middleware('auth')->name('client.dashboard');
-
-
-    Route::get('/admin-dash', function () {
-        return view('admin-dash');
-        })->name('admin-dash');
-
-
-    Route::get('/admin-tasks', function () {
-        return view('admin-tasks');
-        })->name('admin-tasks');
-
+    Route::get('/forgotpassword', [ForgotPasswordController::class, 'showForgotPasswordForm'])->name('forgot.password');
+    Route::post('/forgotpassword/get-questions', [ForgotPasswordController::class, 'getSecurityQuestions'])->name('password.getQuestions');
+    Route::post('/forgotpassword/verify-account', [ForgotPasswordController::class, 'verifyAccountAndSendOtp'])->name('password.verifyAccount');
+    Route::post('/forgotpassword/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verifyOtp');
+    Route::post('/forgotpassword/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset.submit');
+        
 // It was added automatically by 'php artisan breeze:install'
 require __DIR__ . '/auth.php';

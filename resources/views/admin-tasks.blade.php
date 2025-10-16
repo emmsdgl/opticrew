@@ -3,12 +3,12 @@
     @slot('sidebar')
     @php
         $navOptions = [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '/admin-dash'],
-            ['label' => 'Accounts', 'icon' => 'fa-users', 'href' => ''],
-            ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => '/admin-tasks'],
-            ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/admin-appointments'],
-            ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/admin-analytics'],
-            ['label' => 'Reports', 'icon' => 'fa-file-lines', 'href' => '/admin-reports'],
+                ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('admin.dashboard')],
+                ['label' => 'Accounts', 'icon' => 'fa-users', 'href' => '/users'],
+                ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => route('admin.tasks')],
+                ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/calendar'],
+                ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/analytics'],
+                ['label' => 'Reports', 'icon' => 'fa-file-lines', 'href' => '/reports'],
         ];
 
         $teams = ['HR Team', 'Tech Team'];

@@ -11,15 +11,18 @@
         <!-- Logo + toggle -->
         <div class="flex items-center justify-between h-20 px-4 border-b border-[#D1D1D1] dark:border-[#334155]">
             <div class="flex items-center">
-                <!-- Light Mode Logo (visible by default, hidden in dark mode) -->
-                <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
-                     class="block dark:hidden h-20 w-auto sidebar-logo" 
-                     alt="Fin-Noys Light Logo">
-                
-                <!-- Dark Mode Logo (hidden by default, visible in dark mode) -->
-                <img src="{{ asset('images/finnoys-text-logo.svg') }}"
-                     class="hidden dark:block h-20 w-auto sidebar-logo" 
-                     alt="Fin-Noys Dark Logo">
+                <a href="{{ Auth::check() && Auth::user()->role === 'admin' ? route('admin.dashboard') : route('employee.dashboard') }}"
+                    class="flex items-center">
+                    <!-- Light Mode Logo (visible by default, hidden in dark mode) -->
+                    <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
+                        class="block dark:hidden h-20 w-auto sidebar-logo" 
+                        alt="Fin-Noys Light Logo">
+                    
+                    <!-- Dark Mode Logo (hidden by default, visible in dark mode) -->
+                    <img src="{{ asset('images/finnoys-text-logo.svg') }}"
+                        class="hidden dark:block h-20 w-auto sidebar-logo" 
+                        alt="Fin-Noys Dark Logo">
+                </a>
             </div>
             <button id="sidebar-toggle" class="text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1">
                 <i class="fi fi-rr-angle-small-left text-lg"></i>

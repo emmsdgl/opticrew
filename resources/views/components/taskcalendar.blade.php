@@ -154,7 +154,6 @@
                                         ['label' => 'Daily Room Cleaning'],
                                         ['label' => 'Snowout Cleaning'],
                                         ['label' => 'Light Daily Cleaning'],
-                                        ['label' => 'Full Daily Cleaning']
                                     ]" />
                             </div>
                         </div>
@@ -445,7 +444,7 @@
 
                 handleServiceTypeClick(event) {
                     const target = event.target;
-                    const validServices = ['Deep Cleaning', 'Daily Room Cleaning', 'Snowout Cleaning', 'Light Daily Cleaning', 'Full Daily Cleaning'];
+                    const validServices = ['Deep Cleaning', 'Daily Room Cleaning', 'Snowout Cleaning', 'Light Daily Cleaning'];
                     if (target.textContent && target.textContent.trim()) {
                         const text = target.textContent.trim();
                         if (validServices.includes(text)) {

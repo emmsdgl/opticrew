@@ -41,9 +41,10 @@
         </div>
     </div>
 
-    <!-- Floating Info Card -->
+    <!-- Floating Info Card with a unique ID -->
     <div class="absolute top-4 left-4 bg-gray-900 dark:bg-gray-800 text-white rounded-lg px-3 py-2 
-                shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-95 z-5 flex items-center gap-2">
+                shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-95 z-5 flex items-center gap-2"
+         id="{{ $chartId }}-info-card">
         <div class="flex items-center gap-1.5">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
             <span class="text-xs font-medium">Goal Sessions</span>
@@ -81,11 +82,11 @@
         const colors = @json($colors);
         const labels = @json($labels);
         
-        if (typeof ApexCharts !== 'undefined') {
-            const chartEl = document.querySelector('#' + chartId);
+        const chartEl = document.getElementById(chartId);
+        if (!chartEl) return;
 
-            // Destroy any existing chart
-            if (chartEl && chartEl.__apexchart__) {
+        if (typeof ApexCharts !== 'undefined') {
+            if (chartEl.__apexchart__) {
                 chartEl.__apexchart__.destroy();
             }
 
@@ -94,7 +95,6 @@
                 chartData.inProgress || 0, 
                 chartData.toDo || 0
             ];
-
             const total = series.reduce((a, b) => a + b, 0);
 
             const options = {
@@ -103,19 +103,7 @@
                     height: '100%',
                     width: '100%',
                     type: 'radialBar',
-                    animations: {
-                        enabled: true,
-                        easing: 'easeinout',
-                        speed: 1000,
-                        animateGradually: {
-                            enabled: true,
-                            delay: 150
-                        },
-                        dynamicAnimation: {
-                            enabled: true,
-                            speed: 350
-                        }
-                    },
+                    animations: { enabled: true, speed: 800 },
                     events: {
                         dataPointMouseEnter: function(event, chartContext, config) {
                             const seriesIndex = config.seriesIndex;
@@ -125,36 +113,26 @@
                             const labelKey = labelNames[seriesIndex];
                             const labelText = labels[labelKey];
                             
-                            // Update floating card
-                            const card = document.querySelector(`#${chartId}`).closest('.relative').querySelector('.absolute.top-4');
-                            const labelSpan = card.querySelector('.text-xs.font-medium');
-                            const valueSpan = card.querySelector('.text-sm.font-bold');
-                            const percentSpan = card.querySelector('.text-xs.text-gray-400:last-child');
+                            const card = document.getElementById(`${chartId}-info-card`);
+                            if (!card) return;
                             
-                            labelSpan.textContent = labelText;
-                            valueSpan.textContent = Math.round(value);
-                            percentSpan.textContent = percent + '%';
-                            
-                            // Add pulse animation
-                            card.classList.add('scale-105');
+                            card.querySelector('.text-xs.font-medium').textContent = labelText;
+                            card.querySelector('.text-sm.font-bold').textContent = Math.round(value);
+                            card.querySelector('.text-xs.text-gray-400:last-child').textContent = percent + '%';
+                            card.style.transform = 'scale(1.05)';
                             card.style.transition = 'transform 0.2s ease';
                         },
                         dataPointMouseLeave: function(event, chartContext, config) {
-                            // Reset to "Done" stats
+                            const card = document.getElementById(`${chartId}-info-card`);
+                            if (!card) return;
+
                             const doneValue = series[0];
                             const donePercent = total > 0 ? Math.round((doneValue / total) * 100) : 0;
                             
-                            const card = document.querySelector(`#${chartId}`).closest('.relative').querySelector('.absolute.top-4');
-                            const labelSpan = card.querySelector('.text-xs.font-medium');
-                            const valueSpan = card.querySelector('.text-sm.font-bold');
-                            const percentSpan = card.querySelector('.text-xs.text-gray-400:last-child');
-                            
-                            labelSpan.textContent = 'Goal Sessions';
-                            valueSpan.textContent = Math.round(doneValue);
-                            percentSpan.textContent = donePercent + '%';
-                            
-                            // Remove pulse
-                            card.classList.remove('scale-105');
+                            card.querySelector('.text-xs.font-medium').textContent = 'Goal Sessions';
+                            card.querySelector('.text-sm.font-bold').textContent = Math.round(doneValue);
+                            card.querySelector('.text-xs.text-gray-400:last-child').textContent = donePercent + '%';
+                            card.style.transform = 'scale(1)';
                         }
                     }
                 },
@@ -163,51 +141,20 @@
                         offsetY: 0,
                         startAngle: 0,
                         endAngle: 270,
-                        hollow: {
-                            margin: 5,
-                            size: '40%',
-                            background: 'transparent',
-                        },
-                        track: {
-                            show: true,
-                            background: '#f3f4f6',
-                            strokeWidth: '97%',
-                            margin: 5,
-                        },
-                        dataLabels: {
-                            show: false
-                        }
+                        hollow: { margin: 5, size: '40%', background: 'transparent' },
+                        track: { background: '#f3f4f6', strokeWidth: '97%', margin: 5 },
+                        dataLabels: { show: false }
                     }
                 },
                 colors: [colors.done, colors.inProgress, colors.toDo],
                 labels: [labels.done, labels.inProgress, labels.toDo],
-                legend: {
-                    show: false
-                },
-                stroke: {
-                    lineCap: 'round'
-                },
-                tooltip: {
-                    enabled: true,
-                    custom: function({series, seriesIndex, dataPointIndex, w}) {
-                        const value = series[seriesIndex];
-                        const percent = total > 0 ? Math.round((value / total) * 100) : 0;
-                        const labelNames = ['done', 'inProgress', 'toDo'];
-                        const labelKey = labelNames[seriesIndex];
-                        const labelText = labels[labelKey];
-                        
-                        return `<div class="px-3 py-2 bg-gray-900 text-white rounded-lg shadow-lg text-sm">
-                            <div class="font-semibold">${labelText}</div>
-                            <div class="text-xs mt-1">${Math.round(value)} tasks (${percent}%)</div>
-                        </div>`;
-                    }
-                }
+                legend: { show: false },
+                stroke: { lineCap: 'round' }
             };
 
             const chart = new ApexCharts(chartEl, options);
             chart.render();
 
-            // Update custom labels
             document.getElementById(chartId + '-total').textContent = total;
             document.getElementById(chartId + '-done-value').textContent = Math.round(series[0]);
             

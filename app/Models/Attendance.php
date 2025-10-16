@@ -20,4 +20,9 @@ class Attendance extends Model
         'clock_out',
         'total_minutes_worked',
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
 }
