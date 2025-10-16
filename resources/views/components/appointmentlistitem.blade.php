@@ -113,8 +113,8 @@
     <!-- Empty State -->
     @if(count($records) === 0)
     <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-        <i class="fa-regular fa-calendar-xmark text-4xl mb-3"></i>
-        <p>No attendance records found</p>
+    <i class="fa-regular fa-calendar-xmark text-3xl mb-4"></i>
+    <p>No appointment records found</p>
     </div>
     @endif
 </div>

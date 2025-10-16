@@ -20,8 +20,8 @@ use App\Http\Controllers\AttendanceController;
 |--------------------------------------------------------------------------
 */
     Route::get('/', action: function () {
-        return view('login');
-    })->name('login');
+        return view('client-appointments');
+    })->name('client-appointments');
     
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {
