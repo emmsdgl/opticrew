@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\ClientRegistrationController;
 use App\Http\Controllers\Auth\ForgotPasswordController; 
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentList;
+use App\Http\Controllers\AttendanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,12 +41,27 @@ Route::middleware(['auth'])->group(function () {
     // Add external client from order
     Route::post('/tasks/add-external-client', [TaskController::class, 'addExternalClientFromOrder'])
         ->name('tasks.add-external-client');
+
+    Route::get('/admin/optimization/{optimizationRunId}/results', [TaskController::class, 'getOptimizationResults']);
+    Route::post('/admin/optimization/reoptimize', [TaskController::class, 'reoptimize']);
 });
 
 
     // --- EMPLOYEE ROUTES ---
-    Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])->middleware('auth')->name('employee.dashboard');
+    
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
+            ->name('employee.dashboard');
 
+        Route::get('/employee/attendance', [AttendanceController::class, 'index'])
+            ->name('employee.attendance');
+        
+        Route::post('/employee/attendance/clockin', [AttendanceController::class, 'clockIn'])
+            ->name('employee.attendance.clockin');
+        
+        Route::post('/employee/attendance/clockout', [AttendanceController::class, 'clockOut'])
+            ->name('employee.attendance.clockout');
+    });
 
     // --- CLIENT ROUTES ---
     Route::get('/client/dashboard', function() {

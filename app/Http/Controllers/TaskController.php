@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use App\Models\Task;
 use App\Models\ContractedClient;
 use App\Models\Client;
+use App\Models\OptimizationRun;
 
 class TaskController extends Controller
 {
@@ -20,53 +21,72 @@ class TaskController extends Controller
         $rawTasks = Task::with(['location.contractedClient', 'client'])->get();
 
         // --- 2. COMBINE CONTRACTED + EXTERNAL CLIENTS FOR DROPDOWN ---
-        $contractedClients = ContractedClient::all(['id', 'name']);
+        $contractedClients = ContractedClient::with('locations')->get();
         $externalClients = Client::all(['id', 'first_name', 'last_name']);
 
         $allClients = $contractedClients->map(function ($client) {
+            $locations = $client->locations->map(function ($location) {
+                return [
+                    'id' => $location->id,
+                    'name' => $location->location_name
+                ];
+            })->values()->toArray();
+            
             return [
                 'label' => $client->name,
-                'value' => 'contracted_' . $client->id
+                'value' => 'contracted_' . $client->id,
+                'type' => 'contracted',
+                'locations' => $locations
             ];
         })->concat($externalClients->map(function ($client) {
             return [
                 'label' => $client->first_name . ' ' . $client->last_name,
-                'value' => 'client_' . $client->id
+                'value' => 'client_' . $client->id,
+                'type' => 'external',
+                'locations' => [] // Empty for now, will be populated from appointments later
             ];
-        }));
+        }))->values()->toArray();
 
-        // --- 3. BUILD EVENTS FOR CALENDAR DISPLAY ---
+        // --- 3. BUILD EVENTS FOR CALENDAR DISPLAY (WITH COMPLETE DATA) ---
         $events = [];
         foreach ($rawTasks as $task) {
             $dateKey = Carbon::parse($task->scheduled_date)->format('Y-n-j');
             
-            // 2. This is the new, corrected logic to get the client name
-            $clientName = 'Unknown Client'; // A default fallback name
-        
+            // Get the client name
+            $clientName = 'Unknown Client';
             if ($task->location && $task->location->contractedClient) {
-                // This is a task for a contracted client (e.g., Kakslauttanen)
                 $clientName = $task->location->contractedClient->name;
             } elseif ($task->client) {
-                // This is a task for an external client
-                $clientName = $task->client->first_name;
+                $clientName = $task->client->first_name . ' ' . $task->client->last_name;
             }
         
+            // Get location/cabin name
+            $locationName = $task->location ? $task->location->location_name : 'N/A';
+            
             if (!isset($events[$dateKey])) {
                 $events[$dateKey] = [];
             }
             
+            // FIXED: Include all necessary fields for the frontend
             $events[$dateKey][] = [
                 'title' => $clientName . ' - ' . $task->task_description,
-                'color' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                'serviceType' => $task->task_description, // The service type
+                'status' => $task->status ?? 'Incomplete', // Task status
+                'cabins' => $locationName, // Location/cabin name
+                'location' => $locationName, // Alternative field name
+                'color' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                'id' => $task->id // Useful for future actions
             ];
         }
         
         // --- 4. BUILD TASKS FOR KANBAN BOARD ---
         $tasks = $rawTasks->map(function ($task) {
-            $clientName =
-                optional($task->contractedClient)->name ??
-                trim(optional($task->client)->first_name . ' ' . optional($task->client)->last_name) ??
-                'Unknown Client';
+            $clientName = 'Unknown Client';
+            if ($task->location && $task->location->contractedClient) {
+                $clientName = $task->location->contractedClient->name;
+            } elseif ($task->client) {
+                $clientName = trim($task->client->first_name . ' ' . $task->client->last_name);
+            }
 
             return [
                 'id' => $task->id,
@@ -86,7 +106,7 @@ class TaskController extends Controller
 
 
     /**
-     * Store a new task in the database.
+     * Store a new task in the database and trigger optimization.
      */
     public function store(Request $request)
     {
@@ -99,76 +119,99 @@ class TaskController extends Controller
             'extraTasks' => 'nullable|array'
         ]);
 
-        // Parse client type and ID
-        $clientParts = explode('_', $request->client);
-        $clientType = $clientParts[0]; // 'contracted' or 'client'
-        $clientId = $clientParts[1];
+        try {
+            DB::beginTransaction();
 
-        // Create tasks for each cabin
-        $createdTasks = [];
-        foreach ($request->cabinsList as $cabinInfo) {
-            // Find the location_id from the location name (cabin)
-            $location = DB::table('locations')
-                ->where('location_name', $cabinInfo['cabin'])
-                ->first();
-            
-            if (!$location) {
-                continue; // Skip if location not found
+            // Parse client type and ID
+            $clientParts = explode('_', $request->client);
+            $clientType = $clientParts[0];
+            $clientId = $clientParts[1];
+
+            // Create tasks with "Pending" status (will be optimized)
+            $newLocationIds = [];
+            foreach ($request->cabinsList as $cabinInfo) {
+                $location = DB::table('locations')
+                    ->where('location_name', $cabinInfo['cabin'])
+                    ->first();
+                
+                if (!$location) {
+                    continue;
+                }
+
+                $newLocationIds[] = $location->id;
+
+                // Create task with Pending status
+                $task = new Task();
+                $task->location_id = $location->id;
+                
+                if ($clientType === 'contracted') {
+                    $task->contracted_client_id = $clientId;
+                    $task->client_id = null;
+                } else {
+                    $task->client_id = $clientId;
+                    $task->contracted_client_id = null;
+                }
+                
+                $task->task_description = $request->serviceType . ' - ' . $cabinInfo['type'] . ' (' . $request->rateType . ')';
+                $task->scheduled_date = $request->serviceDate;
+                $task->status = 'Pending'; // Will be changed to "Scheduled" after optimization
+                $task->estimated_duration_minutes = 120;
+                
+                $task->save();
+                $firstTaskId = $task->id; // Keep track for optimization trigger
             }
 
-            $task = new Task();
-            $task->location_id = $location->id;
-            
-            // Set client relationship based on type
-            if ($clientType === 'contracted') {
-                $task->contracted_client_id = $clientId;
-                $task->client_id = null;
-            } else {
-                $task->client_id = $clientId;
-                $task->contracted_client_id = null;
-            }
-            
-            // Build task description
-            $task->task_description = $request->serviceType . ' - ' . $cabinInfo['type'] . ' (' . $request->rateType . ')';
-            $task->scheduled_date = $request->serviceDate;
-            $task->status = 'Pending';
-            $task->estimated_duration_minutes = 120; // 2 hours base per cabin
-            
-            $task->save();
-            $createdTasks[] = $task;
-        }
-
-        // Handle extra tasks if provided
-        if ($request->has('extraTasks') && is_array($request->extraTasks)) {
-            foreach ($request->extraTasks as $extraTask) {
-                if (!empty($extraTask['type'])) {
-                    // Create extra task entry (you may need to adjust based on your schema)
-                    $task = new Task();
-                    
-                    if ($clientType === 'contracted') {
-                        $task->contracted_client_id = $clientId;
-                    } else {
-                        $task->client_id = $clientId;
+            // Handle extra tasks
+            if ($request->has('extraTasks') && is_array($request->extraTasks)) {
+                foreach ($request->extraTasks as $extraTask) {
+                    if (!empty($extraTask['type'])) {
+                        $task = new Task();
+                        
+                        if ($clientType === 'contracted') {
+                            $task->contracted_client_id = $clientId;
+                        } else {
+                            $task->client_id = $clientId;
+                        }
+                        
+                        $task->task_description = 'Extra: ' . $extraTask['type'];
+                        $task->scheduled_date = $request->serviceDate;
+                        $task->status = 'Pending';
+                        $task->estimated_duration_minutes = 180;
+                        
+                        $task->save();
                     }
-                    
-                    $task->task_description = 'Extra: ' . $extraTask['type'];
-                    $task->scheduled_date = $request->serviceDate;
-                    $task->status = 'Pending';
-                    $task->estimated_duration_minutes = 180; // 3 hours for extra tasks
-                    
-                    // You might want to store the price somewhere
-                    // $task->additional_price = $extraTask['price'] ?? 0;
-                    
-                    $task->save();
-                    $createdTasks[] = $task;
                 }
             }
-        }
 
-        return response()->json([
-            'message' => 'Tasks created successfully!',
-            'tasks_created' => count($createdTasks)
-        ]);
+            DB::commit();
+
+            // === TRIGGER OPTIMIZATION ===
+            $optimizationService = new \App\Services\OptimizationService();
+            $optimizationResult = $optimizationService->run(
+                $request->serviceDate,
+                $newLocationIds,
+                $firstTaskId ?? null
+            );
+
+            if ($optimizationResult['status'] === 'success') {
+                return response()->json([
+                    'message' => 'Tasks created and optimized successfully!',
+                    'optimization_run_id' => $optimizationResult['optimization_run_id'],
+                    'details' => $optimizationResult['message']
+                ]);
+            } else {
+                return response()->json([
+                    'message' => 'Tasks created but optimization failed: ' . $optimizationResult['message'],
+                    'optimization_run_id' => $optimizationResult['optimization_run_id']
+                ], 422);
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error creating tasks: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -241,6 +284,93 @@ class TaskController extends Controller
 
         return response()->json([
             'clients' => $allClients
+        ]);
+    }
+
+    /**
+     * Get optimization results for visualization
+     */
+    public function getOptimizationResults($optimizationRunId)
+    {
+        $optimizationRun = OptimizationRun::with([
+            'generations.schedules',
+            'generations' => function($query) {
+                $query->orderBy('generation_number', 'asc');
+            }
+        ])->findOrFail($optimizationRunId);
+
+        return response()->json([
+            'optimization_run' => [
+                'id' => $optimizationRun->id,
+                'service_date' => $optimizationRun->service_date,
+                'status' => $optimizationRun->status,
+                'total_tasks' => $optimizationRun->total_tasks,
+                'total_teams' => $optimizationRun->total_teams,
+                'total_employees' => $optimizationRun->total_employees,
+                'final_fitness_score' => $optimizationRun->final_fitness_score,
+                'generations_run' => $optimizationRun->generations_run,
+                'employee_allocation' => $optimizationRun->employee_allocation_data,
+                'greedy_result' => $optimizationRun->greedy_result_data,
+            ],
+            'generations' => $optimizationRun->generations->map(function($generation) {
+                return [
+                    'generation_number' => $generation->generation_number,
+                    'best_fitness' => $generation->best_fitness,
+                    'average_fitness' => $generation->average_fitness,
+                    'worst_fitness' => $generation->worst_fitness,
+                    'is_improvement' => $generation->is_improvement,
+                    'best_schedule' => $generation->best_schedule_data,
+                    'population_summary' => $generation->population_summary,
+                    'schedules' => $generation->schedules->map(function($schedule) {
+                        return [
+                            'schedule_index' => $schedule->schedule_index,
+                            'fitness_score' => $schedule->fitness_score,
+                            'team_assignments' => $schedule->team_assignments,
+                            'workload_distribution' => $schedule->workload_distribution,
+                            'is_elite' => $schedule->is_elite,
+                            'is_final_result' => $schedule->is_final_result,
+                            'created_by' => $schedule->created_by
+                        ];
+                    })
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * Re-run optimization for a specific date
+     */
+    public function reoptimize(Request $request)
+    {
+        $request->validate([
+            'service_date' => 'required|date'
+        ]);
+
+        // Get all locations that need to be scheduled for this date
+        $pendingTasks = Task::where('scheduled_date', $request->service_date)
+            ->where('status', 'Scheduled')
+            ->get();
+
+        if ($pendingTasks->isEmpty()) {
+            return response()->json([
+                'message' => 'No tasks found to re-optimize for this date.'
+            ], 404);
+        }
+
+        $locationIds = $pendingTasks->pluck('location_id')->unique()->toArray();
+
+        // Trigger optimization
+        $optimizationService = new \App\Services\OptimizationService();
+        $optimizationResult = $optimizationService->run(
+            $request->service_date,
+            $locationIds,
+            null
+        );
+
+        return response()->json([
+            'status' => $optimizationResult['status'],
+            'message' => $optimizationResult['message'],
+            'optimization_run_id' => $optimizationResult['optimization_run_id'] ?? null
         ]);
     }
 }
