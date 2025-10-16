@@ -151,10 +151,10 @@
                     <p id="login-header2" class="text-[#07185788] font-sans font-normal text-base mb-3">Welcome to Fin-noys</p>
                 </div>
 
-                <!-- EMAIL FIELD -->
+                <!-- USERNAME FIELD -->
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon"></i>
-                    <input type="text" id="input-username" name="email" class="bg-gray-100">
+                    <input type="text" id="input-username" name="login" class="bg-gray-100">
                     <label for="input-username" class="text-[#07185788] text-sm font-sans">Email/Username</label>
                 </div>
 
@@ -177,7 +177,7 @@
                         <input type="checkbox" name="remember">
                         <span>Remember Me</span>
                     </label>
-                    <a href="/forgot-password" class="text-blue-600 hover:underline text-sm">Forgot Password?</a>
+                    <a href="{{ route('forgot.password') }}" class="text-blue-600 hover:underline text-sm">Forgot Password?</a>
                 </div>
 
                 <input type="submit" id="btn-login" class="text-sm font-sans font-semibold" value="Login">
@@ -242,5 +242,4 @@
         });
     </script>
 </body>
-
 </html>

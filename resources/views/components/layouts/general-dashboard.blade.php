@@ -27,6 +27,8 @@
           document.documentElement.classList.remove('dark');
         }
     </script>
+
+    @livewireStyles 
 </head>
 <style>
     #page-loader {
@@ -79,15 +81,14 @@
     }
 </style>
 
-<body onload="document.getElementById('page-loader').style.display='none'" role="status"
-    class="bg-[#F3F3F3] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300">
+<body class="bg-[#F3F3F3] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300">
     <div class="flex min-h-screen">
         {{$sidebar}}
 
         <!-- MAIN CONTENT -->
         <main class="flex-1 flex flex-col transition-colors duration-300">
 
-<!-- DASHBOARD HEADER CONTENTS -->
+        <!-- DASHBOARD HEADER CONTENTS -->
             <x-header />
             
             <!-- DASHBOARD PANEL CONTENTS -->
@@ -180,7 +181,21 @@
 
         });
     </script>
+
+    {{-- ADD THIS NEW SCRIPT BLOCK --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 400); // Wait for the fade-out transition
+            }
+        });
+    </script>
     @stack('scripts')
+    @livewireScripts
 </body>
 
 </html>
