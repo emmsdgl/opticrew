@@ -107,7 +107,7 @@
                         <!-- Service Date -->
                         <div>
                             <label class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1 block">Service Date</label>
-                            <input type="text" x-model="selectedDate" disabled
+                            <input type="text" x-model="formData.serviceDate" disabled
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
                                 placeholder="Select a date from calendar">
                         </div>
@@ -274,6 +274,42 @@
         </div>
     </div>
 
+    <!-- Event Details Modal -->
+    <div x-show="showEventDetailsModal" x-cloak
+        x-transition.opacity
+        @click="showEventDetailsModal = false"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div @click.stop 
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white" x-text="eventDetailsTitle"></h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400" x-text="eventDetailsDate"></p>
+                </div>
+                <button @click="showEventDetailsModal = false" 
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-3">
+                <template x-for="(event, idx) in eventDetailsList" :key="idx">
+                    <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="event.title"></span>
+                            <span class="text-xs px-2 py-1 rounded-full" 
+                                :class="event.statusColor"
+                                x-text="event.status"></span>
+                        </div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                            <div><i class="fa-solid fa-calendar-day w-4"></i> <span x-text="event.serviceType"></span></div>
+                            <div x-show="event.cabins"><i class="fa-solid fa-home w-4"></i> <span x-text="event.cabins"></span></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
     <!-- Optimization Visualization Modal -->
     <div x-show="showOptimizationModal" x-cloak x-transition.opacity
         class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
@@ -333,8 +369,17 @@
                         </div>
                         <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4">
                             <div class="text-amber-600 dark:text-amber-400 text-sm font-medium">Fitness</div>
-                            <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1" 
-                                x-text="optimizationData?.optimization_run?.final_fitness_score?.toFixed(4)"></div>
+                            <div class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                                <!-- ✅ FIXED: Handle both string and number, check for null/undefined -->
+                                <template x-if="optimizationData?.optimization_run?.final_fitness_score">
+                                    <span x-text="typeof optimizationData.optimization_run.final_fitness_score === 'number' ? 
+                                                optimizationData.optimization_run.final_fitness_score.toFixed(4) : 
+                                                parseFloat(optimizationData.optimization_run.final_fitness_score).toFixed(4)"></span>
+                                </template>
+                                <template x-if="!optimizationData?.optimization_run?.final_fitness_score">
+                                    <span class="text-gray-400">N/A</span>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -369,10 +414,15 @@ function calendarComponent(initialClients, initialEvents) {
         showOptimizationModal: false,
         optimizationLoading: false,
         optimizationData: null,
+        showEventDetailsModal: false,
+        eventDetailsTitle: '',
+        eventDetailsDate: '',
+        eventDetailsList: [],
         
         formData: {
             client: '',
             clientLabel: '',
+            serviceDate: '',
             serviceType: '',
             rateType: 'Normal',
             selectedCabinType: '',
@@ -451,22 +501,30 @@ function calendarComponent(initialClients, initialEvents) {
         },
 
         openModal(date) {
-            if (date && date.date) {
-                this.selectedDate = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(date.date).padStart(2, '0')}`;
-            }
+            // Reset form first
             this.resetForm();
+            
+            // Then set the service date
+            if (date && date.date) {
+                const dateString = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(date.date).padStart(2, '0')}`;
+                this.selectedDate = dateString;
+                this.formData.serviceDate = dateString;
+            }
+            
             this.showModal = true;
         },
 
         closeModal() {
             this.showModal = false;
             this.resetForm();
+            this.selectedDate = null; // Clear selected date too
         },
 
         resetForm() {
             this.formData = {
                 client: '',
                 clientLabel: '',
+                serviceDate: '', // This will be set by openModal
                 serviceType: '',
                 rateType: 'Normal',
                 selectedCabinType: '',
@@ -529,53 +587,76 @@ function calendarComponent(initialClients, initialEvents) {
         },
 
         async submitTask() {
-            if (!this.formData.client || !this.formData.serviceType) {
-                alert('Please fill in client and service type');
+            // Validate BEFORE doing anything
+            console.log('Form validation check:', {
+                client: this.formData.client,
+                serviceDate: this.formData.serviceDate,
+                serviceType: this.formData.serviceType,
+                cabinsList: this.formData.cabinsList
+            });
+
+            if (!this.formData.client) {
+                alert('Please select a client');
                 return;
             }
+            
+            if (!this.formData.serviceDate) {
+                alert('Please select a service date');
+                return;
+            }
+            
+            if (!this.formData.serviceType) {
+                alert('Please select a service type');
+                return;
+            }
+            
             if (this.calculateTotalCabins() === 0) {
                 alert('Please select at least one cabin');
                 return;
             }
 
-            // Get CSRF token safely
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
-                             document.querySelector('input[name="_token"]')?.value || '';
+                            document.querySelector('input[name="_token"]')?.value || '';
             
             if (!csrfToken) {
                 alert('CSRF token not found. Please refresh the page.');
                 return;
             }
 
+            // ✅ SAVE form data BEFORE closing modal and showing optimization
+            const requestData = {
+                client: this.formData.client,
+                serviceDate: this.formData.serviceDate,
+                serviceType: this.formData.serviceType,
+                rateType: this.formData.rateType,
+                cabinsList: JSON.parse(JSON.stringify(this.formData.cabinsList)), // Deep copy
+                extraTasks: JSON.parse(JSON.stringify(this.formData.extraTasks))   // Deep copy
+            };
+
+            console.log('Submitting task with data:', requestData);
+
+            // NOW close modal and show optimization
             this.optimizationLoading = true;
             this.showOptimizationModal = true;
-            this.closeModal();
+            this.closeModal(); // Safe to call now since we saved the data
 
             try {
-                console.log('Submitting task with data:', {
-                    client: this.formData.client,
-                    serviceDate: this.selectedDate,
-                    serviceType: this.formData.serviceType,
-                    rateType: this.formData.rateType,
-                    cabinsList: this.formData.cabinsList,
-                    extraTasks: this.formData.extraTasks
-                });
-
                 const response = await fetch('/tasks', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        client: this.formData.client,
-                        serviceDate: this.selectedDate,
-                        serviceType: this.formData.serviceType,
-                        rateType: this.formData.rateType,
-                        cabinsList: this.formData.cabinsList,
-                        extraTasks: this.formData.extraTasks
-                    })
+                    body: JSON.stringify(requestData) // Use saved data
                 });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const textResponse = await response.text();
+                    console.error('Non-JSON response received:', textResponse);
+                    throw new Error('Server returned an invalid response. Please check the console for details.');
+                }
 
                 const data = await response.json();
                 console.log('Response:', data);
@@ -589,14 +670,23 @@ function calendarComponent(initialClients, initialEvents) {
                     } else {
                         this.optimizationLoading = false;
                         this.closeOptimizationModal();
-                        alert('Task created but no optimization run ID returned. Message: ' + data.message);
+                        alert('Task created successfully! Message: ' + data.message);
                         window.location.reload();
                     }
                 } else {
                     this.optimizationLoading = false;
                     this.closeOptimizationModal();
                     console.error('Server error:', data);
-                    alert('Error: ' + (data.message || JSON.stringify(data)));
+                    
+                    // Better error display
+                    if (data.errors) {
+                        const errorMessages = Object.entries(data.errors)
+                            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                            .join('\n');
+                        alert('Validation errors:\n' + errorMessages);
+                    } else {
+                        alert('Error: ' + (data.message || JSON.stringify(data)));
+                    }
                 }
             } catch (error) {
                 this.optimizationLoading = false;
@@ -610,6 +700,15 @@ function calendarComponent(initialClients, initialEvents) {
             try {
                 const response = await fetch(`/admin/optimization/${optimizationRunId}/results`);
                 const data = await response.json();
+                
+                // ✅ DETAILED DEBUG
+                console.log('=== OPTIMIZATION DATA DEBUG ===');
+                console.log('Full data:', data);
+                console.log('optimization_run:', data?.optimization_run);
+                console.log('final_fitness_score:', data?.optimization_run?.final_fitness_score);
+                console.log('Type of fitness score:', typeof data?.optimization_run?.final_fitness_score);
+                console.log('=== END DEBUG ===');
+                
                 this.optimizationData = data;
                 this.optimizationLoading = false;
             } catch (error) {
@@ -624,8 +723,46 @@ function calendarComponent(initialClients, initialEvents) {
         },
 
         showEventDetails(date, clientName) {
-            // This can be expanded later for detailed view
-            console.log('Show details for', clientName, 'on', date);
+            const key = `${this.currentYear}-${this.currentMonth + 1}-${date.date}`;
+            const allEvents = this.events[key] || [];
+            
+            const clientEvents = allEvents.filter(event => 
+                event.title.split('-')[0].trim() === clientName
+            );
+            
+            this.eventDetailsTitle = clientName;
+            this.eventDetailsDate = new Date(this.currentYear, this.currentMonth, date.date).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            this.eventDetailsList = clientEvents.map(event => {
+                const titleParts = event.title.split('-');
+                const extractedServiceType = titleParts.length > 1 ? titleParts[1].trim() : 'N/A';
+                
+                return {
+                    title: event.title,
+                    serviceType: event.serviceType || extractedServiceType,
+                    status: event.status || 'Incomplete',
+                    statusColor: this.getStatusColor(event.status),
+                    cabins: event.cabins || event.location || event.cabin || 'N/A'
+                };
+            });
+            
+            this.showEventDetailsModal = true;
+        },
+
+        getStatusColor(status) {
+            const colors = {
+                'Completed': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                'In Progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                'Scheduled': 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-200',
+                'Pending': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+                'Incomplete': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+            };
+            return colors[status] || colors['Incomplete'];
         }
     }
 }

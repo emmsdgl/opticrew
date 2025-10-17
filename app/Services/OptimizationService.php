@@ -194,8 +194,16 @@ class OptimizationService
                     
                     // Get the final generation number for this optimization
                     $finalGeneration = OptimizationGeneration::where('optimization_run_id', $optimizationRun->id)
-                        ->max('generation_number');
-                    
+                        ->orderBy('best_fitness', 'desc')
+                        ->first();
+                        
+                    // Add logging to debug
+                    \Log::info('Final Generation Data:', [
+                        'exists' => $finalGeneration ? 'yes' : 'no',
+                        'best_fitness' => $finalGeneration ? $finalGeneration->best_fitness : 'N/A',
+                        'generation_number' => $finalGeneration ? $finalGeneration->generation_number : 'N/A'
+                    ]);
+
                     foreach ($teamData['tasks'] as $taskLocation) {
                         Task::create([
                             'location_id' => $taskLocation->id,
@@ -226,6 +234,13 @@ class OptimizationService
                 'generations_run' => $finalGeneration ? $finalGeneration->generation_number : 0
             ]);
 
+            // Verify the update worked
+            \Log::info('Optimization Run Updated:', [
+                'id' => $optimizationRun->id,
+                'final_fitness_score' => $optimizationRun->final_fitness_score,
+                'generations_run' => $optimizationRun->generations_run
+            ]);
+            
             DB::commit();
             
             return [
