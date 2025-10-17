@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\ContractedClient;
 use App\Models\Client;
 use App\Models\OptimizationRun;
+use App\Models\OptimizationGeneration;
 
 class TaskController extends Controller
 {
@@ -118,16 +119,16 @@ class TaskController extends Controller
             'rateType' => 'nullable|string',
             'extraTasks' => 'nullable|array'
         ]);
-
+    
         try {
             DB::beginTransaction();
-
+    
             // Parse client type and ID
             $clientParts = explode('_', $request->client);
             $clientType = $clientParts[0];
             $clientId = $clientParts[1];
-
-            // Create tasks with "Pending" status (will be optimized)
+    
+            // ✅ COLLECT location IDs without creating tasks yet
             $newLocationIds = [];
             foreach ($request->cabinsList as $cabinInfo) {
                 $location = DB::table('locations')
@@ -137,62 +138,29 @@ class TaskController extends Controller
                 if (!$location) {
                     continue;
                 }
-
+    
                 $newLocationIds[] = $location->id;
-
-                // Create task with Pending status
-                $task = new Task();
-                $task->location_id = $location->id;
-                
-                if ($clientType === 'contracted') {
-                    $task->contracted_client_id = $clientId;
-                    $task->client_id = null;
-                } else {
-                    $task->client_id = $clientId;
-                    $task->contracted_client_id = null;
-                }
-                
-                $task->task_description = $request->serviceType . ' - ' . $cabinInfo['type'] . ' (' . $request->rateType . ')';
-                $task->scheduled_date = $request->serviceDate;
-                $task->status = 'Pending'; // Will be changed to "Scheduled" after optimization
-                $task->estimated_duration_minutes = 120;
-                
-                $task->save();
-                $firstTaskId = $task->id; // Keep track for optimization trigger
             }
-
-            // Handle extra tasks
-            if ($request->has('extraTasks') && is_array($request->extraTasks)) {
-                foreach ($request->extraTasks as $extraTask) {
-                    if (!empty($extraTask['type'])) {
-                        $task = new Task();
-                        
-                        if ($clientType === 'contracted') {
-                            $task->contracted_client_id = $clientId;
-                        } else {
-                            $task->client_id = $clientId;
-                        }
-                        
-                        $task->task_description = 'Extra: ' . $extraTask['type'];
-                        $task->scheduled_date = $request->serviceDate;
-                        $task->status = 'Pending';
-                        $task->estimated_duration_minutes = 180;
-                        
-                        $task->save();
-                    }
-                }
+    
+            // Validate we have locations
+            if (empty($newLocationIds)) {
+                throw new \Exception('No valid locations found for the selected cabins');
             }
-
+    
+            // ❌ REMOVED: Don't create Pending tasks here
+            // The OptimizationService will create Scheduled tasks directly
+    
             DB::commit();
-
+    
             // === TRIGGER OPTIMIZATION ===
+            // This will create the tasks with "Scheduled" status
             $optimizationService = new \App\Services\OptimizationService();
             $optimizationResult = $optimizationService->run(
                 $request->serviceDate,
                 $newLocationIds,
-                $firstTaskId ?? null
+                null // No triggering task ID since we're not creating tasks yet
             );
-
+    
             if ($optimizationResult['status'] === 'success') {
                 return response()->json([
                     'message' => 'Tasks created and optimized successfully!',
@@ -201,15 +169,16 @@ class TaskController extends Controller
                 ]);
             } else {
                 return response()->json([
-                    'message' => 'Tasks created but optimization failed: ' . $optimizationResult['message'],
+                    'message' => 'Optimization failed: ' . $optimizationResult['message'],
                     'optimization_run_id' => $optimizationResult['optimization_run_id']
                 ], 422);
             }
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'Error creating tasks: ' . $e->getMessage()
+                'message' => 'Error creating tasks: ' . $e->getMessage(),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null
             ], 500);
         }
     }
@@ -292,49 +261,48 @@ class TaskController extends Controller
      */
     public function getOptimizationResults($optimizationRunId)
     {
-        $optimizationRun = OptimizationRun::with([
-            'generations.schedules',
-            'generations' => function($query) {
-                $query->orderBy('generation_number', 'asc');
-            }
-        ])->findOrFail($optimizationRunId);
+        try {
+            $optimizationRun = OptimizationRun::findOrFail($optimizationRunId);
+            
+            $generations = OptimizationGeneration::where('optimization_run_id', $optimizationRunId)
+                ->orderBy('generation_number', 'asc')
+                ->get();
 
-        return response()->json([
-            'optimization_run' => [
-                'id' => $optimizationRun->id,
-                'service_date' => $optimizationRun->service_date,
-                'status' => $optimizationRun->status,
-                'total_tasks' => $optimizationRun->total_tasks,
-                'total_teams' => $optimizationRun->total_teams,
-                'total_employees' => $optimizationRun->total_employees,
-                'final_fitness_score' => $optimizationRun->final_fitness_score,
-                'generations_run' => $optimizationRun->generations_run,
-                'employee_allocation' => $optimizationRun->employee_allocation_data,
-                'greedy_result' => $optimizationRun->greedy_result_data,
-            ],
-            'generations' => $optimizationRun->generations->map(function($generation) {
-                return [
-                    'generation_number' => $generation->generation_number,
-                    'best_fitness' => $generation->best_fitness,
-                    'average_fitness' => $generation->average_fitness,
-                    'worst_fitness' => $generation->worst_fitness,
-                    'is_improvement' => $generation->is_improvement,
-                    'best_schedule' => $generation->best_schedule_data,
-                    'population_summary' => $generation->population_summary,
-                    'schedules' => $generation->schedules->map(function($schedule) {
-                        return [
-                            'schedule_index' => $schedule->schedule_index,
-                            'fitness_score' => $schedule->fitness_score,
-                            'team_assignments' => $schedule->team_assignments,
-                            'workload_distribution' => $schedule->workload_distribution,
-                            'is_elite' => $schedule->is_elite,
-                            'is_final_result' => $schedule->is_final_result,
-                            'created_by' => $schedule->created_by
-                        ];
-                    })
-                ];
-            })
-        ]);
+            return response()->json([
+                'optimization_run' => [
+                    'id' => $optimizationRun->id,
+                    'service_date' => $optimizationRun->service_date,
+                    'status' => $optimizationRun->status,
+                    'total_tasks' => (int) $optimizationRun->total_tasks,
+                    'total_teams' => (int) $optimizationRun->total_teams,
+                    'total_employees' => (int) $optimizationRun->total_employees,
+                    // ✅ FIXED: Explicitly cast to float, handle null
+                    'final_fitness_score' => $optimizationRun->final_fitness_score 
+                        ? (float) $optimizationRun->final_fitness_score 
+                        : null,
+                    'generations_run' => (int) $optimizationRun->generations_run,
+                    'employee_allocation' => $optimizationRun->employee_allocation_data,
+                    'greedy_result' => $optimizationRun->greedy_result_data,
+                ],
+                'generations' => $generations->map(function($generation) {
+                    return [
+                        'generation_number' => (int) $generation->generation_number,
+                        'best_fitness' => (float) $generation->best_fitness,
+                        'average_fitness' => (float) $generation->average_fitness,
+                        'worst_fitness' => (float) $generation->worst_fitness,
+                        'is_improvement' => (bool) $generation->is_improvement,
+                        'best_schedule' => $generation->best_schedule_data,
+                        'population_summary' => $generation->population_summary,
+                        'schedules' => []
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to load optimization results',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
