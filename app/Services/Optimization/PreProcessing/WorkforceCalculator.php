@@ -27,11 +27,19 @@ class WorkforceCalculator
             'total_employees_available' => $employees->count(),
             'total_required_hours' => $totalRequiredHours
         ]);
-    
-        // Calculate minimum workforce needed
-        $minWorkforce = ceil(
-            $totalRequiredHours / (self::MAX_HOURS_PER_DAY * self::TARGET_UTILIZATION)
-        );
+
+        // ✅ FIX: Calculate realistic workforce needed
+        // Each employee can work MAX_HOURS_PER_DAY (12 hours)
+        // But aim for TARGET_UTILIZATION (85%)
+        $effectiveHoursPerEmployee = self::MAX_HOURS_PER_DAY * self::TARGET_UTILIZATION;
+
+        // How many employees needed to complete all work?
+        $employeesNeeded = ceil($totalRequiredHours / $effectiveHoursPerEmployee);
+        
+        // ✅ Convert to pairs (round up to nearest even number)
+        if ($employeesNeeded % 2 !== 0) {
+            $employeesNeeded++; // Make it even for pairing
+        }
     
         // Calculate maximum affordable workforce
         $budgetLimit = $constraints['budget_limit'] ?? PHP_INT_MAX;
@@ -39,16 +47,20 @@ class WorkforceCalculator
         $maxAffordable = floor($budgetLimit / $dailyCost);
     
         // Determine final workforce size
-        $finalSize = min($minWorkforce, $maxAffordable, $employees->count());
+        $finalSize = min($employeesNeeded, $maxAffordable, $employees->count());
         
-        // ✅ CRITICAL: Enforce MINIMUM 2 employees (for pairing constraint)
+        // Determine final workforce size
         $finalSize = max(2, $finalSize);
         
-        // ✅ But don't exceed available employees
-        $finalSize = min($finalSize, $employees->count());
-    
+        // ✅ Ensure even number for pairing (or +1 for trio)
+        if ($finalSize % 2 !== 0 && $finalSize < $employees->count()) {
+            $finalSize++; // Make it even or add one more for trio
+        }
+
         \Log::info("Workforce selected", [
-            'min_needed' => $minWorkforce,
+            'total_required_hours' => $totalRequiredHours,
+            'effective_hours_per_employee' => $effectiveHoursPerEmployee,
+            'employees_needed' => $employeesNeeded,
             'max_affordable' => $maxAffordable,
             'employees_available' => $employees->count(),
             'final_size' => $finalSize

@@ -71,8 +71,13 @@ class RuleBasedPreProcessor
     protected function groupTasksByClient(Collection $tasks): Collection
     {
         return $tasks->groupBy(function($task) {
-            // ✅ Handle null client_id by using a placeholder
-            return $task->client_id ?? 'unassigned';
+            // Group by client (handle both contracted and external)
+            if ($task->location && $task->location->contractedClient) {
+                return 'contracted_' . $task->location->contracted_client_id;
+            } elseif ($task->client_id) {
+                return 'client_' . $task->client_id;
+            }
+            return 'unassigned';
         })
         ->map(function ($clientTasks) {
             return [

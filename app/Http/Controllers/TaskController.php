@@ -83,11 +83,11 @@ class TaskController extends Controller
                 }
             }
             
-            \Log::info("Task employee lookup", [
-                'task_id' => $task->id,
-                'assigned_team_id' => $task->assigned_team_id,
-                'employees_found' => $employeeNames
-            ]);
+            // \Log::info("Task employee lookup", [
+            //     'task_id' => $task->id,
+            //     'assigned_team_id' => $task->assigned_team_id,
+            //     'employees_found' => $employeeNames
+            // ]);
             
             // Get the client name
             $clientName = 'Unknown Client';
@@ -108,7 +108,20 @@ class TaskController extends Controller
             ];
         }
         
-        // --- 4. BUILD TASKS FOR KANBAN BOARD ---
+    // --- 4. (NEW) PREPARE BOOKED LOCATIONS DATA FOR THE FRONTEND ---
+    $bookedLocationsByDate = [];
+    foreach ($rawTasks as $task) {
+        if ($task->location_id) {
+            $dateKey = date('Y-m-d', strtotime($task->scheduled_date));
+            if (!isset($bookedLocationsByDate[$dateKey])) {
+                $bookedLocationsByDate[$dateKey] = [];
+            }
+            $bookedLocationsByDate[$dateKey][] = $task->location_id;
+        }
+    }
+
+
+        // --- 5. BUILD TASKS FOR KANBAN BOARD ---
         $tasks = $rawTasks->map(function ($task) {
             $clientName = 'Unknown Client';
             if ($task->location && $task->location->contractedClient) {
@@ -125,11 +138,12 @@ class TaskController extends Controller
             ];
         });
 
-        // --- 5. RETURN TO VIEW ---
+        // --- 6. RETURN TO VIEW ---
         return view('admin-tasks', [
             'tasks' => $tasks,
             'clients' => $allClients,
             'events' => $events,
+            'bookedLocationsByDate' => $bookedLocationsByDate // Pass the new data
         ]);
     }
 

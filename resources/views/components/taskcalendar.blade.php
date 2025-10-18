@@ -1,7 +1,7 @@
 <!-- Save this as: resources/views/components/taskcalendar.blade.php -->
 <!-- This is the COMPLETE file - replace everything in your current file -->
 
-@props(['clients', 'events'])
+@props(['clients', 'events', 'bookedLocationsByDate'])
 
 <style>
     /* Prevent modal flash on page load */
@@ -10,7 +10,7 @@
     }
 </style>
 
-<div x-data="calendarComponent(@js($clients), @js($events))" x-init="init()"
+<div x-data="calendarComponent(@js($clients), @js($events), @js($bookedLocationsByDate))" x-init="init()"
     class="w-full h-full bg-gray-50 dark:bg-gray-900 rounded-lg shadow p-4 transition-colors duration-300">
 
     <!-- Calendar Header -->
@@ -176,9 +176,15 @@
                                     <div class="mt-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 max-h-32 overflow-y-auto">
                                         <div class="flex flex-wrap gap-2">
                                             <template x-for="cabin in formData.availableCabins" :key="cabin.id">
-                                                <button type="button" @click="toggleCabin(cabin.name)"
-                                                    :class="isCabinSelected(cabin.name) ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-                                                    class="px-3 py-1 rounded-full text-sm hover:opacity-80 transition">
+                                                <button type="button"
+                                                    @click="toggleCabin(cabin.name)"
+                                                    :class="{
+                                                        'bg-blue-600 text-white': isCabinSelected(cabin.name),
+                                                        'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300': !isCabinSelected(cabin.name) && !isCabinAlreadyTaken(cabin.name),
+                                                        'bg-gray-400 dark:bg-gray-600 text-gray-200 dark:text-gray-400 cursor-not-allowed': isCabinAlreadyTaken(cabin.name) && !isCabinSelected(cabin.name)
+                                                    }"
+                                                    :disabled="isCabinAlreadyTaken(cabin.name) && !isCabinSelected(cabin.name)"
+                                                    class="px-3 py-1 rounded-full text-sm transition-colors duration-200">
                                                     <span x-text="cabin.name"></span>
                                                 </button>
                                             </template>
@@ -430,7 +436,7 @@
 
 @push('scripts')
 <script>
-function calendarComponent(initialClients, initialEvents) {
+function calendarComponent(initialClients, initialEvents, bookedLocationsByDate) { // 1. Accept new data
     return {
         today: new Date(),
         currentMonth: new Date().getMonth(),
@@ -450,7 +456,8 @@ function calendarComponent(initialClients, initialEvents) {
         eventDetailsTitle: '',
         eventDetailsDate: '',
         eventDetailsList: [],
-        
+        bookedLocationsByDate: bookedLocationsByDate || {}, // 2. Store the data
+
         formData: {
             client: '',
             clientLabel: '',
@@ -568,14 +575,28 @@ function calendarComponent(initialClients, initialEvents) {
 
         handleClientChange() {
             const selectedClient = this.clientOptions.find(c => c.value === this.formData.client);
+            
+            this.formData.cabinsList = []; // Clear any previously selected cabins
+
             if (selectedClient) {
                 this.formData.clientLabel = selectedClient.label;
-                this.formData.availableCabins = selectedClient.locations || [];
+                
+                // Get all locations for the selected client
+                const allClientLocations = selectedClient.locations || [];
+                
+                // --- THIS IS THE KEY LOGIC ---
+                // Get the list of booked location IDs for the currently selected date
+                const bookedIdsForDate = this.bookedLocationsByDate[this.selectedDate] || [];
+                
+                // Filter the client's locations, keeping only those NOT in the booked list
+                this.formData.availableCabins = allClientLocations.filter(location => {
+                    return !bookedIdsForDate.includes(location.id);
+                });
+                
             } else {
                 this.formData.clientLabel = '';
                 this.formData.availableCabins = [];
             }
-            this.formData.cabinsList = [];
         },
 
         toggleCabin(cabin) {
@@ -600,6 +621,12 @@ function calendarComponent(initialClients, initialEvents) {
             return this.formData.cabinsList.some(
                 item => item.type === this.formData.selectedCabinType && item.cabin === cabin
             );
+        },
+
+        // ADD THIS NEW FUNCTION
+        isCabinAlreadyTaken(cabin) {
+            // Checks if the cabin is in the list at all, regardless of the currently selected type.
+            return this.formData.cabinsList.some(item => item.cabin === cabin);
         },
 
         removeCabin(index) {

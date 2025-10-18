@@ -51,10 +51,26 @@ class GeneticAlgorithmOptimizer
             // 2. Get tasks for this client
             // ✅ FIX: Handle 'unassigned' client grouping
             $clientTasks = $validTasks->filter(function($task) use ($clientId) {
-                if ($clientId === 'unassigned') {
-                    return $task->client_id === null;
+                // Handle 'contracted_X' format
+                if (str_starts_with($clientId, 'contracted_')) {
+                    $contractedClientId = str_replace('contracted_', '', $clientId);
+                    return $task->location 
+                        && $task->location->contracted_client_id == $contractedClientId;
                 }
-                return $task->client_id == $clientId;
+                
+                // Handle 'client_X' format (external clients)
+                if (str_starts_with($clientId, 'client_')) {
+                    $externalClientId = str_replace('client_', '', $clientId);
+                    return $task->client_id == $externalClientId;
+                }
+                
+                // Handle 'unassigned'
+                if ($clientId === 'unassigned') {
+                    return $task->client_id === null 
+                        && (!$task->location || !$task->location->contracted_client_id);
+                }
+                
+                return false;
             });
     
             \Log::info("Tasks for client", [
