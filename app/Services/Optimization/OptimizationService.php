@@ -41,26 +41,21 @@ class OptimizationService
             ]);
             
             // PHASE 1: Rule-Based Pre-Processing
-            $allTasks = Task::whereDate('scheduled_date', $serviceDate)
-                ->when(!empty($locationIds), fn($q) => $q->whereIn('location_id', $locationIds))
+            $allTasks = Task::with(['location.contractedClient', 'client'])
+                ->whereDate('scheduled_date', $serviceDate)
+                ->whereIn('status', ['Pending', 'Scheduled'])
                 ->get();
-            
-            // // ✅ SIMPLIFIED: Get all active employees (ignore day-offs for now)
-            // $allEmployees = Employee::where('is_active', true)
-            //     ->where('is_day_off', false)
-            //     ->where('is_busy', false)
-            //     ->get();
-
-            // \Log::info("Employees available", [
-            //     'count' => $allEmployees->count()
-            // ]);
+                       
+            Log::info('Fetched all tasks for date', [
+                'total_tasks' => $allTasks->count(),
+                'task_ids' => $allTasks->pluck('id')->toArray()
+            ]);
 
             $allEmployees = Employee::where('is_active', true)
                 ->whereDoesntHave('dayOffs', fn($q) => $q->whereDate('date', $serviceDate))
                 ->get();
 
-            // ✅ ADD THIS LOGGING
-            \Log::info("Employees fetched", [
+            Log::info("Employees fetched", [
                 'total' => $allEmployees->count(),
                 'employee_ids' => $allEmployees->pluck('id')->toArray(),
                 'service_date' => $serviceDate
@@ -74,8 +69,7 @@ class OptimizationService
                 $constraints
             );
 
-            // ✅ ADD THIS LOGGING
-            \Log::info("Pre-processing complete", [
+            Log::info("Pre-processing complete", [
                 'total_tasks_fetched' => $allTasks->count(),
                 'valid_tasks' => $preprocessResult['valid_tasks']->count(),
                 'invalid_tasks' => $preprocessResult['invalid_tasks']->count(),
@@ -98,6 +92,13 @@ class OptimizationService
                 $preprocessResult['employee_allocations'],
                 config('optimization.genetic_algorithm.max_generations', 100)
             );
+            
+            // ✅ IMPORTANT: Clear old team assignments first
+            foreach ($allTasks as $task) {
+                $task->assigned_team_id = null;
+                $task->optimization_run_id = null;
+                $task->save();
+            }
             
             // Save results to database
             $this->saveResults($serviceDate, $optimalSchedules, $preprocessResult['invalid_tasks']);
