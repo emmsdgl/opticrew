@@ -9,16 +9,14 @@ class OptimizationRun extends Model
 {
     protected $fillable = [
         'service_date',
-        'triggered_by_task_id',
-        'status',
         'total_tasks',
-        'total_teams',
         'total_employees',
-        'employee_allocation_data',
-        'greedy_result_data',
+        'total_teams',
         'final_fitness_score',
         'generations_run',
-        'error_message'
+        'status',
+        'employee_allocation_data',
+        'greedy_result_data',
     ];
 
     protected $casts = [

@@ -13,6 +13,8 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentList;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\ScenarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +46,20 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/optimization/{optimizationRunId}/results', [TaskController::class, 'getOptimizationResults']);
     Route::post('/admin/optimization/reoptimize', [TaskController::class, 'reoptimize']);
+
+
+    Route::prefix('schedules')->group(function () {
+        Route::post('/optimize', [ScheduleController::class, 'optimize']);
+        Route::get('/', [ScheduleController::class, 'getSchedule']);
+        Route::get('/statistics', [ScheduleController::class, 'getStatistics']);
+    });
+    
+    // What-If Scenario Routes
+    Route::prefix('scenarios')->group(function () {
+        Route::get('/types', [ScenarioController::class, 'getScenarioTypes']);
+        Route::post('/analyze', [ScenarioController::class, 'analyze']);
+        Route::post('/compare', [ScenarioController::class, 'compareScenarios']);
+    });
 });
 
 
