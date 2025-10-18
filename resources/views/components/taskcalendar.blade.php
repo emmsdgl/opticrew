@@ -294,15 +294,47 @@
             <div class="p-6 space-y-3">
                 <template x-for="(event, idx) in eventDetailsList" :key="idx">
                     <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="event.title"></span>
-                            <span class="text-xs px-2 py-1 rounded-full" 
-                                :class="event.statusColor"
-                                x-text="event.status"></span>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="event.title"></span>
+                                <span class="text-xs px-2 py-1 rounded-full" 
+                                    :class="event.statusColor"
+                                    x-text="event.status"></span>
                         </div>
-                        <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                            <div><i class="fa-solid fa-calendar-day w-4"></i> <span x-text="event.serviceType"></span></div>
-                            <div x-show="event.cabins"><i class="fa-solid fa-home w-4"></i> <span x-text="event.cabins"></span></div>
+
+                        <!-- Employee Names - NEW! -->
+                        <div class="mb-2" x-show="event.employees && event.employees.length > 0">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-users text-gray-500 dark:text-gray-400 mt-0.5"></i>
+                                <div class="flex-1">
+                                    <div class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Assigned Team:</div>
+                                    <div class="flex flex-wrap gap-1">
+                                        <template x-for="(employee, empIdx) in event.employees" :key="empIdx">
+                                            <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded text-xs font-medium"
+                                                x-text="employee"></span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No Team Assigned Message -->
+                        <div class="mb-2 text-xs text-gray-500 dark:text-gray-400 italic" 
+                            x-show="!event.employees || event.employees.length === 0">
+                            <i class="fa-solid fa-exclamation-circle mr-1"></i>
+                            No team assigned yet
+                        </div>
+                        
+                        <!-- Task Details -->
+                        <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1.5 mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-broom w-4 text-gray-400"></i>
+                                <span x-text="event.serviceType"></span>
+                            </div>
+                            <div class="flex items-center gap-2" x-show="event.location">
+                                <i class="fa-solid fa-home w-4 text-gray-400"></i>
+                                <span x-text="event.location"></span>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -745,12 +777,15 @@ function calendarComponent(initialClients, initialEvents) {
                 return {
                     title: event.title,
                     serviceType: event.serviceType || extractedServiceType,
-                    status: event.status || 'Incomplete',
+                    status: event.status || 'Pending',
                     statusColor: this.getStatusColor(event.status),
-                    cabins: event.cabins || event.location || event.cabin || 'N/A'
+                    location: event.location || 'N/A',
+                    employees: event.employees || [], // ✅ Include employee data
+                    team_id: event.team_id || null
                 };
             });
             
+            console.log('Event details:', this.eventDetailsList); // ✅ Debug
             this.showEventDetailsModal = true;
         },
 

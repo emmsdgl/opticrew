@@ -10,6 +10,8 @@ use App\Models\ContractedClient;
 use App\Models\Client;
 use App\Models\OptimizationRun;
 use App\Models\OptimizationGeneration;
+use App\Models\Location;
+use App\Services\Optimization\OptimizationService; // ✅ FIXED: Correct namespace
 
 class TaskController extends Controller
 {
@@ -51,7 +53,41 @@ class TaskController extends Controller
         // --- 3. BUILD EVENTS FOR CALENDAR DISPLAY (WITH COMPLETE DATA) ---
         $events = [];
         foreach ($rawTasks as $task) {
-            $dateKey = Carbon::parse($task->scheduled_date)->format('Y-n-j');
+            $dateKey = date('Y-n-j', strtotime($task->scheduled_date));
+
+            // ✅ Get employee names for this task
+            $employeeNames = [];
+            if ($task->assigned_team_id) {
+                // Try NEW optimization_teams table first
+                $optimizationTeam = \App\Models\OptimizationTeam::with('members.employee')
+                    ->find($task->assigned_team_id);
+                
+                if ($optimizationTeam) {
+                    // New structure - optimization_teams
+                    $employeeNames = $optimizationTeam->members()
+                        ->with('employee')
+                        ->get()
+                        ->pluck('employee.full_name')
+                        ->toArray();
+                } else {
+                    // OLD structure - daily_team_assignments
+                    $dailyTeam = \App\Models\DailyTeamAssignment::with('members.employee')
+                        ->find($task->assigned_team_id);
+                    
+                    if ($dailyTeam) {
+                        // âœ… FIX: Use 'members' not 'teamMembers'
+                        $employeeNames = $dailyTeam->members
+                            ->pluck('employee.full_name')
+                            ->toArray();
+                    }
+                }
+            }
+            
+            \Log::info("Task employee lookup", [
+                'task_id' => $task->id,
+                'assigned_team_id' => $task->assigned_team_id,
+                'employees_found' => $employeeNames
+            ]);
             
             // Get the client name
             $clientName = 'Unknown Client';
@@ -60,23 +96,15 @@ class TaskController extends Controller
             } elseif ($task->client) {
                 $clientName = $task->client->first_name . ' ' . $task->client->last_name;
             }
-        
-            // Get location/cabin name
-            $locationName = $task->location ? $task->location->location_name : 'N/A';
-            
-            if (!isset($events[$dateKey])) {
-                $events[$dateKey] = [];
-            }
-            
-            // FIXED: Include all necessary fields for the frontend
+
             $events[$dateKey][] = [
                 'title' => $clientName . ' - ' . $task->task_description,
-                'serviceType' => $task->task_description, // The service type
-                'status' => $task->status ?? 'Incomplete', // Task status
-                'cabins' => $locationName, // Location/cabin name
-                'location' => $locationName, // Alternative field name
                 'color' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-                'id' => $task->id // Useful for future actions
+                'status' => $task->status,
+                'serviceType' => $task->task_description,
+                'location' => $task->location->location_name ?? 'Unknown',
+                'employees' => $employeeNames, // ✅ Add employee names
+                'team_id' => $task->assigned_team_id,
             ];
         }
         
@@ -105,7 +133,6 @@ class TaskController extends Controller
         ]);
     }
 
-
     /**
      * Store a new task in the database and trigger optimization.
      */
@@ -125,60 +152,125 @@ class TaskController extends Controller
     
             // Parse client type and ID
             $clientParts = explode('_', $request->client);
-            $clientType = $clientParts[0];
+            $clientType = $clientParts[0]; // 'contracted' or 'client'
             $clientId = $clientParts[1];
     
-            // ✅ COLLECT location IDs without creating tasks yet
+            // ✅ NEW: Collect location IDs AND CREATE TASKS
             $newLocationIds = [];
+            $createdTasks = [];
+            
             foreach ($request->cabinsList as $cabinInfo) {
-                $location = DB::table('locations')
-                    ->where('location_name', $cabinInfo['cabin'])
-                    ->first();
+                // Find location by name
+                $location = Location::where('location_name', $cabinInfo['cabin'])->first();
                 
                 if (!$location) {
+                    \Log::warning("Location not found: {$cabinInfo['cabin']}");
                     continue;
                 }
     
                 $newLocationIds[] = $location->id;
+                
+                // ✅ CREATE THE TASK RECORD
+                $task = new Task();
+                $task->location_id = $location->id;
+                
+                // Set client_id based on type
+                if ($clientType === 'contracted') {
+                    $task->client_id = null; // Contracted clients don't use client_id
+                } else {
+                    $task->client_id = $clientId;
+                }
+                
+                $task->task_description = $request->serviceType;
+                $task->scheduled_date = $request->serviceDate;
+                $task->scheduled_time = '08:00:00'; // ✅ ADD THIS LINE - Start of work day... Remove this, to get the proper time, after development phase
+
+                // Use location's base duration or default
+                $task->duration = $location->base_cleaning_duration_minutes ?? 60;
+                $task->estimated_duration_minutes = $task->duration;
+                
+                // Set travel time (default 30 minutes)
+                $task->travel_time = 30;
+                
+                // Set coordinates from location query
+                // Get coordinates based on contracted client
+                if ($clientType === 'contracted') {
+                    if ($clientId == 1) { // Kakslauttanen
+                        $task->latitude = 68.33470361;
+                        $task->longitude = 27.33426652;
+                    } elseif ($clientId == 2) { // Aikamatkat
+                        $task->latitude = 68.42573267;
+                        $task->longitude = 27.41235379;
+                    }
+                }
+                
+                $task->status = 'Pending'; // Start as Pending, optimization will change to Scheduled
+                $task->save();
+                
+                $createdTasks[] = $task;
+                
+                \Log::info("Created task", [
+                    'id' => $task->id,
+                    'location' => $location->location_name,
+                    'duration' => $task->duration,
+                    'coordinates' => ['lat' => $task->latitude, 'lon' => $task->longitude]
+                ]);
             }
     
-            // Validate we have locations
+            // Validate we have locations and tasks
             if (empty($newLocationIds)) {
                 throw new \Exception('No valid locations found for the selected cabins');
             }
-    
-            // ❌ REMOVED: Don't create Pending tasks here
-            // The OptimizationService will create Scheduled tasks directly
+            
+            if (empty($createdTasks)) {
+                throw new \Exception('No tasks were created');
+            }
     
             DB::commit();
     
             // === TRIGGER OPTIMIZATION ===
-            // This will create the tasks with "Scheduled" status
-            $optimizationService = new \App\Services\OptimizationService();
-            $optimizationResult = $optimizationService->run(
+            \Log::info("Triggering optimization", [
+                'service_date' => $request->serviceDate,
+                'location_ids' => $newLocationIds,
+                'task_count' => count($createdTasks)
+            ]);
+            
+            $optimizationService = app(OptimizationService::class);
+            
+            $optimizationResult = $optimizationService->optimizeSchedule(
                 $request->serviceDate,
                 $newLocationIds,
-                null // No triggering task ID since we're not creating tasks yet
+                null
             );
     
+            // Handle the response
             if ($optimizationResult['status'] === 'success') {
                 return response()->json([
                     'message' => 'Tasks created and optimized successfully!',
-                    'optimization_run_id' => $optimizationResult['optimization_run_id'],
-                    'details' => $optimizationResult['message']
+                    'tasks_created' => count($createdTasks),
+                    'schedules' => $optimizationResult['schedules'],
+                    'statistics' => $optimizationResult['statistics'],
                 ]);
             } else {
                 return response()->json([
-                    'message' => 'Optimization failed: ' . $optimizationResult['message'],
-                    'optimization_run_id' => $optimizationResult['optimization_run_id']
+                    'message' => 'Tasks created but optimization failed',
+                    'tasks_created' => count($createdTasks),
+                    'error' => $optimizationResult['message'] ?? 'Unknown error'
                 ], 422);
             }
     
         } catch (\Exception $e) {
-            DB::rollBack();
+            // Only rollback if we haven't committed yet
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            } 
+
+            \Log::error('Task creation failed', [
+                'error' => $e->getMessage()
+            ]);
+            
             return response()->json([
                 'message' => 'Error creating tasks: ' . $e->getMessage(),
-                'trace' => config('app.debug') ? $e->getTraceAsString() : null
             ], 500);
         }
     }
@@ -276,7 +368,6 @@ class TaskController extends Controller
                     'total_tasks' => (int) $optimizationRun->total_tasks,
                     'total_teams' => (int) $optimizationRun->total_teams,
                     'total_employees' => (int) $optimizationRun->total_employees,
-                    // ✅ FIXED: Explicitly cast to float, handle null
                     'final_fitness_score' => $optimizationRun->final_fitness_score 
                         ? (float) $optimizationRun->final_fitness_score 
                         : null,
@@ -327,9 +418,11 @@ class TaskController extends Controller
 
         $locationIds = $pendingTasks->pluck('location_id')->unique()->toArray();
 
-        // Trigger optimization
-        $optimizationService = new \App\Services\OptimizationService();
-        $optimizationResult = $optimizationService->run(
+        // ✅ FIXED: Use correct namespace and method name
+        $optimizationService = app(OptimizationService::class);
+        
+        // ✅ FIXED: Use optimizeSchedule() instead of run()
+        $optimizationResult = $optimizationService->optimizeSchedule(
             $request->service_date,
             $locationIds,
             null
@@ -337,8 +430,11 @@ class TaskController extends Controller
 
         return response()->json([
             'status' => $optimizationResult['status'],
-            'message' => $optimizationResult['message'],
-            'optimization_run_id' => $optimizationResult['optimization_run_id'] ?? null
+            'message' => $optimizationResult['status'] === 'success' 
+                ? 'Re-optimization completed successfully' 
+                : 'Re-optimization failed',
+            'statistics' => $optimizationResult['statistics'] ?? null,
+            'schedules' => $optimizationResult['schedules'] ?? null
         ]);
     }
 }

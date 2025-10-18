@@ -2,11 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Collection; // Add this at the top
-use App\Models\TaskPerformanceHistory; // Add this at the top
-use App\Models\TeamMember;
-use App\Models\DailyTeamAssignment;
-use App\Models\Task;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,20 +10,38 @@ class Employee extends Model
 {
     use HasFactory;
 
-    // Your fillable property should be here
+    // UPDATED: Added new fields for optimization system
     protected $fillable = [
         'user_id',
         'full_name',
         'skills',
+        // New fields for optimization
+        'is_active',
+        'is_day_off',
+        'is_busy',
+        'efficiency',
+        'has_driving_license',
+        'years_of_experience',
     ];
 
-    // ADD THIS FUNCTION
+    // UPDATED: Added new casts for optimization fields
+    protected $casts = [
+        'skills' => 'array',  // Existing cast
+        // New casts for optimization
+        'is_active' => 'boolean',
+        'is_day_off' => 'boolean',
+        'is_busy' => 'boolean',
+        'efficiency' => 'float',
+        'has_driving_license' => 'boolean',
+        'years_of_experience' => 'integer',
+    ];
+
+    // EXISTING RELATIONSHIPS (Keep all of these)
     public function schedules()
     {
         return $this->hasMany(EmployeeSchedule::class);
     }
     
-    // You might also have a user() relationship here, which is also fine.
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -41,13 +55,19 @@ class Employee extends Model
     public function performanceHistories()
     {
         return $this->hasManyThrough(
-            TaskPerformanceHistory::class, // The final model we want to get
-            TeamMember::class,             // The intermediate model we start with
-            'employee_id',                 // Foreign key on TeamMember table...
-            'task_id',                     // Foreign key on TaskPerformanceHistory table...
-            'id',                          // Local key on Employee table...
-            'daily_team_id'                // Local key on TeamMember table that connects to the NEXT model in the chain
+            TaskPerformanceHistory::class,
+            TeamMember::class,
+            'employee_id',
+            'task_id',
+            'id',
+            'daily_team_id'
         )->join('tasks', 'tasks.id', '=', 'task_performance_histories.task_id')
          ->join('daily_team_assignments', 'daily_team_assignments.id', '=', 'tasks.assigned_team_id');
+    }
+
+    // NEW RELATIONSHIP: For day-off tracking
+    public function dayOffs()
+    {
+        return $this->hasMany(DayOff::class);
     }
 }
