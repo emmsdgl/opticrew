@@ -19,8 +19,8 @@ use App\Http\Controllers\AppointmentList;
 |--------------------------------------------------------------------------
 */
     Route::get('/', action: function () {
-        return view('client-appointments');
-    })->name('client-appointments');
+        return view('client-appointment-form');
+    })->name('client-appointment-form');
     
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {
