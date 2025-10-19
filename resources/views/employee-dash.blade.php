@@ -2,9 +2,9 @@
     @slot('sidebar')
     @php
         $navOptions = [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => '/employee-dash'],
+            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('employee.dashboard')],
             ['label' => 'Tasks', 'icon' => 'fa-file-lines', 'href' => '/employee-tasks'],
-            ['label' => 'Attendance', 'icon' => 'fa-calendar', 'href' => '/employee-attendance'],
+            ['label' => 'Attendance', 'icon' => 'fa-calendar', 'href' => route('employee.attendance')],
             ['label' => 'Performance', 'icon' => 'fa-chart-line', 'href' => '/employee-performance']
         ];
 

@@ -2,21 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TeamMember extends Model
+class OptimizationTeamMember extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'daily_team_id',
+        'optimization_team_id',
         'employee_id',
     ];
 
     public function team()
     {
-        return $this->belongsTo(DailyTeamAssignment::class, 'daily_team_id');
+        return $this->belongsTo(OptimizationTeam::class, 'optimization_team_id');
     }
 
     public function employee()
