@@ -22,8 +22,8 @@ use App\Http\Controllers\ScenarioController;
 |--------------------------------------------------------------------------
 */
     Route::get('/', action: function () {
-        return view('client-appointment-form');
-    })->name('client-appointment-form');
+        return view('employee-tasks');
+    })->name('employee-tasks');
     
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {
