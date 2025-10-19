@@ -8,6 +8,10 @@ use Carbon\Carbon;
 use App\Models\Task;
 use App\Models\ContractedClient;
 use App\Models\Client;
+use App\Models\OptimizationRun;
+use App\Models\OptimizationGeneration;
+use App\Models\Location;
+use App\Services\Optimization\OptimizationService; // ✅ FIXED: Correct namespace
 
 class TaskController extends Controller
 {
@@ -20,53 +24,111 @@ class TaskController extends Controller
         $rawTasks = Task::with(['location.contractedClient', 'client'])->get();
 
         // --- 2. COMBINE CONTRACTED + EXTERNAL CLIENTS FOR DROPDOWN ---
-        $contractedClients = ContractedClient::all(['id', 'name']);
+        $contractedClients = ContractedClient::with('locations')->get();
         $externalClients = Client::all(['id', 'first_name', 'last_name']);
 
         $allClients = $contractedClients->map(function ($client) {
+            $locations = $client->locations->map(function ($location) {
+                return [
+                    'id' => $location->id,
+                    'name' => $location->location_name
+                ];
+            })->values()->toArray();
+            
             return [
                 'label' => $client->name,
-                'value' => 'contracted_' . $client->id
+                'value' => 'contracted_' . $client->id,
+                'type' => 'contracted',
+                'locations' => $locations
             ];
         })->concat($externalClients->map(function ($client) {
             return [
                 'label' => $client->first_name . ' ' . $client->last_name,
-                'value' => 'client_' . $client->id
+                'value' => 'client_' . $client->id,
+                'type' => 'external',
+                'locations' => [] // Empty for now, will be populated from appointments later
             ];
-        }));
+        }))->values()->toArray();
 
-        // --- 3. BUILD EVENTS FOR CALENDAR DISPLAY ---
+        // --- 3. BUILD EVENTS FOR CALENDAR DISPLAY (WITH COMPLETE DATA) ---
         $events = [];
         foreach ($rawTasks as $task) {
-            $dateKey = Carbon::parse($task->scheduled_date)->format('Y-n-j');
+            $dateKey = date('Y-n-j', strtotime($task->scheduled_date));
+
+            // ✅ Get employee names for this task
+            $employeeNames = [];
+            if ($task->assigned_team_id) {
+                // Try NEW optimization_teams table first
+                $optimizationTeam = \App\Models\OptimizationTeam::with('members.employee')
+                    ->find($task->assigned_team_id);
+                
+                if ($optimizationTeam) {
+                    // New structure - optimization_teams
+                    $employeeNames = $optimizationTeam->members()
+                        ->with('employee')
+                        ->get()
+                        ->pluck('employee.full_name')
+                        ->toArray();
+                } else {
+                    // OLD structure - daily_team_assignments
+                    $dailyTeam = \App\Models\DailyTeamAssignment::with('members.employee')
+                        ->find($task->assigned_team_id);
+                    
+                    if ($dailyTeam) {
+                        // âœ… FIX: Use 'members' not 'teamMembers'
+                        $employeeNames = $dailyTeam->members
+                            ->pluck('employee.full_name')
+                            ->toArray();
+                    }
+                }
+            }
             
-            // 2. This is the new, corrected logic to get the client name
-            $clientName = 'Unknown Client'; // A default fallback name
-        
+            // \Log::info("Task employee lookup", [
+            //     'task_id' => $task->id,
+            //     'assigned_team_id' => $task->assigned_team_id,
+            //     'employees_found' => $employeeNames
+            // ]);
+            
+            // Get the client name
+            $clientName = 'Unknown Client';
             if ($task->location && $task->location->contractedClient) {
-                // This is a task for a contracted client (e.g., Kakslauttanen)
                 $clientName = $task->location->contractedClient->name;
             } elseif ($task->client) {
-                // This is a task for an external client
-                $clientName = $task->client->first_name;
+                $clientName = $task->client->first_name . ' ' . $task->client->last_name;
             }
-        
-            if (!isset($events[$dateKey])) {
-                $events[$dateKey] = [];
-            }
-            
+
             $events[$dateKey][] = [
                 'title' => $clientName . ' - ' . $task->task_description,
-                'color' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                'color' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                'status' => $task->status,
+                'serviceType' => $task->task_description,
+                'location' => $task->location->location_name ?? 'Unknown',
+                'employees' => $employeeNames, // ✅ Add employee names
+                'team_id' => $task->assigned_team_id,
             ];
         }
         
-        // --- 4. BUILD TASKS FOR KANBAN BOARD ---
+    // --- 4. (NEW) PREPARE BOOKED LOCATIONS DATA FOR THE FRONTEND ---
+    $bookedLocationsByDate = [];
+    foreach ($rawTasks as $task) {
+        if ($task->location_id) {
+            $dateKey = date('Y-m-d', strtotime($task->scheduled_date));
+            if (!isset($bookedLocationsByDate[$dateKey])) {
+                $bookedLocationsByDate[$dateKey] = [];
+            }
+            $bookedLocationsByDate[$dateKey][] = $task->location_id;
+        }
+    }
+
+
+        // --- 5. BUILD TASKS FOR KANBAN BOARD ---
         $tasks = $rawTasks->map(function ($task) {
-            $clientName =
-                optional($task->contractedClient)->name ??
-                trim(optional($task->client)->first_name . ' ' . optional($task->client)->last_name) ??
-                'Unknown Client';
+            $clientName = 'Unknown Client';
+            if ($task->location && $task->location->contractedClient) {
+                $clientName = $task->location->contractedClient->name;
+            } elseif ($task->client) {
+                $clientName = trim($task->client->first_name . ' ' . $task->client->last_name);
+            }
 
             return [
                 'id' => $task->id,
@@ -76,17 +138,17 @@ class TaskController extends Controller
             ];
         });
 
-        // --- 5. RETURN TO VIEW ---
+        // --- 6. RETURN TO VIEW ---
         return view('admin-tasks', [
             'tasks' => $tasks,
             'clients' => $allClients,
             'events' => $events,
+            'bookedLocationsByDate' => $bookedLocationsByDate // Pass the new data
         ]);
     }
 
-
     /**
-     * Store a new task in the database.
+     * Store a new task in the database and trigger optimization.
      */
     public function store(Request $request)
     {
@@ -98,77 +160,133 @@ class TaskController extends Controller
             'rateType' => 'nullable|string',
             'extraTasks' => 'nullable|array'
         ]);
-
-        // Parse client type and ID
-        $clientParts = explode('_', $request->client);
-        $clientType = $clientParts[0]; // 'contracted' or 'client'
-        $clientId = $clientParts[1];
-
-        // Create tasks for each cabin
-        $createdTasks = [];
-        foreach ($request->cabinsList as $cabinInfo) {
-            // Find the location_id from the location name (cabin)
-            $location = DB::table('locations')
-                ->where('location_name', $cabinInfo['cabin'])
-                ->first();
+    
+        try {
+            DB::beginTransaction();
+    
+            // Parse client type and ID
+            $clientParts = explode('_', $request->client);
+            $clientType = $clientParts[0]; // 'contracted' or 'client'
+            $clientId = $clientParts[1];
+    
+            // ✅ NEW: Collect location IDs AND CREATE TASKS
+            $newLocationIds = [];
+            $createdTasks = [];
             
-            if (!$location) {
-                continue; // Skip if location not found
-            }
-
-            $task = new Task();
-            $task->location_id = $location->id;
-            
-            // Set client relationship based on type
-            if ($clientType === 'contracted') {
-                $task->contracted_client_id = $clientId;
-                $task->client_id = null;
-            } else {
-                $task->client_id = $clientId;
-                $task->contracted_client_id = null;
-            }
-            
-            // Build task description
-            $task->task_description = $request->serviceType . ' - ' . $cabinInfo['type'] . ' (' . $request->rateType . ')';
-            $task->scheduled_date = $request->serviceDate;
-            $task->status = 'Pending';
-            $task->estimated_duration_minutes = 120; // 2 hours base per cabin
-            
-            $task->save();
-            $createdTasks[] = $task;
-        }
-
-        // Handle extra tasks if provided
-        if ($request->has('extraTasks') && is_array($request->extraTasks)) {
-            foreach ($request->extraTasks as $extraTask) {
-                if (!empty($extraTask['type'])) {
-                    // Create extra task entry (you may need to adjust based on your schema)
-                    $task = new Task();
-                    
-                    if ($clientType === 'contracted') {
-                        $task->contracted_client_id = $clientId;
-                    } else {
-                        $task->client_id = $clientId;
-                    }
-                    
-                    $task->task_description = 'Extra: ' . $extraTask['type'];
-                    $task->scheduled_date = $request->serviceDate;
-                    $task->status = 'Pending';
-                    $task->estimated_duration_minutes = 180; // 3 hours for extra tasks
-                    
-                    // You might want to store the price somewhere
-                    // $task->additional_price = $extraTask['price'] ?? 0;
-                    
-                    $task->save();
-                    $createdTasks[] = $task;
+            foreach ($request->cabinsList as $cabinInfo) {
+                // Find location by name
+                $location = Location::where('location_name', $cabinInfo['cabin'])->first();
+                
+                if (!$location) {
+                    \Log::warning("Location not found: {$cabinInfo['cabin']}");
+                    continue;
                 }
-            }
-        }
+    
+                $newLocationIds[] = $location->id;
+                
+                // ✅ CREATE THE TASK RECORD
+                $task = new Task();
+                $task->location_id = $location->id;
+                
+                // Set client_id based on type
+                if ($clientType === 'contracted') {
+                    $task->client_id = null; // Contracted clients don't use client_id
+                } else {
+                    $task->client_id = $clientId;
+                }
+                
+                $task->task_description = $request->serviceType;
+                $task->scheduled_date = $request->serviceDate;
+                $task->scheduled_time = '08:00:00'; // ✅ ADD THIS LINE - Start of work day... Remove this, to get the proper time, after development phase
 
-        return response()->json([
-            'message' => 'Tasks created successfully!',
-            'tasks_created' => count($createdTasks)
-        ]);
+                // Use location's base duration or default
+                $task->duration = $location->base_cleaning_duration_minutes ?? 60;
+                $task->estimated_duration_minutes = $task->duration;
+                
+                // Set travel time (default 30 minutes)
+                $task->travel_time = 30;
+                
+                // Set coordinates from location query
+                // Get coordinates based on contracted client
+                if ($clientType === 'contracted') {
+                    if ($clientId == 1) { // Kakslauttanen
+                        $task->latitude = 68.33470361;
+                        $task->longitude = 27.33426652;
+                    } elseif ($clientId == 2) { // Aikamatkat
+                        $task->latitude = 68.42573267;
+                        $task->longitude = 27.41235379;
+                    }
+                }
+                
+                $task->status = 'Pending'; // Start as Pending, optimization will change to Scheduled
+                $task->save();
+                
+                $createdTasks[] = $task;
+                
+                \Log::info("Created task", [
+                    'id' => $task->id,
+                    'location' => $location->location_name,
+                    'duration' => $task->duration,
+                    'coordinates' => ['lat' => $task->latitude, 'lon' => $task->longitude]
+                ]);
+            }
+    
+            // Validate we have locations and tasks
+            if (empty($newLocationIds)) {
+                throw new \Exception('No valid locations found for the selected cabins');
+            }
+            
+            if (empty($createdTasks)) {
+                throw new \Exception('No tasks were created');
+            }
+    
+            DB::commit();
+    
+            // === TRIGGER OPTIMIZATION ===
+            \Log::info("Triggering optimization", [
+                'service_date' => $request->serviceDate,
+                'location_ids' => $newLocationIds,
+                'task_count' => count($createdTasks)
+            ]);
+            
+            $optimizationService = app(OptimizationService::class);
+            
+            $optimizationResult = $optimizationService->optimizeSchedule(
+                $request->serviceDate,
+                $newLocationIds,
+                null
+            );
+    
+            // Handle the response
+            if ($optimizationResult['status'] === 'success') {
+                return response()->json([
+                    'message' => 'Tasks created and optimized successfully!',
+                    'tasks_created' => count($createdTasks),
+                    'schedules' => $optimizationResult['schedules'],
+                    'statistics' => $optimizationResult['statistics'],
+                ]);
+            } else {
+                return response()->json([
+                    'message' => 'Tasks created but optimization failed',
+                    'tasks_created' => count($createdTasks),
+                    'error' => $optimizationResult['message'] ?? 'Unknown error'
+                ], 422);
+            }
+    
+        } catch (\Exception $e) {
+            // Only rollback if we haven't committed yet
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            } 
+
+            \Log::error('Task creation failed', [
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'message' => 'Error creating tasks: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -241,6 +359,96 @@ class TaskController extends Controller
 
         return response()->json([
             'clients' => $allClients
+        ]);
+    }
+
+    /**
+     * Get optimization results for visualization
+     */
+    public function getOptimizationResults($optimizationRunId)
+    {
+        try {
+            $optimizationRun = OptimizationRun::findOrFail($optimizationRunId);
+            
+            $generations = OptimizationGeneration::where('optimization_run_id', $optimizationRunId)
+                ->orderBy('generation_number', 'asc')
+                ->get();
+
+            return response()->json([
+                'optimization_run' => [
+                    'id' => $optimizationRun->id,
+                    'service_date' => $optimizationRun->service_date,
+                    'status' => $optimizationRun->status,
+                    'total_tasks' => (int) $optimizationRun->total_tasks,
+                    'total_teams' => (int) $optimizationRun->total_teams,
+                    'total_employees' => (int) $optimizationRun->total_employees,
+                    'final_fitness_score' => $optimizationRun->final_fitness_score 
+                        ? (float) $optimizationRun->final_fitness_score 
+                        : null,
+                    'generations_run' => (int) $optimizationRun->generations_run,
+                    'employee_allocation' => $optimizationRun->employee_allocation_data,
+                    'greedy_result' => $optimizationRun->greedy_result_data,
+                ],
+                'generations' => $generations->map(function($generation) {
+                    return [
+                        'generation_number' => (int) $generation->generation_number,
+                        'best_fitness' => (float) $generation->best_fitness,
+                        'average_fitness' => (float) $generation->average_fitness,
+                        'worst_fitness' => (float) $generation->worst_fitness,
+                        'is_improvement' => (bool) $generation->is_improvement,
+                        'best_schedule' => $generation->best_schedule_data,
+                        'population_summary' => $generation->population_summary,
+                        'schedules' => []
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to load optimization results',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Re-run optimization for a specific date
+     */
+    public function reoptimize(Request $request)
+    {
+        $request->validate([
+            'service_date' => 'required|date'
+        ]);
+
+        // Get all locations that need to be scheduled for this date
+        $pendingTasks = Task::where('scheduled_date', $request->service_date)
+            ->where('status', 'Scheduled')
+            ->get();
+
+        if ($pendingTasks->isEmpty()) {
+            return response()->json([
+                'message' => 'No tasks found to re-optimize for this date.'
+            ], 404);
+        }
+
+        $locationIds = $pendingTasks->pluck('location_id')->unique()->toArray();
+
+        // ✅ FIXED: Use correct namespace and method name
+        $optimizationService = app(OptimizationService::class);
+        
+        // ✅ FIXED: Use optimizeSchedule() instead of run()
+        $optimizationResult = $optimizationService->optimizeSchedule(
+            $request->service_date,
+            $locationIds,
+            null
+        );
+
+        return response()->json([
+            'status' => $optimizationResult['status'],
+            'message' => $optimizationResult['status'] === 'success' 
+                ? 'Re-optimization completed successfully' 
+                : 'Re-optimization failed',
+            'statistics' => $optimizationResult['statistics'] ?? null,
+            'schedules' => $optimizationResult['schedules'] ?? null
         ]);
     }
 }

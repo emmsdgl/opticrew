@@ -21,7 +21,7 @@
         <!-- Main Panel - Dashboard Content -->
         <div class="main-panel flex flex-col gap-6 flex-1 w-full p-4">
             <!-- Pass data to the calendar -->
-            <x-taskcalendar :clients="$clients" :events="$events" />
+            <x-taskcalendar :clients="$clients" :events="$events" :booked-locations-by-date="$bookedLocationsByDate" />
 
             <!-- Pass data to the Kanban board -->
             <div class="w-full h-full">

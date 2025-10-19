@@ -14,19 +14,22 @@ class GeneticAlgorithmService
     private float $mutationRate;
     private array $initialWorkloads;
     private ?array $seedSchedule; // The greedy result
+    private ?int $optimizationRunId;
 
     public function __construct(
         Collection $teams, 
         Collection $tasks, 
         array $teamEfficiencies, 
         array $initialWorkloads = [],
-        ?array $seedSchedule = null
+        ?array $seedSchedule = null,
+        ?int $optimizationRunId = null // ADD THIS
     ) {
         $this->teams = $teams;
         $this->tasks = $tasks;
         $this->teamEfficiencies = $teamEfficiencies;
         $this->initialWorkloads = $initialWorkloads;
         $this->seedSchedule = $seedSchedule;
+        $this->optimizationRunId = $optimizationRunId; // ADD THIS
 
         $this->populationSize = 20;
         $this->generations = 100;
@@ -39,22 +42,33 @@ class GeneticAlgorithmService
         $bestFitnessSoFar = 0;
         $generationsWithoutImprovement = 0;
         $patience = 15;
-
-        for ($i = 0; $i < $this->generations; $i++) {
+    
+        // Log generation 0
+        $population = $this->calculatePopulationFitness($population);
+        $this->logGeneration(0, $population, false);
+    
+        for ($i = 1; $i <= $this->generations; $i++) {
             $population = $this->calculatePopulationFitness($population);
-
+    
             $currentBestFitness = $population[0]['fitness'];
-            if ($currentBestFitness > $bestFitnessSoFar) {
+            $isImprovement = $currentBestFitness > $bestFitnessSoFar;
+            
+            if ($isImprovement) {
                 $bestFitnessSoFar = $currentBestFitness;
                 $generationsWithoutImprovement = 0;
             } else {
                 $generationsWithoutImprovement++;
             }
-
+    
+            // Log every 10th generation or when there's improvement
+            if ($i % 10 == 0 || $isImprovement) {
+                $this->logGeneration($i, $population, $isImprovement);
+            }
+    
             if ($generationsWithoutImprovement >= $patience) {
                 break; // Early stopping
             }
-
+    
             $newPopulation = [$population[0]]; // Elitism
             while (count($newPopulation) < $this->populationSize) {
                 $parent1 = $this->selection($population);
@@ -65,9 +79,66 @@ class GeneticAlgorithmService
             }
             $population = $newPopulation;
         }
-
+    
         $population = $this->calculatePopulationFitness($population);
+        
+        // Log final generation if not already logged
+        if ($i % 10 != 0) {
+            $this->logGeneration($i, $population, false);
+        }
+        
         return $population[0];
+    }
+
+    private function logGeneration(int $generationNumber, array $population, bool $isImprovement): void
+    {
+        if (!$this->optimizationRunId) {
+            return; // Can't log without optimization run ID
+        }
+    
+        $fitnesses = array_map(fn($schedule) => $schedule['fitness'], $population);
+        $bestFitness = max($fitnesses);
+        $averageFitness = array_sum($fitnesses) / count($fitnesses);
+        $worstFitness = min($fitnesses);
+    
+        // Format best schedule for storage
+        $bestScheduleData = $this->formatScheduleForStorage($population[0]);
+    
+        \App\Models\OptimizationGeneration::create([
+            'optimization_run_id' => $this->optimizationRunId,
+            'generation_number' => $generationNumber,
+            'best_fitness' => round($bestFitness, 4),
+            'average_fitness' => round($averageFitness, 4),
+            'worst_fitness' => round($worstFitness, 4),
+            'is_improvement' => $isImprovement,
+            'best_schedule_data' => json_encode($bestScheduleData),
+            'population_summary' => json_encode([
+                'population_size' => count($population),
+                'fitness_range' => [
+                    'min' => round($worstFitness, 4),
+                    'max' => round($bestFitness, 4),
+                    'avg' => round($averageFitness, 4)
+                ]
+            ])
+        ]);
+    }
+    
+    // ADD THIS HELPER METHOD to format schedule:
+    
+    private function formatScheduleForStorage(array $schedule): array
+    {
+        $formatted = [];
+        foreach ($schedule as $teamIndex => $teamData) {
+            if (!is_int($teamIndex)) continue;
+            
+            $formatted[] = [
+                'team_index' => $teamIndex,
+                'task_count' => $teamData['tasks']->count(),
+                'task_ids' => $teamData['tasks']->pluck('id')->toArray(),
+                'total_duration' => $teamData['tasks']->sum('base_cleaning_duration_minutes')
+            ];
+        }
+        return $formatted;
     }
 
     /**
