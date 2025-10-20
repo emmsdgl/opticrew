@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\Task;
 use App\Models\ContractedClient;
@@ -55,31 +56,18 @@ class TaskController extends Controller
         foreach ($rawTasks as $task) {
             $dateKey = date('Y-n-j', strtotime($task->scheduled_date));
 
-            // ✅ Get employee names for this task
+            // Get employee names for this task from OptimizationTeam
             $employeeNames = [];
             if ($task->assigned_team_id) {
-                // Try NEW optimization_teams table first
                 $optimizationTeam = \App\Models\OptimizationTeam::with('members.employee')
                     ->find($task->assigned_team_id);
-                
+
                 if ($optimizationTeam) {
-                    // New structure - optimization_teams
                     $employeeNames = $optimizationTeam->members()
                         ->with('employee')
                         ->get()
                         ->pluck('employee.full_name')
                         ->toArray();
-                } else {
-                    // OLD structure - daily_team_assignments
-                    $dailyTeam = \App\Models\DailyTeamAssignment::with('members.employee')
-                        ->find($task->assigned_team_id);
-                    
-                    if ($dailyTeam) {
-                        // âœ… FIX: Use 'members' not 'teamMembers'
-                        $employeeNames = $dailyTeam->members
-                            ->pluck('employee.full_name')
-                            ->toArray();
-                    }
                 }
             }
             
@@ -180,7 +168,7 @@ class TaskController extends Controller
                 $location = Location::where('location_name', $cabinInfo['cabin'])->first();
                 
                 if (!$location) {
-                    \Log::warning("Location not found: {$cabinInfo['cabin']}");
+                    Log::warning("Location not found: {$cabinInfo['cabin']}");
                     continue;
                 }
     
@@ -228,7 +216,7 @@ class TaskController extends Controller
                 
                 $createdTasks[] = $task;
                 
-                \Log::info("Created task", [
+                Log::info("Created task", [
                     'id' => $task->id,
                     'location' => $location->location_name,
                     'duration' => $task->duration,
@@ -249,7 +237,7 @@ class TaskController extends Controller
             DB::commit();
     
             // ✅ RULE 8: Trigger optimization (will auto-detect real-time)
-            \Log::info("Triggering optimization", [
+            Log::info("Triggering optimization", [
                 'service_date' => $request->serviceDate,
                 'location_ids' => $newLocationIds,
                 'task_count' => count($createdTasks),
@@ -288,7 +276,7 @@ class TaskController extends Controller
                 DB::rollBack();
             } 
 
-            \Log::error('Task creation failed', [
+            Log::error('Task creation failed', [
                 'error' => $e->getMessage()
             ]);
             
@@ -322,7 +310,7 @@ class TaskController extends Controller
             // ✅ Mark as saved
             $optimizationRun->update(['is_saved' => true]);
 
-            \Log::info("Schedule saved", [
+            Log::info("Schedule saved", [
                 'optimization_run_id' => $optimizationRun->id,
                 'service_date' => $request->service_date
             ]);
@@ -334,7 +322,7 @@ class TaskController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Failed to save schedule', [
+            Log::error('Failed to save schedule', [
                 'error' => $e->getMessage()
             ]);
 

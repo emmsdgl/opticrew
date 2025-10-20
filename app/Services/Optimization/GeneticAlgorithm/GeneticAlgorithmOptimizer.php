@@ -138,6 +138,8 @@ class GeneticAlgorithmOptimizer
                 }
 
                 $newPopulation = new Population(self::POPULATION_SIZE);
+
+                // ✅ ELITISM: Preserve best solution from previous generation
                 $newPopulation->addIndividual($currentBest);
 
                 while ($newPopulation->size() < self::POPULATION_SIZE) {
@@ -308,12 +310,12 @@ class GeneticAlgorithmOptimizer
     }
 
     /**
-     * ✅ RULE 5, 6, 7: Fair greedy schedule
-     * - Ensures all teams get tasks (max utilization)
-     * - Distributes evenly
-     * - Respects 12-hour limit
+     * ✅ RULE 5, 6, 7: Generate Fair Greedy Schedule
+     * - RULE 5: Max utilization (ensures all teams get tasks)
+     * - RULE 6: Fair distribution (assigns to least loaded team)
+     * - RULE 7: 12-hour limit (respects maximum working hours)
      */
-    protected function generateGreedySchedule(Collection $teams, Collection $tasks, array $efficiencies): Individual
+    protected function generateFairGreedySchedule(Collection $teams, Collection $tasks, array $efficiencies): Individual
     {
         $schedule = [];
 

@@ -30,10 +30,25 @@ class RuleBasedPreProcessor
             'total_employees' => $employees->count()
         ]);
 
-        // ✅ RULE 3: Sort tasks by priority (Arrival Status first)
-        $sortedTasks = $tasks->sortByDesc(function($task) {
-            return $task->arrival_status ? 1 : 0;
+        // ✅ RULE 3: Sort tasks by priority (Arrival Status first, then by scheduled_time)
+        $sortedTasks = $tasks->sort(function($a, $b) {
+            // First, sort by arrival_status DESC (TRUE first, FALSE second)
+            if ($a->arrival_status != $b->arrival_status) {
+                return $b->arrival_status <=> $a->arrival_status;
+            }
+            // Then, sort by scheduled_time ASC
+            return $a->scheduled_time <=> $b->scheduled_time;
         })->values();
+
+        Log::info("Tasks sorted by arrival status and time", [
+            'total_tasks' => $sortedTasks->count(),
+            'arrival_tasks' => $sortedTasks->where('arrival_status', true)->count(),
+            'first_task' => $sortedTasks->first() ? [
+                'id' => $sortedTasks->first()->id,
+                'arrival_status' => $sortedTasks->first()->arrival_status,
+                'scheduled_time' => $sortedTasks->first()->scheduled_time
+            ] : null
+        ]);
     
         // ✅ Validate tasks
         $validTasks = $sortedTasks->filter(function($task) {

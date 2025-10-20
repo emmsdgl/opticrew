@@ -393,7 +393,7 @@ class OptimizationService
             $totalEmployees = collect($scheduleData)->sum(fn($team) => count($team['team']));
             $generationsRun = $schedule->getMetadata('generations_run') ?? 100;
     
-            \Log::info("Saving optimization run", [
+            Log::info("Saving optimization run", [
                 'client_identifier' => $clientIdentifier,
                 'total_teams' => $totalTeams,
                 'total_tasks' => $totalTasks,
@@ -415,7 +415,7 @@ class OptimizationService
                 'greedy_result_data' => json_encode([]),
             ]);
             
-            \Log::info("Optimization run created", [
+            Log::info("Optimization run created", [
                 'optimization_run_id' => $optimizationRun->id
             ]);
             
@@ -512,7 +512,7 @@ class OptimizationService
                 ]);
             }
             
-            \Log::info("Optimization team created", [
+            Log::info("Optimization team created", [
                 'optimization_team_id' => $optimizationTeam->id,
                 'team_index' => $teamIndex + 1,
                 'employee_ids' => collect($team)->pluck('id')->toArray(),
@@ -528,7 +528,7 @@ class OptimizationService
                     'assigned_team_id' => $optimizationTeam->id, // ✅ Unique team ID
                 ]);
                 
-                \Log::info("Task updated", [
+                Log::info("Task updated", [
                     'task_id' => $task->id,
                     'status' => 'Scheduled',
                     'optimization_team_id' => $optimizationTeam->id,

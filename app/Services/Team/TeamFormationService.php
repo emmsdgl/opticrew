@@ -12,8 +12,16 @@ class TeamFormationService
 
     /**
      * Form teams from available employees
-     * CONSTRAINT: Each team MUST have at least 1 driver
-     * Teams are pairs (2) or trios (3) if odd number
+     *
+     * ✅ RULE 2: Each team MUST have at least 1 driver + 1-2 others (team size: 2-3)
+     *
+     * Strategy:
+     * - Each driver gets assigned to a team
+     * - Add 1-2 non-drivers to complete the team
+     * - If no non-drivers available, pair drivers together
+     *
+     * @param Collection $employees Available employees
+     * @return Collection Teams (each team is a Collection of employees)
      */
     public function formTeams(Collection $employees): Collection
     {
