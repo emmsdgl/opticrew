@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\Task;
 use App\Models\ContractedClient;
@@ -55,31 +56,18 @@ class TaskController extends Controller
         foreach ($rawTasks as $task) {
             $dateKey = date('Y-n-j', strtotime($task->scheduled_date));
 
-            // ✅ Get employee names for this task
+            // Get employee names for this task from OptimizationTeam
             $employeeNames = [];
             if ($task->assigned_team_id) {
-                // Try NEW optimization_teams table first
                 $optimizationTeam = \App\Models\OptimizationTeam::with('members.employee')
                     ->find($task->assigned_team_id);
-                
+
                 if ($optimizationTeam) {
-                    // New structure - optimization_teams
                     $employeeNames = $optimizationTeam->members()
                         ->with('employee')
                         ->get()
                         ->pluck('employee.full_name')
                         ->toArray();
-                } else {
-                    // OLD structure - daily_team_assignments
-                    $dailyTeam = \App\Models\DailyTeamAssignment::with('members.employee')
-                        ->find($task->assigned_team_id);
-                    
-                    if ($dailyTeam) {
-                        // âœ… FIX: Use 'members' not 'teamMembers'
-                        $employeeNames = $dailyTeam->members
-                            ->pluck('employee.full_name')
-                            ->toArray();
-                    }
                 }
             }
             
@@ -105,21 +93,21 @@ class TaskController extends Controller
                 'location' => $task->location->location_name ?? 'Unknown',
                 'employees' => $employeeNames, // ✅ Add employee names
                 'team_id' => $task->assigned_team_id,
+                'arrival_status' => $task->arrival_status ?? false, // ✅ Include arrival status
             ];
         }
         
-    // --- 4. (NEW) PREPARE BOOKED LOCATIONS DATA FOR THE FRONTEND ---
-    $bookedLocationsByDate = [];
-    foreach ($rawTasks as $task) {
-        if ($task->location_id) {
-            $dateKey = date('Y-m-d', strtotime($task->scheduled_date));
-            if (!isset($bookedLocationsByDate[$dateKey])) {
-                $bookedLocationsByDate[$dateKey] = [];
+        // --- 4. (NEW) PREPARE BOOKED LOCATIONS DATA FOR THE FRONTEND ---
+        $bookedLocationsByDate = [];
+        foreach ($rawTasks as $task) {
+            if ($task->location_id) {
+                $dateKey = date('Y-m-d', strtotime($task->scheduled_date));
+                if (!isset($bookedLocationsByDate[$dateKey])) {
+                    $bookedLocationsByDate[$dateKey] = [];
+                }
+                $bookedLocationsByDate[$dateKey][] = $task->location_id;
             }
-            $bookedLocationsByDate[$dateKey][] = $task->location_id;
         }
-    }
-
 
         // --- 5. BUILD TASKS FOR KANBAN BOARD ---
         $tasks = $rawTasks->map(function ($task) {
@@ -135,6 +123,7 @@ class TaskController extends Controller
                 'title' => $clientName . ' - ' . $task->task_description,
                 'status' => $task->status,
                 'scheduled_date' => $task->scheduled_date,
+                'arrival_status' => $task->arrival_status ?? false, // ✅ Include
             ];
         });
 
@@ -148,7 +137,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Store a new task in the database and trigger optimization.
+     * ✅ RULE 3 & 8: Store task with arrival_status and real-time handling
      */
     public function store(Request $request)
     {
@@ -158,7 +147,8 @@ class TaskController extends Controller
             'serviceType' => 'required|string',
             'cabinsList' => 'required|array|min:1',
             'rateType' => 'nullable|string',
-            'extraTasks' => 'nullable|array'
+            'extraTasks' => 'nullable|array',
+            'arrivalStatus' => 'nullable|boolean' // ✅ RULE 3: Accept arrival status
         ]);
     
         try {
@@ -178,7 +168,7 @@ class TaskController extends Controller
                 $location = Location::where('location_name', $cabinInfo['cabin'])->first();
                 
                 if (!$location) {
-                    \Log::warning("Location not found: {$cabinInfo['cabin']}");
+                    Log::warning("Location not found: {$cabinInfo['cabin']}");
                     continue;
                 }
     
@@ -206,6 +196,9 @@ class TaskController extends Controller
                 // Set travel time (default 30 minutes)
                 $task->travel_time = 30;
                 
+                // ✅ RULE 3: Set arrival status
+                $task->arrival_status = $request->arrivalStatus ?? false;
+                            
                 // Set coordinates from location query
                 // Get coordinates based on contracted client
                 if ($clientType === 'contracted') {
@@ -223,10 +216,11 @@ class TaskController extends Controller
                 
                 $createdTasks[] = $task;
                 
-                \Log::info("Created task", [
+                Log::info("Created task", [
                     'id' => $task->id,
                     'location' => $location->location_name,
                     'duration' => $task->duration,
+                    'arrival_status' => $task->arrival_status,
                     'coordinates' => ['lat' => $task->latitude, 'lon' => $task->longitude]
                 ]);
             }
@@ -242,28 +236,31 @@ class TaskController extends Controller
     
             DB::commit();
     
-            // === TRIGGER OPTIMIZATION ===
-            \Log::info("Triggering optimization", [
+            // ✅ RULE 8: Trigger optimization (will auto-detect real-time)
+            Log::info("Triggering optimization", [
                 'service_date' => $request->serviceDate,
                 'location_ids' => $newLocationIds,
-                'task_count' => count($createdTasks)
+                'task_count' => count($createdTasks),
+                'is_today' => $request->serviceDate === Carbon::now()->format('Y-m-d')
             ]);
             
             $optimizationService = app(OptimizationService::class);
             
+            // Pass the first created task ID for real-time detection
             $optimizationResult = $optimizationService->optimizeSchedule(
                 $request->serviceDate,
                 $newLocationIds,
-                null
+                $createdTasks[0]->id // ✅ Pass task ID
             );
-    
+
             // Handle the response
             if ($optimizationResult['status'] === 'success') {
                 return response()->json([
                     'message' => 'Tasks created and optimized successfully!',
                     'tasks_created' => count($createdTasks),
-                    'schedules' => $optimizationResult['schedules'],
-                    'statistics' => $optimizationResult['statistics'],
+                    'schedules' => $optimizationResult['schedules'] ?? null,
+                    'statistics' => $optimizationResult['statistics'] ?? null,
+                    'is_real_time_addition' => isset($optimizationResult['assigned_team_id']),
                 ]);
             } else {
                 return response()->json([
@@ -279,7 +276,7 @@ class TaskController extends Controller
                 DB::rollBack();
             } 
 
-            \Log::error('Task creation failed', [
+            Log::error('Task creation failed', [
                 'error' => $e->getMessage()
             ]);
             
@@ -290,9 +287,51 @@ class TaskController extends Controller
     }
 
     /**
-     * Add external client from order and return updated client list
-     * This method can be called when a new order is placed by an external client
+     * ✅ RULE 9: Save schedule (mark as saved)
      */
+    public function saveSchedule(Request $request)
+    {
+        $request->validate([
+            'service_date' => 'required|date'
+        ]);
+
+        try {
+            $optimizationRun = OptimizationRun::where('service_date', $request->service_date)
+                ->where('is_saved', false)
+                ->latest()
+                ->first();
+
+            if (!$optimizationRun) {
+                return response()->json([
+                    'message' => 'No unsaved schedule found for this date'
+                ], 404);
+            }
+
+            // ✅ Mark as saved
+            $optimizationRun->update(['is_saved' => true]);
+
+            Log::info("Schedule saved", [
+                'optimization_run_id' => $optimizationRun->id,
+                'service_date' => $request->service_date
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Schedule saved successfully',
+                'optimization_run_id' => $optimizationRun->id
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to save schedule', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Error saving schedule: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function addExternalClientFromOrder(Request $request)
     {
         $request->validate([
@@ -302,7 +341,6 @@ class TaskController extends Controller
             'phone' => 'nullable|string'
         ]);
 
-        // Check if client already exists
         $existingClient = Client::where('first_name', $request->first_name)
             ->where('last_name', $request->last_name)
             ->first();
@@ -317,7 +355,6 @@ class TaskController extends Controller
             ]);
         }
 
-        // Create new external client
         $client = new Client();
         $client->first_name = $request->first_name;
         $client->last_name = $request->last_name;
@@ -362,23 +399,17 @@ class TaskController extends Controller
         ]);
     }
 
-    /**
-     * Get optimization results for visualization
-     */
     public function getOptimizationResults($optimizationRunId)
     {
         try {
             $optimizationRun = OptimizationRun::findOrFail($optimizationRunId);
             
-            $generations = OptimizationGeneration::where('optimization_run_id', $optimizationRunId)
-                ->orderBy('generation_number', 'asc')
-                ->get();
-
             return response()->json([
                 'optimization_run' => [
                     'id' => $optimizationRun->id,
                     'service_date' => $optimizationRun->service_date,
                     'status' => $optimizationRun->status,
+                    'is_saved' => (bool) $optimizationRun->is_saved, // ✅ Include
                     'total_tasks' => (int) $optimizationRun->total_tasks,
                     'total_teams' => (int) $optimizationRun->total_teams,
                     'total_employees' => (int) $optimizationRun->total_employees,
@@ -389,18 +420,6 @@ class TaskController extends Controller
                     'employee_allocation' => $optimizationRun->employee_allocation_data,
                     'greedy_result' => $optimizationRun->greedy_result_data,
                 ],
-                'generations' => $generations->map(function($generation) {
-                    return [
-                        'generation_number' => (int) $generation->generation_number,
-                        'best_fitness' => (float) $generation->best_fitness,
-                        'average_fitness' => (float) $generation->average_fitness,
-                        'worst_fitness' => (float) $generation->worst_fitness,
-                        'is_improvement' => (bool) $generation->is_improvement,
-                        'best_schedule' => $generation->best_schedule_data,
-                        'population_summary' => $generation->population_summary,
-                        'schedules' => []
-                    ];
-                })
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -411,7 +430,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Re-run optimization for a specific date
+     * ✅ RULE 4: Re-optimize (will delete unsaved runs automatically)
      */
     public function reoptimize(Request $request)
     {
@@ -419,9 +438,8 @@ class TaskController extends Controller
             'service_date' => 'required|date'
         ]);
 
-        // Get all locations that need to be scheduled for this date
         $pendingTasks = Task::where('scheduled_date', $request->service_date)
-            ->where('status', 'Scheduled')
+            ->whereIn('status', ['Pending', 'Scheduled'])
             ->get();
 
         if ($pendingTasks->isEmpty()) {
@@ -432,10 +450,9 @@ class TaskController extends Controller
 
         $locationIds = $pendingTasks->pluck('location_id')->unique()->toArray();
 
-        // ✅ FIXED: Use correct namespace and method name
         $optimizationService = app(OptimizationService::class);
         
-        // ✅ FIXED: Use optimizeSchedule() instead of run()
+        // ✅ Will automatically delete unsaved runs
         $optimizationResult = $optimizationService->optimizeSchedule(
             $request->service_date,
             $locationIds,
@@ -451,4 +468,139 @@ class TaskController extends Controller
             'schedules' => $optimizationResult['schedules'] ?? null
         ]);
     }
+
+    // /**
+    //  * Add external client from order and return updated client list
+    //  * This method can be called when a new order is placed by an external client
+    //  */
+    // public function addExternalClientFromOrder(Request $request)
+    // {
+    //     $request->validate([
+    //         'first_name' => 'required|string|max:255',
+    //         'last_name' => 'required|string|max:255',
+    //         'email' => 'nullable|email',
+    //         'phone' => 'nullable|string'
+    //     ]);
+
+    //     // Check if client already exists
+    //     $existingClient = Client::where('first_name', $request->first_name)
+    //         ->where('last_name', $request->last_name)
+    //         ->first();
+
+    //     if ($existingClient) {
+    //         return response()->json([
+    //             'message' => 'Client already exists',
+    //             'client' => [
+    //                 'label' => $existingClient->first_name . ' ' . $existingClient->last_name,
+    //                 'value' => 'client_' . $existingClient->id
+    //             ]
+    //         ]);
+    //     }
+
+    //     // Create new external client
+    //     $client = new Client();
+    //     $client->first_name = $request->first_name;
+    //     $client->last_name = $request->last_name;
+    //     $client->email = $request->email;
+    //     $client->phone = $request->phone;
+    //     $client->save();
+
+    //     return response()->json([
+    //         'message' => 'External client added successfully',
+    //         'client' => [
+    //             'label' => $client->first_name . ' ' . $client->last_name,
+    //             'value' => 'client_' . $client->id
+    //         ]
+    //     ]);
+    // }
+
+    // /**
+    //  * Get optimization results for visualization
+    //  */
+    // public function getOptimizationResults($optimizationRunId)
+    // {
+    //     try {
+    //         $optimizationRun = OptimizationRun::findOrFail($optimizationRunId);
+            
+    //         $generations = OptimizationGeneration::where('optimization_run_id', $optimizationRunId)
+    //             ->orderBy('generation_number', 'asc')
+    //             ->get();
+
+    //         return response()->json([
+    //             'optimization_run' => [
+    //                 'id' => $optimizationRun->id,
+    //                 'service_date' => $optimizationRun->service_date,
+    //                 'status' => $optimizationRun->status,
+    //                 'total_tasks' => (int) $optimizationRun->total_tasks,
+    //                 'total_teams' => (int) $optimizationRun->total_teams,
+    //                 'total_employees' => (int) $optimizationRun->total_employees,
+    //                 'final_fitness_score' => $optimizationRun->final_fitness_score 
+    //                     ? (float) $optimizationRun->final_fitness_score 
+    //                     : null,
+    //                 'generations_run' => (int) $optimizationRun->generations_run,
+    //                 'employee_allocation' => $optimizationRun->employee_allocation_data,
+    //                 'greedy_result' => $optimizationRun->greedy_result_data,
+    //             ],
+    //             'generations' => $generations->map(function($generation) {
+    //                 return [
+    //                     'generation_number' => (int) $generation->generation_number,
+    //                     'best_fitness' => (float) $generation->best_fitness,
+    //                     'average_fitness' => (float) $generation->average_fitness,
+    //                     'worst_fitness' => (float) $generation->worst_fitness,
+    //                     'is_improvement' => (bool) $generation->is_improvement,
+    //                     'best_schedule' => $generation->best_schedule_data,
+    //                     'population_summary' => $generation->population_summary,
+    //                     'schedules' => []
+    //                 ];
+    //             })
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'error' => 'Failed to load optimization results',
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    // /**
+    //  * Re-run optimization for a specific date
+    //  */
+    // public function reoptimize(Request $request)
+    // {
+    //     $request->validate([
+    //         'service_date' => 'required|date'
+    //     ]);
+
+    //     // Get all locations that need to be scheduled for this date
+    //     $pendingTasks = Task::where('scheduled_date', $request->service_date)
+    //         ->where('status', 'Scheduled')
+    //         ->get();
+
+    //     if ($pendingTasks->isEmpty()) {
+    //         return response()->json([
+    //             'message' => 'No tasks found to re-optimize for this date.'
+    //         ], 404);
+    //     }
+
+    //     $locationIds = $pendingTasks->pluck('location_id')->unique()->toArray();
+
+    //     // ✅ FIXED: Use correct namespace and method name
+    //     $optimizationService = app(OptimizationService::class);
+        
+    //     // ✅ FIXED: Use optimizeSchedule() instead of run()
+    //     $optimizationResult = $optimizationService->optimizeSchedule(
+    //         $request->service_date,
+    //         $locationIds,
+    //         null
+    //     );
+
+    //     return response()->json([
+    //         'status' => $optimizationResult['status'],
+    //         'message' => $optimizationResult['status'] === 'success' 
+    //             ? 'Re-optimization completed successfully' 
+    //             : 'Re-optimization failed',
+    //         'statistics' => $optimizationResult['statistics'] ?? null,
+    //         'schedules' => $optimizationResult['schedules'] ?? null
+    //     ]);
+    // }
 }

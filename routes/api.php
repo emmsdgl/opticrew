@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\TaskStatusController;
+use App\Http\Controllers\Api\AlertController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +18,58 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Employee Dashboard API Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('employee')->group(function () {
+    // Get tasks for employee's team
+    Route::get('/tasks', [TaskStatusController::class, 'getEmployeeTasks'])
+        ->name('api.employee.tasks');
+});
+
+// Task Status Management (Employee App)
+Route::prefix('tasks')->group(function () {
+    // Get task details
+    Route::get('/{taskId}', [TaskStatusController::class, 'getTaskDetails'])
+        ->name('api.tasks.details');
+
+    // Start task (In Progress)
+    Route::post('/{taskId}/start', [TaskStatusController::class, 'startTask'])
+        ->name('api.tasks.start');
+
+    // Put task on hold (with reason)
+    Route::post('/{taskId}/hold', [TaskStatusController::class, 'putTaskOnHold'])
+        ->name('api.tasks.hold');
+
+    // Complete task
+    Route::post('/{taskId}/complete', [TaskStatusController::class, 'completeTask'])
+        ->name('api.tasks.complete');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Dashboard API Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->group(function () {
+    // Alert Management
+    Route::prefix('alerts')->group(function () {
+        // Get unacknowledged alerts (for real-time notifications)
+        Route::get('/unacknowledged', [AlertController::class, 'getUnacknowledgedAlerts'])
+            ->name('api.admin.alerts.unacknowledged');
+
+        // Get all alerts (with optional filters)
+        Route::get('/', [AlertController::class, 'getAllAlerts'])
+            ->name('api.admin.alerts.all');
+
+        // Acknowledge an alert
+        Route::post('/{alertId}/acknowledge', [AlertController::class, 'acknowledgeAlert'])
+            ->name('api.admin.alerts.acknowledge');
+    });
 });
