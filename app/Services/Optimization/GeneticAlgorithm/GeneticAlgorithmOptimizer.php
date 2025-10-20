@@ -4,6 +4,7 @@ namespace App\Services\Optimization\GeneticAlgorithm;
 use App\Services\Team\TeamFormationService;
 use App\Services\Team\TeamEfficiencyCalculator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class GeneticAlgorithmOptimizer
 {
@@ -39,7 +40,7 @@ class GeneticAlgorithmOptimizer
         $allOptimalSchedules = [];
     
         foreach ($employeeAllocations as $clientId => $employees) {
-            \Log::info("Processing client", [
+            Log::info("Processing client", [
                 'client_id' => $clientId,
                 'employee_count' => count($employees)
             ]);
@@ -52,7 +53,7 @@ class GeneticAlgorithmOptimizer
                     return !$lockedEmployeeIds->contains($emp->id);
                 });
 
-                \Log::info("Filtered locked employees", [
+                Log::info("Filtered locked employees", [
                     'original_count' => count($employees),
                     'available_count' => $availableEmployees->count(),
                     'locked_count' => $lockedEmployeeIds->count()
@@ -63,7 +64,7 @@ class GeneticAlgorithmOptimizer
             $teams = $this->teamFormation->formTeams($availableEmployees);
 
             if ($teams->isEmpty()) {
-                \Log::warning("No teams formed for client", ['client_id' => $clientId]);
+                Log::warning("No teams formed for client", ['client_id' => $clientId]);
                 continue;
             }
 
@@ -90,14 +91,14 @@ class GeneticAlgorithmOptimizer
                 return false;
             });
 
-            \Log::info("Tasks for client", [
+            Log::info("Tasks for client", [
                 'client_id' => $clientId,
                 'task_count' => $clientTasks->count(),
                 'task_ids' => $clientTasks->pluck('id')->toArray()
             ]);
 
             if ($clientTasks->isEmpty()) {
-                \Log::warning("No tasks found for client", ['client_id' => $clientId]);
+                Log::warning("No tasks found for client", ['client_id' => $clientId]);
                 continue;
             }
 
@@ -165,7 +166,7 @@ class GeneticAlgorithmOptimizer
                 'final_fitness' => $bestSchedule->getFitness()
             ]);
             
-            \Log::info("Optimization complete for client", [
+            Log::info("Optimization complete for client", [
                 'client_id' => $clientId,
                 'final_fitness' => $bestSchedule->getFitness(),
                 'generations' => $generation
@@ -357,7 +358,7 @@ class GeneticAlgorithmOptimizer
     
             // If no team can take it (all at 12 hours), assign to least loaded anyway
             if ($selectedTeam === null) {
-                \Log::warning("All teams at 12-hour limit, assigning to least loaded", [
+                Log::warning("All teams at 12-hour limit, assigning to least loaded", [
                     'task_id' => $task->id
                 ]);
                 $selectedTeam = collect($schedule)
@@ -373,7 +374,7 @@ class GeneticAlgorithmOptimizer
         // ✅ RULE 5: Log if any team has 0 tasks
         foreach ($schedule as $index => $teamSchedule) {
             if ($teamSchedule['tasks']->isEmpty()) {
-                \Log::warning("Team has no tasks assigned", [
+                Log::warning("Team has no tasks assigned", [
                     'team_index' => $index,
                     'team_size' => $teamSchedule['team']->count()
                 ]);

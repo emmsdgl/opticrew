@@ -282,7 +282,7 @@ class TaskStatusController extends Controller
                         return [
                             'id' => $member->employee->id,
                             'name' => $member->employee->full_name,
-                            'has_drivers_license' => $member->employee->has_drivers_license
+                            'has_driving_license' => $member->employee->has_driving_license
                         ];
                     })
                     ->toArray();

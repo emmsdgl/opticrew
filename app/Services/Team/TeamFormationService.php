@@ -30,8 +30,8 @@ class TeamFormationService
         ]);
 
         // Separate drivers and non-drivers
-        $drivers = $employees->filter(fn($e) => $e->has_drivers_license)->shuffle();
-        $nonDrivers = $employees->filter(fn($e) => !$e->has_drivers_license)->shuffle();
+        $drivers = $employees->filter(fn($e) => $e->has_driving_license)->shuffle();
+        $nonDrivers = $employees->filter(fn($e) => !$e->has_driving_license)->shuffle();
 
         $teams = collect();
         
@@ -69,7 +69,7 @@ class TeamFormationService
             Log::info("Team formed", [
                 'team_index' => $teams->count(),
                 'size' => $team->count(),
-                'has_driver' => $team->contains(fn($e) => $e->has_drivers_license),
+                'has_driver' => $team->contains(fn($e) => $e->has_driving_license),
                 'member_ids' => $team->pluck('id')->toArray()
             ]);
         }
