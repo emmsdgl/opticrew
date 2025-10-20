@@ -15,16 +15,16 @@
 
 @php
     $sizes = [
-        'sm' => ['card' => 'max-w-sm', 'avatar' => 'w-24 h-24', 'greeting' => 'text-xl'],
+        'sm' => ['card' => 'max-w-sm', 'avatar' => 'w-32h-24', 'greeting' => 'text-xl'],
         'default' => ['card' => 'max-w-lg', 'avatar' => 'w-32 h-32', 'greeting' => 'text-2xl'],
         'lg' => ['card' => 'max-w-2xl', 'avatar' => 'w-40 h-40', 'greeting' => 'text-3xl'],
     ];
     $currentSize = $sizes[$size] ?? $sizes['default'];
 @endphp
 
-<div class="w-full {{ $currentSize['card'] }} mx-auto rounded-3xl transition-all duration-300 p-8">
+<div class="w-full {{ $currentSize['card'] }} mx-auto rounded-3xl transition-all duration-300 p-4">
     <!-- Avatar Section with Animated Ring -->
-    <div class="flex justify-center mb-6 mt-8">
+    <div class="flex justify-center mb-6">
         <div class="relative">
             <!-- Animated Progress Ring -->
             <svg class="absolute -inset-3 w-[calc(100%+24px)] h-[calc(100%+24px)]" viewBox="0 0 100 100">
@@ -68,10 +68,11 @@
         </p>
         
         <!-- Status Badge -->
-        <div class="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2">
-            <span class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $status }}</span>
-        </div>
+
+            <div class="inline-flex grid-cols-2 items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2">
+                <span class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $status }}</span>
+            </div>
     </div>
 
     <!-- Contact Information Grid -->
@@ -153,6 +154,18 @@
             </div>
         </div>
     </div>
+<div class="w-full flex justify-center items-center">
+    <div class="w-1/3 flex justify-center items-center py-4 rounded-lg">
+        <x-button 
+            label="Edit Profile" 
+            color="blue" 
+            size="md"
+            icon='<i class="fa-solid fa-pen"></i>'
+            x-on:click="toggleEdit"
+            x-text="editing ? 'Save Changes' : 'Edit Profile'"
+        />
+    </div>
+</div>
 </div>
 
 <style>

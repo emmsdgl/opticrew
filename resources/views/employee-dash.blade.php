@@ -42,7 +42,6 @@
         <!-- Right Panel - Tasks Details -->
         <div
             class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
-
             <div class="flex flex-row justify-between w-full">
                 <x-labelwithvalue label="Tasks Summary" count="" />
                 @php
