@@ -8,7 +8,6 @@
             ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => route('admin.tasks')],
             ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/calendar'],
             ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/analytics'],
-            ['label' => 'Reports', 'icon' => 'fa-file-lines', 'href' => '/reports'],
         ];
 
         $teams = ['HR Team', 'Tech Team'];

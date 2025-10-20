@@ -1,20 +1,4 @@
-<x-layouts.general-dashboard :title="'Client Dashboard'">
-
-    @slot('sidebar')
-    @php
-        $navOptions = [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('client.dashboard')],
-            ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => route('client.appointments')],
-            ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => '/reports'],
-            ['label' => 'Feedbacks', 'icon' => 'fa-chart-line', 'href' => '/analytics']
-        ];
-
-        $teams = ['', ''];
-    @endphp
-
-    <x-sidebar :navOptions="$navOptions" :teams="$teams" />
-    @endslot
-
+<x-layouts.general-client :title="'Client Dashboard'">
     <section role="status" class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <!-- Left Panel - Dashboard Content -->
         <div
@@ -115,4 +99,4 @@
                 </div>
             </div>
     </section>
-</x-layouts.general-dashboard>
+</x-layouts.general-client>
