@@ -1,12 +1,11 @@
 @props([
-    'title' => null,                 // Optional title of the dashboard section
-    'cards' => [],                   // Array of dashboard cards
-    'maxWidth' => 'md',              // For container width (sm, md, lg, xl)
+    'title' => null,               
+    'cards' => [],                
+    'maxWidth' => 'md',    
 ])
 
 <div class="w-full mx-auto justify-center align-items-center max-w-{{ $maxWidth }}">
-    <div class="rounded-3xl p-6 transition-colors duration-300">
-
+    <div class="rounded-3xl w-full p-6 transition-colors duration-300">
         {{-- Title --}}
         @if($title)
             <div class="flex items-center justify-between mb-6 mt-12">
@@ -18,7 +17,7 @@
 
         {{-- Cards --}}
         @if(!empty($cards))
-            <div class="flex flex-col gap-4">
+            <div class="flex w-full flex-col gap-4">
                 @foreach($cards as $card)
                     <div 
                         class="rounded-2xl p-4 transition-all duration-200 hover:-translate-y-1 card-item bg-white dark:bg-gray-800"

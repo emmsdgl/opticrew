@@ -1,4 +1,5 @@
-    <x-layouts.general-client :title="'Profile'">
+<x-layouts.general-employer :title="'Profile'">
+
         <section role="status" class="flex w-full flex-col lg:flex-row p-4 md:p-6 min-h-[calc(100vh-4rem)]">
             <!-- Left Panel - Dashboard Content -->
             <div
@@ -7,7 +8,7 @@
                 <div
                     class="w-full h-full rounded-lg">
                     @php
-                        $client = [
+                        $employer = [
                             'full_name' => 'Robert Johnson',
                             'work_email' => 'r.johnson@company.com',
                             'work_phone' => '+1 (415) 555-8888',
@@ -18,11 +19,11 @@
                         ];
                     @endphp
 
-                    <x-profilecard :name="$client['full_name']" greeting="Welcome Back,"
-                        subtitle="You have a productive day ahead!" :avatar="$client['profile_photo']"
-                        :status="$client['office_status']" statusIcon="🏢" :email="$client['work_email']"
-                        :phone="$client['work_phone']" :username="$client['username']"
-                        :location="$client['work_location']" />
+                    <x-profilecard :name="$employer['full_name']" greeting="Welcome Back,"
+                        subtitle="You have a productive day ahead!" :avatar="$employer['profile_photo']"
+                        :status="$employer['office_status']" statusIcon="🏢" :email="$employer['work_email']"
+                        :phone="$employer['work_phone']" :username="$employer['username']"
+                        :location="$employer['work_location']" />
 
                 </div>
             </div>
@@ -62,4 +63,4 @@
         ]" />
                 </div>
         </section>
-    </x-layouts.general-client>
+</x-layouts.general-employer>

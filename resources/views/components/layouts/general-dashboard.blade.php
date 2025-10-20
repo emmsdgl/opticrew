@@ -1,4 +1,3 @@
-<!-- THIS IS THE DASHBOARD LAYOUT FOR ALL THE MODULE DASHBOARD -->
 @props([
     'title' => ''
 ])
@@ -19,11 +18,8 @@
     <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
     <script src="https://unpkg.com/flowbite@latest/dist/flowbite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <!-- In your layout file before </body> -->
 
-    <!-- SCRIPT TO APPLY THE SAVED THEME ON PAGE LOAD -->
     <script>
-        // Checks localStorage for a 'theme' item. If it exists and is 'dark', or if it doesn't exist but the user's OS prefers dark mode, it adds the 'dark' class to the HTML element.
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         } else {
