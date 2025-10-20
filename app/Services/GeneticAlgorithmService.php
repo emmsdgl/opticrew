@@ -4,6 +4,13 @@ namespace App\Services;
 
 use Illuminate\Support\Collection;
 
+/**
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use App\Services\Optimization\GeneticAlgorithm\GeneticAlgorithmOptimizer instead.
+ *
+ * This file is kept for backward compatibility only.
+ * All new code should use the modular GeneticAlgorithmOptimizer in the Optimization namespace.
+ */
 class GeneticAlgorithmService
 {
     private Collection $teams;

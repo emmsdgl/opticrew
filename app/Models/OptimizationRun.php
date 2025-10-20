@@ -15,6 +15,7 @@ class OptimizationRun extends Model
         'final_fitness_score',
         'generations_run',
         'status',
+        'is_saved',               // RULE 4: Track if schedule is saved
         'employee_allocation_data',
         'greedy_result_data',
     ];
@@ -23,7 +24,8 @@ class OptimizationRun extends Model
         'service_date' => 'date',
         'employee_allocation_data' => 'array',
         'greedy_result_data' => 'array',
-        'final_fitness_score' => 'decimal:4'
+        'final_fitness_score' => 'decimal:4',
+        'is_saved' => 'boolean',
     ];
 
     public function generations()

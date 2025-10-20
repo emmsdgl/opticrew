@@ -47,6 +47,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/optimization/{optimizationRunId}/results', [TaskController::class, 'getOptimizationResults']);
     Route::post('/admin/optimization/reoptimize', [TaskController::class, 'reoptimize']);
 
+    // ✅ NEW: Save schedule (mark as saved)
+    Route::post('/admin/optimization/save-schedule', [TaskController::class, 'saveSchedule'])
+        ->name('admin.optimization.save');
+
 
     Route::prefix('schedules')->group(function () {
         Route::post('/optimize', [ScheduleController::class, 'optimize']);
