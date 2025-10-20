@@ -138,7 +138,7 @@ class RuleBasedPreProcessor
                 'client_id' => $clientId,
                 'task_count' => $clientTasks->count(),
                 'employee_count' => count($clientEmployees),
-                'has_driver' => $clientEmployees->contains(fn($e) => $e->has_drivers_license)
+                'has_driver' => $clientEmployees->contains(fn($e) => $e->has_driving_license)
             ]);
         }
 
@@ -151,10 +151,10 @@ class RuleBasedPreProcessor
     protected function selectEmployeesWithDriver(Collection $employees, int $count): Collection
     {
         // Get drivers
-        $drivers = $employees->filter(fn($e) => $e->has_drivers_license);
-        
+        $drivers = $employees->filter(fn($e) => $e->has_driving_license);
+
         // Get non-drivers
-        $nonDrivers = $employees->filter(fn($e) => !$e->has_drivers_license);
+        $nonDrivers = $employees->filter(fn($e) => !$e->has_driving_license);
 
         if ($drivers->isEmpty()) {
             Log::warning("No drivers available! Selecting employees anyway.");
@@ -246,7 +246,7 @@ class RuleBasedPreProcessor
         Collection $clientGroups
     ): array {
         if ($employees->isEmpty()) {
-            \Log::error("Cannot allocate: No employees provided");
+            Log::error("Cannot allocate: No employees provided");
             throw new \Exception("No employees available for allocation");
         }
     
@@ -254,7 +254,7 @@ class RuleBasedPreProcessor
         $employeeIndex = 0;
         $employeesArray = $employees->values()->all();
     
-        \Log::info("Allocating employees to clients", [
+        Log::info("Allocating employees to clients", [
             'total_employees' => count($employeesArray),
             'total_clients' => $clientGroups->count()
         ]);
@@ -277,7 +277,7 @@ class RuleBasedPreProcessor
                 $allocations[$clientId][] = $employeesArray[$employeeIndex++];
             }
     
-            \Log::info("Client allocation", [
+            Log::info("Client allocation", [
                 'client_id' => $clientId,
                 'workload_hours' => $workload,
                 'required' => $requiredEmployees,
