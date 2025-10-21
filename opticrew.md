@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 21, 2025 at 08:50 AM
+-- Generation Time: Oct 20, 2025 at 03:24 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -1532,6 +1532,34 @@ INSERT INTO `contracted_clients` (`id`, `name`, `created_at`, `updated_at`) VALU
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `daily_team_assignments`
+--
+
+CREATE TABLE `daily_team_assignments` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `assignment_date` date NOT NULL,
+  `car_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `contracted_client_id` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `daily_team_assignments`
+--
+
+INSERT INTO `daily_team_assignments` (`id`, `assignment_date`, `car_id`, `contracted_client_id`, `created_at`, `updated_at`) VALUES
+(1, '2025-10-03', 1, 1, '2025-10-02 18:52:17', '2025-10-02 18:52:17'),
+(2, '2025-07-01', 1, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(3, '2025-07-01', 2, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(4, '2025-07-01', 3, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(5, '2025-07-01', 1, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(6, '2025-07-01', 2, 1, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
+(14, '2025-10-04', 1, 1, '2025-10-04 06:56:08', '2025-10-04 06:56:08');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `day_offs`
 --
 
@@ -1830,6 +1858,44 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `optimization_generations`
+--
+
+CREATE TABLE `optimization_generations` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `optimization_run_id` bigint(20) UNSIGNED NOT NULL,
+  `generation_number` int(11) NOT NULL,
+  `best_fitness` decimal(8,4) NOT NULL,
+  `average_fitness` decimal(8,4) NOT NULL,
+  `worst_fitness` decimal(8,4) NOT NULL,
+  `is_improvement` tinyint(1) NOT NULL DEFAULT 0,
+  `best_schedule_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`best_schedule_data`)),
+  `population_summary` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`population_summary`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `optimization_results`
+--
+
+CREATE TABLE `optimization_results` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `service_date` date NOT NULL,
+  `client_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `contracted_client_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `schedule` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`schedule`)),
+  `fitness_score` decimal(10,4) DEFAULT NULL,
+  `generation_count` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `optimization_runs`
 --
 
@@ -1950,7 +2016,28 @@ INSERT INTO `optimization_runs` (`id`, `service_date`, `triggered_by_task_id`, `
 (110, '2025-09-29', NULL, 'completed', 0, NULL, 5, 2, 4, NULL, NULL, 0.8772, 16, NULL, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
 (111, '2025-09-30', NULL, 'completed', 0, NULL, 8, 2, 4, NULL, NULL, 0.8687, 21, NULL, '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
 (112, '2025-10-03', NULL, 'completed', 0, NULL, 2, 2, 4, NULL, NULL, 0.9613, 29, NULL, '2025-10-02 18:52:17', '2025-10-02 18:52:17'),
-(113, '2025-10-04', NULL, 'completed', 0, NULL, 6, 2, 4, NULL, NULL, 0.9021, 17, NULL, '2025-10-04 06:56:08', '2025-10-04 06:56:08');
+(113, '2025-10-04', NULL, 'completed', 0, NULL, 6, 2, 4, NULL, NULL, 0.9021, 17, NULL, '2025-10-04 06:56:08', '2025-10-04 06:56:08'),
+(153, '2025-10-21', NULL, 'completed', 0, NULL, 5, 5, 11, '\"[]\"', '\"[]\"', 0.8214, 17, NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `optimization_schedules`
+--
+
+CREATE TABLE `optimization_schedules` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `optimization_generation_id` bigint(20) UNSIGNED NOT NULL,
+  `schedule_index` int(11) NOT NULL,
+  `fitness_score` decimal(8,4) NOT NULL,
+  `team_assignments` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`team_assignments`)),
+  `workload_distribution` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`workload_distribution`)),
+  `is_elite` tinyint(1) NOT NULL DEFAULT 0,
+  `is_final_result` tinyint(1) NOT NULL DEFAULT 0,
+  `created_by` varchar(255) NOT NULL DEFAULT 'random',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -2442,7 +2529,12 @@ INSERT INTO `optimization_teams` (`id`, `optimization_run_id`, `team_index`, `se
 (728, 113, 2, '2025-10-04', NULL, '2025-10-04 06:56:08', '2025-10-04 06:56:08'),
 (729, 113, 3, '2025-10-04', NULL, '2025-10-04 06:56:08', '2025-10-04 06:56:08'),
 (730, 113, 4, '2025-10-04', NULL, '2025-10-04 06:56:08', '2025-10-04 06:56:08'),
-(731, 113, 5, '2025-10-04', NULL, '2025-10-04 06:56:08', '2025-10-04 06:56:08');
+(731, 113, 5, '2025-10-04', NULL, '2025-10-04 06:56:08', '2025-10-04 06:56:08'),
+(787, 153, 1, '2025-10-21', NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(788, 153, 2, '2025-10-21', NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(789, 153, 3, '2025-10-21', NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(790, 153, 4, '2025-10-21', NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(791, 153, 5, '2025-10-21', NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07');
 
 -- --------------------------------------------------------
 
@@ -2457,6 +2549,23 @@ CREATE TABLE `optimization_team_members` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `optimization_team_members`
+--
+
+INSERT INTO `optimization_team_members` (`id`, `optimization_team_id`, `employee_id`, `created_at`, `updated_at`) VALUES
+(2600, 787, 4, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2601, 787, 7, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2602, 788, 3, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2603, 788, 6, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2604, 789, 1, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2605, 789, 8, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2606, 790, 2, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2607, 790, 5, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2608, 791, 9, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2609, 791, 10, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(2610, 791, 11, '2025-10-20 05:14:07', '2025-10-20 05:14:07');
 
 -- --------------------------------------------------------
 
@@ -2601,7 +2710,7 @@ CREATE TABLE `tasks` (
 
 INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `estimated_duration_minutes`, `actual_duration`, `scheduled_date`, `scheduled_time`, `duration`, `travel_time`, `latitude`, `longitude`, `required_equipment`, `required_skills`, `status`, `on_hold_reason`, `on_hold_timestamp`, `arrival_status`, `assigned_team_id`, `reassigned_at`, `reassignment_reason`, `optimization_run_id`, `assigned_by_generation`, `started_at`, `completed_at`, `created_at`, `updated_at`) VALUES
 (1, 2, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-03', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 722, NULL, NULL, 112, NULL, '2025-10-02 18:52:23', NULL, '2025-10-02 18:52:17', '2025-10-17 03:40:36'),
-(2, 3, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-03', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 723, NULL, NULL, 112, NULL, '2025-10-20 04:21:00', NULL, '2025-10-02 18:52:17', '2025-10-20 04:21:20'),
+(2, 3, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-03', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'On Hold', 'inside', '2025-10-20 04:21:20', 0, 723, NULL, NULL, 112, NULL, '2025-10-20 04:21:00', NULL, '2025-10-02 18:52:17', '2025-10-20 04:21:20'),
 (1003, 12, NULL, 'Historical Cleaning', 60, NULL, '2025-08-17', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 497, NULL, NULL, 67, NULL, '2025-07-31 05:37:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1004, 39, NULL, 'Historical Cleaning', 45, NULL, '2025-07-22', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 367, NULL, NULL, 41, NULL, '2025-08-19 05:47:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1005, 77, NULL, 'Historical Cleaning', 60, NULL, '2025-09-17', NULL, 60, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 652, NULL, NULL, 98, NULL, '2025-09-25 05:10:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
@@ -2800,9 +2909,9 @@ INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `esti
 (1198, 36, NULL, 'Historical Cleaning', 60, NULL, '2025-07-25', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 384, NULL, NULL, 44, NULL, '2025-07-29 01:21:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1199, 43, NULL, 'Historical Cleaning', 60, NULL, '2025-08-14', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 483, NULL, NULL, 64, NULL, '2025-07-12 05:26:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1200, 67, NULL, 'Historical Cleaning', 60, NULL, '2025-08-17', NULL, 60, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 500, NULL, NULL, 67, NULL, '2025-07-16 01:47:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
-(1201, 21, NULL, 'Historical Cleaning', 45, NULL, '2025-09-20', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 670, NULL, NULL, 101, NULL, '2025-09-12 05:19:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
-(1202, 46, NULL, 'Historical Cleaning', 60, NULL, '2025-08-17', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 501, NULL, NULL, 67, NULL, '2025-09-11 05:12:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36');
+(1201, 21, NULL, 'Historical Cleaning', 45, NULL, '2025-09-20', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 670, NULL, NULL, 101, NULL, '2025-09-12 05:19:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36');
 INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `estimated_duration_minutes`, `actual_duration`, `scheduled_date`, `scheduled_time`, `duration`, `travel_time`, `latitude`, `longitude`, `required_equipment`, `required_skills`, `status`, `on_hold_reason`, `on_hold_timestamp`, `arrival_status`, `assigned_team_id`, `reassigned_at`, `reassignment_reason`, `optimization_run_id`, `assigned_by_generation`, `started_at`, `completed_at`, `created_at`, `updated_at`) VALUES
+(1202, 46, NULL, 'Historical Cleaning', 60, NULL, '2025-08-17', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 501, NULL, NULL, 67, NULL, '2025-09-11 05:12:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1203, 69, NULL, 'Historical Cleaning', 45, NULL, '2025-09-12', NULL, 45, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 630, NULL, NULL, 93, NULL, '2025-07-03 02:14:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1204, 26, NULL, 'Historical Cleaning', 45, NULL, '2025-09-12', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 631, NULL, NULL, 93, NULL, '2025-07-26 03:57:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1205, 63, NULL, 'Historical Cleaning', 60, NULL, '2025-07-18', NULL, 60, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 348, NULL, NULL, 37, NULL, '2025-09-30 05:33:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
@@ -3003,9 +3112,9 @@ INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `esti
 (1400, 75, NULL, 'Historical Cleaning', 60, NULL, '2025-08-23', NULL, 60, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 529, NULL, NULL, 73, NULL, '2025-07-14 02:45:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1401, 39, NULL, 'Historical Cleaning', 60, NULL, '2025-09-01', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 572, NULL, NULL, 82, NULL, '2025-09-02 01:40:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1402, 72, NULL, 'Historical Cleaning', 60, NULL, '2025-09-28', NULL, 60, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 710, NULL, NULL, 109, NULL, '2025-08-28 02:37:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
-(1403, 38, NULL, 'Historical Cleaning', 45, NULL, '2025-08-20', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 515, NULL, NULL, 70, NULL, '2025-09-24 05:10:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
-(1404, 17, NULL, 'Historical Cleaning', 60, NULL, '2025-09-29', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 715, NULL, NULL, 110, NULL, '2025-07-21 03:28:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36');
+(1403, 38, NULL, 'Historical Cleaning', 45, NULL, '2025-08-20', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 515, NULL, NULL, 70, NULL, '2025-09-24 05:10:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36');
 INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `estimated_duration_minutes`, `actual_duration`, `scheduled_date`, `scheduled_time`, `duration`, `travel_time`, `latitude`, `longitude`, `required_equipment`, `required_skills`, `status`, `on_hold_reason`, `on_hold_timestamp`, `arrival_status`, `assigned_team_id`, `reassigned_at`, `reassignment_reason`, `optimization_run_id`, `assigned_by_generation`, `started_at`, `completed_at`, `created_at`, `updated_at`) VALUES
+(1404, 17, NULL, 'Historical Cleaning', 60, NULL, '2025-09-29', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 715, NULL, NULL, 110, NULL, '2025-07-21 03:28:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1405, 51, NULL, 'Historical Cleaning', 60, NULL, '2025-07-03', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 273, NULL, NULL, 22, NULL, '2025-08-14 05:25:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1406, 41, NULL, 'Historical Cleaning', 45, NULL, '2025-07-09', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 306, NULL, NULL, 28, NULL, '2025-07-28 02:41:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1407, 53, NULL, 'Historical Cleaning', 60, NULL, '2025-07-06', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 291, NULL, NULL, 25, NULL, '2025-08-04 03:38:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
@@ -3206,9 +3315,9 @@ INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `esti
 (1602, 37, NULL, 'Historical Cleaning', 45, NULL, '2025-08-14', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 484, NULL, NULL, 64, NULL, '2025-07-28 06:46:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1603, 80, NULL, 'Historical Cleaning', 45, NULL, '2025-09-10', NULL, 45, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 621, NULL, NULL, 91, NULL, '2025-07-10 01:24:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1604, 5, NULL, 'Historical Cleaning', 60, NULL, '2025-09-24', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 690, NULL, NULL, 105, NULL, '2025-09-02 01:58:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
-(1605, 76, NULL, 'Historical Cleaning', 45, NULL, '2025-09-17', NULL, 45, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 652, NULL, NULL, 98, NULL, '2025-07-06 01:31:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
-(1606, 9, NULL, 'Historical Cleaning', 45, NULL, '2025-07-19', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 352, NULL, NULL, 38, NULL, '2025-08-23 02:37:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36');
+(1605, 76, NULL, 'Historical Cleaning', 45, NULL, '2025-09-17', NULL, 45, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 652, NULL, NULL, 98, NULL, '2025-07-06 01:31:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36');
 INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `estimated_duration_minutes`, `actual_duration`, `scheduled_date`, `scheduled_time`, `duration`, `travel_time`, `latitude`, `longitude`, `required_equipment`, `required_skills`, `status`, `on_hold_reason`, `on_hold_timestamp`, `arrival_status`, `assigned_team_id`, `reassigned_at`, `reassignment_reason`, `optimization_run_id`, `assigned_by_generation`, `started_at`, `completed_at`, `created_at`, `updated_at`) VALUES
+(1606, 9, NULL, 'Historical Cleaning', 45, NULL, '2025-07-19', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 352, NULL, NULL, 38, NULL, '2025-08-23 02:37:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1607, 66, NULL, 'Historical Cleaning', 45, NULL, '2025-08-26', NULL, 45, 30, 68.42573267, 27.41235379, NULL, NULL, 'Completed', NULL, NULL, 0, 544, NULL, NULL, 76, NULL, '2025-09-01 04:32:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1608, 54, NULL, 'Historical Cleaning', 60, NULL, '2025-09-30', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 719, NULL, NULL, 111, NULL, '2025-09-17 05:49:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
 (1609, 25, NULL, 'Historical Cleaning', 45, NULL, '2025-07-24', NULL, 45, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 380, NULL, NULL, 43, NULL, '2025-08-04 06:30:00', NULL, '2025-10-03 03:21:13', '2025-10-17 03:40:36'),
@@ -3235,7 +3344,10 @@ INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `esti
 (2069, 3, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-04', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 729, NULL, NULL, 113, NULL, '2025-10-04 06:56:18', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36'),
 (2070, 7, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-04', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 730, NULL, NULL, 113, NULL, '2025-10-04 06:56:18', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36'),
 (2071, 8, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-04', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 731, NULL, NULL, 113, NULL, '2025-10-04 06:56:20', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36'),
-(2072, 9, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-04', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 727, NULL, NULL, 113, NULL, '2025-10-04 06:56:21', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36');
+(2072, 9, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-04', NULL, 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Completed', NULL, NULL, 0, 727, NULL, NULL, 113, NULL, '2025-10-04 06:56:21', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36'),
+(3675, 1, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-21', '08:00:00', 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Scheduled', NULL, NULL, 0, 789, NULL, NULL, 153, NULL, NULL, NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(3676, 2, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-21', '08:00:00', 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Scheduled', NULL, NULL, 0, 790, NULL, NULL, 153, NULL, NULL, NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07'),
+(3677, 3, NULL, 'Daily Room Cleaning', 60, NULL, '2025-10-21', '08:00:00', 60, 30, 68.33470361, 27.33426652, NULL, NULL, 'Scheduled', NULL, NULL, 0, 791, NULL, NULL, 153, NULL, NULL, NULL, '2025-10-20 05:14:07', '2025-10-20 05:14:07');
 
 -- --------------------------------------------------------
 
@@ -3896,6 +4008,41 @@ INSERT INTO `task_performance_histories` (`id`, `task_id`, `estimated_duration_m
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `team_members`
+--
+
+CREATE TABLE `team_members` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `daily_team_id` bigint(20) UNSIGNED NOT NULL,
+  `employee_id` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `team_members`
+--
+
+INSERT INTO `team_members` (`id`, `daily_team_id`, `employee_id`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(2, 1, 8, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(3, 2, 2, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(4, 2, 7, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(5, 3, 3, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(6, 3, 6, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(7, 3, 11, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(8, 4, 4, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(9, 4, 9, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(10, 5, 5, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(11, 5, 10, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(12, 6, 1, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(13, 6, 3, '2025-10-04 14:45:31', '2025-10-04 14:45:31'),
+(16, 14, 4, '2025-10-04 06:56:08', '2025-10-04 06:56:08'),
+(17, 14, 3, '2025-10-04 06:56:08', '2025-10-04 06:56:08');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -3916,7 +4063,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Admin', 'admin@opticrew.com', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', 'LT4KIQ5tkgqXH4tnHGfv9ZhrJ9OpJsZ5HvMgTdmURGTofSHNgxtirZaGvYiu', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
+(1, 'Admin', 'admin@opticrew.com', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', 'dAlzXH1iorH0J8qyw1CseYwBzoTnuiELshUk03fIVtT27kmCCxdfqvObfpNb', '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
 (2, 'Vincent Rey Digol', 'vincentreydigol@finnoys.com', NULL, '$2y$10$imi1zHLwUCdLQOg5.k39w.7XiWvU6DOoBcIjwSD624Q07XQqAzTQa', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
 (3, 'Martin Yvann Leonardo', 'martinyvannleonardo@finnoys.com', NULL, '$2y$10$fEn6ftE4hV6qwLE6Pu7i5uTTpwHeEKyXtviZ7oTI7mh2hKzE660GS', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
 (4, 'Earl Leonardo', 'earlleonardo@finnoys.com', NULL, '$2y$10$UyZcyuwzjz1SrB6dPNZ3J.hCGWcCJ9ixAA0NP59Y7n9tkR/1JGdDW', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46'),
@@ -3968,6 +4115,14 @@ ALTER TABLE `clients`
 ALTER TABLE `contracted_clients`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `contracted_clients_name_unique` (`name`);
+
+--
+-- Indexes for table `daily_team_assignments`
+--
+ALTER TABLE `daily_team_assignments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `daily_team_assignments_car_id_foreign` (`car_id`),
+  ADD KEY `daily_team_assignments_contracted_client_id_foreign` (`contracted_client_id`);
 
 --
 -- Indexes for table `day_offs`
@@ -4028,11 +4183,34 @@ ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `optimization_generations`
+--
+ALTER TABLE `optimization_generations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `opt_gen_run_gen_idx` (`optimization_run_id`,`generation_number`);
+
+--
+-- Indexes for table `optimization_results`
+--
+ALTER TABLE `optimization_results`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `optimization_results_client_id_foreign` (`client_id`),
+  ADD KEY `optimization_results_service_date_client_id_index` (`service_date`,`client_id`),
+  ADD KEY `optimization_results_contracted_client_id_foreign` (`contracted_client_id`);
+
+--
 -- Indexes for table `optimization_runs`
 --
 ALTER TABLE `optimization_runs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `optimization_runs_triggered_by_task_id_foreign` (`triggered_by_task_id`);
+
+--
+-- Indexes for table `optimization_schedules`
+--
+ALTER TABLE `optimization_schedules`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `optimization_schedules_optimization_generation_id_foreign` (`optimization_generation_id`);
 
 --
 -- Indexes for table `optimization_teams`
@@ -4106,6 +4284,14 @@ ALTER TABLE `task_performance_histories`
   ADD KEY `task_performance_histories_task_id_foreign` (`task_id`);
 
 --
+-- Indexes for table `team_members`
+--
+ALTER TABLE `team_members`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `team_members_daily_team_id_foreign` (`daily_team_id`),
+  ADD KEY `team_members_employee_id_foreign` (`employee_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -4145,6 +4331,12 @@ ALTER TABLE `clients`
 --
 ALTER TABLE `contracted_clients`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `daily_team_assignments`
+--
+ALTER TABLE `daily_team_assignments`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=241;
 
 --
 -- AUTO_INCREMENT for table `day_offs`
@@ -4195,22 +4387,40 @@ ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
+-- AUTO_INCREMENT for table `optimization_generations`
+--
+ALTER TABLE `optimization_generations`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
+-- AUTO_INCREMENT for table `optimization_results`
+--
+ALTER TABLE `optimization_results`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT for table `optimization_runs`
 --
 ALTER TABLE `optimization_runs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=160;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=154;
+
+--
+-- AUTO_INCREMENT for table `optimization_schedules`
+--
+ALTER TABLE `optimization_schedules`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `optimization_teams`
 --
 ALTER TABLE `optimization_teams`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=822;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=792;
 
 --
 -- AUTO_INCREMENT for table `optimization_team_members`
 --
 ALTER TABLE `optimization_team_members`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7802;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2611;
 
 --
 -- AUTO_INCREMENT for table `payroll_reports`
@@ -4246,13 +4456,19 @@ ALTER TABLE `scheduling_logs`
 -- AUTO_INCREMENT for table `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3711;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3678;
 
 --
 -- AUTO_INCREMENT for table `task_performance_histories`
 --
 ALTER TABLE `task_performance_histories`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1033;
+
+--
+-- AUTO_INCREMENT for table `team_members`
+--
+ALTER TABLE `team_members`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=506;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -4282,6 +4498,13 @@ ALTER TABLE `attendances`
 --
 ALTER TABLE `clients`
   ADD CONSTRAINT `clients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `daily_team_assignments`
+--
+ALTER TABLE `daily_team_assignments`
+  ADD CONSTRAINT `daily_team_assignments_car_id_foreign` FOREIGN KEY (`car_id`) REFERENCES `cars` (`id`),
+  ADD CONSTRAINT `daily_team_assignments_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`);
 
 --
 -- Constraints for table `day_offs`
@@ -4321,10 +4544,28 @@ ALTER TABLE `locations`
   ADD CONSTRAINT `locations_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `optimization_generations`
+--
+ALTER TABLE `optimization_generations`
+  ADD CONSTRAINT `optimization_generations_optimization_run_id_foreign` FOREIGN KEY (`optimization_run_id`) REFERENCES `optimization_runs` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `optimization_results`
+--
+ALTER TABLE `optimization_results`
+  ADD CONSTRAINT `optimization_results_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `optimization_runs`
 --
 ALTER TABLE `optimization_runs`
   ADD CONSTRAINT `optimization_runs_triggered_by_task_id_foreign` FOREIGN KEY (`triggered_by_task_id`) REFERENCES `tasks` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `optimization_schedules`
+--
+ALTER TABLE `optimization_schedules`
+  ADD CONSTRAINT `optimization_schedules_optimization_generation_id_foreign` FOREIGN KEY (`optimization_generation_id`) REFERENCES `optimization_generations` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `optimization_teams`
@@ -4368,6 +4609,13 @@ ALTER TABLE `tasks`
 --
 ALTER TABLE `task_performance_histories`
   ADD CONSTRAINT `task_performance_histories_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `team_members`
+--
+ALTER TABLE `team_members`
+  ADD CONSTRAINT `team_members_daily_team_id_foreign` FOREIGN KEY (`daily_team_id`) REFERENCES `daily_team_assignments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `team_members_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

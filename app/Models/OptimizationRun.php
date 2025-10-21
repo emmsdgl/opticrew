@@ -33,6 +33,11 @@ class OptimizationRun extends Model
         return $this->hasMany(OptimizationGeneration::class);
     }
 
+    public function teams()
+    {
+        return $this->hasMany(OptimizationTeam::class);
+    }
+
     public function triggeredByTask()
     {
         return $this->belongsTo(Task::class, 'triggered_by_task_id');

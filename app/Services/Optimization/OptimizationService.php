@@ -344,11 +344,12 @@ class OptimizationService
 
     /**
      * ✅ RULE 9: Get locked teams (teams without what-if scenarios)
+     * Note: what_if_scenario_id is a Phase 2 feature, for now get all teams
      */
     protected function getLockedTeams(OptimizationRun $optimizationRun): \Illuminate\Support\Collection
     {
         return \App\Models\OptimizationTeam::where('optimization_run_id', $optimizationRun->id)
-            ->whereNull('what_if_scenario_id') // Teams without what-if are locked
+            // Phase 2: ->whereNull('what_if_scenario_id') // Teams without what-if are locked
             ->with('members.employee')
             ->get()
             ->map(function($team) {

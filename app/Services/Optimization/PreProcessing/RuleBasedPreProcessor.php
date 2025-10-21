@@ -23,7 +23,7 @@ class RuleBasedPreProcessor
         $this->workforceCalculator = $workforceCalculator;
     }
 
-    public function process(Collection $tasks, Collection $employees, array $constraints): array 
+    public function process(Collection $tasks, Collection $employees, array $constraints): array
     {
         Log::info("Starting pre-processing", [
             'total_tasks' => $tasks->count(),
@@ -49,34 +49,43 @@ class RuleBasedPreProcessor
                 'scheduled_time' => $sortedTasks->first()->scheduled_time
             ] : null
         ]);
-    
+
         // ✅ Validate tasks
         $validTasks = $sortedTasks->filter(function($task) {
             return $this->isValidTask($task);
         });
-    
+
         $invalidTasks = $sortedTasks->diff($validTasks);
-    
-        // ✅ RULE 1 & 5: Use ALL available employees
-        $selectedEmployees = $employees->all();
-    
+
+        // ✅ 5-STEP WORKFORCE CALCULATION: Calculate optimal workforce size
+        $selectedEmployees = $this->workforceCalculator->selectOptimalWorkforce(
+            $validTasks,
+            $employees,
+            $constraints
+        );
+
+        Log::info("Workforce calculation applied", [
+            'employees_available' => $employees->count(),
+            'employees_selected' => $selectedEmployees->count()
+        ]);
+
         // ✅ Group employees by client/company
         $employeeAllocations = $this->allocateEmployeesByClient(
-            collect($selectedEmployees), 
+            $selectedEmployees,
             $validTasks
         );
-    
+
         Log::info("Pre-processing complete", [
             'valid_tasks' => $validTasks->count(),
             'invalid_tasks' => $invalidTasks->count(),
-            'total_employees_allocated' => count($selectedEmployees),
+            'total_employees_selected' => $selectedEmployees->count(),
             'allocations' => array_map('count', $employeeAllocations)
         ]);
-    
+
         return [
             'valid_tasks' => $validTasks,
             'invalid_tasks' => $invalidTasks,
-            'selected_employees' => $selectedEmployees,
+            'selected_employees' => $selectedEmployees->all(),
             'employee_allocations' => $employeeAllocations,
         ];
     }
