@@ -48,7 +48,7 @@ use App\Http\Livewire\Admin\EmployeeAnalytics;
 Route::middleware(['auth'])->group(function () {
         
     // --- ADMIN ROUTES ---
-    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin-dash', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Display task calendar and kanban board
     Route::get('/tasks', [TaskController::class, 'index'])->name('admin.tasks');
@@ -98,7 +98,7 @@ Route::middleware(['auth'])->group(function () {
     // --- EMPLOYEE ROUTES ---
     
     Route::middleware(['auth'])->group(function () {
-        Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
+        Route::get('/employee-dash', [EmployeeDashboardController::class, 'index'])
             ->name('employee.dashboard');
 
         Route::get('/employee/attendance', [AttendanceController::class, 'index'])
