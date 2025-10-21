@@ -1,19 +1,5 @@
-{{-- resources/views/employee/tasks.blade.php --}}
 
-<x-layouts.general-dashboard :title="'Tasks'">
-    @slot('sidebar')
-    @php
-        $navOptions = [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('employee.dashboard')],
-            ['label' => 'Tasks', 'icon' => 'fa-file-lines', 'href' => '/employee-tasks'],
-            ['label' => 'Attendance', 'icon' => 'fa-calendar', 'href' => route('employee.attendance')],
-            ['label' => 'Performance', 'icon' => 'fa-chart-line', 'href' => '/employee-performance']
-        ];
-
-        $teams = ['', ''];
-    @endphp
-    <x-sidebar :navOptions="$navOptions" :teams="$teams" />
-    @endslot
+<x-layouts.general-employee :title="'Tasks'">
 
     <section role="status" class="flex flex-col lg:flex-col gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
 
@@ -166,4 +152,4 @@
 
         --}}
     </section>
-</x-layouts.general-dashboard>
+</x-layouts.general-employee>
