@@ -1,11 +1,11 @@
-    <x-layouts.general-employer :title="'Profile'">
+    <x-layouts.general-client :title="'Profile'">
         <section role="status" class="flex w-full flex-col lg:flex-row p-4 md:p-6 min-h-[calc(100vh-4rem)]">
             <!-- Left Panel - Dashboard Content -->
             <div
                 class="flex flex-col gap-6 flex-1 w-full rounded-lg">
                 <!-- Inner Up - Dashboard Header -->
                 <div
-                    class="w-full flex-1 h-full rounded-lg">
+                    class="w-full h-full rounded-lg">
                     @php
                         $client = [
                             'full_name' => 'Robert Johnson',
@@ -29,12 +29,10 @@
 
             <!-- Right Panel - Tasks Overview -->
             <div
-                class="flex flex-col flex-1 h-full w-1/2 justify-start rounded-3xl">
+                class="flex flex-col flex-1 h-auto justify-start rounded-3xl">
 
                 <!-- Inner Up - Recommendation Service List -->
                 <div class="w-full overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
-                    <div
-                        class="flex gap-6 p-2 overflow-y-auto snap-x snap-mandatory scroll-smooth scrollbar-custom w-full">
                         <x-profilesummary title="Daily Overview" :cards="[
             [
                 'label' => 'Total Tasks Completed',
@@ -62,7 +60,6 @@
                 'percentageColor' => '#3b82f6',
             ],
         ]" />
-                    </div>
                 </div>
         </section>
-    </x-layouts.general-employer>
+    </x-layouts.general-client>
