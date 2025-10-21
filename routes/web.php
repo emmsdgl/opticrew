@@ -8,13 +8,16 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeDashboardController;
+use App\Http\Controllers\EmployeeTasksController;
 use App\Http\Controllers\Auth\ClientRegistrationController;
-use App\Http\Controllers\Auth\ForgotPasswordController; 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentList;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScenarioController;
+
+use App\Http\Livewire\Admin\EmployeeAnalytics;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,8 +25,12 @@ use App\Http\Controllers\ScenarioController;
 |--------------------------------------------------------------------------
 */
     Route::get('/', action: function () {
-        return view('employee-performance');
-    })->name('employee-performance');
+        return redirect()->route('employee.dashboard');
+    });
+
+    Route::get('/employee-tasks', [EmployeeTasksController::class, 'index'])
+        ->middleware('auth')
+        ->name('employee-tasks');
     
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {
@@ -36,7 +43,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Create new task from calendar
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
-    
+
+    // Update task status (Kanban board drag & drop)
+    Route::patch('/tasks/{taskId}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+
     // Get all clients (for refreshing dropdown)
     Route::get('/tasks/clients', [TaskController::class, 'getClients'])->name('tasks.clients');
     
@@ -47,10 +57,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/optimization/{optimizationRunId}/results', [TaskController::class, 'getOptimizationResults']);
     Route::post('/admin/optimization/reoptimize', [TaskController::class, 'reoptimize']);
 
+    // ✅ NEW: Check for unsaved schedules
+    Route::get('/admin/optimization/check-unsaved', [TaskController::class, 'checkUnsavedSchedule'])
+        ->name('admin.optimization.check-unsaved');
+
     // ✅ NEW: Save schedule (mark as saved)
     Route::post('/admin/optimization/save-schedule', [TaskController::class, 'saveSchedule'])
         ->name('admin.optimization.save');
 
+    // Analytics dashboard for optimization metrics
+    Route::get('/analytics', EmployeeAnalytics::class)->name('admin.analytics');
 
     Route::prefix('schedules')->group(function () {
         Route::post('/optimize', [ScheduleController::class, 'optimize']);

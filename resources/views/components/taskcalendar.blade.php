@@ -1,6 +1,3 @@
-<!-- Save this as: resources/views/components/taskcalendar.blade.php -->
-<!-- This is the COMPLETE file - replace everything in your current file -->
-
 @props(['clients', 'events', 'bookedLocationsByDate'])
 
 <style>
@@ -18,10 +15,12 @@
         <h2 class="text-base justify-start font-semibold text-gray-800 dark:text-gray-100" x-text="monthYear"></h2>
         <div class="flex flex-row gap-6">
             <div class="flex flex-row gap-3">
-                <button @click="showModal = true; selectedDate = null; resetForm();"
-                    class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-full transition inline-flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>New Task</span>
+                <button @click="saveSchedule()"
+                    class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition inline-flex items-center gap-2"
+                    x-bind:disabled="!hasUnsavedSchedule"
+                    x-bind:class="{'opacity-50 cursor-not-allowed': !hasUnsavedSchedule}">
+                    <i class="fa-solid fa-save"></i>
+                    <span x-text="hasUnsavedSchedule ? 'Save Schedule' : 'No Unsaved Schedule'"></span>
                 </button>
             </div>
 
@@ -48,10 +47,36 @@
     </div>
 
     <div class="grid grid-cols-7 mt-2">
-        <template x-for="(date, index) in dates" :key="index">
-            <div @click="openModal(date)"
-                class="h-32 p-2 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition relative">
-                <span class="text-xs text-gray-700 dark:text-gray-200 font-semibold" x-text="date.date"></span>
+        <template x-for="(date, index) in dates" :key="`${currentYear}-${currentMonth}-${index}`">
+            <div @click="date.date ? openModal(date) : null"
+                :class="{
+                    'bg-blue-100 dark:bg-blue-900/30 border-blue-400 dark:border-blue-600': date.date && isToday(date),
+                    'bg-gray-100 dark:bg-gray-800 opacity-60': date.date && isPastDate(date) && !isToday(date),
+                    'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900': date.date && (!isPastDate(date) || isToday(date)),
+                    'cursor-not-allowed': date.date && isPastDate(date) && !isToday(date),
+                    'bg-gray-50 dark:bg-gray-900': !date.date
+                }"
+                class="h-32 p-2 border border-gray-200 dark:border-gray-700 transition relative">
+
+                <!-- Date Number with Today Indicator -->
+                <template x-if="date.date">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold"
+                            :class="{
+                                'text-blue-600 dark:text-blue-400': isToday(date),
+                                'text-gray-400 dark:text-gray-500': isPastDate(date) && !isToday(date),
+                                'text-gray-700 dark:text-gray-200': !isPastDate(date) && !isToday(date)
+                            }"
+                            x-text="date.date"></span>
+
+                        <!-- TODAY Badge -->
+                        <template x-if="isToday(date)">
+                            <span class="text-xs font-bold bg-blue-600 dark:bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                                TODAY
+                            </span>
+                        </template>
+                    </div>
+                </template>
 
                 <!-- Grouped Events Display -->
                 <div class="mt-2 space-y-1 overflow-y-auto max-h-24">
@@ -61,7 +86,7 @@
                                 :class="group.color">
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="font-medium truncate flex-1" x-text="group.client"></span>
-                                    <span class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-semibold bg-white/30 dark:bg-black/20" 
+                                    <span class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-semibold bg-white/30 dark:bg-black/20"
                                         x-text="group.count + ' task' + (group.count > 1 ? 's' : '')"></span>
                                 </div>
                             </div>
@@ -167,8 +192,8 @@
                                 <div>
                                     <select x-model="formData.selectedCabinType"
                                         class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 mb-3">
-                                        <option value="">Select Type</option>
-                                        <option value="Arrival">Arrival</option>
+                                        <option value="">Select Cabin Type</option>
+                                        <option value="Arrival">Arrival (High Priority)</option>
                                         <option value="Departure">Departure</option>
                                         <option value="Daily Clean">Daily Clean</option>
                                     </select>
@@ -181,11 +206,11 @@
                                                     :class="{
                                                         'bg-blue-600 text-white': isCabinSelected(cabin.name),
                                                         'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300': !isCabinSelected(cabin.name) && !isCabinAlreadyTaken(cabin.name),
-                                                        'bg-gray-400 dark:bg-gray-600 text-gray-200 dark:text-gray-400 cursor-not-allowed': isCabinAlreadyTaken(cabin.name) && !isCabinSelected(cabin.name)
+                                                        'bg-green-600 text-white': isCabinAlreadyTaken(cabin.name) && !isCabinSelected(cabin.name)
                                                     }"
-                                                    :disabled="isCabinAlreadyTaken(cabin.name) && !isCabinSelected(cabin.name)"
                                                     class="px-3 py-1 rounded-full text-sm transition-colors duration-200">
                                                     <span x-text="cabin.name"></span>
+                                                    <i x-show="isCabinAlreadyTaken(cabin.name)" class="fas fa-check ml-1"></i>
                                                 </button>
                                             </template>
                                         </div>
@@ -214,16 +239,24 @@
                             </template>
 
                             <template x-for="(item, index) in formData.cabinsList" :key="index">
-                                <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                                    <div>
-                                        <span class="font-medium" x-text="item.type"></span>
-                                        <span class="text-gray-500 dark:text-gray-400 mx-2">•</span>
-                                        <span x-text="item.cabin"></span>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 text-sm">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="font-semibold text-gray-900 dark:text-white" x-text="item.cabin"></span>
+                                        <button type="button" @click="removeCabin(index)"
+                                            class="text-red-500 hover:text-red-700 text-sm">
+                                            <i class="fa-solid fa-times"></i>
+                                        </button>
                                     </div>
-                                    <button type="button" @click="removeCabin(index)" 
-                                        class="text-red-500 hover:text-red-700 text-sm">
-                                        <i class="fa-solid fa-minus"></i>
-                                    </button>
+                                    <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                        <span class="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300" x-text="item.serviceType"></span>
+                                        <span class="px-2 py-0.5 rounded"
+                                            :class="{
+                                                'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300': item.cabinType === 'Arrival',
+                                                'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300': item.cabinType === 'Departure',
+                                                'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300': item.cabinType === 'Daily Clean'
+                                            }"
+                                            x-text="item.cabinType"></span>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -249,8 +282,8 @@
                                     <input type="text" x-model="task.type" placeholder="Extra Task Type"
                                         class="flex-1 px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-gray-500 dark:text-gray-400">₱</span>
-                                        <input type="number" x-model="task.price" placeholder="Price" min="0" step="100"
+                                        <span class="text-gray-500 dark:text-gray-400">€</span>
+                                        <input type="number" x-model="task.price" placeholder="Price" min="0" step="10"
                                             class="w-24 px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
                                         <button type="button" @click="removeExtraTask(index)" class="text-red-500 hover:text-red-700 text-sm">
                                             <i class="fa-solid fa-times"></i>
@@ -301,45 +334,63 @@
                 <template x-for="(event, idx) in eventDetailsList" :key="idx">
                     <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
                         
+                        <!-- Title: Client Name - Cabin Type -->
                         <div class="flex items-center justify-between mb-3">
-                                <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="event.title"></span>
-                                <span class="text-xs px-2 py-1 rounded-full" 
+                            <h4 class="text-base font-bold text-gray-900 dark:text-white">
+                                <span x-text="event.client"></span>
+                                <span class="text-gray-500" x-show="event.cabinType"> - </span>
+                                <span x-text="event.cabinType"></span>
+                            </h4>
+                            <div class="flex items-center gap-2">
+                                <!-- URGENT Badge for Arrival Tasks -->
+                                <span x-show="event.arrival_status === true"
+                                    class="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-exclamation-triangle"></i>
+                                    URGENT
+                                </span>
+                                <!-- Status Badge -->
+                                <span class="text-xs px-2 py-1 rounded-full"
                                     :class="event.statusColor"
                                     x-text="event.status"></span>
+                            </div>
                         </div>
 
-                        <!-- Employee Names - NEW! -->
-                        <div class="mb-2" x-show="event.employees && event.employees.length > 0">
-                            <div class="flex items-start gap-2">
-                                <i class="fa-solid fa-users text-gray-500 dark:text-gray-400 mt-0.5"></i>
-                                <div class="flex-1">
-                                    <div class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Assigned Team:</div>
-                                    <div class="flex flex-wrap gap-1">
-                                        <template x-for="(employee, empIdx) in event.employees" :key="empIdx">
-                                            <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded text-xs font-medium"
-                                                x-text="employee"></span>
-                                        </template>
-                                    </div>
+                        <!-- Task Details -->
+                        <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+                            <!-- Assigned Team -->
+                            <div x-show="event.employees && event.employees.length > 0">
+                                <div class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">Assigned Team:</div>
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-for="(employee, empIdx) in event.employees" :key="empIdx">
+                                        <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded text-xs font-medium"
+                                            x-text="employee"></span>
+                                    </template>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- No Team Assigned Message -->
-                        <div class="mb-2 text-xs text-gray-500 dark:text-gray-400 italic" 
-                            x-show="!event.employees || event.employees.length === 0">
-                            <i class="fa-solid fa-exclamation-circle mr-1"></i>
-                            No team assigned yet
-                        </div>
-                        
-                        <!-- Task Details -->
-                        <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1.5 mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-broom w-4 text-gray-400"></i>
-                                <span x-text="event.serviceType"></span>
+                            <!-- No Team Assigned -->
+                            <div x-show="!event.employees || event.employees.length === 0"
+                                class="text-xs text-gray-500 dark:text-gray-400 italic">
+                                <i class="fa-solid fa-exclamation-circle mr-1"></i>
+                                No team assigned yet
                             </div>
-                            <div class="flex items-center gap-2" x-show="event.location">
-                                <i class="fa-solid fa-home w-4 text-gray-400"></i>
-                                <span x-text="event.location"></span>
+
+                            <!-- Location -->
+                            <div x-show="event.location">
+                                <div class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">Location:</div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-home text-gray-400"></i>
+                                    <span x-text="event.location"></span>
+                                </div>
+                            </div>
+
+                            <!-- Service Type -->
+                            <div>
+                                <div class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">Service Type:</div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-broom text-gray-400"></i>
+                                    <span x-text="event.serviceType"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -457,6 +508,8 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
         eventDetailsDate: '',
         eventDetailsList: [],
         bookedLocationsByDate: bookedLocationsByDate || {}, // 2. Store the data
+        hasUnsavedSchedule: false, // Track if there's an unsaved optimization run
+        currentOptimizationRunId: null, // Store the current run ID
 
         formData: {
             client: '',
@@ -465,13 +518,33 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             serviceType: '',
             rateType: 'Normal',
             selectedCabinType: '',
-            cabinsList: [],
+            cabinsList: [], // Stores: { cabin, serviceType, cabinType }
             extraTasks: [],
             availableCabins: []
         },
 
-        init() {
+        async init() {
             this.renderCalendar();
+            // Check for unsaved schedules on page load
+            await this.checkForUnsavedSchedule();
+        },
+
+        async checkForUnsavedSchedule() {
+            try {
+                const response = await fetch('/admin/optimization/check-unsaved');
+                const data = await response.json();
+
+                if (data.has_unsaved) {
+                    this.currentOptimizationRunId = data.optimization_run_id;
+                    this.hasUnsavedSchedule = true;
+                    console.log('Found unsaved schedule:', data);
+                } else {
+                    this.hasUnsavedSchedule = false;
+                    this.currentOptimizationRunId = null;
+                }
+            } catch (error) {
+                console.error('Error checking for unsaved schedule:', error);
+            }
         },
 
         groupEventsByClient(events) {
@@ -506,6 +579,11 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             const totalDays = lastDay.getDate();
             this.dates = [];
 
+            // Debug logging
+            console.log(`Rendering calendar for: ${this.monthYear} (Month: ${this.currentMonth}, Year: ${this.currentYear})`);
+            const today = new Date();
+            console.log(`Today is: ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`);
+
             for (let i = 0; i < startDay; i++) {
                 this.dates.push({ date: '', events: [], groupedEvents: [] });
             }
@@ -539,17 +617,58 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             this.renderCalendar();
         },
 
+        // Check if a date is today
+        isToday(date) {
+            if (!date || !date.date) return false;
+            const today = new Date();
+            const todayDay = today.getDate();
+            const todayMonth = today.getMonth();
+            const todayYear = today.getFullYear();
+
+            // Compare using calendar's displayed month/year and the date number
+            return date.date === todayDay &&
+                   this.currentMonth === todayMonth &&
+                   this.currentYear === todayYear;
+        },
+
+        // Check if a date is in the past
+        isPastDate(date) {
+            if (!date || !date.date) return false;
+
+            // Get today's date and reset time
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Create a date object for the calendar cell we're checking
+            // Use the DISPLAYED calendar's month/year, not today's
+            const checkDate = new Date(this.currentYear, this.currentMonth, date.date);
+            checkDate.setHours(0, 0, 0, 0);
+
+            return checkDate < today;
+        },
+
         openModal(date) {
+            // Prevent opening modal for empty calendar cells
+            if (!date || !date.date) {
+                return;
+            }
+
+            const ENABLE_PAST_DATE_VALIDATION = true;
+
+            // Check if trying to select a past date
+            if (ENABLE_PAST_DATE_VALIDATION && this.isPastDate(date)) {
+                alert('⚠️ You cannot create tasks for previous dates.\n\nPlease select today or a future date.');
+                return; // Stop execution - do not open modal
+            }
+
             // Reset form first
             this.resetForm();
-            
+
             // Then set the service date
-            if (date && date.date) {
-                const dateString = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(date.date).padStart(2, '0')}`;
-                this.selectedDate = dateString;
-                this.formData.serviceDate = dateString;
-            }
-            
+            const dateString = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(date.date).padStart(2, '0')}`;
+            this.selectedDate = dateString;
+            this.formData.serviceDate = dateString;
+
             this.showModal = true;
         },
 
@@ -600,32 +719,51 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
         },
 
         toggleCabin(cabin) {
-            if (!this.formData.selectedCabinType) {
-                alert('Please select a cabin type first');
+            // Validate that service type and cabin type are selected
+            if (!this.formData.serviceType) {
+                alert('Please select a Service Type first');
                 return;
             }
+            if (!this.formData.selectedCabinType) {
+                alert('Please select a Cabin Type first');
+                return;
+            }
+
+            // Check if cabin already in list with current combination
             const existingIndex = this.formData.cabinsList.findIndex(
-                item => item.type === this.formData.selectedCabinType && item.cabin === cabin
+                item => item.cabin === cabin &&
+                        item.serviceType === this.formData.serviceType &&
+                        item.cabinType === this.formData.selectedCabinType
             );
+
             if (existingIndex > -1) {
+                // Remove if already selected with same combination
                 this.formData.cabinsList.splice(existingIndex, 1);
             } else {
+                // Remove any existing entry for this cabin (to allow changing service type)
+                const oldIndex = this.formData.cabinsList.findIndex(item => item.cabin === cabin);
+                if (oldIndex > -1) {
+                    this.formData.cabinsList.splice(oldIndex, 1);
+                }
+
+                // Add with current service type + cabin type
                 this.formData.cabinsList.push({
-                    type: this.formData.selectedCabinType,
-                    cabin: cabin
+                    cabin: cabin,
+                    serviceType: this.formData.serviceType,
+                    cabinType: this.formData.selectedCabinType
                 });
             }
         },
 
         isCabinSelected(cabin) {
             return this.formData.cabinsList.some(
-                item => item.type === this.formData.selectedCabinType && item.cabin === cabin
+                item => item.cabin === cabin &&
+                        item.serviceType === this.formData.serviceType &&
+                        item.cabinType === this.formData.selectedCabinType
             );
         },
 
-        // ADD THIS NEW FUNCTION
         isCabinAlreadyTaken(cabin) {
-            // Checks if the cabin is in the list at all, regardless of the currently selected type.
             return this.formData.cabinsList.some(item => item.cabin === cabin);
         },
 
@@ -650,7 +788,6 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             console.log('Form validation check:', {
                 client: this.formData.client,
                 serviceDate: this.formData.serviceDate,
-                serviceType: this.formData.serviceType,
                 cabinsList: this.formData.cabinsList
             });
 
@@ -658,19 +795,14 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
                 alert('Please select a client');
                 return;
             }
-            
+
             if (!this.formData.serviceDate) {
                 alert('Please select a service date');
                 return;
             }
-            
-            if (!this.formData.serviceType) {
-                alert('Please select a service type');
-                return;
-            }
-            
+
             if (this.calculateTotalCabins() === 0) {
-                alert('Please select at least one cabin');
+                alert('Please select at least one cabin with service details');
                 return;
             }
 
@@ -686,9 +818,8 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             const requestData = {
                 client: this.formData.client,
                 serviceDate: this.formData.serviceDate,
-                serviceType: this.formData.serviceType,
                 rateType: this.formData.rateType,
-                cabinsList: JSON.parse(JSON.stringify(this.formData.cabinsList)), // Deep copy
+                cabinsList: JSON.parse(JSON.stringify(this.formData.cabinsList)), // Deep copy - now includes { cabin, serviceType, cabinType }
                 extraTasks: JSON.parse(JSON.stringify(this.formData.extraTasks))   // Deep copy
             };
 
@@ -722,10 +853,19 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
 
                 if (response.ok) {
                     if (data.optimization_run_id) {
+                        // Store the optimization run ID and mark as unsaved
+                        this.currentOptimizationRunId = data.optimization_run_id;
+                        this.hasUnsavedSchedule = true;
+
                         await this.loadOptimizationResults(data.optimization_run_id);
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 3000);
+
+                        // Show success message and close modal
+                        this.optimizationLoading = false;
+                        this.closeOptimizationModal();
+                        alert('Tasks created and optimized successfully! Please click "Save Schedule" to save this optimization.');
+
+                        // Reload the page to show new tasks on calendar
+                        window.location.reload();
                     } else {
                         this.optimizationLoading = false;
                         this.closeOptimizationModal();
@@ -781,6 +921,47 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             this.optimizationData = null;
         },
 
+        async saveSchedule() {
+            if (!this.hasUnsavedSchedule || !this.currentOptimizationRunId) {
+                alert('No unsaved schedule to save.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to save this schedule? This will lock the current teams and enable real-time task addition for today.')) {
+                return;
+            }
+
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                const response = await fetch('/admin/optimization/save-schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        optimization_run_id: this.currentOptimizationRunId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    this.hasUnsavedSchedule = false;
+                    this.currentOptimizationRunId = null;
+                    alert('Schedule saved successfully! Teams are now locked for real-time task addition.');
+                    window.location.reload();
+                } else {
+                    alert('Error saving schedule: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving schedule:', error);
+                alert('Error saving schedule. Please try again.');
+            }
+        },
+
         showEventDetails(date, clientName) {
             const key = `${this.currentYear}-${this.currentMonth + 1}-${date.date}`;
             const allEvents = this.events[key] || [];
@@ -798,12 +979,12 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             });
             
             this.eventDetailsList = clientEvents.map(event => {
-                const titleParts = event.title.split('-');
-                const extractedServiceType = titleParts.length > 1 ? titleParts[1].trim() : 'N/A';
                 
                 return {
+                    client: clientName,
+                    cabinType: event.cabinType || 'N/A',
                     title: event.title,
-                    serviceType: event.serviceType || extractedServiceType,
+                    serviceType: event.pureServiceType,
                     status: event.status || 'Pending',
                     statusColor: this.getStatusColor(event.status),
                     location: event.location || 'N/A',

@@ -55,7 +55,7 @@ class TaskDashboard extends Component
 
         // 4. Reset the UI and refresh the task list.
         $this->selectedLocations = []; // Clear the blue selection
-        $this->tasks = Task::with('location')->get(); // Reload tasks to show the new ones on the Kanban board
+        $this->tasks = Task::with(['location', 'optimizationTeam.members.employee'])->get(); // Reload tasks with optimization teams
     }
 
     /**
@@ -73,8 +73,8 @@ class TaskDashboard extends Component
             $this->loadLocations();
         }
         
-        // 3. Load all tasks for the Kanban boards.
-        $this->tasks = Task::with('team.members.employee')->get();
+        // 3. Load all tasks for the Kanban boards (using new optimization_teams structure).
+        $this->tasks = Task::with(['location', 'optimizationTeam.members.employee'])->get();
     }
 
     /**

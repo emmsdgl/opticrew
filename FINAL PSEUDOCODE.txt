@@ -1,0 +1,2732 @@
+System Logic and Rules
+1.	Utilize all available employees.
+The system calculates the optimal workforce size from employees who are not on day-off (using 5-step methodology: workload analysis, budget constraints, and utilization targets), then ensures selected employees are assigned to at least one task whenever possible.
+2.	Each pair must include a driver.
+Since task locations are far apart, every pair of employees should include at least one with driving skills (already defined in the database).
+3.	Prioritize tasks with “Arrival Status.”
+Tasks marked with Arrival Status should be prioritized since guests will be using the cabin.
+4.	Re-optimize unsaved schedules.
+For every new task creation, if the schedule for that day has not yet been saved, the system should delete the initially generated schedule and re-calculate the workforce allocation for each client or company (Kakslauttanen and Aikamatkat).
+5.	Maximize employee utilization.
+As much as possible, all employees should have assigned work—even if it’s only one task for the day—to ensure full utilization.
+6.	Ensure fair task distribution.
+Tasks should be distributed as evenly as possible among all employees.
+7.	Limit working hours.
+Each employee can work for a maximum of 12 hours per day. The system must ensure that task allocations respect this limit.
+8.	Handle real-time task additions correctly.
+When a task is added in real-time for the current day, the system should not modify the existing schedule. Instead, it should re-compute only for the newly added task and allocate it to one of the already formed teams.
+9.	Have this logic: Once teams are set for the day, they must remain unchanged. The system should only reallocate teams that have an associated “What if” scenario; teams without such scenarios must remain untouched. However, affected employees may be reassigned or added to other teams as needed. Still, remember that each team should only consist of a pair or a trio — do not assign affected employees to teams that already have three members.
+
+// ===================================================================
+// OptiCrew System - Complete Pseudocode
+// Version: 1.0 - Final Production Version
+// Matches: Flowchart (Main Diagram + Appendix A)
+// ===================================================================
+
+// ===================================================================
+// SYSTEM CONFIGURATION
+// ===================================================================
+
+CONSTANTS:
+    // Genetic Algorithm Parameters
+    POPULATION_SIZE = 20
+    PATIENCE = 15 (generations without improvement)
+    MAX_GENERATIONS = 100
+    TOURNAMENT_SIZE = 5
+    MUTATION_RATE = 0.1 (10%)
+
+    // Work Schedule Parameters
+    WORK_START_TIME = "08:00:00"
+    WORK_END_TIME = "20:00:00"
+    MAX_HOURS_PER_DAY = 12
+
+    // Workforce Calculation Parameters (5-step methodology)
+    AVAILABLE_HOURS_PER_EMPLOYEE = 8.0  // H_avail
+    UTILIZATION_RATE = 0.85  // R: Target 85% productive time
+    HOURLY_WAGE = 15.0  // W: EUR/hour
+    BENEFITS_COST = 5.0  // B: Additional cost per employee per day
+    BUDGET_LIMIT = NULL  // C_limit: No budget constraint by default
+
+    // Alert Parameters
+    ALERT_THRESHOLD_MINUTES = 30
+    
+FEATURE_FLAGS:
+    whatIfScenarios = FALSE  // Phase 1: Disabled
+                             // Phase 2: Will be enabled
+
+// ===================================================================
+// MAIN ENTRY POINT - ADMIN CREATES TASKS
+// ===================================================================
+
+FUNCTION Main_System_Entry(Admin_Action):
+    
+    // Step 1: Admin creates tasks for a future date
+    DISPLAY "Create Tasks for a Future Date" form
+    
+    // Step 2: Admin defines task details
+    INPUT Service_Date FROM Admin
+    INPUT Client_Selection FROM Admin (contracted/external)
+    INPUT Location_List FROM Admin (cabins/properties)
+    INPUT Arrival_Status FROM Admin (TRUE if guest arriving, FALSE otherwise)
+    INPUT Service_Type FROM Admin (cleaning type)
+    
+    // Step 3: Trigger Initial Optimization
+    LOG "Admin triggered optimization for date: " + Service_Date
+    
+    // ===================================================================
+    // CRITICAL DECISION: Real-Time Addition vs Full Optimization
+    // ===================================================================
+    
+    // Step 4: Check if this is real-time addition for TODAY
+    SET Today = CURRENT_DATE()
+    SET Existing_Saved_Schedule = QUERY Database FOR OptimizationRun 
+        WHERE service_date = Service_Date 
+        AND is_saved = TRUE
+    
+    // Diamond Decision: Is service_date == TODAY AND saved schedule exists?
+    IF Service_Date == Today AND Existing_Saved_Schedule EXISTS THEN
+        // YES Path - Real-time addition to existing teams
+        LOG "Real-time addition detected for today"
+        
+        // Go to Backend: Listener Real-time Task Creation
+        CALL Handle_RealTime_Task_Addition(
+            Service_Date, 
+            Location_List, 
+            Existing_Saved_Schedule
+        )
+        
+        RETURN {
+            "status": "success",
+            "message": "Task added to existing team",
+            "type": "real_time_addition"
+        }
+    ELSE
+        // NO Path - Full optimization needed
+        LOG "Full optimization triggered"
+        
+        // Continue to Main_Optimization_System
+        CALL Main_Optimization_System(
+            Service_Date,
+            Location_List,
+            Client_Selection,
+            Arrival_Status,
+            Service_Type
+        )
+    END IF
+    
+END FUNCTION
+
+// ===================================================================
+// BACKEND: MAIN OPTIMIZATION SYSTEM
+// (Rule-Based Greedy Preprocessor + GA with Elitism)
+// ===================================================================
+
+FUNCTION Main_Optimization_System(
+    Service_Date,
+    Location_List,
+    Client_Selection,
+    Arrival_Status,
+    Service_Type
+):
+    
+    LOG "Starting Main_Optimization_System"
+    
+    // ---------------------------------------------------------------
+    // PHASE 1: RULE-BASED GREEDY PREPROCESSOR
+    // ---------------------------------------------------------------
+    
+    // Step 1: Fetch all tasks for the service date
+    SET All_Tasks = QUERY Database FOR Tasks 
+        WHERE scheduled_date = Service_Date 
+        AND status IN ('Pending', 'Scheduled')
+    
+    LOG "Fetched tasks count: " + COUNT(All_Tasks)
+    
+    // Step 2: Fetch all available employees (not on day-off)
+    SET All_Employees = QUERY Database FOR Employees
+        WHERE is_active = TRUE
+        AND NOT EXISTS (
+            SELECT * FROM day_offs
+            WHERE employee_id = Employees.id
+            AND date = Service_Date
+        )
+
+    LOG "Available employees count: " + COUNT(All_Employees)
+
+    // Step 2.1: Calculate optimal workforce size (5-step methodology: a-e)
+    // From available employee pool, determine optimal subset based on:
+    // - Total required work hours
+    // - Budget constraints (if applicable)
+    // - Utilization targets
+    SET Selected_Employees = CALL Calculate_Optimal_Workforce(
+        All_Tasks,
+        All_Employees
+    )
+
+    LOG "Selected employees count: " + COUNT(Selected_Employees)
+
+    // Step 3: Rule-Based Preprocessing
+    SET Preprocessing_Result = CALL Rule_Based_Greedy_Preprocessor(
+        All_Tasks,
+        Selected_Employees,
+        Arrival_Status
+    )
+    
+    SET Valid_Tasks = Preprocessing_Result.valid_tasks
+    SET Invalid_Tasks = Preprocessing_Result.invalid_tasks
+    SET Employee_Allocations = Preprocessing_Result.employee_allocations
+    
+    LOG "Valid tasks: " + COUNT(Valid_Tasks)
+    LOG "Invalid tasks: " + COUNT(Invalid_Tasks)
+    LOG "Employee allocations: " + COUNT(Employee_Allocations)
+    
+    // Validation check
+    IF COUNT(Valid_Tasks) == 0 THEN
+        RETURN Error("No valid tasks after preprocessing")
+    END IF
+    
+    // ---------------------------------------------------------------
+    // PHASE 2: GENETIC ALGORITHM OPTIMIZATION (with Elitism)
+    // ---------------------------------------------------------------
+    
+    SET Optimal_Schedules = CALL Genetic_Algorithm_Optimizer(
+        Valid_Tasks,
+        Employee_Allocations,
+        MAX_GENERATIONS
+    )
+    
+    // ---------------------------------------------------------------
+    // VALIDATION CHECKS
+    // ---------------------------------------------------------------
+    
+    FOR EACH Schedule IN Optimal_Schedules:
+        // Validate driver in each team
+        FOR EACH Team IN Schedule.teams:
+            SET Has_Driver = FALSE
+            FOR EACH Employee IN Team.members:
+                IF Employee.has_drivers_license == TRUE THEN
+                    Has_Driver = TRUE
+                    BREAK
+                END IF
+            END FOR
+            
+            IF Has_Driver == FALSE THEN
+                LOG "Warning: Team " + Team.index + " has no driver!"
+            END IF
+        END FOR
+        
+        // Validate 12-hour limit per team
+        FOR EACH Team IN Schedule.teams:
+            SET Total_Hours = 0
+            FOR EACH Task IN Team.tasks:
+                Total_Hours += (Task.duration + Task.travel_time) / 60
+            END FOR
+            
+            IF Total_Hours > MAX_HOURS_PER_DAY THEN
+                LOG "Warning: Team " + Team.index + " exceeds 12-hour limit: " + Total_Hours
+            END IF
+        END FOR
+        
+        // Validate all employees have ≥1 task
+        FOR EACH Team IN Schedule.teams:
+            IF COUNT(Team.tasks) == 0 THEN
+                LOG "Warning: Team " + Team.index + " has no tasks assigned!"
+            END IF
+        END FOR
+    END FOR
+    
+    // ---------------------------------------------------------------
+    // FITNESS CALCULATION (after validation)
+    // ---------------------------------------------------------------
+    
+    FOR EACH Schedule IN Optimal_Schedules:
+        SET Fitness = CALL Calculate_Fitness(Schedule)
+        // Fitness considers:
+        // • Penalize missing 3PM deadline
+        // • Penalize exceeding 12-hour limit
+        // • Reward balanced task distribution
+        Schedule.fitness = Fitness
+    END FOR
+    
+    // ---------------------------------------------------------------
+    // STORE UNSAVED OPTIMIZATION RUN IN DATABASE
+    // (is_saved = FALSE)
+    // ---------------------------------------------------------------
+    
+    FOR EACH Client_ID, Schedule IN Optimal_Schedules:
+        
+        SET Schedule_Data = Schedule.getSchedule()
+        SET Total_Teams = COUNT(Schedule_Data)
+        SET Total_Tasks = SUM(team.tasks.count FOR team IN Schedule_Data)
+        SET Total_Employees = SUM(team.members.count FOR team IN Schedule_Data)
+        SET Generations_Run = Schedule.metadata.generations_run
+        
+        // Create optimization run record (UNSAVED)
+        SET Optimization_Run = CREATE OptimizationRun WITH {
+            service_date: Service_Date,
+            total_tasks: Total_Tasks,
+            total_employees: Total_Employees,
+            total_teams: Total_Teams,
+            final_fitness_score: Schedule.fitness,
+            generations_run: Generations_Run,
+            status: "completed",
+            is_saved: FALSE,  // ✅ RULE 4: Unsaved by default
+            employee_allocation_data: JSON(Employee_Allocations),
+            greedy_result_data: JSON(Schedule_Data)
+        }
+        
+        LOG "Created unsaved optimization run ID: " + Optimization_Run.id
+        
+        // Create optimization teams
+        FOR Team_Index FROM 0 TO Total_Teams - 1:
+            SET Team_Data = Schedule_Data[Team_Index]
+            
+            SET Optimization_Team = CREATE OptimizationTeam WITH {
+                optimization_run_id: Optimization_Run.id,
+                team_index: Team_Index + 1,
+                service_date: Service_Date,
+                car_id: NULL
+            }
+            
+            // Create team members
+            FOR EACH Employee IN Team_Data.team:
+                CREATE OptimizationTeamMember WITH {
+                    optimization_team_id: Optimization_Team.id,
+                    employee_id: Employee.id
+                }
+            END FOR
+            
+            // Assign tasks to this team
+            FOR EACH Task IN Team_Data.tasks:
+                UPDATE Tasks SET {
+                    status: "Scheduled",
+                    optimization_run_id: Optimization_Run.id,
+                    assigned_team_id: Optimization_Team.id,
+                    assigned_by_generation: NULL
+                } WHERE id = Task.id
+            END FOR
+            
+            LOG "Created team " + (Team_Index + 1) + " with " + 
+                COUNT(Team_Data.team) + " members and " + 
+                COUNT(Team_Data.tasks) + " tasks"
+        END FOR
+    END FOR
+    
+    // ---------------------------------------------------------------
+    // ADMIN REVIEWS PROPOSED SCHEDULE
+    // ---------------------------------------------------------------
+    
+    DISPLAY "Review Proposed Schedule" TO Admin
+    DISPLAY Optimal_Schedules WITH {
+        teams: [...],
+        tasks_per_team: [...],
+        total_hours_per_team: [...],
+        fitness_score: [...]
+    }
+    
+    // ===================================================================
+    // CRITICAL DECISION: Save Schedule?
+    // ===================================================================
+    
+    INPUT Save_Decision FROM Admin (YES/NO button)
+    
+    IF Save_Decision == NO THEN
+        // Discard / Re-run Optimization
+        LOG "Admin discarded schedule, re-running optimization"
+        
+        // Delete the unsaved optimization run
+        DELETE FROM OptimizationRuns 
+        WHERE service_date = Service_Date 
+        AND is_saved = FALSE
+        
+        // Loop back: Call Main_Optimization_System again
+        CALL Main_Optimization_System(
+            Service_Date,
+            Location_List,
+            Client_Selection,
+            Arrival_Status,
+            Service_Type
+        )
+        RETURN
+    END IF
+    
+    // YES Path - Mark Schedule as "Saved"
+    LOG "Admin approved schedule, marking as saved"
+    
+    UPDATE OptimizationRuns 
+    SET is_saved = TRUE,
+        updated_at = CURRENT_TIMESTAMP()
+    WHERE service_date = Service_Date 
+    AND is_saved = FALSE
+    
+    LOG "Schedule marked as saved (is_saved = TRUE)"
+    
+    // ===================================================================
+    // OPTIONAL: What-If Scenario Manager
+    // ===================================================================
+    
+    DISPLAY "Admin wants to analyze scenarios?" prompt
+    INPUT Analyze_Scenarios FROM Admin (YES/NO)
+    
+    IF Analyze_Scenarios == YES THEN
+        
+        // ---------------------------------------------------------------
+        // PHASE 1: Show "Coming Soon" Message
+        // ---------------------------------------------------------------
+        
+        IF FEATURE_FLAGS.whatIfScenarios == FALSE THEN
+            DISPLAY Modal {
+                title: "What-If Scenario Analysis - Coming Soon!",
+                message: "This feature will be available in Phase 2 (v2.0)",
+                features: [
+                    "• Simulate employee absences",
+                    "• Test emergency task additions",
+                    "• Analyze vehicle breakdowns",
+                    "• Compare time constraints",
+                    "• Generate impact reports"
+                ],
+                buttons: [
+                    "Notify Me When Available",
+                    "Learn More",
+                    "Close"
+                ]
+            }
+            
+            LOG "What-If feature not enabled, showing coming soon message"
+            
+            // Return to main flow
+            // Continue to "Add Real-time Task?"
+        ELSE
+            // ---------------------------------------------------------------
+            // PHASE 2: What-If Scenario Manager (Full Implementation)
+            // ---------------------------------------------------------------
+            
+            LOG "What-If Scenario Manager enabled, loading..."
+            
+            // Call What-If Scenario Manager (see APPENDIX A)
+            CALL What_If_Scenario_Manager(
+                Optimal_Schedules,
+                Service_Date
+            )
+        END IF
+    END IF
+    
+    // NO Path - Continue to monitoring
+    
+    // ===================================================================
+    // BACKEND: Listener - Real-time Task Creation
+    // ===================================================================
+    
+    // This listener runs continuously after schedule is saved
+    // Monitors for new task additions
+    
+    RETURN {
+        "status": "success",
+        "schedules": Optimal_Schedules,
+        "invalid_tasks": Invalid_Tasks,
+        "optimization_run_id": Optimization_Run.id,
+        "is_saved": TRUE
+    }
+    
+END FUNCTION
+
+// ===================================================================
+// RULE-BASED GREEDY PREPROCESSOR
+// ===================================================================
+
+FUNCTION Rule_Based_Greedy_Preprocessor(
+    All_Tasks,
+    Selected_Employees,
+    Arrival_Status
+):
+    
+    LOG "Starting Rule-Based Greedy Preprocessor"
+    
+    SET Valid_Tasks = []
+    SET Invalid_Tasks = []
+    
+    // ---------------------------------------------------------------
+    // RULE 3: Prioritize Arrival Tasks
+    // ---------------------------------------------------------------
+    
+    // Sort tasks: Arrival status tasks first
+    SET Sorted_Tasks = SORT All_Tasks BY (
+        task.arrival_status DESC,  // TRUE first, FALSE second
+        task.scheduled_time ASC    // Then by time
+    )
+    
+    LOG "Tasks sorted by arrival status priority"
+    
+    // ---------------------------------------------------------------
+    // Validate Tasks
+    // ---------------------------------------------------------------
+    
+    FOR EACH Task IN Sorted_Tasks:
+        
+        // Check location accessibility
+        IF Task.location_id == NULL THEN
+            LOG "Task " + Task.id + " invalid: No location"
+            ADD Task TO Invalid_Tasks
+            CONTINUE
+        END IF
+        
+        // Check if location exists
+        SET Location = QUERY Database FOR Locations 
+            WHERE id = Task.location_id
+        
+        IF Location NOT EXISTS THEN
+            LOG "Task " + Task.id + " invalid: Location not found"
+            ADD Task TO Invalid_Tasks
+            CONTINUE
+        END IF
+        
+        // Check scheduled date
+        IF Task.scheduled_date == NULL THEN
+            LOG "Task " + Task.id + " invalid: No scheduled date"
+            ADD Task TO Invalid_Tasks
+            CONTINUE
+        END IF
+        
+        // Task is valid
+        ADD Task TO Valid_Tasks
+        
+    END FOR
+    
+    LOG "Valid tasks: " + COUNT(Valid_Tasks)
+    LOG "Invalid tasks: " + COUNT(Invalid_Tasks)
+    
+    // ---------------------------------------------------------------
+    // RULE 1: Allocate selected employees by client
+    // (Note: "All employees" refers to selected optimal workforce,
+    //  not literally every employee in the database)
+    // ---------------------------------------------------------------
+
+    // Group tasks by client
+    SET Tasks_By_Client = GROUP Valid_Tasks BY (
+        IF task.location.contracted_client_id EXISTS THEN
+            "contracted_" + task.location.contracted_client_id
+        ELSE IF task.client_id EXISTS THEN
+            "client_" + task.client_id
+        ELSE
+            "unassigned"
+        END IF
+    )
+
+    LOG "Grouped tasks into " + COUNT(Tasks_By_Client) + " client groups"
+
+    // Allocate employees proportionally by task count
+    SET Total_Tasks = COUNT(Valid_Tasks)
+    SET Employee_Allocations = {}
+
+    // Note: Using Selected_Employees from workforce calculation
+    FOR EACH Client_ID, Client_Tasks IN Tasks_By_Client:
+
+        SET Task_Ratio = COUNT(Client_Tasks) / Total_Tasks
+        SET Employee_Count = MAX(2, ROUND(COUNT(Selected_Employees) * Task_Ratio))
+        
+        // ---------------------------------------------------------------
+        // RULE 2: Ensure at least ONE driver per client group
+        // ---------------------------------------------------------------
+        
+        SET Drivers = FILTER Selected_Employees WHERE employee.has_drivers_license == TRUE
+        SET Non_Drivers = FILTER Selected_Employees WHERE employee.has_drivers_license == FALSE
+
+        IF COUNT(Drivers) == 0 THEN
+            LOG "Warning: No drivers available for client " + Client_ID
+            SET Client_Employees = TAKE Employee_Count FROM Selected_Employees
+        ELSE
+            // Strategy: 1 driver + (count-1) others
+            SET Client_Employees = []
+
+            // Add at least 1 driver
+            ADD RANDOM_FROM(Drivers) TO Client_Employees
+
+            // Fill remaining slots
+            SET Remaining_Count = Employee_Count - 1
+            SET Remaining_Pool = Selected_Employees EXCEPT Client_Employees
+            SET Remaining = TAKE Remaining_Count FROM SHUFFLE(Remaining_Pool)
+
+            ADD ALL Remaining TO Client_Employees
+        END IF
+
+        SET Employee_Allocations[Client_ID] = Client_Employees
+        
+        LOG "Allocated " + COUNT(Client_Employees) + " employees to client " + Client_ID
+        LOG "  - Has driver: " + (COUNT(FILTER Client_Employees WHERE has_drivers_license) > 0)
+        
+    END FOR
+    
+    // ---------------------------------------------------------------
+    // RULE 2: Form Teams (2-3 people, 1+ driver per team)
+    // ---------------------------------------------------------------
+    
+    // This is handled in Team Formation Service (called by GA Optimizer)
+    // Preprocessing just allocates employees to clients
+    
+    RETURN {
+        "valid_tasks": Valid_Tasks,
+        "invalid_tasks": Invalid_Tasks,
+        "employee_allocations": Employee_Allocations
+    }
+    
+END FUNCTION
+
+// ===================================================================
+// GENETIC ALGORITHM OPTIMIZER (with Elitism)
+// ===================================================================
+
+FUNCTION Genetic_Algorithm_Optimizer(
+    Valid_Tasks,
+    Employee_Allocations,
+    Max_Generations
+):
+    
+    LOG "Starting Genetic Algorithm Optimization"
+    
+    SET All_Optimal_Schedules = {}
+    
+    // Process each client group separately
+    FOR EACH Client_ID, Allocated_Employees IN Employee_Allocations:
+        
+        LOG "Processing client: " + Client_ID
+        LOG "  - Employees: " + COUNT(Allocated_Employees)
+        
+        // ---------------------------------------------------------------
+        // Form Teams
+        // ---------------------------------------------------------------
+        
+        SET Teams = CALL Form_Teams(Allocated_Employees)
+        SET Team_Efficiencies = CALL Calculate_Team_Efficiencies(Teams)
+        
+        LOG "  - Teams formed: " + COUNT(Teams)
+        
+        // Get tasks for this client
+        SET Client_Tasks = FILTER Valid_Tasks WHERE (
+            IF Client_ID STARTS_WITH "contracted_" THEN
+                SET Contracted_ID = REPLACE(Client_ID, "contracted_", "")
+                task.location.contracted_client_id == Contracted_ID
+            ELSE IF Client_ID STARTS_WITH "client_" THEN
+                SET External_ID = REPLACE(Client_ID, "client_", "")
+                task.client_id == External_ID
+            ELSE IF Client_ID == "unassigned" THEN
+                task.client_id == NULL AND 
+                (task.location == NULL OR task.location.contracted_client_id == NULL)
+            END IF
+        )
+        
+        LOG "  - Client tasks: " + COUNT(Client_Tasks)
+        
+        // Safety check
+        IF COUNT(Client_Tasks) == 0 THEN
+            LOG "Warning: No tasks for client " + Client_ID
+            CONTINUE
+        END IF
+        
+        IF COUNT(Teams) == 0 THEN
+            LOG "Warning: No teams formed for client " + Client_ID
+            CONTINUE
+        END IF
+        
+        // ---------------------------------------------------------------
+        // RULE 5 & 6 & 7: Generate Fair Greedy Schedule (Seed)
+        // ---------------------------------------------------------------
+        
+        SET Greedy_Schedule = CALL Generate_Fair_Greedy_Schedule(
+            Teams,
+            Client_Tasks,
+            Team_Efficiencies
+        )
+        
+        // ---------------------------------------------------------------
+        // Initialize Population
+        // ---------------------------------------------------------------
+        
+        SET Population = []
+        
+        // Add greedy solution as first individual (SEEDING)
+        ADD Greedy_Schedule TO Population
+        
+        LOG "  - Greedy schedule added to population"
+        
+        // Fill rest with random schedules
+        FOR i FROM 2 TO POPULATION_SIZE:
+            SET Random_Schedule = CALL Generate_Random_Schedule(
+                Teams,
+                Client_Tasks
+            )
+            ADD Random_Schedule TO Population
+        END FOR
+        
+        LOG "  - Population initialized with " + POPULATION_SIZE + " individuals"
+        
+        // ---------------------------------------------------------------
+        // Evolutionary Loop
+        // ---------------------------------------------------------------
+        
+        SET Best_Fitness_So_Far = 0
+        SET Generations_Without_Improvement = 0
+        SET Generation = 0
+        
+        FOR Generation FROM 1 TO Max_Generations:
+            
+            // Evaluate fitness for all individuals
+            FOR EACH Individual IN Population:
+                SET Fitness = CALL Calculate_Fitness(
+                    Individual,
+                    Team_Efficiencies
+                )
+                Individual.fitness = Fitness
+            END FOR
+            
+            // Sort by fitness (best first)
+            SORT Population BY fitness DESC
+            
+            // Check for improvement
+            IF Population[0].fitness > Best_Fitness_So_Far THEN
+                Best_Fitness_So_Far = Population[0].fitness
+                Generations_Without_Improvement = 0
+                LOG "  - Generation " + Generation + ": New best fitness = " + Best_Fitness_So_Far
+            ELSE
+                Generations_Without_Improvement += 1
+            END IF
+            
+            // Early stopping check
+            IF Generations_Without_Improvement >= PATIENCE THEN
+                LOG "  - Early stopping at generation " + Generation + 
+                    " (no improvement for " + PATIENCE + " generations)"
+                BREAK
+            END IF
+            
+            // Create new population
+            SET New_Population = []
+            
+            // ✅ ELITISM: Preserve best solution
+            ADD Population[0] TO New_Population
+            
+            // Generate offspring through crossover and mutation
+            WHILE COUNT(New_Population) < POPULATION_SIZE:
+                
+                // Tournament Selection
+                SET Parent_A = CALL Tournament_Selection(
+                    Population,
+                    TOURNAMENT_SIZE
+                )
+                SET Parent_B = CALL Tournament_Selection(
+                    Population,
+                    TOURNAMENT_SIZE
+                )
+                
+                // Crossover (combine parents)
+                SET Child = CALL Crossover(Parent_A, Parent_B)
+                
+                // Mutation (random task swap between teams)
+                IF RANDOM(0, 1) < MUTATION_RATE THEN
+                    Child = CALL Mutate(Child)
+                END IF
+                
+                ADD Child TO New_Population
+                
+            END WHILE
+            
+            // Replace old population
+            SET Population = New_Population
+            
+        END FOR
+        
+        LOG "  - Evolution complete after " + Generation + " generations"
+        LOG "  - Final best fitness: " + Best_Fitness_So_Far
+        
+        // Store best schedule for this client
+        SET Best_Schedule = Population[0]
+        
+        // Store metadata
+        Best_Schedule.metadata = {
+            "generations_run": Generation,
+            "final_fitness": Best_Fitness_So_Far
+        }
+        
+        SET All_Optimal_Schedules[Client_ID] = Best_Schedule
+        
+    END FOR
+    
+    LOG "Genetic Algorithm Optimization complete"
+    
+    RETURN All_Optimal_Schedules
+    
+END FUNCTION
+
+// ===================================================================
+// FORM TEAMS (2-3 people, 1+ driver per team)
+// ===================================================================
+
+FUNCTION Form_Teams(Employees):
+    
+    LOG "Forming teams from " + COUNT(Employees) + " employees"
+    
+    // Separate drivers and non-drivers
+    SET Drivers = FILTER Employees WHERE employee.has_drivers_license == TRUE
+    SET Non_Drivers = FILTER Employees WHERE employee.has_drivers_license == FALSE
+    
+    SHUFFLE Drivers
+    SHUFFLE Non_Drivers
+    
+    SET Teams = []
+    
+    // ✅ RULE 2: Each team gets 1 driver + 1-2 others
+    FOR EACH Driver IN Drivers:
+        
+        SET Team = [Driver]
+        
+        // Randomly decide team size: 2 or 3
+        SET Team_Size = RANDOM_INT(2, 3)
+        
+        // Add non-drivers to complete the team
+        WHILE COUNT(Team) < Team_Size AND COUNT(Non_Drivers) > 0:
+            SET Non_Driver = POP_FIRST(Non_Drivers)
+            ADD Non_Driver TO Team
+        END WHILE
+        
+        // If ran out of non-drivers but still have space, add another driver
+        WHILE COUNT(Team) < Team_Size AND COUNT(Drivers) > 0:
+            SET Next_Driver = POP_FIRST(Drivers)
+            IF Next_Driver.id != Driver.id THEN
+                ADD Next_Driver TO Team
+            END IF
+        END WHILE
+        
+        ADD Team TO Teams
+        
+        LOG "  - Team " + COUNT(Teams) + ": " + COUNT(Team) + " members, has driver: TRUE"
+        
+    END FOR
+    
+    // Handle remaining non-drivers (edge case)
+    IF COUNT(Non_Drivers) > 0 THEN
+        LOG "Warning: " + COUNT(Non_Drivers) + " non-drivers remaining without teams"
+        
+        // Try to distribute to existing teams (max 3 per team)
+        FOR EACH Employee IN Non_Drivers:
+            SET Smallest_Team = FIND_MIN(Teams, BY team.count)
+            
+            IF COUNT(Smallest_Team) < 3 THEN
+                ADD Employee TO Smallest_Team
+            ELSE
+                // Create new team without driver (edge case)
+                LOG "Warning: Creating team without driver (no drivers available)"
+                SET New_Team = [Employee]
+                ADD New_Team TO Teams
+            END IF
+        END FOR
+    END IF
+    
+    LOG "Total teams formed: " + COUNT(Teams)
+    
+    RETURN Teams
+    
+END FUNCTION
+
+// ===================================================================
+// RULE 5, 6, 7: GENERATE FAIR GREEDY SCHEDULE
+// (Max utilization, fair distribution, 12-hour limit)
+// ===================================================================
+
+FUNCTION Generate_Fair_Greedy_Schedule(
+    Teams,
+    Tasks,
+    Team_Efficiencies
+):
+    
+    LOG "Generating fair greedy schedule"
+    
+    // Initialize schedule
+    SET Schedule = {}
+    
+    FOR Team_Index FROM 0 TO COUNT(Teams) - 1:
+        SET Schedule[Team_Index] = {
+            "team": Teams[Team_Index],
+            "tasks": [],
+            "total_hours": 0  // ✅ RULE 7: Track working hours
+        }
+    END FOR
+    
+    // ✅ RULE 3: Tasks already sorted by arrival_status in preprocessor
+    SET Sorted_Tasks = SORT Tasks BY arrival_status DESC
+    
+    // ✅ RULE 6: Fair distribution (assign to least loaded team)
+    FOR EACH Task IN Sorted_Tasks:
+        
+        SET Selected_Team = NULL
+        SET Min_Workload = INFINITY
+        
+        // Find team with LEAST workload that won't exceed 12 hours
+        FOR Team_Index FROM 0 TO COUNT(Teams) - 1:
+            
+            SET Team_Schedule = Schedule[Team_Index]
+            
+            // Calculate projected hours
+            SET Task_Duration_Hours = (Task.duration + Task.travel_time) / 60
+            SET Projected_Hours = Team_Schedule.total_hours + Task_Duration_Hours
+            
+            // ✅ RULE 7: Skip if exceeds 12 hours
+            IF Projected_Hours > MAX_HOURS_PER_DAY THEN
+                CONTINUE
+            END IF
+            
+            // Calculate workload (adjusted by efficiency)
+            SET Workload = CALL Calculate_Team_Workload(
+                Team_Schedule.tasks,
+                Team_Efficiencies[Team_Index]
+            )
+            
+            IF Workload < Min_Workload THEN
+                Min_Workload = Workload
+                Selected_Team = Team_Index
+            END IF
+            
+        END FOR
+        
+        // If no team can take it (all at 12 hours), assign to least loaded anyway
+        IF Selected_Team == NULL THEN
+            LOG "Warning: All teams at 12-hour limit, assigning to least loaded"
+            
+            SET Selected_Team = MIN_BY(
+                Schedule,
+                BY schedule.total_hours
+            ).index
+        END IF
+        
+        // Assign task to selected team
+        ADD Task TO Schedule[Selected_Team].tasks
+        SET Schedule[Selected_Team].total_hours += (Task.duration + Task.travel_time) / 60
+        
+    END FOR
+    
+    // ✅ RULE 5: Log if any team has 0 tasks (max utilization check)
+    FOR Team_Index FROM 0 TO COUNT(Teams) - 1:
+        IF COUNT(Schedule[Team_Index].tasks) == 0 THEN
+            LOG "Warning: Team " + Team_Index + " has no tasks assigned"
+        END IF
+    END FOR
+    
+    LOG "Fair greedy schedule generated"
+    
+    RETURN Schedule
+    
+END FUNCTION
+
+// ===================================================================
+// GENERATE RANDOM SCHEDULE (for population diversity)
+// ===================================================================
+
+FUNCTION Generate_Random_Schedule(Teams, Tasks):
+    
+    SET Schedule = {}
+    
+    FOR Team_Index FROM 0 TO COUNT(Teams) - 1:
+        SET Schedule[Team_Index] = {
+            "team": Teams[Team_Index],
+            "tasks": [],
+            "total_hours": 0
+        }
+    END FOR
+    
+    FOR EACH Task IN Tasks:
+        SET Random_Team = RANDOM_INT(0, COUNT(Teams) - 1)
+        ADD Task TO Schedule[Random_Team].tasks
+        SET Schedule[Random_Team].total_hours += (Task.duration + Task.travel_time) / 60
+    END FOR
+    
+    RETURN Schedule
+    
+END FUNCTION
+
+// ===================================================================
+// CALCULATE FITNESS
+// ===================================================================
+
+FUNCTION Calculate_Fitness(Schedule, Team_Efficiencies):
+    
+    SET Workloads = []
+    SET Penalty = 0
+    
+    // Calculate predicted workload for each team
+    FOR Team_Index FROM 0 TO COUNT(Schedule) - 1:
+        
+        SET Team_Schedule = Schedule[Team_Index]
+        SET Team_Efficiency = Team_Efficiencies[Team_Index]
+        SET Total_Workload = 0
+        SET Total_Hours = 0
+        
+        FOR EACH Task IN Team_Schedule.tasks:
+            SET Predicted_Duration = Task.duration / Team_Efficiency
+            Total_Workload += Predicted_Duration
+            Total_Hours += (Task.duration + Task.travel_time) / 60
+        END FOR
+        
+        ADD Total_Workload TO Workloads
+        
+        // ✅ Penalize exceeding 12-hour limit
+        IF Total_Hours > MAX_HOURS_PER_DAY THEN
+            SET Overtime = Total_Hours - MAX_HOURS_PER_DAY
+            Penalty += Overtime * 10  // Heavy penalty
+        END IF
+        
+        // ✅ Penalize missing 3PM deadline (simplified)
+        SET Deadline_Time = 15 * 60  // 3 PM in minutes
+        IF Total_Workload > Deadline_Time THEN
+            Penalty += (Total_Workload - Deadline_Time) * 5
+        END IF
+        
+    END FOR
+    
+    // ✅ Reward balanced task distribution (low standard deviation)
+    SET Mean = AVERAGE(Workloads)
+    SET Variance = 0
+    
+    FOR EACH Workload IN Workloads:
+        Variance += (Workload - Mean)^2
+    END FOR
+    
+    SET Std_Deviation = SQUARE_ROOT(Variance / COUNT(Workloads))
+    
+    // Fitness: Higher is better (lower std_dev = better balance)
+    // Subtract penalties
+    SET Fitness = (1 / (1 + Std_Deviation)) - Penalty
+    
+    // Ensure fitness is never negative
+    IF Fitness < 0 THEN
+        Fitness = 0.001
+    END IF
+    
+    RETURN Fitness
+    
+END FUNCTION
+
+// ===================================================================
+// CALCULATE OPTIMAL WORKFORCE (5-Step Methodology)
+// ===================================================================
+
+FUNCTION Calculate_Optimal_Workforce(All_Tasks, Available_Employees):
+
+    LOG "Starting 5-step workforce calculation"
+
+    // Step (a): Individual task durations already in database (estimated_duration_minutes)
+
+    // Step (b): Calculate total required work hours
+    SET Total_Required_Hours = 0
+    FOR EACH Task IN All_Tasks:
+        SET Task_Hours = (Task.estimated_duration_minutes + Task.travel_time) / 60
+        Total_Required_Hours += Task_Hours
+    END FOR
+
+    LOG "Total required hours: " + Total_Required_Hours
+
+    // Step (c): Calculate minimum workforce (baseline)
+    SET Available_Hours_Per_Employee = 8.0  // H_avail
+    SET Utilization_Rate = 0.85  // R: 85% productive time
+    SET Productive_Hours = Available_Hours_Per_Employee * Utilization_Rate
+    SET Minimum_Workforce = CEILING(Total_Required_Hours / Productive_Hours)
+
+    LOG "Minimum workforce required: " + Minimum_Workforce
+
+    // Step (d): Calculate maximum affordable workforce (budget constraint)
+    SET Budget_Limit = GET_CONFIG("workforce.budget_limit")  // NULL = no limit
+    SET Max_Affordable = INFINITY
+
+    IF Budget_Limit EXISTS THEN
+        SET Hourly_Wage = 15.0  // W: EUR/hour
+        SET Benefits_Cost = 5.0  // B: per employee per day
+        SET Cost_Per_Employee = (Hourly_Wage * Available_Hours_Per_Employee) + Benefits_Cost
+        SET Max_Affordable = FLOOR(Budget_Limit / Cost_Per_Employee)
+
+        LOG "Maximum affordable workforce: " + Max_Affordable
+    ELSE
+        LOG "No budget constraint - unlimited workforce"
+    END IF
+
+    // Step (e): Determine final workforce size
+    SET Available_Count = COUNT(Available_Employees)
+    SET Final_Workforce = MAX(
+        Minimum_Workforce,
+        MIN(Available_Count, Max_Affordable)
+    )
+
+    // Ensure even number for PAIRS (or +1 for TRIO if odd)
+    IF Final_Workforce % 2 != 0 AND Final_Workforce < Available_Count THEN
+        Final_Workforce += 1
+    END IF
+
+    // Ensure minimum of 2 employees (1 pair)
+    Final_Workforce = MAX(2, Final_Workforce)
+
+    LOG "Final workforce size: " + Final_Workforce
+
+    // Return top N employees (can be sorted by efficiency/experience)
+    SET Selected_Employees = TAKE Final_Workforce FROM Available_Employees
+
+    RETURN Selected_Employees
+
+END FUNCTION
+
+// ===================================================================
+// CALCULATE TEAM WORKLOAD
+// ===================================================================
+
+FUNCTION Calculate_Team_Workload(Tasks, Team_Efficiency):
+    
+    SET Total_Workload = 0
+    
+    FOR EACH Task IN Tasks:
+        SET Adjusted_Duration = Task.duration / Team_Efficiency
+        Total_Workload += Adjusted_Duration
+    END FOR
+    
+    RETURN Total_Workload
+    
+END FUNCTION
+
+// ===================================================================
+// CALCULATE TEAM EFFICIENCIES
+// ===================================================================
+
+FUNCTION Calculate_Team_Efficiencies(Teams):
+    
+    SET Efficiencies = []
+    
+    FOR EACH Team IN Teams:
+        
+        // Calculate team efficiency based on members' experience
+        SET Total_Experience = 0
+        SET Team_Size = COUNT(Team)
+        
+        FOR EACH Employee IN Team:
+            // Experience score (simplified: months_employed / 12)
+            SET Experience = Employee.months_employed / 12
+            Total_Experience += Experience
+        END FOR
+        
+        // Average efficiency (1.0 = baseline)
+        SET Team_Efficiency = 1.0 + (Total_Experience / Team_Size) * 0.1
+        
+        // Cap efficiency at 2.0 (200%)
+        IF Team_Efficiency > 2.0 THEN
+            Team_Efficiency = 2.0
+        END IF
+        
+        ADD Team_Efficiency TO Efficiencies
+        
+    END FOR
+    
+    RETURN Efficiencies
+    
+END FUNCTION
+
+// ===================================================================
+// TOURNAMENT SELECTION
+// ===================================================================
+
+FUNCTION Tournament_Selection(Population, Tournament_Size):
+    
+    // Randomly select tournament_size individuals
+    SET Tournament = []
+    
+    FOR i FROM 1 TO Tournament_Size:
+        SET Random_Individual = RANDOM_FROM(Population)
+        ADD Random_Individual TO Tournament
+    END FOR
+    
+    // Return the best individual from tournament
+    SORT Tournament BY fitness DESC
+    
+    RETURN Tournament[0]
+    
+END FUNCTION
+
+// ===================================================================
+// CROSSOVER OPERATOR
+// ===================================================================
+
+FUNCTION Crossover(Parent_A, Parent_B):
+    
+    // Single-point crossover
+    SET Crossover_Point = RANDOM_INT(0, COUNT(Parent_A.schedule) - 1)
+    
+    SET Child_Schedule = {}
+    
+    // Take first half from Parent_A
+    FOR Team_Index FROM 0 TO Crossover_Point:
+        Child_Schedule[Team_Index] = COPY(Parent_A.schedule[Team_Index])
+    END FOR
+    
+    // Take second half from Parent_B
+    FOR Team_Index FROM Crossover_Point + 1 TO COUNT(Parent_B.schedule) - 1:
+        Child_Schedule[Team_Index] = COPY(Parent_B.schedule[Team_Index])
+    END FOR
+    
+    RETURN Child_Schedule
+    
+END FUNCTION
+
+// ===================================================================
+// MUTATION OPERATOR
+// ===================================================================
+
+FUNCTION Mutate(Schedule):
+    
+    // Random task swap between two teams
+    SET Team_A_Index = RANDOM_INT(0, COUNT(Schedule) - 1)
+    SET Team_B_Index = RANDOM_INT(0, COUNT(Schedule) - 1)
+    
+    // Ensure different teams
+    WHILE Team_A_Index == Team_B_Index:
+        Team_B_Index = RANDOM_INT(0, COUNT(Schedule) - 1)
+    END WHILE
+    
+    SET Team_A = Schedule[Team_A_Index]
+    SET Team_B = Schedule[Team_B_Index]
+    
+    // Only mutate if both teams have tasks
+    IF COUNT(Team_A.tasks) > 0 AND COUNT(Team_B.tasks) > 0 THEN
+        
+        // Swap random tasks
+        SET Task_A_Index = RANDOM_INT(0, COUNT(Team_A.tasks) - 1)
+        SET Task_B_Index = RANDOM_INT(0, COUNT(Team_B.tasks) - 1)
+        
+        SET Task_A = Team_A.tasks[Task_A_Index]
+        SET Task_B = Team_B.tasks[Task_B_Index]
+        
+        // Perform swap
+        Team_A.tasks[Task_A_Index] = Task_B
+        Team_B.tasks[Task_B_Index] = Task_A
+        
+        // Update total hours
+        Team_A.total_hours = RECALCULATE_HOURS(Team_A.tasks)
+        Team_B.total_hours = RECALCULATE_HOURS(Team_B.tasks)
+        
+    END IF
+    
+    RETURN Schedule
+    
+END FUNCTION
+
+// ===================================================================
+// BACKEND: HANDLE REAL-TIME TASK ADDITION
+// (For tasks added TODAY when saved schedule exists)
+// ===================================================================
+
+FUNCTION Handle_RealTime_Task_Addition(
+    Service_Date,
+    New_Task_ID,
+    Existing_Optimization_Run
+):
+    
+    LOG "Handling real-time task addition for today"
+    
+    // ===================================================================
+    // Diamond Decision: Is task for TODAY?
+    // ===================================================================
+    
+    SET Today = CURRENT_DATE()
+    
+    IF Service_Date != Today THEN
+        // NO - Task is for future date
+        LOG "Task is for future date, triggering full optimization"
+        CALL Main_Optimization_System(Service_Date, [New_Task_ID], ...)
+        RETURN
+    END IF
+    
+    // YES - Task is for TODAY
+    
+    // ===================================================================
+    // Diamond Decision: Does saved schedule exist?
+    // ===================================================================
+    
+    IF Existing_Optimization_Run == NULL OR Existing_Optimization_Run.is_saved == FALSE THEN
+        // NO - No saved schedule exists
+        LOG "No saved schedule for today, triggering full optimization"
+        CALL Main_Optimization_System(Service_Date, [New_Task_ID], ...)
+        RETURN
+    END IF
+    
+    // YES - Saved schedule exists, add to existing teams
+    
+    LOG "Adding task to existing saved schedule"
+    LOG "Optimization run ID: " + Existing_Optimization_Run.id
+    
+    // Fetch the new task
+    SET New_Task = QUERY Database FOR Tasks WHERE id = New_Task_ID
+    
+    IF New_Task == NULL THEN
+        RETURN Error("Task not found")
+    END IF
+    
+    // Get existing teams from optimization run
+    SET Existing_Teams = QUERY Database FOR OptimizationTeams 
+        WHERE optimization_run_id = Existing_Optimization_Run.id
+        WITH members.employee
+    
+    IF COUNT(Existing_Teams) == 0 THEN
+        RETURN Error("No existing teams found for this optimization run")
+    END IF
+    
+    LOG "Found " + COUNT(Existing_Teams) + " existing teams"
+    
+    // ✅ RULE 7: Find team with least workload that won't exceed 12 hours
+    SET Selected_Team = NULL
+    SET Min_Workload = INFINITY
+    
+    FOR EACH Team IN Existing_Teams:
+        
+        // Get all tasks currently assigned to this team
+        SET Team_Tasks = QUERY Database FOR Tasks 
+            WHERE assigned_team_id = Team.id
+        
+        // Calculate total hours
+        SET Total_Hours = 0
+        FOR EACH Task IN Team_Tasks:
+            Total_Hours += (Task.duration + Task.travel_time) / 60
+        END FOR
+        
+        // Calculate projected hours with new task
+        SET New_Task_Hours = (New_Task.duration + New_Task.travel_time) / 60
+        SET Projected_Hours = Total_Hours + New_Task_Hours
+        
+        // ✅ RULE 7: Skip if exceeds 12 hours
+        IF Projected_Hours > MAX_HOURS_PER_DAY THEN
+            LOG "Skipping team " + Team.id + " - would exceed 12 hours (" + 
+                Projected_Hours + " hours)"
+            CONTINUE
+        END IF
+        
+        // Check if this team has less workload
+        IF Total_Hours < Min_Workload THEN
+            Min_Workload = Total_Hours
+            Selected_Team = Team
+        END IF
+        
+    END FOR
+    
+    // If no team found (all at 12 hours), assign to least loaded anyway
+    IF Selected_Team == NULL THEN
+        LOG "Warning: All teams at capacity, assigning to least loaded team anyway"
+        
+        SET Team_Workloads = []
+        FOR EACH Team IN Existing_Teams:
+            SET Team_Tasks = QUERY Database FOR Tasks 
+                WHERE assigned_team_id = Team.id
+            SET Total_Hours = SUM((task.duration + task.travel_time) / 60 FOR task IN Team_Tasks)
+            ADD {team: Team, hours: Total_Hours} TO Team_Workloads
+        END FOR
+        
+        SORT Team_Workloads BY hours ASC
+        SET Selected_Team = Team_Workloads[0].team
+    END IF
+    
+    // Assign the new task
+    UPDATE Tasks SET {
+        assigned_team_id: Selected_Team.id,
+        optimization_run_id: Existing_Optimization_Run.id,
+        status: "Scheduled"
+    } WHERE id = New_Task.id
+    
+    LOG "Task " + New_Task.id + " assigned to team " + Selected_Team.id
+    
+    // Get team member names for response
+    SET Team_Members = QUERY Database FOR Employees 
+        WHERE id IN (
+            SELECT employee_id FROM OptimizationTeamMembers 
+            WHERE optimization_team_id = Selected_Team.id
+        )
+    
+    SET Member_Names = []
+    FOR EACH Member IN Team_Members:
+        ADD Member.full_name TO Member_Names
+    END FOR
+    
+    RETURN {
+        "status": "success",
+        "message": "Task added to existing team",
+        "assigned_team_id": Selected_Team.id,
+        "team_members": Member_Names,
+        "team_current_hours": Min_Workload,
+        "task_added_hours": (New_Task.duration + New_Task.travel_time) / 60
+    }
+    
+END FUNCTION
+
+// ===================================================================
+// BACKEND: Listener - Task Status Update
+// ===================================================================
+
+// This function runs continuously in the background
+// Monitoring employee task status updates
+
+FUNCTION Task_Status_Update_Listener():
+    
+    LOG "Task Status Update Listener started"
+    
+    // Infinite loop - runs as background service
+    WHILE TRUE:
+        
+        // Check for task status updates every 5 seconds
+        SLEEP(5000) // 5 seconds
+        
+        // Query for tasks with recent status changes
+        SET Recent_Updates = QUERY Database FOR Tasks 
+            WHERE updated_at > (NOW() - 10 seconds)
+            AND status IN ('In Progress', 'On Hold', 'Completed')
+        
+        FOR EACH Task IN Recent_Updates:
+            CALL Update_Task_Status(Task)
+        END FOR
+        
+    END WHILE
+    
+END FUNCTION
+
+// ===================================================================
+// UPDATE TASK STATUS (Called by employee app)
+// ===================================================================
+
+FUNCTION Update_Task_Status(Task_ID, New_Status, Additional_Data):
+    
+    LOG "Updating task status: Task " + Task_ID + " to " + New_Status
+    
+    SET Task = QUERY Database FOR Tasks WHERE id = Task_ID
+    
+    IF Task == NULL THEN
+        RETURN Error("Task not found")
+    END IF
+    
+    // Update basic status
+    SET Task.status = New_Status
+    SET Task.updated_at = CURRENT_TIMESTAMP()
+    
+    // Handle different status types
+    
+    // ===================================================================
+    // Diamond Decision: Status = On Hold?
+    // ===================================================================
+    
+    IF New_Status == "On Hold" THEN
+        
+        // YES - Handle On Hold status
+        
+        // Employee adds reason
+        SET On_Hold_Reason = Additional_Data.reason
+        // Possible reasons:
+        // • Guest still in cabin
+        // • DND sign active
+        // • Missing supplies
+        // • Equipment malfunction
+        
+        SET Task.on_hold_reason = On_Hold_Reason
+        SET Task.on_hold_timestamp = CURRENT_TIMESTAMP()
+        
+        // Update task status to "On Hold" (with reason & timestamp)
+        SAVE Task TO Database
+        
+        LOG "Task " + Task_ID + " set to On Hold: " + On_Hold_Reason
+        
+        // ===================================================================
+        // Diamond Decision: Is delay > 30 min?
+        // ===================================================================
+        
+        // Calculate delay duration
+        SET Started_At = Task.started_at
+        SET Current_Time = CURRENT_TIMESTAMP()
+        SET Delay_Minutes = DIFF_IN_MINUTES(Started_At, Current_Time)
+        
+        IF Delay_Minutes > ALERT_THRESHOLD_MINUTES THEN
+            
+            // YES - Delay exceeds 30 minutes
+            
+            LOG "Task delay exceeds 30 minutes (" + Delay_Minutes + " min)"
+            
+            // 🚨 Trigger Alert to Admin
+            CALL Trigger_Alert_To_Admin({
+                type: "TASK_DELAYED",
+                task_id: Task.id,
+                task_description: Task.task_description,
+                location: Task.location.location_name,
+                delay_minutes: Delay_Minutes,
+                reason: On_Hold_Reason,
+                assigned_team_id: Task.assigned_team_id,
+                timestamp: Current_Time
+            })
+            
+            LOG "Alert sent to admin for task " + Task_ID
+            
+            // Manual Admin Assignment Override (If Issues Detected)
+            // This is handled by admin through the dashboard
+            // Admin will manually reassign task if needed
+            
+            // Save alert log to database (for audit)
+            CREATE Alert WITH {
+                task_id: Task.id,
+                alert_type: "task_delayed",
+                delay_minutes: Delay_Minutes,
+                reason: On_Hold_Reason,
+                triggered_at: Current_Time,
+                acknowledged_at: NULL,
+                acknowledged_by: NULL
+            }
+            
+        ELSE
+            
+            // NO - Delay is less than 30 minutes
+            
+            LOG "Task delay is " + Delay_Minutes + " min (< 30 min threshold)"
+            
+            // Log to Database (No alert triggered)
+            // Already saved above
+            
+        END IF
+        
+        RETURN {
+            "status": "success",
+            "message": "Task status updated to On Hold",
+            "alert_triggered": (Delay_Minutes > ALERT_THRESHOLD_MINUTES)
+        }
+        
+    END IF
+    
+    // ===================================================================
+    // Diamond Decision: Status = Completed?
+    // ===================================================================
+    
+    IF New_Status == "Completed" THEN
+        
+        // YES - Handle Completed status
+        
+        // Update Task Status to "Completed"
+        // Record performance metrics
+        
+        SET Task.completed_at = CURRENT_TIMESTAMP()
+        SET Task.started_at = Additional_Data.started_at // From employee app
+        
+        // ✅ AUTO-CALCULATE actual duration (no manual input needed!)
+        SET Actual_Duration_Minutes = DIFF_IN_MINUTES(
+            Task.started_at,
+            Task.completed_at
+        )
+        
+        SET Task.actual_duration = Actual_Duration_Minutes
+        
+        SAVE Task TO Database
+        
+        LOG "Task " + Task_ID + " completed"
+        LOG "  - Estimated: " + Task.estimated_duration_minutes + " min"
+        LOG "  - Actual: " + Actual_Duration_Minutes + " min"
+        
+        // ===================================================================
+        // Diamond Decision: Actual duration > estimated?
+        // ===================================================================
+        
+        IF Actual_Duration_Minutes > Task.estimated_duration_minutes THEN
+            
+            // YES - Task took longer than estimated
+            
+            LOG "Task exceeded estimated duration"
+            
+            // Flag for Performance Review
+            CREATE PerformanceFlag WITH {
+                task_id: Task.id,
+                employee_id: Task.assigned_team_id, // Team ID
+                flag_type: "duration_exceeded",
+                estimated_minutes: Task.estimated_duration_minutes,
+                actual_minutes: Actual_Duration_Minutes,
+                variance_minutes: Actual_Duration_Minutes - Task.estimated_duration_minutes,
+                flagged_at: CURRENT_TIMESTAMP(),
+                reviewed: FALSE
+            }
+            
+            LOG "Performance flag created for review"
+            
+        END IF
+        
+        // (Both YES and NO paths merge here)
+        
+        // Update Performance History
+        CREATE PerformanceHistory WITH {
+            task_id: Task.id,
+            team_id: Task.assigned_team_id,
+            service_date: Task.scheduled_date,
+            estimated_duration: Task.estimated_duration_minutes,
+            actual_duration: Actual_Duration_Minutes,
+            efficiency_score: Task.estimated_duration_minutes / Actual_Duration_Minutes,
+            completed_at: Task.completed_at
+        }
+        
+        LOG "Performance history recorded"
+        
+        // Save Task Status & Timestamp (Database)
+        // Already saved above
+        
+        RETURN {
+            "status": "success",
+            "message": "Task marked as completed",
+            "actual_duration": Actual_Duration_Minutes,
+            "flagged": (Actual_Duration_Minutes > Task.estimated_duration_minutes)
+        }
+        
+    END IF
+    
+    // ===================================================================
+    // NO to both On Hold and Completed = In Progress
+    // ===================================================================
+    
+    IF New_Status == "In Progress" THEN
+        
+        // Update Task Status to "In Progress"
+        SET Task.started_at = CURRENT_TIMESTAMP()
+        SAVE Task TO Database
+        
+        LOG "Task " + Task_ID + " started (In Progress)"
+        
+        RETURN {
+            "status": "success",
+            "message": "Task started",
+            "started_at": Task.started_at
+        }
+        
+    END IF
+    
+END FUNCTION
+
+// ===================================================================
+// TRIGGER ALERT TO ADMIN
+// ===================================================================
+
+FUNCTION Trigger_Alert_To_Admin(Alert_Data):
+    
+    LOG "Triggering alert to admin: " + Alert_Data.type
+    
+    // Get admin users
+    SET Admins = QUERY Database FOR Users 
+        WHERE role = 'admin' 
+        AND is_active = TRUE
+    
+    // Send notification through multiple channels
+    FOR EACH Admin IN Admins:
+        
+        // Email notification
+        SEND_EMAIL({
+            to: Admin.email,
+            subject: "🚨 Task Delayed: " + Alert_Data.task_description,
+            body: "
+                Task ID: " + Alert_Data.task_id + "
+                Location: " + Alert_Data.location + "
+                Delay: " + Alert_Data.delay_minutes + " minutes
+                Reason: " + Alert_Data.reason + "
+                
+                Action required: Please review and reassign if necessary.
+                
+                View task: [Link to dashboard]
+            "
+        })
+        
+        // Push notification (if mobile app)
+        IF Admin.push_token EXISTS THEN
+            SEND_PUSH_NOTIFICATION({
+                token: Admin.push_token,
+                title: "Task Delayed",
+                body: Alert_Data.task_description + " - " + Alert_Data.delay_minutes + " min",
+                data: {
+                    task_id: Alert_Data.task_id,
+                    type: "task_delayed"
+                }
+            })
+        END IF
+        
+        // In-app notification
+        CREATE Notification WITH {
+            user_id: Admin.id,
+            type: "task_delayed",
+            title: "Task Delayed - Action Required",
+            message: Alert_Data.task_description + " has been on hold for " + 
+                     Alert_Data.delay_minutes + " minutes",
+            data: JSON(Alert_Data),
+            read: FALSE,
+            created_at: CURRENT_TIMESTAMP()
+        }
+        
+    END FOR
+    
+    LOG "Alert sent to " + COUNT(Admins) + " admin(s)"
+    
+END FUNCTION
+
+// ===================================================================
+// MANUAL ADMIN ASSIGNMENT OVERRIDE
+// (If Real-time Issue)
+// ===================================================================
+
+FUNCTION Manual_Admin_Assignment_Override(Task_ID, New_Team_ID):
+    
+    LOG "Admin manually reassigning task " + Task_ID + " to team " + New_Team_ID
+    
+    SET Task = QUERY Database FOR Tasks WHERE id = Task_ID
+    SET Old_Team_ID = Task.assigned_team_id
+    
+    // Update task assignment
+    UPDATE Tasks SET {
+        assigned_team_id: New_Team_ID,
+        status: "Scheduled",
+        reassigned_at: CURRENT_TIMESTAMP(),
+        reassignment_reason: "Manual admin override - delayed > 30 min"
+    } WHERE id = Task_ID
+    
+    LOG "Task " + Task_ID + " reassigned from team " + Old_Team_ID + 
+        " to team " + New_Team_ID
+    
+    // Notify new team
+    SET New_Team_Members = QUERY Database FOR Employees 
+        WHERE id IN (
+            SELECT employee_id FROM OptimizationTeamMembers 
+            WHERE optimization_team_id = New_Team_ID
+        )
+    
+    FOR EACH Employee IN New_Team_Members:
+        IF Employee.push_token EXISTS THEN
+            SEND_PUSH_NOTIFICATION({
+                token: Employee.push_token,
+                title: "New Task Assigned",
+                body: "You have been assigned task: " + Task.task_description,
+                data: {
+                    task_id: Task.id
+                }
+            })
+        END IF
+    END FOR
+    
+    // Notify old team (task removed)
+    SET Old_Team_Members = QUERY Database FOR Employees 
+        WHERE id IN (
+            SELECT employee_id FROM OptimizationTeamMembers 
+            WHERE optimization_team_id = Old_Team_ID
+        )
+    
+    FOR EACH Employee IN Old_Team_Members:
+        IF Employee.push_token EXISTS THEN
+            SEND_PUSH_NOTIFICATION({
+                token: Employee.push_token,
+                title: "Task Reassigned",
+                body: "Task " + Task.task_description + " has been reassigned to another team",
+                data: {
+                    task_id: Task.id
+                }
+            })
+        END IF
+    END FOR
+    
+    // Save to database
+    // (Already updated above)
+    
+    RETURN {
+        "status": "success",
+        "message": "Task manually reassigned",
+        "old_team_id": Old_Team_ID,
+        "new_team_id": New_Team_ID
+    }
+    
+END FUNCTION
+
+// ===================================================================
+// CONTINUE MONITORING
+// ===================================================================
+
+FUNCTION Continue_Monitoring():
+    
+    LOG "Continuing daily progress monitoring"
+    
+    // This function runs continuously throughout the day
+    // Monitors task progress and employee status
+    
+    WHILE TRUE:
+        
+        SLEEP(60000) // Check every 1 minute
+        
+        // Get all tasks for today that are in progress
+        SET Today = CURRENT_DATE()
+        SET Active_Tasks = QUERY Database FOR Tasks 
+            WHERE scheduled_date = Today 
+            AND status IN ('In Progress', 'On Hold')
+        
+        // Check for delays
+        FOR EACH Task IN Active_Tasks:
+            
+            IF Task.status == "On Hold" THEN
+                SET Delay_Minutes = DIFF_IN_MINUTES(
+                    Task.on_hold_timestamp,
+                    CURRENT_TIMESTAMP()
+                )
+                
+                IF Delay_Minutes > ALERT_THRESHOLD_MINUTES THEN
+                    // Alert already triggered, check if acknowledged
+                    SET Alert = QUERY Database FOR Alerts 
+                        WHERE task_id = Task.id 
+                        AND acknowledged_at IS NULL
+                    
+                    IF Alert EXISTS THEN
+                        LOG "Task " + Task.id + " still delayed, alert not acknowledged"
+                    END IF
+                END IF
+            END IF
+            
+        END FOR
+        
+        // Update dashboard statistics
+        CALL Update_Dashboard_Statistics(Today)
+        
+    END WHILE
+    
+END FUNCTION
+
+// ===================================================================
+// NIGHTLY JOB: RECONCILE & LEARN
+// (if Reoptimize Needed optional)
+// ===================================================================
+
+FUNCTION Nightly_Job_Reconcile_And_Learn():
+    
+    LOG "Starting nightly job: Reconcile & Learn"
+    
+    SET Yesterday = CURRENT_DATE() - 1 day
+    
+    // Get all completed tasks from yesterday
+    SET Completed_Tasks = QUERY Database FOR Tasks 
+        WHERE scheduled_date = Yesterday 
+        AND status = 'Completed'
+    
+    LOG "Processing " + COUNT(Completed_Tasks) + " completed tasks from " + Yesterday
+    
+    // Analyze Estimated vs. Actual Durations
+    FOR EACH Task IN Completed_Tasks:
+        
+        SET Estimated = Task.estimated_duration_minutes
+        SET Actual = Task.actual_duration
+        
+        IF Actual EXISTS THEN
+            
+            SET Variance = Actual - Estimated
+            SET Variance_Percent = (Variance / Estimated) * 100
+            
+            // Log significant variances
+            IF ABS(Variance_Percent) > 20 THEN  // More than 20% variance
+                LOG "Significant variance for task " + Task.id + ":"
+                LOG "  - Estimated: " + Estimated + " min"
+                LOG "  - Actual: " + Actual + " min"
+                LOG "  - Variance: " + Variance_Percent + "%"
+                
+                // Update location base duration if pattern detected
+                SET Similar_Tasks = QUERY Database FOR Tasks 
+                    WHERE location_id = Task.location_id 
+                    AND task_description = Task.task_description
+                    AND actual_duration IS NOT NULL
+                    LIMIT 10
+                
+                SET Avg_Actual = AVERAGE(task.actual_duration FOR task IN Similar_Tasks)
+                
+                // If average actual is consistently different, update base duration
+                IF COUNT(Similar_Tasks) >= 5 THEN
+                    UPDATE Locations SET {
+                        base_cleaning_duration_minutes: ROUND(Avg_Actual)
+                    } WHERE id = Task.location_id
+                    
+                    LOG "Updated base duration for location " + Task.location_id + 
+                        " to " + ROUND(Avg_Actual) + " min"
+                END IF
+            END IF
+            
+        END IF
+        
+    END FOR
+    
+    // Update Task Performance History in DB
+    FOR EACH Task IN Completed_Tasks:
+        
+        // Get team that completed the task
+        SET Team = QUERY Database FOR OptimizationTeams 
+            WHERE id = Task.assigned_team_id
+        
+        IF Team EXISTS THEN
+            
+            // Get team members
+            SET Team_Members = QUERY Database FOR OptimizationTeamMembers 
+                WHERE optimization_team_id = Team.id
+                WITH employee
+            
+            // Update each employee's performance metrics
+            FOR EACH Member IN Team_Members:
+                
+                SET Employee = Member.employee
+                
+                // Calculate performance score
+                SET Performance_Score = 1.0
+                IF Task.actual_duration EXISTS AND Task.estimated_duration_minutes > 0 THEN
+                    Performance_Score = Task.estimated_duration_minutes / Task.actual_duration
+                    // Score > 1.0 = faster than expected (good)
+                    // Score < 1.0 = slower than expected
+                END IF
+                
+                // Update or create employee performance record
+                SET Existing_Record = QUERY Database FOR EmployeePerformance 
+                    WHERE employee_id = Employee.id 
+                    AND date = Yesterday
+                
+                IF Existing_Record EXISTS THEN
+                    UPDATE EmployeePerformance SET {
+                        tasks_completed: tasks_completed + 1,
+                        total_performance_score: total_performance_score + Performance_Score,
+                        average_performance: total_performance_score / tasks_completed
+                    } WHERE id = Existing_Record.id
+                ELSE
+                    CREATE EmployeePerformance WITH {
+                        employee_id: Employee.id,
+                        date: Yesterday,
+                        tasks_completed: 1,
+                        total_performance_score: Performance_Score,
+                        average_performance: Performance_Score
+                    }
+                END IF
+                
+            END FOR
+            
+        END IF
+        
+    END FOR
+    
+    LOG "Nightly job complete: Performance history updated"
+    
+    // Return summary
+    RETURN {
+        "date": Yesterday,
+        "tasks_processed": COUNT(Completed_Tasks),
+        "locations_updated": [...],  // List of updated locations
+        "employees_updated": [...]   // List of updated employees
+    }
+    
+END FUNCTION
+
+ 
+// ===================================================================
+// ===================================================================
+// APPENDIX A: WHAT-IF SCENARIO MANAGER (PHASE 2 FEATURE)
+// ===================================================================
+// ===================================================================
+
+// NOTE: This section is for PHASE 2 (v2.0) implementation
+// Feature flag: whatIfScenarios = FALSE in Phase 1
+
+FUNCTION What_If_Scenario_Manager(Original_Schedules, Service_Date):
+    
+    LOG "What-If Scenario Manager loaded (Phase 2 feature)"
+    
+    // Store original schedule as baseline
+    SET Baseline_Schedule = Original_Schedules
+    SET Baseline_Fitness = CALL Calculate_Overall_Fitness(Baseline_Schedule)
+    
+    LOG "Baseline fitness: " + Baseline_Fitness
+    
+    // ===================================================================
+    // Admin Selects Scenario Type
+    // ===================================================================
+    
+    DISPLAY "What-If Scenario Manager (Optional Feature)" TO Admin
+    DISPLAY "Select Scenario Type:" WITH OPTIONS [
+        "1. Employee Absence",
+        "2. Emergency Tasks",
+        "3. Vehicle Breakdown",
+        "4. Time Constraint",
+        "5. Compare Multiple"
+    ]
+    
+    INPUT Scenario_Type FROM Admin
+    
+    // ===================================================================
+    // Diamond Decision: Scenario Type?
+    // ===================================================================
+    
+    SET Scenario_Result = NULL
+    
+    SWITCH Scenario_Type:
+        
+        // ---------------------------------------------------------------
+        // CASE 1: Employee Absence
+        // ---------------------------------------------------------------
+        CASE "Employee Absence":
+            
+            LOG "Selected scenario: Employee Absence"
+            
+            // Admin Inputs
+            INPUT Employee_ID FROM Admin (ID to simulate absence)
+            INPUT Absence_Duration FROM Admin (hours/days)
+            
+            LOG "Simulating absence of employee " + Employee_ID + 
+                " for " + Absence_Duration
+            
+            // Backend Processing
+            SET Scenario_Result = CALL Handle_Employee_Absence_Scenario(
+                Baseline_Schedule,
+                Employee_ID,
+                Service_Date
+            )
+            
+            BREAK
+        
+        // ---------------------------------------------------------------
+        // CASE 2: Emergency Tasks
+        // ---------------------------------------------------------------
+        CASE "Emergency Tasks":
+            
+            LOG "Selected scenario: Emergency Tasks"
+            
+            // Admin Inputs
+            INPUT New_Task_Details FROM Admin (urgent task details)
+            INPUT Priority_Level FROM Admin (high/critical)
+            INPUT Required_Completion_Time FROM Admin (deadline)
+            
+            LOG "Simulating emergency task addition"
+            
+            // Backend Processing
+            SET Scenario_Result = CALL Handle_Emergency_Tasks_Scenario(
+                Baseline_Schedule,
+                New_Task_Details,
+                Service_Date
+            )
+            
+            BREAK
+        
+        // ---------------------------------------------------------------
+        // CASE 3: Vehicle Breakdown
+        // ---------------------------------------------------------------
+        CASE "Vehicle Breakdown":
+            
+            LOG "Selected scenario: Vehicle Breakdown"
+            
+            // Admin Inputs
+            INPUT Vehicle_ID FROM Admin (ID unavailable)
+            INPUT Breakdown_Duration FROM Admin (hours)
+            
+            LOG "Simulating vehicle " + Vehicle_ID + " breakdown"
+            
+            // Backend Processing
+            SET Scenario_Result = CALL Handle_Vehicle_Breakdown_Scenario(
+                Baseline_Schedule,
+                Vehicle_ID,
+                Service_Date
+            )
+            
+            BREAK
+        
+        // ---------------------------------------------------------------
+        // CASE 4: Time Constraint
+        // ---------------------------------------------------------------
+        CASE "Time Constraint":
+            
+            LOG "Selected scenario: Time Constraint"
+            
+            // Admin Inputs
+            INPUT Client_ID FROM Admin
+            INPUT New_Deadline FROM Admin (earlier deadline)
+            
+            LOG "Simulating time constraint for client " + Client_ID
+            
+            // Backend Processing
+     SET Scenario_Result = CALL Handle_Time_Constraint_Scenario(
+                Baseline_Schedule,
+                Client_ID,
+                New_Deadline,
+                Service_Date
+            )
+            
+            BREAK
+        
+        // ---------------------------------------------------------------
+        // CASE 5: Compare Multiple
+        // ---------------------------------------------------------------
+        CASE "Compare Multiple":
+            
+            LOG "Selected scenario: Compare Multiple"
+            
+            // Admin Selects Multiple Scenarios
+            DISPLAY "Select scenarios to compare:" WITH CHECKBOXES [
+                "☑ Employee A absent",
+                "☑ Vehicle B breakdown",
+                "☐ Emergency task"
+            ]
+            
+            INPUT Selected_Scenarios FROM Admin (array of selected)
+            
+            LOG "Comparing " + COUNT(Selected_Scenarios) + " scenarios"
+            
+            // Run Each Scenario in Parallel
+            SET Comparison_Results = []
+            
+            FOR EACH Sub_Scenario IN Selected_Scenarios:
+                SET Result = CALL What_If_Scenario_Manager(
+                    Baseline_Schedule,
+                    Service_Date,
+                    Sub_Scenario.type,
+                    Sub_Scenario.parameters
+                )
+                ADD Result TO Comparison_Results
+            END FOR
+            
+            // Generate Comparison Report
+            SET Scenario_Result = {
+                "type": "comparison",
+                "baseline_fitness": Baseline_Fitness,
+                "scenarios": Comparison_Results,
+                "best_scenario": MAX_BY(Comparison_Results, BY fitness),
+                "worst_scenario": MIN_BY(Comparison_Results, BY fitness),
+                "risk_assessment": CALL Generate_Risk_Assessment(Comparison_Results)
+            }
+            
+            BREAK
+    
+    END SWITCH
+    
+    // ===================================================================
+    // Display What-If Report (all scenarios merge here)
+    // ===================================================================
+    
+    DISPLAY "What-If Analysis Report" TO Admin WITH {
+        "original_schedule": Baseline_Schedule,
+        "modified_schedule": Scenario_Result.modified_schedule,
+        "baseline_fitness": Baseline_Fitness,
+        "scenario_fitness": Scenario_Result.fitness,
+        "fitness_difference": Scenario_Result.fitness - Baseline_Fitness,
+        "affected_teams": Scenario_Result.affected_teams,
+        "reassignments_needed": Scenario_Result.reassignments,
+        "feasibility": Scenario_Result.is_feasible,
+        "recommendations": Scenario_Result.recommendations
+    }
+    
+    // ===================================================================
+    // Diamond Decision: Admin accepts scenario?
+    // ===================================================================
+    
+    INPUT Accept_Scenario FROM Admin (YES/NO)
+    
+    IF Accept_Scenario == YES THEN
+        
+        // Apply Modified Schedule
+        LOG "Admin accepted scenario, applying modified schedule"
+        
+        // Save modified schedule as new optimization run
+        CALL Save_Modified_Schedule(
+            Scenario_Result.modified_schedule,
+            Service_Date,
+            Scenario_Type
+        )
+        
+        DISPLAY "Modified schedule applied successfully"
+        
+    ELSE
+        
+        // Discard, Keep Original
+        LOG "Admin rejected scenario, keeping original schedule"
+        
+        DISPLAY "Original schedule retained"
+        
+    END IF
+    
+    // ===================================================================
+    // Diamond Decision: Run another scenario?
+    // ===================================================================
+    
+    INPUT Run_Another FROM Admin (YES/NO)
+    
+    IF Run_Another == YES THEN
+        
+        // Loop back to scenario selection
+        LOG "Running another scenario"
+        CALL What_If_Scenario_Manager(Original_Schedules, Service_Date)
+        
+    ELSE
+        
+        // NO - Continue to "Add Real-time Task?"
+        LOG "Exiting What-If Scenario Manager"
+        RETURN TO Main_Flow
+        
+    END IF
+    
+END FUNCTION
+
+// ===================================================================
+// SCENARIO 1: HANDLE EMPLOYEE ABSENCE
+// ===================================================================
+
+FUNCTION Handle_Employee_Absence_Scenario(
+    Original_Schedule,
+    Absent_Employee_ID,
+    Service_Date
+):
+    
+    LOG "Processing Employee Absence scenario for employee " + Absent_Employee_ID
+    
+    // 1. Identify affected teams
+    SET Affected_Teams = []
+    
+    FOR EACH Client_ID, Schedule IN Original_Schedule:
+        FOR Team_Index, Team_Data IN Schedule.teams:
+            
+            SET Team_Members = Team_Data.team
+            
+            FOR EACH Employee IN Team_Members:
+                IF Employee.id == Absent_Employee_ID THEN
+                    ADD Team_Data TO Affected_Teams
+                    BREAK
+                END IF
+            END FOR
+            
+        END FOR
+    END FOR
+    
+    LOG "Found " + COUNT(Affected_Teams) + " affected teams"
+    
+    IF COUNT(Affected_Teams) == 0 THEN
+        // No impact
+        RETURN {
+            "modified_schedule": Original_Schedule,
+            "fitness": CALL Calculate_Overall_Fitness(Original_Schedule),
+            "is_feasible": TRUE,
+            "affected_teams": 0,
+            "reassignments": 0,
+            "recommendations": ["No changes needed - employee not in any team"]
+        }
+    END IF
+    
+    // 2. Extract orphaned tasks
+    SET Orphaned_Tasks = []
+    
+    FOR EACH Team IN Affected_Teams:
+        FOR EACH Task IN Team.tasks:
+            ADD Task TO Orphaned_Tasks
+        END FOR
+    END FOR
+    
+    LOG "Extracted " + COUNT(Orphaned_Tasks) + " orphaned tasks"
+    
+    // 3. Get remaining employees
+    SET All_Employees = QUERY Database FOR Employees WHERE is_active = TRUE
+    SET Remaining_Employees = FILTER All_Employees WHERE employee.id != Absent_Employee_ID
+    
+    LOG "Remaining employees: " + COUNT(Remaining_Employees)
+    
+    // 4. Re-run optimization with modified constraints
+    SET Modified_Tasks = Orphaned_Tasks
+    SET Modified_Employees = Remaining_Employees
+    
+    // Apply Rule-Based Pre-Processing
+    SET Preprocessing_Result = CALL Rule_Based_Greedy_Preprocessor(
+        Modified_Tasks,
+        Modified_Employees,
+        FALSE  // No arrival status priority for what-if
+    )
+    
+    // Re-run Genetic Algorithm (fewer generations for quick response)
+    SET New_Schedule = CALL Genetic_Algorithm_Optimizer(
+        Preprocessing_Result.valid_tasks,
+        Preprocessing_Result.employee_allocations,
+        50  // Max 50 generations for what-if
+    )
+    
+    LOG "Re-optimization complete"
+    
+    // 5. Merge with unaffected parts of original schedule
+    SET Final_Schedule = CALL Merge_Schedules(
+        Original_Schedule,
+        New_Schedule,
+        Affected_Teams
+    )
+    
+    // Generate Impact Analysis
+    SET New_Fitness = CALL Calculate_Overall_Fitness(Final_Schedule)
+    
+    // Diamond Decision: Is schedule feasible?
+    SET Is_Feasible = (COUNT(Preprocessing_Result.invalid_tasks) == 0)
+    
+    IF Is_Feasible == YES THEN
+        
+        // Show Impact Analysis
+        SET Recommendations = [
+            "Schedule is feasible without employee " + Absent_Employee_ID,
+            "Reassign " + COUNT(Orphaned_Tasks) + " tasks to " + COUNT(Affected_Teams) + " teams",
+            "Fitness score change: " + (New_Fitness - CALL Calculate_Overall_Fitness(Original_Schedule))
+        ]
+        
+    ELSE
+        
+        // Suggest alternatives
+        SET Recommendations = [
+            "Schedule NOT feasible - need additional action:",
+            "• Hire temporary workers: " + COUNT(Preprocessing_Result.invalid_tasks) + " tasks unassigned",
+            "• Delay non-urgent tasks",
+            "• Extend working hours (overtime required)"
+        ]
+        
+    END IF
+    
+    RETURN {
+        "modified_schedule": Final_Schedule,
+        "fitness": New_Fitness,
+        "is_feasible": Is_Feasible,
+        "affected_teams": COUNT(Affected_Teams),
+        "reassignments": COUNT(Orphaned_Tasks),
+        "recommendations": Recommendations,
+        "invalid_tasks": Preprocessing_Result.invalid_tasks
+    }
+    
+END FUNCTION
+
+// ===================================================================
+// SCENARIO 2: HANDLE EMERGENCY TASKS
+// ===================================================================
+
+FUNCTION Handle_Emergency_Tasks_Scenario(
+    Original_Schedule,
+    Emergency_Task_Details,
+    Service_Date
+):
+    
+    LOG "Processing Emergency Tasks scenario"
+    
+    // 1. Combine existing + emergency tasks
+    SET Existing_Tasks = EXTRACT_ALL_TASKS(Original_Schedule)
+    SET All_Tasks = Existing_Tasks + [Emergency_Task_Details]
+    
+    LOG "Total tasks with emergency: " + COUNT(All_Tasks)
+    
+    // 2. Get current employee pool
+    SET Current_Employees = EXTRACT_ALL_EMPLOYEES(Original_Schedule)
+    
+    LOG "Current employees: " + COUNT(Current_Employees)
+    
+    // 3. Re-optimize entire schedule
+    SET Preprocessing_Result = CALL Rule_Based_Greedy_Preprocessor(
+        All_Tasks,
+        Current_Employees,
+        TRUE  // Emergency task has high priority
+    )
+    
+    // Diamond Decision: Is schedule feasible?
+    SET Is_Feasible = (COUNT(Preprocessing_Result.invalid_tasks) == 0)
+    
+    IF Is_Feasible == NO THEN
+        
+        // Suggest alternatives
+        LOG "Schedule not feasible with current resources"
+        
+        RETURN {
+            "modified_schedule": NULL,
+            "fitness": 0,
+            "is_feasible": FALSE,
+            "affected_teams": "all",
+            "reassignments": COUNT(All_Tasks),
+            "recommendations": [
+                "Emergency task cannot be accommodated with current resources:",
+                "• Hire temporary workers (recommended: " + 
+                  CEILING(COUNT(Preprocessing_Result.invalid_tasks) / 5) + " workers)",
+                "• Delay non-urgent tasks to tomorrow",
+                "• Authorize overtime for existing teams"
+            ]
+        }
+        
+    END IF
+    
+    // YES - Schedule is feasible
+    SET New_Schedule = CALL Genetic_Algorithm_Optimizer(
+        Preprocessing_Result.valid_tasks,
+        Preprocessing_Result.employee_allocations,
+        50
+    )
+    
+    SET New_Fitness = CALL Calculate_Overall_Fitness(New_Schedule)
+    
+    // Show Impact Analysis
+    RETURN {
+        "modified_schedule": New_Schedule,
+        "fitness": New_Fitness,
+        "is_feasible": TRUE,
+        "affected_teams": "all",
+        "reassignments": COUNT(All_Tasks),
+        "recommendations": [
+            "Emergency task successfully integrated",
+            "All teams affected by schedule changes",
+            "Total tasks reassigned: " + COUNT(All_Tasks),
+            "New fitness score: " + New_Fitness
+        ]
+    }
+    
+END FUNCTION
+
+// ===================================================================
+// SCENARIO 3: HANDLE VEHICLE BREAKDOWN
+// ===================================================================
+
+FUNCTION Handle_Vehicle_Breakdown_Scenario(
+    Original_Schedule,
+    Unavailable_Vehicle_ID,
+    Service_Date
+):
+    
+    LOG "Processing Vehicle Breakdown scenario for vehicle " + Unavailable_Vehicle_ID
+    
+    // 1. Find teams using that vehicle
+    SET Affected_Teams = QUERY Database FOR OptimizationTeams 
+        WHERE service_date = Service_Date 
+        AND car_id = Unavailable_Vehicle_ID
+    
+    LOG "Found " + COUNT(Affected_Teams) + " teams using vehicle " + Unavailable_Vehicle_ID
+    
+    IF COUNT(Affected_Teams) == 0 THEN
+        RETURN {
+            "modified_schedule": Original_Schedule,
+            "fitness": CALL Calculate_Overall_Fitness(Original_Schedule),
+            "is_feasible": TRUE,
+            "affected_teams": 0,
+            "reassignments": 0,
+            "recommendations": ["No impact - vehicle not assigned to any team"]
+        }
+    END IF
+    
+    // 2. Reassign to available vehicles
+    SET Available_Vehicles = QUERY Database FOR Cars 
+        WHERE is_active = TRUE 
+        AND id != Unavailable_Vehicle_ID
+        AND id NOT IN (
+            SELECT car_id FROM OptimizationTeams 
+            WHERE service_date = Service_Date 
+            AND car_id IS NOT NULL
+        )
+    
+    LOG "Available vehicles: " + COUNT(Available_Vehicles)
+    
+    // 3. Check capacity constraints
+    SET Modified_Schedule = COPY(Original_Schedule)
+    SET Reassignments = []
+    
+    FOR EACH Team IN Affected_Teams:
+        
+        IF COUNT(Available_Vehicles) > 0 THEN
+            
+            // Assign to next available vehicle
+            SET New_Vehicle = POP_FIRST(Available_Vehicles)
+            
+            UPDATE OptimizationTeams SET {
+                car_id: New_Vehicle.id
+            } WHERE id = Team.id
+            
+            ADD {
+                team_id: Team.id,
+                old_vehicle: Unavailable_Vehicle_ID,
+                new_vehicle: New_Vehicle.id
+            } TO Reassignments
+            
+            LOG "Team " + Team.id + " reassigned to vehicle " + New_Vehicle.id
+            
+        ELSE
+            
+            LOG "Warning: No available vehicles for team " + Team.id
+            
+        END IF
+        
+    END FOR
+    
+    // Show Modified Schedule with vehicle reassignments
+    RETURN {
+        "modified_schedule": Modified_Schedule,
+        "fitness": CALL Calculate_Overall_Fitness(Modified_Schedule),
+        "is_feasible": (COUNT(Available_Vehicles) >= COUNT(Affected_Teams)),
+        "affected_teams": COUNT(Affected_Teams),
+        "reassignments": COUNT(Reassignments),
+        "recommendations": [
+            "Vehicle breakdown accommodated",
+            COUNT(Reassignments) + " teams reassigned to available vehicles",
+            "Vehicle assignments: " + JSON(Reassignments)
+        ]
+    }
+    
+END FUNCTION
+
+// ===================================================================
+// SCENARIO 4: HANDLE TIME CONSTRAINT
+// ===================================================================
+
+FUNCTION Handle_Time_Constraint_Scenario(
+    Original_Schedule,
+    Client_ID,
+    New_Deadline,
+    Service_Date
+):
+    
+    LOG "Processing Time Constraint scenario for client " + Client_ID
+    LOG "New deadline: " + New_Deadline
+    
+    // 1. Prioritize client's tasks
+    SET Client_Tasks = EXTRACT_TASKS_FOR_CLIENT(Original_Schedule, Client_ID)
+    SET Other_Tasks = EXTRACT_TASKS_EXCEPT_CLIENT(Original_Schedule, Client_ID)
+    
+    LOG "Client tasks: " + COUNT(Client_Tasks)
+    LOG "Other tasks: " + COUNT(Other_Tasks)
+    
+    // 2. Adjust team schedules
+    SET All_Employees = EXTRACT_ALL_EMPLOYEES(Original_Schedule)
+    
+    // Create high-priority preprocessing
+    SET Client_Tasks_Prioritized = []
+    FOR EACH Task IN Client_Tasks:
+        Task.priority = "HIGH"
+        Task.deadline = New_Deadline
+        ADD Task TO Client_Tasks_Prioritized
+    END FOR
+    
+    // Combine all tasks with client tasks first
+    SET All_Tasks = Client_Tasks_Prioritized + Other_Tasks
+    
+    // Re-optimize
+    SET Preprocessing_Result = CALL Rule_Based_Greedy_Preprocessor(
+        All_Tasks,
+        All_Employees,
+        TRUE
+    )
+    
+    SET New_Schedule = CALL Genetic_Algorithm_Optimizer(
+        Preprocessing_Result.valid_tasks,
+        Preprocessing_Result.employee_allocations,
+        50
+    )
+    
+    // 3. Check 12-hour limit compliance
+    SET Overtime_Required = FALSE
+    SET Teams_Needing_Overtime = []
+    
+    FOR EACH Team IN New_Schedule.teams:
+        SET Total_Hours = 0
+        FOR EACH Task IN Team.tasks:
+            Total_Hours += (Task.duration + Task.travel_time) / 60
+        END FOR
+        
+        IF Total_Hours > MAX_HOURS_PER_DAY THEN
+            Overtime_Required = TRUE
+            ADD {
+                team_id: Team.id,
+                total_hours: Total_Hours,
+                overtime_hours: Total_Hours - MAX_HOURS_PER_DAY
+            } TO Teams_Needing_Overtime
+        END IF
+    END FOR
+    
+    // Diamond Decision: Can meet deadline without overtime?
+    IF Overtime_Required == NO THEN
+        
+        // YES - Show Feasible Schedule
+        RETURN {
+            "modified_schedule": New_Schedule,
+            "fitness": CALL Calculate_Overall_Fitness(New_Schedule),
+            "is_feasible": TRUE,
+            "affected_teams": "all",
+            "reassignments": COUNT(All_Tasks),
+            "recommendations": [
+                "Client deadline can be met without overtime",
+                "All client tasks scheduled before " + New_Deadline,
+                "No teams exceed 12-hour limit"
+            ]
+        }
+        
+    ELSE
+        
+        // NO - Show overtime required OR suggest more workers
+        RETURN {
+            "modified_schedule": New_Schedule,
+            "fitness": CALL Calculate_Overall_Fitness(New_Schedule),
+            "is_feasible": FALSE,
+            "affected_teams": COUNT(Teams_Needing_Overtime),
+            "reassignments": COUNT(All_Tasks),
+            "recommendations": [
+                "Client deadline requires overtime or additional resources:",
+                "• " + COUNT(Teams_Needing_Overtime) + " teams need overtime",
+                "• Total overtime hours: " + 
+                  SUM(team.overtime_hours FOR team IN Teams_Needing_Overtime),
+                "• Alternative: Hire " + 
+                  CEILING(COUNT(Client_Tasks) / 5) + " temporary workers",
+                "• Or: Negotiate later deadline with client"
+            ]
+        }
+        
+    END IF
+    
+END FUNCTION
+
+// ===================================================================
+// HELPER FUNCTIONS FOR WHAT-IF SCENARIOS
+// ===================================================================
+
+FUNCTION Calculate_Overall_Fitness(Schedules):
+    
+    SET Total_Fitness = 0
+    SET Count = 0
+    
+    FOR EACH Client_ID, Schedule IN Schedules:
+        Total_Fitness += Schedule.fitness
+        Count += 1
+    END FOR
+    
+    RETURN Total_Fitness / Count
+    
+END FUNCTION
+
+FUNCTION Merge_Schedules(Original, Modified, Affected_Teams):
+    
+    SET Merged = COPY(Original)
+    
+    // Replace affected teams with modified versions
+    FOR EACH Team IN Affected_Teams:
+        SET Team_ID = Team.id
+        
+        // Find corresponding team in Modified schedule
+        SET Modified_Team = FIND_IN(Modified, BY team.id == Team_ID)
+        
+        IF Modified_Team EXISTS THEN
+            REPLACE Team IN Merged WITH Modified_Team
+        END IF
+    END FOR
+    
+    RETURN Merged
+    
+END FUNCTION
+
+FUNCTION Extract_All_Tasks(Schedule):
+    
+    SET All_Tasks = []
+    
+    FOR EACH Client_ID, Client_Schedule IN Schedule:
+        FOR EACH Team IN Client_Schedule.teams:
+            FOR EACH Task IN Team.tasks:
+                ADD Task TO All_Tasks
+            END FOR
+        END FOR
+    END FOR
+    
+    RETURN All_Tasks
+    
+END FUNCTION
+
+FUNCTION Extract_All_Employees(Schedule):
+    
+    SET All_Employees = []
+    
+    FOR EACH Client_ID, Client_Schedule IN Schedule:
+        FOR EACH Team IN Client_Schedule.teams:
+            FOR EACH Employee IN Team.team:
+                IF NOT EXISTS(Employee IN All_Employees) THEN
+                    ADD Employee TO All_Employees
+                END IF
+            END FOR
+        END FOR
+    END FOR
+    
+    RETURN All_Employees
+    
+END FUNCTION
+
+FUNCTION Save_Modified_Schedule(Schedule, Service_Date, Scenario_Type):
+    
+    // Create new optimization run marked as "what-if scenario"
+    SET Optimization_Run = CREATE OptimizationRun WITH {
+        service_date: Service_Date,
+        total_tasks: COUNT_TASKS(Schedule),
+        total_employees: COUNT_EMPLOYEES(Schedule),
+        total_teams: COUNT_TEAMS(Schedule),
+        final_fitness_score: CALL Calculate_Overall_Fitness(Schedule),
+        generations_run: 50,
+        status: "completed",
+        is_saved: TRUE,
+        what_if_scenario_id: Scenario_Type,
+        employee_allocation_data: JSON(Schedule),
+        greedy_result_data: JSON(Schedule)
+    }
+    
+    LOG "Saved modified schedule from what-if scenario: " + Scenario_Type
+    
+    RETURN Optimization_Run.id
+    
+END FUNCTION
+
+FUNCTION Generate_Risk_Assessment(Comparison_Results):
+    
+    SET Risk_Levels = []
+    
+    FOR EACH Result IN Comparison_Results:
+        
+        SET Risk_Level = "LOW"
+        
+        IF Result.is_feasible == FALSE THEN
+            Risk_Level = "HIGH"
+        ELSE IF Result.fitness < (Baseline_Fitness * 0.8) THEN
+            Risk_Level = "MEDIUM"
+        END IF
+        
+        ADD {
+            scenario: Result.scenario_type,
+            risk_level: Risk_Level,
+            feasible: Result.is_feasible,
+            fitness_impact: Result.fitness - Baseline_Fitness
+        } TO Risk_Levels
+        
+    END FOR
+    
+    RETURN Risk_Levels
+    
+END FUNCTION
+
+// ===================================================================
+// ===================================================================
+// END OF PSEUDOCODE
+// ===================================================================
+// ===================================================================
+
+// ===================================================================
+// SUMMARY OF IMPLEMENTATION
+// ===================================================================
+
+/*
+PHASE 1 (v1.0) - CURRENT IMPLEMENTATION:
+✅ Admin task creation
+✅ 5-step workforce calculation methodology (a-e)
+✅ Rule-based preprocessing (all 9 rules)
+✅ Genetic algorithm optimization with elitism
+✅ Real-time task addition logic
+✅ Employee task status updates (In Progress, On Hold, Completed)
+✅ 30-minute alert threshold
+✅ Manual admin override
+✅ Auto-calculated task duration
+✅ Performance history tracking
+✅ Nightly job for learning
+
+PHASE 2 (v2.0) - FUTURE IMPLEMENTATION:
+🔮 What-If Scenario Manager (Appendix A)
+   - Employee absence simulation
+   - Emergency task handling
+   - Vehicle breakdown analysis
+   - Time constraint evaluation
+   - Multi-scenario comparison
+
+FEATURE FLAGS:
+- whatIfScenarios = FALSE (Phase 1)
+- whatIfScenarios = TRUE (Phase 2)
+
+ALL 9 SYSTEM REQUIREMENTS IMPLEMENTED:
+✅ Rule 1: Utilize all employees
+✅ Rule 2: Driver per pair (team formation)
+✅ Rule 3: Prioritize arrival status
+✅ Rule 4: Re-optimize unsaved schedules
+✅ Rule 5: Maximum employee utilization
+✅ Rule 6: Fair task distribution
+✅ Rule 7: 12-hour limit enforcement
+✅ Rule 8: Real-time addition handling
+✅ Rule 9: Lock saved teams
+
