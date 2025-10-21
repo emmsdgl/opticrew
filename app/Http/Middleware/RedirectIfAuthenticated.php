@@ -32,11 +32,10 @@ class RedirectIfAuthenticated
                 if ($user->role === 'employee') {
                     return redirect()->route('employee.dashboard');
                 }
-                
-                // Add logic for 'external_client' here later
-                // if ($user->role === 'external_client') {
-                //     return redirect()->route('client.dashboard');
-                // }
+
+                if ($user->role === 'external_client') {
+                    return redirect()->route('client.dashboard');
+                }
             }
         }
 

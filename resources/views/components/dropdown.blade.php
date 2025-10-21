@@ -10,20 +10,33 @@
     $uniqueId = $id ?? 'dropdown_' . uniqid();
 @endphp
 
-<div x-data="{ 
-    open: false, 
-    selected: @entangle($wireModel ?? 'selected').live
-}" 
-class="relative inline-block">
+@if($wireModel)
+    {{-- Livewire mode: sync with parent component --}}
+    <div
+        x-data="{ open: false }"
+        class="relative inline-block">
+@else
+    {{-- Regular Blade mode: local state only --}}
+    <div
+        x-data="{
+            open: false,
+            selected: '{{ $default }}'
+        }"
+        class="relative inline-block">
+@endif
     <!-- Dropdown Button -->
-    <button 
+    <button
         @click="open = !open"
         type="button"
         class="bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none
                focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-3 inline-flex justify-between items-center gap-2
                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-blue-800 transition-all duration-300">
         <span class="text-gray-700 dark:text-white text-xs font-normal">{{ $label }}</span>
-        <span class="text-gray-700 dark:text-white text-xs font-normal" x-text="selected"></span>
+        @if($wireModel)
+            <span class="text-gray-700 dark:text-white text-xs font-normal" wire:model="{{ $wireModel }}">{{ $default }}</span>
+        @else
+            <span class="text-gray-700 dark:text-white text-xs font-normal" x-text="selected"></span>
+        @endif
         <svg 
             class="w-2.5 h-2.5 ms-2 transition-transform duration-300 text-gray-600 dark:text-gray-400"
             :class="{ 'rotate-180': open }"
@@ -54,16 +67,34 @@ class="relative inline-block">
                dark:bg-gray-700 origin-top"
         style="display: none;">
         <ul class="py-2 text-xs text-gray-700 dark:text-white">
-            @foreach ($options as $value => $label)
+            @foreach ($options as $key => $value)
+                @php
+                    // Handle both indexed arrays and associative arrays
+                    $optionValue = is_numeric($key) ? $value : $key;
+                    $optionLabel = $value;
+                @endphp
                 <li>
-                    <button 
-                        @click="selected = '{{ $value }}'; open = false"
-                        type="button"
-                        class="w-full text-left px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 
-                               dark:hover:bg-gray-600 transition-colors"
-                        :class="{ 'bg-gray-100 dark:bg-gray-600': selected === '{{ $value }}' }">
-                        {{ $label }}
-                    </button>
+                    @if($wireModel)
+                        {{-- Livewire mode --}}
+                        <button
+                            wire:click="$set('{{ $wireModel }}', '{{ $optionValue }}')"
+                            @click="open = false"
+                            type="button"
+                            class="w-full text-left px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100
+                                   dark:hover:bg-gray-600 transition-colors">
+                            {{ $optionLabel }}
+                        </button>
+                    @else
+                        {{-- Regular mode --}}
+                        <button
+                            @click="selected = '{{ $optionValue }}'; open = false"
+                            type="button"
+                            class="w-full text-left px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100
+                                   dark:hover:bg-gray-600 transition-colors"
+                            :class="{ 'bg-gray-100 dark:bg-gray-600': selected === '{{ $optionValue }}' }">
+                            {{ $optionLabel }}
+                        </button>
+                    @endif
                 </li>
             @endforeach
         </ul>
