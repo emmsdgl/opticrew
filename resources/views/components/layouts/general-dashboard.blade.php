@@ -80,28 +80,28 @@
     }
 
     <style>
-    /* Custom Scrollbar for Overflowed List */
-    .scrollbar::-webkit-scrollbar {
+    /* Custom Scrollbar - Applied Globally to All Elements */
+    *::-webkit-scrollbar {
         width: 8px; /* scrollbar thickness */
     }
 
-    .scrollbar::-webkit-scrollbar-track {
+    *::-webkit-scrollbar-track {
         background: transparent; /* transparent background */
         border-radius: 10px;
     }
 
-    .scrollbar::-webkit-scrollbar-thumb {
+    *::-webkit-scrollbar-thumb {
         background-color: rgba(107, 114, 128, 0.4); /* gray-500 with transparency */
         border-radius: 10px;
         transition: background-color 0.3s ease;
     }
 
-    .scrollbar::-webkit-scrollbar-thumb:hover {
+    *::-webkit-scrollbar-thumb:hover {
         background-color: rgba(107, 114, 128, 0.7); /* darker when hovered */
     }
 
     /* For Firefox */
-    .scrollbar {
+    * {
         scrollbar-width: thin;
         scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
     }

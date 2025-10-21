@@ -30,5 +30,4 @@
             @livewire('admin.recent-arrivals')
         </div>
     </section>
-
 </x-layouts.general-employer>

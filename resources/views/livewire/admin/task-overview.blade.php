@@ -1,8 +1,8 @@
-<div class="flex flex-col flex-1 min-h-0">
+<div class="flex flex-col flex-1">
     <!-- Task Overview Header -->
-    <div class="flex flex-row justify-between w-full items-center mb-4">
+    <div class="flex flex-row justify-between w-full items-center mb-6">
         <x-labelwithvalue label="Task Overview" :count="'(' . $taskCount . ')'" />
-        <div class="flex flex-row gap-3">
+        <div class="flex flex-row gap-4">
 
             @php
                 $timeOptions = [
