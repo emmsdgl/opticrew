@@ -1,6 +1,3 @@
-<!-- Save this as: resources/views/components/taskcalendar.blade.php -->
-<!-- This is the COMPLETE file - replace everything in your current file -->
-
 @props(['clients', 'events', 'bookedLocationsByDate'])
 
 <style>
@@ -50,10 +47,36 @@
     </div>
 
     <div class="grid grid-cols-7 mt-2">
-        <template x-for="(date, index) in dates" :key="index">
-            <div @click="openModal(date)"
-                class="h-32 p-2 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition relative">
-                <span class="text-xs text-gray-700 dark:text-gray-200 font-semibold" x-text="date.date"></span>
+        <template x-for="(date, index) in dates" :key="`${currentYear}-${currentMonth}-${index}`">
+            <div @click="date.date ? openModal(date) : null"
+                :class="{
+                    'bg-blue-100 dark:bg-blue-900/30 border-blue-400 dark:border-blue-600': date.date && isToday(date),
+                    'bg-gray-100 dark:bg-gray-800 opacity-60': date.date && isPastDate(date) && !isToday(date),
+                    'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900': date.date && (!isPastDate(date) || isToday(date)),
+                    'cursor-not-allowed': date.date && isPastDate(date) && !isToday(date),
+                    'bg-gray-50 dark:bg-gray-900': !date.date
+                }"
+                class="h-32 p-2 border border-gray-200 dark:border-gray-700 transition relative">
+
+                <!-- Date Number with Today Indicator -->
+                <template x-if="date.date">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold"
+                            :class="{
+                                'text-blue-600 dark:text-blue-400': isToday(date),
+                                'text-gray-400 dark:text-gray-500': isPastDate(date) && !isToday(date),
+                                'text-gray-700 dark:text-gray-200': !isPastDate(date) && !isToday(date)
+                            }"
+                            x-text="date.date"></span>
+
+                        <!-- TODAY Badge -->
+                        <template x-if="isToday(date)">
+                            <span class="text-xs font-bold bg-blue-600 dark:bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                                TODAY
+                            </span>
+                        </template>
+                    </div>
+                </template>
 
                 <!-- Grouped Events Display -->
                 <div class="mt-2 space-y-1 overflow-y-auto max-h-24">
@@ -63,7 +86,7 @@
                                 :class="group.color">
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="font-medium truncate flex-1" x-text="group.client"></span>
-                                    <span class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-semibold bg-white/30 dark:bg-black/20" 
+                                    <span class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-semibold bg-white/30 dark:bg-black/20"
                                         x-text="group.count + ' task' + (group.count > 1 ? 's' : '')"></span>
                                 </div>
                             </div>
@@ -500,8 +523,28 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             availableCabins: []
         },
 
-        init() {
+        async init() {
             this.renderCalendar();
+            // Check for unsaved schedules on page load
+            await this.checkForUnsavedSchedule();
+        },
+
+        async checkForUnsavedSchedule() {
+            try {
+                const response = await fetch('/admin/optimization/check-unsaved');
+                const data = await response.json();
+
+                if (data.has_unsaved) {
+                    this.currentOptimizationRunId = data.optimization_run_id;
+                    this.hasUnsavedSchedule = true;
+                    console.log('Found unsaved schedule:', data);
+                } else {
+                    this.hasUnsavedSchedule = false;
+                    this.currentOptimizationRunId = null;
+                }
+            } catch (error) {
+                console.error('Error checking for unsaved schedule:', error);
+            }
         },
 
         groupEventsByClient(events) {
@@ -536,6 +579,11 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             const totalDays = lastDay.getDate();
             this.dates = [];
 
+            // Debug logging
+            console.log(`Rendering calendar for: ${this.monthYear} (Month: ${this.currentMonth}, Year: ${this.currentYear})`);
+            const today = new Date();
+            console.log(`Today is: ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`);
+
             for (let i = 0; i < startDay; i++) {
                 this.dates.push({ date: '', events: [], groupedEvents: [] });
             }
@@ -569,17 +617,58 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             this.renderCalendar();
         },
 
+        // Check if a date is today
+        isToday(date) {
+            if (!date || !date.date) return false;
+            const today = new Date();
+            const todayDay = today.getDate();
+            const todayMonth = today.getMonth();
+            const todayYear = today.getFullYear();
+
+            // Compare using calendar's displayed month/year and the date number
+            return date.date === todayDay &&
+                   this.currentMonth === todayMonth &&
+                   this.currentYear === todayYear;
+        },
+
+        // Check if a date is in the past
+        isPastDate(date) {
+            if (!date || !date.date) return false;
+
+            // Get today's date and reset time
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Create a date object for the calendar cell we're checking
+            // Use the DISPLAYED calendar's month/year, not today's
+            const checkDate = new Date(this.currentYear, this.currentMonth, date.date);
+            checkDate.setHours(0, 0, 0, 0);
+
+            return checkDate < today;
+        },
+
         openModal(date) {
+            // Prevent opening modal for empty calendar cells
+            if (!date || !date.date) {
+                return;
+            }
+
+            const ENABLE_PAST_DATE_VALIDATION = true;
+
+            // Check if trying to select a past date
+            if (ENABLE_PAST_DATE_VALIDATION && this.isPastDate(date)) {
+                alert('⚠️ You cannot create tasks for previous dates.\n\nPlease select today or a future date.');
+                return; // Stop execution - do not open modal
+            }
+
             // Reset form first
             this.resetForm();
-            
+
             // Then set the service date
-            if (date && date.date) {
-                const dateString = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(date.date).padStart(2, '0')}`;
-                this.selectedDate = dateString;
-                this.formData.serviceDate = dateString;
-            }
-            
+            const dateString = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(date.date).padStart(2, '0')}`;
+            this.selectedDate = dateString;
+            this.formData.serviceDate = dateString;
+
             this.showModal = true;
         },
 
@@ -769,9 +858,14 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
                         this.hasUnsavedSchedule = true;
 
                         await this.loadOptimizationResults(data.optimization_run_id);
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 3000);
+
+                        // Show success message and close modal
+                        this.optimizationLoading = false;
+                        this.closeOptimizationModal();
+                        alert('Tasks created and optimized successfully! Please click "Save Schedule" to save this optimization.');
+
+                        // Reload the page to show new tasks on calendar
+                        window.location.reload();
                     } else {
                         this.optimizationLoading = false;
                         this.closeOptimizationModal();
