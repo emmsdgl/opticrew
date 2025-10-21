@@ -43,7 +43,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Create new task from calendar
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
-    
+
+    // Update task status (Kanban board drag & drop)
+    Route::patch('/tasks/{taskId}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+
     // Get all clients (for refreshing dropdown)
     Route::get('/tasks/clients', [TaskController::class, 'getClients'])->name('tasks.clients');
     
@@ -53,6 +56,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/optimization/{optimizationRunId}/results', [TaskController::class, 'getOptimizationResults']);
     Route::post('/admin/optimization/reoptimize', [TaskController::class, 'reoptimize']);
+
+    // ✅ NEW: Check for unsaved schedules
+    Route::get('/admin/optimization/check-unsaved', [TaskController::class, 'checkUnsavedSchedule'])
+        ->name('admin.optimization.check-unsaved');
 
     // ✅ NEW: Save schedule (mark as saved)
     Route::post('/admin/optimization/save-schedule', [TaskController::class, 'saveSchedule'])

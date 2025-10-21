@@ -55,7 +55,9 @@ class EmployeeAnalytics extends Component
         return view('livewire.admin.employee-analytics', [
             'optimizationRuns' => $optimizationRuns,
             'latestRun' => $latestRun,
-        ])->layout('layouts.app');
+        ])->layout('components.layouts.general-employer', [
+            'title' => 'Employee Analytics Dashboard',
+        ]);
     }
 
     private function formatRuntime($seconds)
