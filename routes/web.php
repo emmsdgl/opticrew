@@ -16,6 +16,7 @@ use App\Http\Controllers\AppointmentList;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScenarioController;
+use App\Http\Controllers\ClientAppointmentController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
@@ -115,14 +116,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/client/dashboard', function() {
         // 1. Get the currently authenticated user.
         $user = Auth::user();
-    
+
         // 2. Get the associated client record using the relationship.
         $client = $user->client;
-    
+
         // 3. Pass the $client variable to the view.
         return view('client-dash', compact('client'));
-        
+
     })->middleware('auth')->name('client.dashboard');
+
+    // Client Appointment/Booking Routes
+    Route::get('/client/book-service', [ClientAppointmentController::class, 'create'])->name('client.appointment.create');
+    Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
     
     Route::get('/client/appointments', function () {
         $user = Auth::user(); 

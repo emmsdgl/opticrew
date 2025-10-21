@@ -199,7 +199,15 @@ if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && w
             <div class="flex items-center space-x-1">
                 <div class="flex-1 absolute">
                     <span class="text-blue-600 dark:text-blue-400">
-                        <img src="{{ asset('/images/finnoys-text-logo-light.svg') }}" class="h-20 w-auto">
+                        <!-- Light Mode Logo (visible by default, hidden in dark mode) -->
+                        <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
+                            class="block dark:hidden h-20 w-auto sidebar-logo" 
+                            alt="Fin-Noys Light Logo">
+                        
+                        <!-- Dark Mode Logo (hidden by default, visible in dark mode) -->
+                        <img src="{{ asset('images/finnoys-text-logo.svg') }}"
+                            class="hidden dark:block h-20 w-auto sidebar-logo" 
+                            alt="Fin-Noys Dark Logo">
                     </span>
                 </div>
             </div>
