@@ -78,6 +78,33 @@
     .rotate-once {
         animation: spinOnce 0.5s ease;
     }
+
+    <style>
+    /* Custom Scrollbar for Overflowed List */
+    .scrollbar::-webkit-scrollbar {
+        width: 8px; /* scrollbar thickness */
+    }
+
+    .scrollbar::-webkit-scrollbar-track {
+        background: transparent; /* transparent background */
+        border-radius: 10px;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgba(107, 114, 128, 0.4); /* gray-500 with transparency */
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(107, 114, 128, 0.7); /* darker when hovered */
+    }
+
+    /* For Firefox */
+    .scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
+    }
 </style>
 
 <body class="bg-[#F3F3F3] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300">
