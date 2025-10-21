@@ -3,6 +3,7 @@
     'default' => 'Now',
     'options' => [],
     'id' => null,
+    'wireModel' => null, // Add this new prop
 ])
 
 @php
@@ -11,7 +12,7 @@
 
 <div x-data="{ 
     open: false, 
-    selected: '{{ $default }}' 
+    selected: @entangle($wireModel ?? 'selected').live
 }" 
 class="relative inline-block">
     <!-- Dropdown Button -->
@@ -53,20 +54,18 @@ class="relative inline-block">
                dark:bg-gray-700 origin-top"
         style="display: none;">
         <ul class="py-2 text-xs text-gray-700 dark:text-white">
-            @foreach ($options as $option)
+            @foreach ($options as $value => $label)
                 <li>
                     <button 
-                        @click="selected = '{{ $option }}'; open = false"
+                        @click="selected = '{{ $value }}'; open = false"
                         type="button"
                         class="w-full text-left px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 
                                dark:hover:bg-gray-600 transition-colors"
-                        :class="{ 'bg-gray-100 dark:bg-gray-600': selected === '{{ $option }}' }">
-                        {{ $option }}
+                        :class="{ 'bg-gray-100 dark:bg-gray-600': selected === '{{ $value }}' }">
+                        {{ $label }}
                     </button>
                 </li>
             @endforeach
         </ul>
     </div>
 </div>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-@stack('scripts')
