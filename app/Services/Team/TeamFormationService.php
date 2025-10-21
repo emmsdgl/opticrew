@@ -25,48 +25,81 @@ class TeamFormationService
      */
     public function formTeams(Collection $employees): Collection
     {
+        $totalEmployees = $employees->count();
+
         Log::info("Forming teams", [
-            'total_employees' => $employees->count()
+            'total_employees' => $totalEmployees
         ]);
 
+        if ($totalEmployees < 2) {
+            Log::error("Cannot form teams: need at least 2 employees");
+            return collect();
+        }
+
         // Separate drivers and non-drivers
-        $drivers = $employees->filter(fn($e) => $e->has_driving_license)->shuffle();
-        $nonDrivers = $employees->filter(fn($e) => !$e->has_driving_license)->shuffle();
+        $drivers = $employees->filter(fn($e) => $e->has_driving_license)->values();
+        $nonDrivers = $employees->filter(fn($e) => !$e->has_driving_license)->values();
+
+        Log::info("Employee breakdown", [
+            'drivers' => $drivers->count(),
+            'non_drivers' => $nonDrivers->count()
+        ]);
+
+        // ✅ Calculate optimal team distribution (PAIRS first, TRIOS only if odd)
+        $numDrivers = $drivers->count();
+
+        if ($numDrivers === 0) {
+            Log::error("Cannot form teams: no drivers available");
+            return collect();
+        }
+
+        // Maximum teams we can create = number of drivers (each team needs 1 driver)
+        $maxTeams = $numDrivers;
+
+        // Calculate how many pairs and trios we need
+        // Strategy: ALL PAIRS first, convert last team to TRIO if odd number of employees
+        $teamsNeeded = min($maxTeams, intdiv($totalEmployees, 2)); // Max teams possible with pairs
+
+        if ($totalEmployees % 2 === 1) {
+            // Odd number: last team will be a trio
+            $numPairs = $teamsNeeded - 1;
+            $numTrios = 1;
+        } else {
+            // Even number: all pairs
+            $numPairs = $teamsNeeded;
+            $numTrios = 0;
+        }
+
+        Log::info("Team distribution plan", [
+            'total_employees' => $totalEmployees,
+            'teams_needed' => $teamsNeeded,
+            'pairs' => $numPairs,
+            'trios' => $numTrios
+        ]);
 
         $teams = collect();
-        
-        // // Separate drivers and non-drivers
-        // $drivers = $employees->filter(fn($e) => $e->has_driving_license == 1)->values();
-        // $nonDrivers = $employees->filter(fn($e) => $e->has_driving_license != 1)->values();
-        
-        // \Log::info("Team formation started", [
-        //     'total_employees' => $employees->count(),
-        //     'drivers' => $drivers->count(),
-        //     'non_drivers' => $nonDrivers->count()
-        // ]);
-        
-        // ✅ Strategy: Each team gets 1 driver + 1-2 others
-        foreach ($drivers as $driver) {
-            $team = collect([$driver]);
+        $driverIndex = 0;
+        $nonDriverIndex = 0;
 
-            // Add 1-2 non-drivers to complete the team
-            $teamSize = rand(2, 3); // Random team size (2 or 3)
-            
-            while ($team->count() < $teamSize && $nonDrivers->isNotEmpty()) {
-                $team->push($nonDrivers->shift());
+        // ✅ Create PAIRS first
+        for ($i = 0; $i < $numPairs; $i++) {
+            $team = collect();
+
+            // Add 1 driver
+            if ($driverIndex < $drivers->count()) {
+                $team->push($drivers[$driverIndex++]);
             }
 
-            // If we ran out of non-drivers but still have space, add another driver
-            while ($team->count() < $teamSize && $drivers->isNotEmpty()) {
-                $nextDriver = $drivers->shift();
-                if ($nextDriver->id !== $driver->id) {
-                    $team->push($nextDriver);
-                }
+            // Add 1 non-driver (or another driver if no non-drivers left)
+            if ($nonDriverIndex < $nonDrivers->count()) {
+                $team->push($nonDrivers[$nonDriverIndex++]);
+            } elseif ($driverIndex < $drivers->count()) {
+                $team->push($drivers[$driverIndex++]);
             }
 
             $teams->push($team);
 
-            Log::info("Team formed", [
+            Log::info("Pair created", [
                 'team_index' => $teams->count(),
                 'size' => $team->count(),
                 'has_driver' => $team->contains(fn($e) => $e->has_driving_license),
@@ -74,27 +107,43 @@ class TeamFormationService
             ]);
         }
 
-        // ✅ Handle remaining non-drivers (shouldn't happen if drivers >= 1)
-        if ($nonDrivers->isNotEmpty()) {
-            Log::warning("Non-drivers remaining without teams", [
-                'count' => $nonDrivers->count(),
-                'employee_ids' => $nonDrivers->pluck('id')->toArray()
-            ]);
+        // ✅ Create TRIO if needed (for odd number of employees)
+        if ($numTrios > 0) {
+            $team = collect();
 
-            // Try to distribute them to existing teams (max 3 per team)
-            foreach ($nonDrivers as $employee) {
-                $smallestTeam = $teams->sortBy(fn($t) => $t->count())->first();
-                
-                if ($smallestTeam && $smallestTeam->count() < 3) {
-                    $smallestTeam->push($employee);
-                } else {
-                    // Create a new team (even without driver - edge case)
-                    Log::warning("Creating team without driver (no drivers available)", [
-                        'employee_id' => $employee->id
-                    ]);
-                    $teams->push(collect([$employee]));
+            // Add 1 driver
+            if ($driverIndex < $drivers->count()) {
+                $team->push($drivers[$driverIndex++]);
+            }
+
+            // Add 2 more employees (prefer non-drivers)
+            for ($j = 0; $j < 2; $j++) {
+                if ($nonDriverIndex < $nonDrivers->count()) {
+                    $team->push($nonDrivers[$nonDriverIndex++]);
+                } elseif ($driverIndex < $drivers->count()) {
+                    $team->push($drivers[$driverIndex++]);
                 }
             }
+
+            $teams->push($team);
+
+            Log::info("Trio created", [
+                'team_index' => $teams->count(),
+                'size' => $team->count(),
+                'has_driver' => $team->contains(fn($e) => $e->has_driving_license),
+                'member_ids' => $team->pluck('id')->toArray()
+            ]);
+        }
+
+        // ✅ Validation: Ensure NO team has less than 2 members
+        $invalidTeams = $teams->filter(fn($t) => $t->count() < 2);
+        if ($invalidTeams->isNotEmpty()) {
+            Log::error("CRITICAL: Teams with less than 2 members detected!", [
+                'invalid_teams' => $invalidTeams->map(fn($t) => [
+                    'size' => $t->count(),
+                    'members' => $t->pluck('id')->toArray()
+                ])->toArray()
+            ]);
         }
 
         Log::info("Team formation complete", [

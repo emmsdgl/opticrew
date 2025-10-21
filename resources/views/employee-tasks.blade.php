@@ -16,12 +16,82 @@
     @endslot
 
     <section role="status" class="flex flex-col lg:flex-col gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
-        <!-- Upper Panel - Tasks Gantt Schedule -->
+
+        <!-- Flash Messages (session based) -->
+        @if(session()->has('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-6" role="alert">
+                <p class="font-semibold">Success!</p>
+                <p>{{ session('success') }}</p>
+            </div>
+        @endif
+
+        <!-- Today's Tasks Section -->
         <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
-            <!-- Inner Up - Dashboard Header -->
+            <x-labelwithvalue label="My Tasks for Today" :count="'(' . $todayTasks->count() . ')'" />
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @forelse($todayTasks as $task)
+                    <x-task-action-card :task="$task" />
+                @empty
+                    <div class="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow-md p-12 text-center">
+                        <i class="fas fa-tasks text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No tasks assigned for today</p>
+                        <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Check back later or contact your supervisor</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <hr class="my-6 border-gray-300 dark:border-gray-700">
+
+        <!-- Upcoming Tasks Section -->
+        <div class="flex flex-col gap-6 w-full rounded-lg p-4">
+            <x-labelwithvalue label="Upcoming Tasks" :count="'(' . $upcomingTasks->count() . ')'" />
+
+            {{-- Simple list view for upcoming tasks (no action buttons needed) --}}
+            <div class="space-y-4">
+                @forelse($upcomingTasks as $task)
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border-l-4 border-gray-400">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-semibold rounded-full">
+                                {{ $task->status }}
+                            </span>
+                            <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                                {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
+                            </span>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1">{{ $task->task_description }}</h4>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            {{ $task->location->location_name ?? 'External Client Task' }}
+                        </p>
+                        @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
+                        <div class="mt-3">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Team:</p>
+                            <div class="flex flex-wrap gap-1">
+                                @foreach($task->optimizationTeam->members as $member)
+                                    <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs">
+                                        {{ $member->employee->full_name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                @empty
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center">
+                        <i class="fas fa-calendar-check text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                        <p class="text-gray-500 dark:text-gray-400">No upcoming tasks scheduled</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- OLD GANTT CHART SECTION - REMOVED, replaced with functional task cards above -->
+        {{-- Keep this commented block for reference if frontend developer wants gantt chart back later
+        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
             <x-labelwithvalue label="My Schedule" count="" />
-            
-            {{-- Gantt Chart Component --}}
             @php
                 $tasks = [
                     [
@@ -94,46 +164,6 @@
                 ];
             @endphp
 
-            <x-ganttchart :tasks="$tasks" start-date="2025-10-28" end-date="2025-11-06" date-format="d" />
-        </div>
-
-        <!-- Lower Panel - Task Details -->
-        <div class="flex flex-col gap-6 w-full rounded-lg p-4">
-            <!-- Inner Upper - All Tasks List Label + Sorting Buttons -->
-            <div class="flex flex-row justify-between w-full">
-                <x-labelwithvalue label="All Tasks" count="{{ count($tasks) }}" />
-                @php
-                    $timeOptions = ['All', 'Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
-                @endphp
-                <x-dropdown :options="$timeOptions" id="dropdown-time" />
-            </div>
-
-            <!-- Inner Lower - All Tasks List -->
-            <div class="w-full rounded-lg">
-                <div class="space-y-4">
-                    @forelse($tasks as $task)
-                        <x-gantttaskitem 
-                            :label="$task['label']"
-                            :name="$task['name']"
-                            :subtitle="$task['subtitle']"
-                            :color="$task['color']"
-                            :percentage="$task['percentage']"
-                            :dueDate="$task['due_date'] ?? null"
-                            :dueTime="$task['due_time'] ?? null"
-                            :teamName="$task['team_name'] ?? 'Team 1'"
-                            :teamMembers="$task['team_members'] ?? []"
-                        />
-                    @empty
-                        <div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            <p class="text-lg font-medium">No tasks assigned</p>
-                            <p class="text-sm">Check back later for new assignments</p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
+        --}}
     </section>
 </x-layouts.general-dashboard>

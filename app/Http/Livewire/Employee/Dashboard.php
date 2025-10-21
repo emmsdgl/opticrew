@@ -6,18 +6,24 @@ use Livewire\Component;
 use App\Models\Task;
 use App\Models\EmployeeSchedule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
-use App\Models\TaskPerformanceHistory; // <-- ADD THIS AT THE TOP
-use App\Models\Attendance; // Import the new model
+use App\Models\TaskPerformanceHistory;
+use App\Models\Attendance;
 
 
 class Dashboard extends Component
 {
     public $tasks;
-    public $futureTasks; // <-- ADD THIS NEW PROPERTY
+    public $futureTasks;
     public $schedules;
     public $currentDate;
-    public $currentAttendance; // <-- ADD THIS NEW PROPERTY
+    public $currentAttendance;
+
+    // Hold Task Modal Properties
+    public $showHoldModal = false;
+    public $holdTaskId = null;
+    public $holdReason = '';
 
     public function mount()
     {
@@ -69,20 +75,20 @@ class Dashboard extends Component
 
         // --- QUERY 1: GET ONLY TODAY'S TASKS ---
         $this->tasks = Task::where('scheduled_date', $today)
-            ->whereHas('team.members', function ($query) use ($employeeId) {
+            ->whereHas('optimizationTeam.members', function ($query) use ($employeeId) {
                 $query->where('employee_id', $employeeId);
             })
-            ->with(['location', 'team.members.employee', 'team.car']) // <-- ADD 'team.car'
-            ->orderBy('scheduled_date') // Order by date
+            ->with(['location', 'optimizationTeam.members.employee', 'optimizationTeam.car'])
+            ->orderBy('scheduled_date')
             ->get();
 
         // --- QUERY 2: GET ALL FUTURE TASKS ---
         $this->futureTasks = Task::where('scheduled_date', '>', $today)
-            ->whereHas('team.members', function ($query) use ($employeeId) {
+            ->whereHas('optimizationTeam.members', function ($query) use ($employeeId) {
                 $query->where('employee_id', $employeeId);
             })
-            ->with(['location', 'team.members.employee', 'team.car']) // <-- ADD 'team.car'
-            ->orderBy('scheduled_date') // Order by date
+            ->with(['location', 'optimizationTeam.members.employee', 'optimizationTeam.car'])
+            ->orderBy('scheduled_date')
             ->get();
 
         // Load the schedule for the current month for this employee only
@@ -97,40 +103,99 @@ class Dashboard extends Component
 
     public function startTask($taskId)
     {
-        $task = Task::find($taskId);
-        if ($task && $task->status === 'Scheduled') {
-            // When a task starts, record the current time
-            $task->update([
-                'status' => 'In-Progress',
-                'started_at' => Carbon::now() // <-- RECORD START TIME
+        try {
+            // Call API endpoint
+            $response = Http::post("/api/tasks/{$taskId}/start");
+
+            if ($response->successful()) {
+                $this->loadTasksAndSchedule();
+                session()->flash('success', 'Task started successfully!');
+            } else {
+                session()->flash('error', 'Failed to start task.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Open hold task modal
+     */
+    public function openHoldModal($taskId)
+    {
+        $this->holdTaskId = $taskId;
+        $this->holdReason = '';
+        $this->showHoldModal = true;
+    }
+
+    /**
+     * Close hold task modal
+     */
+    public function closeHoldModal()
+    {
+        $this->showHoldModal = false;
+        $this->holdTaskId = null;
+        $this->holdReason = '';
+    }
+
+    /**
+     * Submit hold task with reason
+     */
+    public function submitHoldTask()
+    {
+        $this->validate([
+            'holdReason' => 'required|min:3|max:255'
+        ]);
+
+        try {
+            // Call API endpoint
+            $response = Http::post("/api/tasks/{$this->holdTaskId}/hold", [
+                'reason' => $this->holdReason
             ]);
-            $this->loadTasksAndSchedule();
+
+            if ($response->successful()) {
+                $data = $response->json('data');
+                $alertTriggered = $data['alert_triggered'] ?? false;
+
+                $this->closeHoldModal();
+                $this->loadTasksAndSchedule();
+
+                if ($alertTriggered) {
+                    session()->flash('warning', 'Task put on hold. Admin has been notified of the delay.');
+                } else {
+                    session()->flash('success', 'Task put on hold successfully.');
+                }
+            } else {
+                session()->flash('error', 'Failed to put task on hold.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error: ' . $e->getMessage());
         }
     }
 
     public function completeTask($taskId)
     {
-        $task = Task::find($taskId);
-        // Ensure the task is In-Progress and has a start time
-        if ($task && $task->status === 'In-Progress' && $task->started_at) {
-            $completedAt = Carbon::now();
-            
-            // Calculate the actual duration in minutes
-            $startedAt = new Carbon($task->started_at);
-            $actualDuration = $startedAt->diffInMinutes($completedAt);
+        try {
+            // Call API endpoint
+            $response = Http::post("/api/tasks/{$taskId}/complete");
 
-            // Update the task status
-            $task->update(['status' => 'Completed']);
+            if ($response->successful()) {
+                $data = $response->json('data');
+                $performanceFlagged = $data['performance_flagged'] ?? false;
 
-            // CREATE THE PERFORMANCE HISTORY RECORD
-            TaskPerformanceHistory::create([
-                'task_id' => $task->id,
-                'estimated_duration_minutes' => $task->estimated_duration_minutes,
-                'actual_duration_minutes' => $actualDuration,
-                'completed_at' => $completedAt,
-            ]);
+                $this->loadTasksAndSchedule();
 
-            $this->loadTasksAndSchedule();
+                if ($performanceFlagged) {
+                    session()->flash('warning', 'Task completed! Duration exceeded estimate.');
+                } else {
+                    session()->flash('success', 'Task completed successfully!');
+                }
+            } else {
+                $message = $response->json('message') ?? 'Failed to complete task.';
+                session()->flash('error', $message);
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error: ' . $e->getMessage());
         }
     }
 

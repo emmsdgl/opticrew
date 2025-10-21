@@ -8,13 +8,16 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeDashboardController;
+use App\Http\Controllers\EmployeeTasksController;
 use App\Http\Controllers\Auth\ClientRegistrationController;
-use App\Http\Controllers\Auth\ForgotPasswordController; 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentList;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScenarioController;
+
+use App\Http\Livewire\Admin\EmployeeAnalytics;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,8 +25,12 @@ use App\Http\Controllers\ScenarioController;
 |--------------------------------------------------------------------------
 */
     Route::get('/', action: function () {
-        return view('employee-tasks');
-    })->name('employee-tasks');
+        return redirect()->route('employee.dashboard');
+    });
+
+    Route::get('/employee-tasks', [EmployeeTasksController::class, 'index'])
+        ->middleware('auth')
+        ->name('employee-tasks');
     
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth'])->group(function () {
@@ -51,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/optimization/save-schedule', [TaskController::class, 'saveSchedule'])
         ->name('admin.optimization.save');
 
+    // Analytics dashboard for optimization metrics
+    Route::get('/analytics', EmployeeAnalytics::class)->name('admin.analytics');
 
     Route::prefix('schedules')->group(function () {
         Route::post('/optimize', [ScheduleController::class, 'optimize']);
