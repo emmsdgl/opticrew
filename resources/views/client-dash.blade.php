@@ -26,7 +26,12 @@
 
                     <x-dropdown :options="$timeOptions" default="This Day" id="dropdown-time" />
                     <x-dropdown :options="$serviceOptions" default="Service Type" id="dropdown-service-type" />
-                    <x-button label="Book a Service" color="blue" size="sm" icon='<i class="fa-solid fa-plus"></i>' />
+
+                    <a href="{{ route('client.appointment.create') }}">
+                        <x-button label="Book a Service" color="blue" size="sm" icon='<i class="fa-solid fa-plus"></i>' />
+                    </a>
+
+
                 </div>
             </div>
             @php

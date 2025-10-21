@@ -29,9 +29,14 @@ class ClientRegistrationController extends Controller
         $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
+            'middle_initial' => ['nullable', 'string', 'max:10'],
             'birthdate' => ['required', 'date_format:m-d-Y'],
-            'phone_number' => ['required', 'string', 'min:10'],
+            'phone_number' => ['required', 'string', 'min:7'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'street_address' => ['required', 'string', 'max:255'],
+            'postal_code' => ['required', 'string', 'size:5'],
+            'city' => ['required', 'string', 'max:100'],
+            'district' => ['required', 'string', 'max:100'],
             'username' => ['required', 'string', 'max:255', 'unique:users,name'], // Validate username against the 'name' column
             'password' => ['required', 'confirmed', Password::min(8)],
             'security_question' => ['required', 'array', 'size:2'],
@@ -51,12 +56,27 @@ class ClientRegistrationController extends Controller
             ]);
     
             // 4. Create the associated Client profile record.
+            // Build full address from components
+            $fullAddress = $request->street_address . ', ' .
+                          $request->postal_code . ' ' .
+                          $request->city . ', ' .
+                          $request->district;
+
             $user->client()->create([
+                'client_type' => 'personal',
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'middle_initial' => $request->middle_initial,
                 'birthdate' => Carbon::createFromFormat('m-d-Y', $request->birthdate)->format('Y-m-d'),
+                'email' => $request->email,
                 'phone_number' => $request->phone_number,
+                'street_address' => $request->street_address,
+                'postal_code' => $request->postal_code,
+                'city' => $request->city,
+                'district' => $request->district,
+                'address' => $fullAddress,
+                'billing_address' => $fullAddress,
+                'is_active' => true,
                 'security_question_1' => $request->security_question[0],
                 'security_answer_1' => Hash::make(strtolower($request->security_answer_1)), // Hash the answer
                 'security_question_2' => $request->security_question[1],

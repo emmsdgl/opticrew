@@ -88,18 +88,40 @@
                         </div>
                     </div>
 
-                    <!-- Billing Address -->
+                    <!-- Finnish Address Structure -->
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Billing
+                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Street
                             Address</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fi fi-rr-marker"></i>
                             </span>
-                            <input type="text" x-model="formData.billing_address" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                            <input type="text" x-model="formData.street_address" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Ex: youraddress@example.com">
+                                placeholder="Ex: Mannerheimintie 123 A 45">
+                        </div>
+                    </div>
+
+                    <!-- Postal Code and City -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Postal
+                                Code</label>
+                            <input type="text" x-model="formData.postal_code"
+                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
+                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="00100" maxlength="5">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">City</label>
+                            <input type="text" x-model="formData.city"
+                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
+                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Helsinki">
                         </div>
                     </div>
 
@@ -108,62 +130,81 @@
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Mobile
                             Number</label>
                         <div class="flex gap-2">
-                            <div class="relative w-32">
-                                <select x-model="formData.country_code" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                            <div class="relative w-36">
+                                <select x-model="formData.country_code" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="+63">🇵🇭 +63</option>
+                                    <option value="+358">🇫🇮 +358</option>
+                                    <option value="+46">🇸🇪 +46</option>
+                                    <option value="+47">🇳🇴 +47</option>
+                                    <option value="+45">🇩🇰 +45</option>
                                     <option value="+1">🇺🇸 +1</option>
                                     <option value="+44">🇬🇧 +44</option>
                                 </select>
                             </div>
-                            <input type="tel" x-model="formData.mobile_number" class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                            <input type="tel" x-model="formData.mobile_number" class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="9XXXXXXXXX">
+                                placeholder="40 1234567">
                         </div>
                     </div>
 
-                    <!-- Location and E-Invoice -->
+                    <!-- District (Kaupunginosa) and E-Invoice -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div>
-                            <label
-                                class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Location</label>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                District (Kaupunginosa)
+                            </label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                     <i class="fi fi-rr-marker"></i>
                                 </span>
-                                <select x-model="formData.location" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">Select your barangay</option>
-                                    <option value="barangay1">Barangay 1</option>
-                                    <option value="barangay2">Barangay 2</option>
-                                </select>
+                                <input type="text" x-model="formData.district"
+                                       @input="searchDistrict()"
+                                       @focus="showDistrictSuggestions = true"
+                                       class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
+                                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                                              focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Ex: Kallio, Kamppi, Punavuori">
+
+                                <!-- District Suggestions Dropdown -->
+                                <div x-show="showDistrictSuggestions && filteredDistricts.length > 0"
+                                     @click.outside="showDistrictSuggestions = false"
+                                     class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <template x-for="district in filteredDistricts" :key="district">
+                                        <div @click="selectDistrict(district)"
+                                             class="px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer text-gray-900 dark:text-white">
+                                            <span x-text="district"></span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">E-Invoice
-                                Number</label>
+                                Number (Optional)</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                     <i class="fi fi-rr-receipt"></i>
                                 </span>
-                                <input type="text" x-model="formData.einvoice_number" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                <input type="text" x-model="formData.einvoice_number" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Your tax invoice number">
+                                    placeholder="Your Finnish e-invoice number">
                             </div>
                         </div>
                     </div>
 
+                   
                     <!-- Navigation -->
                     <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button type="button" @click="prevStep()" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full
-                        hover:bg-gray-300 transition-colors">
-                            <i class="fi fi-rr-angle-left mr-2"></i>Back
-                        </button>
+                        <a href="{{ route('client.dashboard') }}">
+                            <button type="button" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full
+                            hover:bg-gray-300 transition-colors">
+                                <i class="fi fi-rr-angle-left mr-2"></i>Back
+                            </button>
+                        </a>
                         <button type="button" @click="nextStep()"
                             class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
                             Next<i class="fi fi-rr-angle-right ml-2"></i>
@@ -442,9 +483,12 @@
                         </div>
 
                         <!-- Confirm Button -->
-                        <button type="button" @click="showConfirmModal = true"
+                        <button type="button" @click="submitForm()"
+                            :disabled="submitting"
+                            :class="{'opacity-50 cursor-not-allowed': submitting}"
                             class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors">
-                            Confirm Appointment
+                            <span x-show="!submitting">Confirm Appointment</span>
+                            <span x-show="submitting">Processing...</span>
                         </button>
                     </div>
 
@@ -466,19 +510,35 @@
     function appointmentForm() {
         return {
             currentStep: 1,
-            formData: {
-                // Step 1
-                booking_type: 'personal',
-                first_name: '',
-                last_name: '',
-                email: '',
-                billing_address: '',
-                country_code: '+63',
-                mobile_number: '',
-                location: '',
-                einvoice_number: '',
+            submitting: false,
+            showDistrictSuggestions: false,
+            filteredDistricts: [],
 
-                // Step 2
+            // Popular Helsinki districts (kaupunginosa)
+            helsinkiDistricts: [
+                'Kallio', 'Kamppi', 'Punavuori', 'Töölö', 'Kruununhaka',
+                'Katajanokka', 'Etu-Töölö', 'Ullanlinna', 'Sörnäinen', 'Vallila',
+                'Pasila', 'Lauttasaari', 'Munkkiniemi', 'Haaga', 'Pitäjänmäki',
+                'Malmi', 'Vuosaari', 'Mellunmäki', 'Kontula', 'Herttoniemi',
+                'Kulosaari', 'Jollas', 'Roihuvuori', 'Koskela', 'Oulunkylä'
+            ],
+
+            formData: {
+                // Step 1 - Client Details
+                booking_type: @json($client->client_type ?? 'personal'),
+                first_name: @json($client->first_name ?? ''),
+                last_name: @json($client->last_name ?? ''),
+                email: @json($user->email ?? ''),
+                street_address: @json($client->street_address ?? ''),
+                postal_code: @json($client->postal_code ?? ''),
+                city: @json($client->city ?? ''),
+                district: @json($client->district ?? ''),
+                country_code: '+358',
+                mobile_number: @json($client->phone_number ? str_replace('+358', '', $client->phone_number) : ''),
+                billing_address: @json($client->billing_address ?? ''),
+                einvoice_number: @json($client->einvoice_number ?? ''),
+
+                // Step 2 - Service Details
                 service_type: '',
                 service_date: '',
                 service_time: '',
@@ -487,6 +547,145 @@
                 unit_width: '',
                 room_identifier: '',
                 special_requests: ''
+            },
+
+            init() {
+                // Initialize filtered districts
+                this.filteredDistricts = this.helsinkiDistricts;
+
+                // Set up address autocomplete
+                this.setupAddressAutocomplete();
+            },
+
+            async setupAddressAutocomplete() {
+                const NOMINATIM_API = 'https://nominatim.openstreetmap.org/search';
+                let streetTimeout, postalTimeout;
+
+                // Street address autocomplete
+                const streetInput = document.querySelector('input[x-model="formData.street_address"]');
+                if (streetInput) {
+                    streetInput.addEventListener('input', async (e) => {
+                        clearTimeout(streetTimeout);
+                        const query = e.target.value;
+
+                        if (query.length >= 3) {
+                            streetTimeout = setTimeout(async () => {
+                                try {
+                                    const response = await fetch(
+                                        `${NOMINATIM_API}?format=json&country=Finland&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`
+                                    );
+                                    const data = await response.json();
+
+                                    if (data.length > 0 && data[0].address) {
+                                        const addr = data[0].address;
+
+                                        // Auto-fill city if empty
+                                        if (!this.formData.city && (addr.city || addr.town || addr.municipality)) {
+                                            this.formData.city = addr.city || addr.town || addr.municipality;
+                                        }
+
+                                        // Auto-fill postal code if empty
+                                        if (!this.formData.postal_code && addr.postcode) {
+                                            this.formData.postal_code = addr.postcode;
+                                        }
+
+                                        // Auto-fill district if empty
+                                        if (!this.formData.district && (addr.suburb || addr.neighbourhood)) {
+                                            this.formData.district = addr.suburb || addr.neighbourhood;
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('Error fetching address:', error);
+                                }
+                            }, 500);
+                        }
+                    });
+                }
+
+                // Postal code to city lookup
+                const postalInput = document.querySelector('input[x-model="formData.postal_code"]');
+                if (postalInput) {
+                    postalInput.addEventListener('input', async (e) => {
+                        clearTimeout(postalTimeout);
+                        const postcode = e.target.value.trim();
+
+                        if (postcode.length === 5) {
+                            postalTimeout = setTimeout(async () => {
+                                try {
+                                    const response = await fetch(
+                                        `${NOMINATIM_API}?format=json&country=Finland&postalcode=${postcode}&addressdetails=1&limit=1`
+                                    );
+                                    const data = await response.json();
+
+                                    if (data.length > 0 && data[0].address) {
+                                        const addr = data[0].address;
+
+                                        // Auto-fill city
+                                        if (!this.formData.city && (addr.city || addr.town || addr.municipality)) {
+                                            this.formData.city = addr.city || addr.town || addr.municipality;
+                                        }
+
+                                        // Auto-fill district
+                                        if (!this.formData.district && (addr.suburb || addr.neighbourhood)) {
+                                            this.formData.district = addr.suburb || addr.neighbourhood;
+                                            await this.fetchDistrictsForCity(this.formData.city);
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('Error looking up postal code:', error);
+                                }
+                            }, 500);
+                        }
+                    });
+                }
+            },
+
+            async fetchDistrictsForCity(cityName) {
+                if (!cityName) return;
+
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&country=Finland&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=20`
+                    );
+                    const data = await response.json();
+
+                    const districts = new Set();
+                    data.forEach(item => {
+                        if (item.address) {
+                            if (item.address.suburb) districts.add(item.address.suburb);
+                            if (item.address.neighbourhood) districts.add(item.address.neighbourhood);
+                            if (item.address.quarter) districts.add(item.address.quarter);
+                        }
+                    });
+
+                    this.helsinkiDistricts = Array.from(districts).sort();
+                    this.filteredDistricts = this.helsinkiDistricts;
+                } catch (error) {
+                    console.error('Error fetching districts:', error);
+                }
+            },
+
+            async searchDistrict() {
+                const query = this.formData.district.toLowerCase();
+
+                // Fetch districts based on city if not already fetched
+                if (this.formData.city && this.helsinkiDistricts.length === 0) {
+                    await this.fetchDistrictsForCity(this.formData.city);
+                }
+
+                if (query.length === 0) {
+                    this.filteredDistricts = this.helsinkiDistricts;
+                } else {
+                    this.filteredDistricts = this.helsinkiDistricts.filter(district =>
+                        district.toLowerCase().includes(query)
+                    );
+                }
+                this.showDistrictSuggestions = true;
+            },
+
+            selectDistrict(district) {
+                this.formData.district = district;
+                this.showDistrictSuggestions = false;
             },
 
             nextStep() {
@@ -510,10 +709,52 @@
                 }));
             },
 
-            submitForm() {
-                console.log('Form submitted:', this.formData);
-                // Add your form submission logic here
-                console.log('Form submitted successfully!'); // Replaced alert()
+            async submitForm() {
+                this.submitting = true;
+
+                try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                    const response = await fetch('{{ route("client.appointment.store") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(this.formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        alert(data.message);
+                        console.log('Appointment created:', data);
+
+                        // Redirect to client dashboard
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = '{{ route("client.dashboard") }}';
+                        }
+                    } else {
+                        // Handle validation errors
+                        if (data.errors) {
+                            const errorMessages = Object.entries(data.errors)
+                                .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                                .join('\n');
+                            alert('Validation errors:\n' + errorMessages);
+                        } else {
+                            alert(data.message || 'Failed to book appointment. Please try again.');
+                        }
+                        this.submitting = false;
+                    }
+
+                } catch (error) {
+                    console.error('Error submitting appointment:', error);
+                    alert('An error occurred while booking your appointment. Please try again.');
+                    this.submitting = false;
+                }
             }
         }
     }

@@ -433,25 +433,33 @@
                         <div class="input-container w-full flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-3">
                             <div class="custom-dropdown-container w-full sm:w-36">
                                 <button id="dropdown-btn" type="button" class="custom-dropdown-btn">
-                                    <img id="selected-flag" src="{{asset('/images/icons/philippine_flag.png')}}" alt="Philippine Flag" class="h-4 w-auto mr-2">
-                                    <span id="selected-code" class="text-sm">+63</span>
+                                    <img id="selected-flag" src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag" class="h-4 w-auto mr-2">
+                                    <span id="selected-code" class="text-sm">+358</span>
                                     <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                                     </span>
                                 </button>
                                 <div id="dropdown-list" class="custom-dropdown-list">
-                                    <div class="custom-dropdown-item" data-value="+63" data-flag="{{asset('/images/icons/philippine_flag.png')}}">
-                                        <img src="{{asset('/images/icons/philippine_flag.png')}}" alt="Philippine Flag" class="h-4 w-auto mr-2">
-                                        <span class="text-sm">+63 Philippines</span>
-                                    </div>
                                     <div class="custom-dropdown-item" data-value="+358" data-flag="{{asset('/images/icons/finland-flag.svg')}}">
                                         <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag" class="h-4 w-auto mr-2">
                                         <span class="text-sm">+358 Finland</span>
                                     </div>
+                                    <div class="custom-dropdown-item" data-value="+46" data-flag="{{asset('/images/icons/sweden-flag.svg')}}">
+                                        <img src="{{asset('/images/icons/sweden-flag.svg')}}" alt="Sweden Flag" class="h-4 w-auto mr-2">
+                                        <span class="text-sm">+46 Sweden</span>
+                                    </div>
+                                    <div class="custom-dropdown-item" data-value="+47" data-flag="{{asset('/images/icons/norway-flag.svg')}}">
+                                        <img src="{{asset('/images/icons/norway-flag.svg')}}" alt="Norway Flag" class="h-4 w-auto mr-2">
+                                        <span class="text-sm">+47 Norway</span>
+                                    </div>
+                                    <div class="custom-dropdown-item" data-value="+45" data-flag="{{asset('/images/icons/denmark-flag.svg')}}">
+                                        <img src="{{asset('/images/icons/denmark-flag.svg')}}" alt="Denmark Flag" class="h-4 w-auto mr-2">
+                                        <span class="text-sm">+45 Denmark</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex-1 input-container w-full">
-                                <input type="tel" id="input-phone" placeholder="9xxxxxxxxx"
+                                <input type="tel" id="input-phone" placeholder="40 1234567"
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="phone_number" required>
                                 <label for="input-phone">Phone Number</label>
@@ -464,6 +472,45 @@
                                 class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                 name="email" required>
                             <label for="input-email">Email Address</label>
+                        </div>
+
+                        <!-- Finnish Address Fields -->
+                        <div class="input-container w-full relative">
+                            <i class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="text" id="input-street" placeholder=" "
+                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                name="street_address" required>
+                            <label for="input-street">Street Address</label>
+                        </div>
+
+                        <div class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
+                            <div class="input-container flex-1">
+                                <i class="fas fa-mail-bulk absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <input type="text" id="input-postal" placeholder=" " maxlength="5"
+                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                    name="postal_code" required>
+                                <label for="input-postal">Postal Code</label>
+                            </div>
+                            <div class="input-container flex-1">
+                                <i class="fas fa-city absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <input type="text" id="input-city" placeholder=" "
+                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                    name="city" required>
+                                <label for="input-city">City</label>
+                            </div>
+                        </div>
+
+                        <!-- District with Autocomplete -->
+                        <div class="input-container w-full relative" id="district-container">
+                            <i class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 z-10"></i>
+                            <input type="text" id="input-district" placeholder=" " autocomplete="off"
+                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                name="district" required>
+                            <label for="input-district">District (Kaupunginosa)</label>
+
+                            <!-- District Suggestions Dropdown -->
+                            <div id="district-suggestions" class="hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            </div>
                         </div>
 
                         <div id="buttons-container" class="flex justify-center gap-4 mt-6">
@@ -588,6 +635,289 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // ===== CLOUD-BASED ADDRESS VALIDATION =====
+            let addressTimeout, postalTimeout;
+            const NOMINATIM_API = 'https://nominatim.openstreetmap.org/search';
+            const REVERSE_API = 'https://nominatim.openstreetmap.org/reverse';
+
+            const streetInput = document.getElementById('input-street');
+            const postalInput = document.getElementById('input-postal');
+            const cityInput = document.getElementById('input-city');
+            const districtInput = document.getElementById('input-district');
+            const districtSuggestions = document.getElementById('district-suggestions');
+
+            // Create street address suggestions dropdown
+            const streetSuggestionsDiv = document.createElement('div');
+            streetSuggestionsDiv.id = 'street-suggestions';
+            streetSuggestionsDiv.className = 'hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto';
+            streetInput.parentElement.appendChild(streetSuggestionsDiv);
+
+            // === 1. STREET ADDRESS AUTOCOMPLETE ===
+            async function fetchStreetSuggestions(query) {
+                if (!query || query.length < 3) return [];
+
+                try {
+                    const response = await fetch(
+                        `${NOMINATIM_API}?format=json&country=Finland&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`
+                    );
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error('Error fetching street suggestions:', error);
+                    return [];
+                }
+            }
+
+            function showStreetSuggestions(suggestions) {
+                if (suggestions.length === 0) {
+                    streetSuggestionsDiv.classList.add('hidden');
+                    return;
+                }
+
+                streetSuggestionsDiv.innerHTML = suggestions.map(item => {
+                    const address = item.address || {};
+                    const road = address.road || '';
+                    const houseNumber = address.house_number || '';
+                    const suburb = address.suburb || address.neighbourhood || '';
+                    const city = address.city || address.town || address.municipality || '';
+                    const postcode = address.postcode || '';
+
+                    const displayText = `${road} ${houseNumber}`.trim();
+                    const subText = [suburb, city, postcode].filter(x => x).join(', ');
+
+                    return `
+                        <div class="street-item px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                             data-road="${road}"
+                             data-house="${houseNumber}"
+                             data-suburb="${suburb}"
+                             data-city="${city}"
+                             data-postcode="${postcode}">
+                            <div class="font-semibold text-gray-900">${displayText}</div>
+                            <div class="text-sm text-gray-600">${subText}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                streetSuggestionsDiv.classList.remove('hidden');
+
+                // Add click handlers
+                document.querySelectorAll('.street-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const road = item.getAttribute('data-road');
+                        const house = item.getAttribute('data-house');
+                        const suburb = item.getAttribute('data-suburb');
+                        const city = item.getAttribute('data-city');
+                        const postcode = item.getAttribute('data-postcode');
+
+                        streetInput.value = `${road} ${house}`.trim();
+
+                        // Auto-fill other fields
+                        if (city && !cityInput.value) {
+                            cityInput.value = city;
+                            cityInput.dispatchEvent(new Event('input'));
+                        }
+                        if (postcode && !postalInput.value) {
+                            postalInput.value = postcode;
+                            postalInput.dispatchEvent(new Event('input'));
+                        }
+                        if (suburb && !districtInput.value) {
+                            districtInput.value = suburb;
+                            districtInput.dispatchEvent(new Event('input'));
+                        }
+
+                        streetSuggestionsDiv.classList.add('hidden');
+                        checkFormCompletion();
+                    });
+                });
+            }
+
+            if (streetInput) {
+                streetInput.addEventListener('input', (e) => {
+                    clearTimeout(addressTimeout);
+                    addressTimeout = setTimeout(async () => {
+                        const query = e.target.value;
+                        if (query.length >= 3) {
+                            const suggestions = await fetchStreetSuggestions(query);
+                            showStreetSuggestions(suggestions);
+                        } else {
+                            streetSuggestionsDiv.classList.add('hidden');
+                        }
+                    }, 500); // Debounce 500ms
+                });
+
+                streetInput.addEventListener('focus', () => {
+                    if (streetInput.value.length >= 3) {
+                        fetchStreetSuggestions(streetInput.value).then(showStreetSuggestions);
+                    }
+                });
+            }
+
+            // === 2. POSTAL CODE TO CITY LOOKUP ===
+            async function lookupPostalCode(postcode) {
+                if (!postcode || postcode.length !== 5) return null;
+
+                try {
+                    const response = await fetch(
+                        `${NOMINATIM_API}?format=json&country=Finland&postalcode=${postcode}&addressdetails=1&limit=1`
+                    );
+                    const data = await response.json();
+                    return data.length > 0 ? data[0] : null;
+                } catch (error) {
+                    console.error('Error looking up postal code:', error);
+                    return null;
+                }
+            }
+
+            if (postalInput) {
+                postalInput.addEventListener('input', (e) => {
+                    clearTimeout(postalTimeout);
+                    const postcode = e.target.value.trim();
+
+                    if (postcode.length === 5) {
+                        postalTimeout = setTimeout(async () => {
+                            const result = await lookupPostalCode(postcode);
+                            if (result && result.address) {
+                                const city = result.address.city || result.address.town || result.address.municipality || '';
+                                const suburb = result.address.suburb || result.address.neighbourhood || '';
+
+                                if (city && !cityInput.value) {
+                                    cityInput.value = city;
+                                    cityInput.dispatchEvent(new Event('input'));
+                                }
+                                if (suburb && !districtInput.value) {
+                                    districtInput.value = suburb;
+                                    districtInput.dispatchEvent(new Event('input'));
+                                }
+
+                                checkFormCompletion();
+                            }
+                        }, 500);
+                    }
+                });
+            }
+
+            // === 3. CITY TO POSTAL CODE LOOKUP ===
+            async function lookupCity(cityName) {
+                if (!cityName || cityName.length < 3) return [];
+
+                try {
+                    const response = await fetch(
+                        `${NOMINATIM_API}?format=json&country=Finland&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=5`
+                    );
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error('Error looking up city:', error);
+                    return [];
+                }
+            }
+
+            if (cityInput) {
+                let cityTimeout;
+                cityInput.addEventListener('input', (e) => {
+                    clearTimeout(cityTimeout);
+                    const city = e.target.value.trim();
+
+                    if (city.length >= 3 && !postalInput.value) {
+                        cityTimeout = setTimeout(async () => {
+                            const results = await lookupCity(city);
+                            if (results.length > 0 && results[0].address && results[0].address.postcode) {
+                                postalInput.value = results[0].address.postcode;
+                                postalInput.dispatchEvent(new Event('input'));
+                                checkFormCompletion();
+                            }
+                        }, 800);
+                    }
+                });
+            }
+
+            // === 4. DISTRICT AUTOCOMPLETE (ENHANCED) ===
+            async function fetchDistrictsForCity(cityName) {
+                if (!cityName) return [];
+
+                try {
+                    const response = await fetch(
+                        `${NOMINATIM_API}?format=json&country=Finland&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=20`
+                    );
+                    const data = await response.json();
+
+                    const districts = new Set();
+                    data.forEach(item => {
+                        if (item.address) {
+                            if (item.address.suburb) districts.add(item.address.suburb);
+                            if (item.address.neighbourhood) districts.add(item.address.neighbourhood);
+                            if (item.address.quarter) districts.add(item.address.quarter);
+                        }
+                    });
+
+                    return Array.from(districts).sort();
+                } catch (error) {
+                    console.error('Error fetching districts:', error);
+                    return [];
+                }
+            }
+
+            let cachedDistricts = [];
+
+            async function showDistrictSuggestions() {
+                const query = districtInput.value.toLowerCase();
+                const city = cityInput.value.trim();
+
+                // If city is provided and we don't have cached districts, fetch them
+                if (city && cachedDistricts.length === 0) {
+                    cachedDistricts = await fetchDistrictsForCity(city);
+                }
+
+                // Filter districts based on query
+                const filtered = cachedDistricts.filter(district =>
+                    district.toLowerCase().includes(query)
+                );
+
+                if (filtered.length === 0) {
+                    districtSuggestions.classList.add('hidden');
+                    return;
+                }
+
+                districtSuggestions.innerHTML = filtered.map(district => `
+                    <div class="district-item px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-900" data-district="${district}">
+                        ${district}
+                    </div>
+                `).join('');
+
+                districtSuggestions.classList.remove('hidden');
+
+                // Add click handlers
+                document.querySelectorAll('.district-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        districtInput.value = item.getAttribute('data-district');
+                        districtSuggestions.classList.add('hidden');
+                        checkFormCompletion();
+                    });
+                });
+            }
+
+            if (districtInput) {
+                districtInput.addEventListener('input', showDistrictSuggestions);
+                districtInput.addEventListener('focus', showDistrictSuggestions);
+
+                // Close suggestions when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!districtInput.contains(e.target) && !districtSuggestions.contains(e.target)) {
+                        districtSuggestions.classList.add('hidden');
+                    }
+                    if (!streetInput.contains(e.target) && !streetSuggestionsDiv.contains(e.target)) {
+                        streetSuggestionsDiv.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Refresh district cache when city changes
+            if (cityInput) {
+                cityInput.addEventListener('change', () => {
+                    cachedDistricts = [];
+                });
+            }
+
             // STEP 1 SCRIPT
             const dropdownBtn = document.getElementById('dropdown-btn');
             const dropdownList = document.getElementById('dropdown-list');
@@ -837,6 +1167,10 @@
                 const bDate = document.getElementById('datepicker');
                 const phone = document.getElementById('input-phone');
                 const email = document.getElementById('input-email');
+                const street = document.getElementById('input-street');
+                const postal = document.getElementById('input-postal');
+                const city = document.getElementById('input-city');
+                const district = document.getElementById('input-district');
 
                 // --- Form 2 Inputs ---
                 const otp1 = document.getElementById('otp1');
@@ -864,6 +1198,10 @@
                 const isLNameComplete = lName && lName.value.trim() !== "";
                 const isBDateComplete = bDate && bDate.value.trim() !== ""; // Check if birthdate is entered
                 const isEmailValid = email && email.value.trim() !== "" && email.value.includes('@') && email.value.includes('.');
+                const isStreetComplete = street && street.value.trim() !== "";
+                const isPostalComplete = postal && postal.value.trim() !== "" && postal.value.length === 5;
+                const isCityComplete = city && city.value.trim() !== "";
+                const isDistrictComplete = district && district.value.trim() !== "";
 
                 let isPhoneValid = false;
                 if (phone && phone.value.trim() !== "") {
@@ -900,7 +1238,7 @@
                 const isSecAns2Complete = secans2 && secans2.value.trim() !== "";
 
                 // --- 4. AGGREGATE CHECKS (Used in the event listeners) ---
-                const isForm1Complete = isFNameComplete && isLNameComplete && isBDateComplete && isEmailValid && isPhoneValid;
+                const isForm1Complete = isFNameComplete && isLNameComplete && isBDateComplete && isEmailValid && isPhoneValid && isStreetComplete && isPostalComplete && isCityComplete && isDistrictComplete;
 
                 const isForm3Complete = isPasswordValid &&
                     isConfirmed &&
@@ -999,6 +1337,7 @@
 
             const allFormInputs = document.querySelectorAll(
                 '#input-fname, #input-lname, #datepicker, #input-phone, #input-email, ' +
+                '#input-street, #input-postal, #input-city, #input-district, ' +
                 '#otp1, #otp2, #otp3, #otp4, #otp5, #otp6, ' +
                 '#input-secans-1, #input-secans-2, #input-username, #input-new-password, #input-confirm-password'
             );
