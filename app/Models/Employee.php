@@ -47,23 +47,11 @@ class Employee extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function teamMembers()
-    {
-        return $this->hasMany(TeamMember::class);
-    }
+    // ❌ DEPRECATED: Old relationship using team_members table (removed)
+    // public function teamMembers() { return $this->hasMany(TeamMember::class); }
 
-    public function performanceHistories()
-    {
-        return $this->hasManyThrough(
-            TaskPerformanceHistory::class,
-            TeamMember::class,
-            'employee_id',
-            'task_id',
-            'id',
-            'daily_team_id'
-        )->join('tasks', 'tasks.id', '=', 'task_performance_histories.task_id')
-         ->join('daily_team_assignments', 'daily_team_assignments.id', '=', 'tasks.assigned_team_id');
-    }
+    // ❌ DEPRECATED: Old relationship using daily_team_assignments (removed)
+    // public function performanceHistories() { ... }
 
     // NEW RELATIONSHIP: For day-off tracking
     public function dayOffs()

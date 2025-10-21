@@ -94,11 +94,35 @@
                     </h4>
                     <div class="space-y-3">
                         @forelse($tasks->where('status', 'Scheduled') as $task)
-                            <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-yellow-500">
-                                <h5 class="font-semibold text-gray-800 mb-1">{{ $task->task_description }}</h5>
+                            <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 {{ $task->arrival_status ? 'border-red-500' : 'border-yellow-500' }}">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h5 class="font-semibold text-gray-800 flex-1">{{ $task->task_description }}</h5>
+                                    @if($task->arrival_status)
+                                        <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold ml-2 flex items-center gap-1">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            URGENT
+                                        </span>
+                                    @endif
+                                </div>
                                 <p class="text-sm text-gray-600 mb-2">{{ $task->location->location_name ?? 'External Client' }}</p>
-                                @if($task->team)
-                                    <p class="text-xs text-gray-500">Team: {{ $task->team->members->pluck('employee.full_name')->join(', ') }}</p>
+                                @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <div class="flex -space-x-2">
+                                            @foreach($task->optimizationTeam->members->take(3) as $member)
+                                                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white flex items-center justify-center text-white text-xs font-semibold" title="{{ $member->employee->full_name }}">
+                                                    {{ substr($member->employee->full_name, 0, 1) }}
+                                                </div>
+                                            @endforeach
+                                            @if($task->optimizationTeam->members->count() > 3)
+                                                <div class="w-6 h-6 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center text-white text-xs font-semibold">
+                                                    +{{ $task->optimizationTeam->members->count() - 3 }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs text-gray-500">{{ $task->optimizationTeam->members->pluck('employee.full_name')->join(', ') }}</p>
+                                    </div>
+                                @else
+                                    <p class="text-xs text-gray-400 italic">No team assigned</p>
                                 @endif
                             </div>
                         @empty
@@ -114,12 +138,36 @@
                         In Progress
                     </h4>
                     <div class="space-y-3">
-                        @forelse($tasks->where('status', 'In-Progress') as $task)
-                            <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-blue-500">
-                                <h5 class="font-semibold text-gray-800 mb-1">{{ $task->task_description }}</h5>
+                        @forelse($tasks->where('status', 'In Progress') as $task)
+                            <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 {{ $task->arrival_status ? 'border-red-500' : 'border-blue-500' }}">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h5 class="font-semibold text-gray-800 flex-1">{{ $task->task_description }}</h5>
+                                    @if($task->arrival_status)
+                                        <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold ml-2 flex items-center gap-1">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            URGENT
+                                        </span>
+                                    @endif
+                                </div>
                                 <p class="text-sm text-gray-600 mb-2">{{ $task->location->location_name ?? 'External Client' }}</p>
-                                @if($task->team)
-                                    <p class="text-xs text-gray-500">Team: {{ $task->team->members->pluck('employee.full_name')->join(', ') }}</p>
+                                @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <div class="flex -space-x-2">
+                                            @foreach($task->optimizationTeam->members->take(3) as $member)
+                                                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white flex items-center justify-center text-white text-xs font-semibold" title="{{ $member->employee->full_name }}">
+                                                    {{ substr($member->employee->full_name, 0, 1) }}
+                                                </div>
+                                            @endforeach
+                                            @if($task->optimizationTeam->members->count() > 3)
+                                                <div class="w-6 h-6 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center text-white text-xs font-semibold">
+                                                    +{{ $task->optimizationTeam->members->count() - 3 }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs text-gray-500">{{ $task->optimizationTeam->members->pluck('employee.full_name')->join(', ') }}</p>
+                                    </div>
+                                @else
+                                    <p class="text-xs text-gray-400 italic">No team assigned</p>
                                 @endif
                             </div>
                         @empty
@@ -137,10 +185,34 @@
                     <div class="space-y-3">
                         @forelse($tasks->where('status', 'Completed') as $task)
                             <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-green-500 opacity-75">
-                                <h5 class="font-semibold text-gray-800 mb-1">{{ $task->task_description }}</h5>
+                                <div class="flex items-start justify-between mb-2">
+                                    <h5 class="font-semibold text-gray-800 flex-1">{{ $task->task_description }}</h5>
+                                    @if($task->arrival_status)
+                                        <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold ml-2 flex items-center gap-1 opacity-60">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            URGENT
+                                        </span>
+                                    @endif
+                                </div>
                                 <p class="text-sm text-gray-600 mb-2">{{ $task->location->location_name ?? 'External Client' }}</p>
-                                @if($task->team)
-                                    <p class="text-xs text-gray-500">Team: {{ $task->team->members->pluck('employee.full_name')->join(', ') }}</p>
+                                @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <div class="flex -space-x-2">
+                                            @foreach($task->optimizationTeam->members->take(3) as $member)
+                                                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white flex items-center justify-center text-white text-xs font-semibold" title="{{ $member->employee->full_name }}">
+                                                    {{ substr($member->employee->full_name, 0, 1) }}
+                                                </div>
+                                            @endforeach
+                                            @if($task->optimizationTeam->members->count() > 3)
+                                                <div class="w-6 h-6 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center text-white text-xs font-semibold">
+                                                    +{{ $task->optimizationTeam->members->count() - 3 }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs text-gray-500">{{ $task->optimizationTeam->members->pluck('employee.full_name')->join(', ') }}</p>
+                                    </div>
+                                @else
+                                    <p class="text-xs text-gray-400 italic">No team assigned</p>
                                 @endif
                             </div>
                         @empty
