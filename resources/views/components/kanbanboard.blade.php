@@ -4,7 +4,7 @@
 
     <!-- Kanban Header -->
     <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-        <p class="text-base font-bold font-sans mt-1">Tasks Board</p>
+        <p class="text-base font-bold font-sans mt-1 mb-3">Tasks Board</p>
     </div>
 
     <!-- Board Columns Container -->
