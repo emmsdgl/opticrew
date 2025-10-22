@@ -8,6 +8,7 @@
     <title>Sign Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
 
@@ -48,64 +49,36 @@
             color: #071957;
         }
 
-        /* Custom styles for the line */
-        .timeline-line {
-            height: 2px;
-            background-color: #e5e7eb;
+        /* Stepper styles */
+        .stepper-line {
             position: absolute;
-            top: 28%;
+            top: 40%;
             left: 0;
             right: 0;
+            height: 2px;
+            background-color: #E5E7EB;
             transform: translateY(-50%);
-            z-index: -1;
-            margin: 0 40px;
-            /* Adjust based on step icon size to start and end correctly */
+            z-index: 0;
+        }
+
+        .stepper-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #3B82F6;
+            transition: width 0.3s ease;
+        }
+
+        .step-circle {
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
         }
 
         .step-container {
-            flex: 1;
-            /* Make steps distribute space evenly */
-            max-width: 33.33%;
-            /* 3 steps */
-            z-index: 10;
-        }
-
-        .step-text {
-            min-width: 120px;
-        }
-
-        /* Transition color for active line (progress) */
-        .progress-line {
-            height: 2px;
-            background-color: #3b82f6;
-            /* Blue-600 */
-            position: absolute;
-            top: 28%;
-            left: 40px;
-            /* Start after first icon center */
-            transform: translateY(-50%);
-            z-index: 0;
-            transition: width 0.5s ease-in-out;
-        }
-
-        .timeline-icon {
-            box-shadow: 0 0 0 4px white;
-            /* Mimic ring-4 ring-white */
-        }
-
-        .completed-step .timeline-icon {
-            background-color: #10b981;
-            /* Green for completed */
-        }
-
-        .current-step .timeline-icon {
-            background-color: #3b82f6;
-            /* Blue for current */
-        }
-
-        .pending-step .timeline-icon {
-            background-color: #9ca3af;
-            /* Gray for pending */
+            position: relative;
+            z-index: 1;
         }
 
         /* ----------------------------------------------- */
@@ -309,69 +282,52 @@
 
 <body class="bg-gray-50 font-sans">
     <div id="header-container"
-        class="items-center justify-between p-3 lg:px-8 inset-x-0 top-0 z-50 w-full hidden lg:flex lg:gap-x-12">
-        <div id="logo-container" class=" mt-3 ml-6">
+        class="relative flex items-center justify-center p-3 lg:px-8 inset-x-0 top-0 z-50 w-full hidden lg:flex">
+        <div id="logo-container" class="absolute top-0 left-0 mt-3 ml-6">
             <a href="#" class="-m-1.5 p-1.5">
                 <span class="sr-only"></span>
-                <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt="" class="h-20 w-auto">
+                <img src="{{asset('/images/opticrew-icon-light.svg')}}" alt="" class="h-20 w-full flex justify-start ml-8">
             </a>
         </div>
 
-        <div id="stepper-container" class="w-full max-w-full px-8 py-8 md:p-8">
-            <div class="relative flex justify-between items-center">
-                <div class="timeline-line"></div>
-                <div id="progress-line" class="progress-line"></div>
-
-                <div id="step-1-indicator" class="relative flex flex-col items-center step-container current-step">
-                    <div
-                        class="timeline-icon flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full transition-colors duration-300">
-                        <svg id="step-1-icon" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg> <span id="step-1-number" class="text-white text-sm absolute">1</span>
-                    </div>
-                    <div class="mt-4 text-center step-text hidden sm:block">
-                        <h3 class="font-sans font-medium leading-tight text-gray-800 text-sm">Basic Details</h3>
-                        <p class="font-sans font-normal text-xs text-gray-500">Step 1</p>
-                    </div>
+        <div id="stepper-container" class="w-full max-w-3xl px-8 py-8">
+            <div class="relative max-w-4xl mx-auto px-4">
+                <!-- Progress Line -->
+                <div class="stepper-line">
+                    <div id="progress-line" class="stepper-progress"></div>
                 </div>
 
-                <div id="step-2-indicator" class="relative flex flex-col items-center step-container pending-step">
-                    <div
-                        class="timeline-icon flex items-center justify-center w-10 h-10 bg-gray-400 rounded-full transition-colors duration-300">
-                        <svg id="step-2-icon" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 19">
-                            <path
-                                d="M18 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-1.8 4.7-5.4 3.9a2 2 0 0 1-2.4 0l-5.4-3.9A2 2 0 0 1 1.6 3h16.8a2 2 0 0 1 0 1.7Z" />
-                        </svg>
-                        <span id="step-2-number" class="text-white text-sm absolute">2</span>
+                <!-- Steps -->
+                <div class="relative flex justify-between items-center">
+                    <!-- Step 1 -->
+                    <div id="step-1-indicator" class="flex flex-col items-center flex-1 step-container">
+                        <div class="step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-blue-500 text-white ring-4 ring-blue-100">
+                            <span id="step-1-content">1</span>
+                        </div>
+                        <span class="mt-2 text-xs sm:text-sm font-medium text-center text-blue-600">Basic Details</span>
                     </div>
-                    <div class="mt-4 text-center step-text hidden sm:block">
-                        <h3 class="font-medium leading-tight text-gray-800 text-sm">Email Verification</h3>
-                        <p class="text-xs text-gray-500">Step 2</p>
+
+                    <!-- Step 2 -->
+                    <div id="step-2-indicator" class="flex flex-col items-center flex-1 step-container">
+                        <div class="step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-white text-gray-400 border-2 border-gray-300">
+                            <span id="step-2-content">2</span>
+                        </div>
+                        <span class="mt-2 text-xs sm:text-sm font-medium text-center text-gray-400">Email Verification</span>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div id="step-3-indicator" class="flex flex-col items-center flex-1 step-container">
+                        <div class="step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-white text-gray-400 border-2 border-gray-300">
+                            <span id="step-3-content">3</span>
+                        </div>
+                        <span class="mt-2 text-xs sm:text-sm font-medium text-center text-gray-400">Account Setup</span>
                     </div>
                 </div>
-
-                <div id="step-3-indicator" class="relative flex flex-col items-center step-container pending-step">
-                    <div
-                        class="timeline-icon flex items-center justify-center w-10 h-10 bg-gray-400 rounded-full transition-colors duration-300">
-                        <svg id="step-3-icon" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 18 20">
-                            <path
-                                d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
-                        </svg>
-                        <span id="step-3-number" class="text-white text-sm absolute">3</span>
-                    </div>
-                    <div class="mt-4 text-center step-text hidden sm:block">
-                        <h3 class="font-medium leading-tight text-gray-800 text-sm">Account Setup</h3>
-                        <p class="text-xs text-gray-500">Step 3</p>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
     <div id="content-container">
-        <div id="container-1" class="p-3 md:p-28">
+        <div id="container-1" class="w-full p-3 md:p-5">
             <div id="inner-container-1" class="w-full pl-14">
                 <span id="form-status"
                     class="bg-blue-100 text-blue-500 text-xs font-medium me-2 px-2.5 py-0.5 rounded-2xl bg-blue-300 text-blue-500">Form
@@ -382,7 +338,7 @@
                     account verification purposes.</p>
             </div>
         </div>
-        <div id="container-2" class="w-full p-20">
+        <div id="container-2" class="w-full p-12">
             <!-- START: Copy from here -->
             <form method="POST" action="{{ route('register.client') }}">
                 @csrf
@@ -390,7 +346,7 @@
                 <!-- ====================================================== -->
                 <!--                       STEP 1                           -->
                 <!-- ====================================================== -->
-                <div id="step-1" class="step-content">
+                <div id="step-1" class="step-content w-full px-12">
                     <h1 id="form-head" class="mb-4 w-full text-center font-sans font-medium italic">Tell Us About You</h1>
                     
                     <div class="space-y-4">
@@ -942,12 +898,7 @@
             let isStep2Completed = false;
             let isStep3Completed = false;
 
-            const originalStepIcons = {};
-            document.querySelectorAll('.step-container').forEach(indicator => {
-                const stepNumber = indicator.id.split('-')[1];
-                // Store the full original HTML content of the icon container
-                originalStepIcons[stepNumber] = indicator.querySelector('.timeline-icon').innerHTML;
-            });
+            // No need to store original icons with new design
 
             // Back button handlers (resetting completion status when going back)
             document.getElementById('back3-btn').addEventListener('click', (e) => {
@@ -1083,7 +1034,7 @@
                 }
             };
 
-            const checkIconSVG = `<svg class="w-5 h-5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 12"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5.917 5.724 10.5 15 1.5" /></svg>`;
+            const checkIconHTML = `<i class="fi fi-rr-check text-sm sm:text-base"></i>`;
 
             function updateStepper() {
                 stepLabel.textContent = `Step ${currentStep}`;
@@ -1091,54 +1042,40 @@
                 stepDesc.textContent = stepNames[currentStep].desc;
 
                 // Calculate progress line width
-                const progressSegments = totalSteps - 1;
-                const progressPercentage = (currentStep - 1) / progressSegments * 100;
+                const totalStepsCount = 3;
+                const progressPercentage = totalStepsCount > 1 ? ((currentStep - 1) / (totalStepsCount - 1)) * 100 : 0;
 
-                // Adjust the width of the progress line
+                // Update progress line width
                 if (progressLine) {
-                    // This logic is mostly correct for visual positioning
-                    if (currentStep === 1) {
-                        progressLine.style.width = '0%';
-                    } else if (currentStep === totalSteps) {
-                        // Full width is 100% - 80px margin
-                        progressLine.style.width = `calc(100% - 80px)`;
-                    } else {
-                        // Intermediate steps: total width is (stepIndex - 1) / (totalSteps - 1) of the full line width
-                        progressLine.style.width = `calc(${progressPercentage}% - 40px)`;
-                    }
-
+                    progressLine.style.width = `${progressPercentage}%`;
                 }
 
                 // Update steps' appearance
                 for (let i = 1; i <= totalSteps; i++) {
                     const indicator = stepIndicators[i];
-                    const iconContainer = indicator.querySelector('.timeline-icon');
+                    const circle = indicator.querySelector('.step-circle');
+                    const content = indicator.querySelector(`#step-${i}-content`);
+                    const label = indicator.querySelector('span:last-child');
                     const isCompleted = (i === 1 && isStep1Completed) || (i === 2 && isStep2Completed) || (i === 3 && isStep3Completed);
 
-                    // Reset classes
-                    indicator.classList.remove('current-step', 'completed-step', 'pending-step');
-                    iconContainer.classList.remove('bg-blue-300', 'bg-green-500', 'bg-blue-300');
+                    // Reset all classes
+                    circle.className = 'step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base';
 
                     if (isCompleted) {
-                        indicator.classList.add('completed-step');
-                        iconContainer.classList.add('bg-green-500'); // Use green for completed
-                        iconContainer.innerHTML = checkIconSVG;
+                        // Completed step - green with check mark
+                        circle.classList.add('bg-blue-500', 'text-white');
+                        content.innerHTML = checkIconHTML;
+                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-700';
                     } else if (i === currentStep) {
-                        indicator.classList.add('current-step');
-                        iconContainer.classList.add('bg-blue-600'); // Use blue for current
-                        iconContainer.innerHTML = originalStepIcons[i];
-                        const currentNumberSpan = iconContainer.querySelector(`#step-${i}-number`);
-                        const currentIconSVG = iconContainer.querySelector(`#step-${i}-icon`);
-                        if (currentIconSVG) currentIconSVG.classList.remove('hidden'); // Show the SVG icon
-                        if (currentNumberSpan) currentNumberSpan.classList.add('hidden'); // Hide the number
+                        // Current/Active step - blue with ring
+                        circle.classList.add('bg-blue-500', 'text-white', 'ring-4', 'ring-blue-100');
+                        content.textContent = i;
+                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-blue-600';
                     } else {
-                        indicator.classList.add('pending-step');
-                        iconContainer.classList.add('bg-blue-300'); // Use lighter blue for pending (matching the style)
-                        iconContainer.innerHTML = originalStepIcons[i];
-                        const pendingNumberSpan = iconContainer.querySelector(`#step-${i}-number`);
-                        const pendingIconSVG = iconContainer.querySelector(`#step-${i}-icon`);
-                        if (pendingIconSVG) pendingIconSVG.classList.add('hidden'); // Hide the SVG icon
-                        if (pendingNumberSpan) pendingNumberSpan.classList.remove('hidden'); // Show the number
+                        // Pending step - gray
+                        circle.classList.add('bg-white', 'text-gray-400', 'border-2', 'border-gray-300');
+                        content.textContent = i;
+                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-400';
                     }
                 }
 
@@ -1150,6 +1087,7 @@
                         step.classList.add('hidden');
                     }
                 });
+
                 // Run completion check after updating stepper visuals
                 checkFormCompletion();
             }

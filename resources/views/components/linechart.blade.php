@@ -19,7 +19,7 @@
     'allData' => null,
 ])
 
-<div class="w-full h-full flex flex-col" data-chart-container="{{ $chartId }}">
+<div class="w-full bg-white dark:bg-transparent rounded-lg h-full flex flex-col" data-chart-container="{{ $chartId }}">
     @if($showHeader)
     <div class="p-4 sm:p-6 flex flex-row justify-between">
         <div class="flex flex-col">

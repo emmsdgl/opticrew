@@ -2,7 +2,7 @@
 ])
 
   <!-- Calendar Container -->
-<div class="w-full max-w-parent p-6 px-12 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-transparent">
+<div class="w-full max-w-parent p-6 px-12 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-transparent">
     
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
