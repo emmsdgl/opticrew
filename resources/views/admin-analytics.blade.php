@@ -50,7 +50,7 @@
                 @endphp
                 <x-dropdown :options="$timeOptions" id="dropdown-time" />
             </div>
-            <div class="w-full rounded-lg h-[28rem] sm:h-[28rem] md:h-[28rem] lg:h-[28rem]">
+            <div class="w-full rounded-lg h-[32rem] sm:h-[32rem] md:h-[32rem] lg:h-[32rem]">
                 @php
                     $performanceData = [
                         'All' => [
@@ -119,17 +119,14 @@
                 <x-dropdown :options="$timeOptions" id="dropdown-time" />
             </div>
 
-            <!-- Chart Container with flex-shrink-0 to prevent squishing -->
-            <div class="flex-shrink-0 ">
-                <x-statisticchart title="Sales Performance" :total="18500" :growthRate="6.7" :animateOnLoad="true"
-                    :categories="[
-        ['name' => 'Deep Cleaning', 'value' => 7200, 'percentage' => 8.5, 'trend' => 'up', 'color' => '#3b82f6'],
-        ['name' => 'Snowout Cleaning', 'value' => 6100, 'percentage' => 4.2, 'trend' => 'up', 'color' => '#10b981'],
-        ['name' => 'Daily Room Cleaning', 'value' => 5200, 'percentage' => 1.5, 'trend' => 'up', 'color' => '#f59e0b']
+            <x-statisticchart :total="9829" :growthRate="5.39" growthTrend="up" :categories="[
+        ['name' => 'Deep Cleaning', 'value' => 4000, 'color' => '#275BED'],
+        ['name' => 'Snowout Cleaning', 'value' => 3000, 'color' => '#779FF4'],
+        ['name' => 'Daily Room Cleaning', 'value' => 2829, 'color' => '#CAD9F8']
     ]" />
-            </div>
-
             <!-- Customer Transactions - Scrollable -->
+            <x-labelwithvalue label="Customer Transactions" count="(10)" />
+
             <div class="rounded-lg h-52 overflow-y-auto">
                 @php
                     // Define table columns
@@ -145,17 +142,17 @@
                             'key' => 'status',
                             'type' => 'status',
                             'statusConfig' => [
-                                'subscribed' => [
-                                    'label' => 'Subscribed',
-                                    'bgColor' => 'bg-green-50 dark:bg-green-900/20',
-                                    'textColor' => 'text-green-700 dark:text-green-400',
-                                    'borderColor' => 'border-green-200 dark:border-green-800'
+                                'contracted' => [
+                                    'label' => 'Contracted',
+                                    'bgColor' => 'bg-blue-50 dark:bg-blue-900/20',
+                                    'textColor' => 'text-blue-700 dark:text-blue-400',
+                                    'borderColor' => 'border-blue-200 dark:border-blue-800'
                                 ],
-                                'not_subscribed' => [
-                                    'label' => 'Not Subscribed',
-                                    'bgColor' => 'bg-red-50 dark:bg-red-900/20',
-                                    'textColor' => 'text-red-700 dark:text-red-400',
-                                    'borderColor' => 'border-red-200 dark:border-red-800'
+                                'external' => [
+                                    'label' => 'External',
+                                    'bgColor' => 'bg-indigo-50 dark:bg-indigo-900/20',
+                                    'textColor' => 'text-indigo-700 dark:text-indigo-400',
+                                    'borderColor' => 'border-indigo-200 dark:border-indigo-800'
                                 ]
                             ]
                         ],
@@ -171,32 +168,32 @@
                     $tableData = [
                         [
                             'name' => 'Norma Tromp',
-                            'status' => 'subscribed',
+                            'status' => 'contracted',
                             'orders' => 2
                         ],
                         [
                             'name' => 'Cesar Homenick',
-                            'status' => 'not_subscribed',
+                            'status' => 'external',
                             'orders' => 4
                         ],
                         [
                             'name' => 'Bernice Fadel IV',
-                            'status' => 'subscribed',
+                            'status' => 'contracted',
                             'orders' => 3
                         ],
                         [
                             'name' => 'Norma Tromp',
-                            'status' => 'subscribed',
+                            'status' => 'contracted',
                             'orders' => 2
                         ],
                         [
                             'name' => 'Cesar Homenick',
-                            'status' => 'not_subscribed',
+                            'status' => 'external',
                             'orders' => 4
                         ],
                         [
                             'name' => 'Bernice Fadel IV',
-                            'status' => 'subscribed',
+                            'status' => 'external',
                             'orders' => 3
                         ]
                     ];
@@ -207,5 +204,5 @@
             </div>
         </div>
     </div>
-    @stack('scripts')
 </x-layouts.general-employer>
+@stack('scripts')
