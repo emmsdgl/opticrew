@@ -3,7 +3,10 @@
         <!-- Left Panel - Main Content -->
         <div class="flex flex-col gap-4 md:gap-6 w-full rounded-lg p-3 h-fit lg:w-2/3 md:p-3">
             <!-- Card KPI Statistics Summary -->
-            <x-labelwithvalue label="Summary" count="" />
+            <div class="w-full flex flex-row justify-between">
+                <x-labelwithvalue label="Analytics Summary" count="" />
+                <x-button label="Export Report" color="blue" size="sm" icon='<i class="fa-solid fa-download"></i>' />
+            </div>
 
             <div class="w-full rounded-lg h-fit sm:h-fit md:h-fit lg:h-fit">
                 <!-- Inner Up - Performance KPI Cards Summary -->

@@ -123,7 +123,7 @@
     <div class="flex flex-col md:flex-row min-h-screen max-h-screen w-full h-full">
 
         <!-- INTERACTIVE PICTURE START -->
-        <div class="container-1 w-full md:w-1/2 flex flex-col justify-center m-6">
+        <div class="container-1 w-full md:w-1/2 flex flex-col justify-center m-12 mr-1">
             <div id="container-1-2"
                 class="p-6 h-full flex flex-col justify-center items-center rounded-3xl bg-cover bg-no-repeat bg-center lg:block lg:flex md:block md:flex hidden"
                 style="background-image: url('{{ asset('images/backgrounds/login_bg2.svg') }}');">
@@ -141,14 +141,16 @@
         </div>
 
         <!-- LOG IN CONTENTS -->
-        <div id="container-2" class="w-full h-screen md:w-1/2 flex justify-center align-items-center items-center">
+        <div id="container-2"
+            class="w-full h-screen md:w-1/2 flex justify-center align-items-center items-center pt-12">
             <!-- <form action="/login" method="POST" class="space-y-4 w-1/2"> -->
-            <form action="{{ route('login') }}" method="POST" class="space-y-4 w-1/2">
+            <form action="{{ route('login') }}" method="POST" class="space-y-4 w-1/2 h-fit">
                 @csrf
 
-                <div id="container-2-1" class="flex flex-col align-items-center mb-8">
-                    <h1 id="login-header" class="font-sans font-bold text-5xl mb-3 text-[#081032]">Log In</h1>
-                    <p id="login-header2" class="text-[#07185788] font-sans font-normal text-base mb-3">Welcome to Fin-noys</p>
+                <div id="container-2-1" class="flex flex-col items-start mb-8 w-full">
+                    <img src="{{asset('/images/opticrew-icon-light.svg')}}" alt="" class="h-20 w-auto mb-4">
+                    <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 text-[#081032]">Log In</h1>
+                    <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm mb-3">Welcome to OptiCrew</p>
                 </div>
 
                 <!-- USERNAME FIELD -->
@@ -174,20 +176,23 @@
 
                 <div id="container-2-layer" class="text-sm">
                     <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="remember">
-                        <span>Remember Me</span>
+                        <input type="checkbox" class="border border-gray-300" name="remember">
+                        <span class="text-gray-500 font-sans text-xs">Remember Me</span>
                     </label>
-                    <a href="{{ route('forgot.password') }}" class="text-blue-600 hover:underline text-sm">Forgot Password?</a>
+                    <a href="{{ route('forgot.password') }}" class="text-blue-600 hover:underline text-xs">Forgot
+                        Password?</a>
                 </div>
 
-                <input type="submit" id="btn-login" class="text-sm font-sans font-semibold" value="Login">
+                <input type="submit" id="btn-login"
+                    class="text-sm font-sans font-semibold hover:bg-blue-800 focus:outline-white" value="Login">
 
                 <div id="container-2-3" class="text-center p-3 text-sm">
                     <p id="donthaveacct" class="text-[#07185788]">
                         Don't have an account?
                         <span>
                             <a href="{{ route('signup') }}" id="createacc-label"
-                                class="text-blue-600 hover:underline ml-1 text-sm">Create Account</a>
+                                class="text-blue-600 font-sans font-bold hover:underline ml-1 text-xs">Create
+                                Account</a>
                         </span>
                     </p>
                 </div>
@@ -242,4 +247,5 @@
         });
     </script>
 </body>
+
 </html>

@@ -44,6 +44,11 @@
         text-align: center;
     }
 
+    /* Center toggle button when sidebar is collapsed */
+    #sidebar.w-20 #sidebar-header {
+        justify-content: center;
+    }
+
     @keyframes rotate-flip {
         0% {
             transform: rotateY(0deg);
