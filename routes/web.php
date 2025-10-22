@@ -42,8 +42,8 @@ use App\Http\Livewire\Admin\EmployeeAnalytics;
 // });
 
 Route::get('/', action: function () {
-    return view('admin-analytics');
-})->name('admin-analytics');
+    return view('client-appointments');
+})->name('client-appointments');
 
 
 Route::get('/employee-tasks', [EmployeeTasksController::class, 'index'])

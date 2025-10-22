@@ -9,22 +9,23 @@
 
     <div>
         <!-- Logo + toggle -->
-        <div class="flex items-center justify-between h-20 px-4 border-b border-[#D1D1D1] dark:border-[#334155]">
-            <div class="flex items-center">
+        <div id="sidebar-header" class="flex items-center justify-between h-20 px-4 border-b border-[#D1D1D1] dark:border-[#334155] transition-all duration-300">
+            <div class="flex items-center justify-center">
                 <a href="{{ Auth::check() && Auth::user()->role === 'admin' ? route('admin.dashboard') : route('employee.dashboard') }}"
-                    class="flex items-center">
+                    class="flex w-full items-center">
                     <!-- Light Mode Logo (visible by default, hidden in dark mode) -->
-                    <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
-                        class="block dark:hidden h-20 w-auto sidebar-logo" 
-                        alt="Fin-Noys Light Logo">
-                    
+
+                    <img src="{{ asset('images/opticrew-icon-light.svg') }}"
+                        class="dark:hidden h-16 w-full sidebar-logo"
+                        alt="OptiCrew Light Logo">
+
                     <!-- Dark Mode Logo (hidden by default, visible in dark mode) -->
-                    <img src="{{ asset('images/finnoys-text-logo.svg') }}"
-                        class="hidden dark:block h-20 w-auto sidebar-logo" 
-                        alt="Fin-Noys Dark Logo">
+                    <img src="{{ asset('images/opticrew-icon-dark.svg') }}"
+                        class="hidden dark:block h-16 w-full sidebar-logo"
+                        alt="OptiCrew Dark Logo">
                 </a>
             </div>
-            <button id="sidebar-toggle" class="text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1">
+            <button id="sidebar-toggle" class="text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1 transition-all duration-300">
                 <i class="fi fi-rr-angle-small-left text-lg"></i>
             </button>
         </div>
