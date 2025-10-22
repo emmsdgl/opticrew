@@ -1,5 +1,5 @@
 <x-layouts.general-employer :title="'Task Management'">
-    <section role="status" class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
+    <section role="status" class="flex flex-col w-full lg:flex-row gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <!-- Main Panel - Dashboard Content -->
         <div class="main-panel flex flex-col gap-6 flex-1 w-full p-4">
             <!-- Pass data to the calendar -->

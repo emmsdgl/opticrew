@@ -8,15 +8,15 @@
 </style>
 
 <div x-data="calendarComponent(@js($clients), @js($events), @js($bookedLocationsByDate))" x-init="init()"
-    class="w-full h-full bg-gray-50 dark:bg-gray-900 rounded-lg shadow p-4 transition-colors duration-300">
+    class="w-full h-full bg-gray-50 dark:bg-gray-900 rounded-lg p-4 transition-colors duration-300">
 
     <!-- Calendar Header -->
     <div class="flex flex-row justify-between items-center mb-4 w-full">
-        <h2 class="text-base justify-start font-semibold text-gray-800 dark:text-gray-100" x-text="monthYear"></h2>
+        <h2 class="text-base justify-start font-bold font-sans text-gray-800 dark:text-gray-100" x-text="monthYear"></h2>
         <div class="flex flex-row gap-6">
             <div class="flex flex-row gap-3">
                 <button @click="saveSchedule()"
-                    class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition inline-flex items-center gap-2"
+                    class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-full transition inline-flex items-center gap-2"
                     x-bind:disabled="!hasUnsavedSchedule"
                     x-bind:class="{'opacity-50 cursor-not-allowed': !hasUnsavedSchedule}">
                     <i class="fa-solid fa-save"></i>
