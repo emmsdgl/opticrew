@@ -1,75 +1,64 @@
 @props([
-    'title' => 'Product Statistic',
     'total' => 0,
     'growthRate' => 0,
     'growthTrend' => 'up',
     'categories' => [],
     'chartId' => null,
     'animateOnLoad' => true,
-    'showDropdown' => true,
-    'dropdownOptions' => ['Today', 'This Week', 'This Month', 'This Year'],
-    'chartSize' => 390,
-    'ringThickness' => 17,
+    'chartSize' => 270,
+    'ringThickness' => 14,
     'class' => ''
 ])
 
 @php
     $chartId = $chartId ?? 'chart-' . uniqid();
-    $totalFormatted = number_format($total);
-    $growthRateFormatted = number_format($growthRate, 2);
-    $padding = 5;
-    $viewBoxSize = $chartSize + ($padding * 2);
+    
+    // Default colors if not provided
+    $defaultColors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
+    
+    // Ensure each category has a color
+    foreach($categories as $index => &$category) {
+        if (!isset($category['color']) || empty($category['color'])) {
+            $category['color'] = $defaultColors[$index % count($defaultColors)];
+        }
+    }
+    unset($category);
 @endphp
 
-<div {{ $attributes->merge(['class' => 'w-full max-w-sm mx-auto ' . $class]) }}>
-    <div class="p-6 transition-colors duration-200">
-        <!-- Chart Section -->
-        <div class="relative flex justify-center items-center mb-8 h-56 w-full">
-            <!-- SVG Chart -->
-            <svg class="absolute w-full h-64" viewBox="0 0 {{ $viewBoxSize }} {{ $viewBoxSize }}">
-                <!-- Background circles -->
-                @php
-                    $centerPoint = $viewBoxSize / 2;
-                    // Start with a larger radius to accommodate text
-                    $maxRadius = ($chartSize / 2) - ($ringThickness / 2);
-                    // Minimum inner radius to leave space for text (about 80px radius for text area)
-                    $minTextRadius = 85;
-                @endphp
+<div {{ $attributes->merge(['class' => 'w-full ' . $class]) }}>
+    <div class="bg-white dark:bg-transparent rounded-xl p-6 transition-colors duration-200">
+        <!-- Chart Container -->
+        <div class="relative flex justify-center items-center mb-6" style="height: {{ $chartSize }}px;">
+            <svg 
+                id="{{ $chartId }}-svg" 
+                class="transform -rotate-90" 
+                width="{{ $chartSize }}" 
+                height="{{ $chartSize }}" 
+                viewBox="0 0 {{ $chartSize }} {{ $chartSize }}"
+            >
+                <!-- Background rings -->
+                <g id="{{ $chartId }}-bg-rings"></g>
                 
-                @foreach($categories as $index => $category)
-                    @php
-                        $radius = $maxRadius - ($index * ($ringThickness + 10));
-                        // Ensure we don't go smaller than the minimum text radius
-                        if ($radius < $minTextRadius) {
-                            $radius = $minTextRadius + ($ringThickness * (count($categories) - $index - 1));
-                        }
-                    @endphp
-                    <circle 
-                        cx="{{ $centerPoint }}" 
-                        cy="{{ $centerPoint }}" 
-                        r="{{ $radius }}" 
-                        fill="none" 
-                        stroke="#f3f4f6" 
-                        stroke-width="{{ $ringThickness }}" 
-                        class="dark:stroke-gray-700 transition-colors duration-200"
-                    />
-                @endforeach
-                
-                <!-- Data circles (will be drawn by JS) -->
-                <g id="{{ $chartId }}-rings"></g>
+                <!-- Animated data rings -->
+                <g id="{{ $chartId }}-data-rings"></g>
             </svg>
             
-            <!-- Center stats -->
-            <div class="absolute text-center pointer-events-none max-w-[140px]">
+            <!-- Center Content -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <div 
-                    class="text-4xl font-bold text-gray-800 dark:text-gray-100 transition-all duration-300" 
-                    id="{{ $chartId }}-value"
+                    id="{{ $chartId }}-center-value" 
+                    class="text-3xl font-bold text-gray-900 dark:text-white transition-all duration-300"
                 >
-                    {{ $totalFormatted }}
+                    0
                 </div>
-                <div class="text-sm text-gray-400 dark:text-gray-500 mt-1">Service Orders</div>
-                <div class="inline-block mt-2 px-2 py-0.5 text-xs rounded transition-colors duration-200 {{ $growthTrend === 'up' ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300' }}">
-                    {{ $growthRate > 0 ? '+' : '' }}{{ $growthRateFormatted }}%
+                <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Service Orders
+                </div>
+                <div class="mt-2">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors duration-200
+                        {{ $growthTrend === 'up' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }}">
+                        {{ $growthRate > 0 ? '+' : '' }}{{ number_format($growthRate, 1) }}%
+                    </span>
                 </div>
             </div>
         </div>
@@ -78,27 +67,32 @@
         <div class="space-y-1">
             @foreach($categories as $index => $category)
                 <div 
-                    class="flex items-center justify-between p-3 pb-1 rounded-lg transition-all duration-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 category-item"
+                    class="flex items-center justify-between p-2 rounded-lg transition-all duration-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
                     data-chart-id="{{ $chartId }}"
                     data-category-index="{{ $index }}"
-                    data-value="{{ $category['value'] }}"
-                    data-name="{{ $category['name'] }}"
                 >
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center">
+                        <!-- Color Indicator -->
+                        <div 
+                            class="w-3 h-3 mr-3 rounded-full flex-shrink-0 transition-transform duration-200 group-hover:scale-125" 
+                            style="background-color: {{ $category['color'] }}"
+                        ></div>
+                        
                         <!-- Category Name -->
-                        <span class="text-gray-700 dark:text-gray-300 text-sm">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                             {{ $category['name'] }}
                         </span>
                     </div>
                     
-                    <!-- Values -->
-                    <div class="flex items-center gap-3">
-                        <span class="text-gray-800 dark:text-gray-200 text-sm">
+                    <!-- Value -->
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
                             {{ number_format($category['value']) }}
                         </span>
                         
                         @if(isset($category['percentage']))
-                            <span class="px-2 py-0.5 text-xs font-semibold rounded transition-colors duration-200 {{ ($category['trend'] ?? 'up') === 'up' ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300' : 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300' }}">
+                            <span class="px-2 py-1 text-xs font-medium rounded transition-colors duration-200
+                                {{ ($category['trend'] ?? 'up') === 'up' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }}">
                                 {{ $category['percentage'] > 0 ? '+' : '' }}{{ number_format($category['percentage'], 1) }}%
                             </span>
                         @endif
@@ -112,22 +106,13 @@
 @once
     @push('styles')
     <style>
-        .chart-component-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.5rem center;
-            padding-right: 2rem;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .chart-component-select {
-                background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239CA3AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-            }
+        .chart-ring-bg {
+            transition: all 0.3s ease;
         }
         
-        .chart-ring {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .chart-ring-data {
+            transition: all 0.3s ease;
+            stroke-dashoffset: 0;
         }
     </style>
     @endpush
@@ -136,195 +121,225 @@
 @once
     @push('scripts')
     <script>
-        class ProductStatisticChart {
+        class StatisticChart {
             constructor(chartId, config) {
                 this.chartId = chartId;
-                this.config = config;
-                this.categories = config.categories;
                 this.total = config.total;
-                this.animateOnLoad = config.animateOnLoad;
+                this.categories = config.categories;
                 this.chartSize = config.chartSize;
                 this.ringThickness = config.ringThickness;
-                this.padding = 30;
-                this.minTextRadius = 85;
+                this.animateOnLoad = config.animateOnLoad;
                 
-                this.chartRingsContainer = document.getElementById(`${chartId}-rings`);
-                this.totalValueEl = document.getElementById(`${chartId}-value`);
-                this.categoryElements = document.querySelectorAll(`[data-chart-id="${chartId}"]`);
+                this.centerX = this.chartSize / 2;
+                this.centerY = this.chartSize / 2;
+                this.baseRadius = (this.chartSize / 2) - (this.ringThickness / 2) - 10;
+                
+                this.bgRingsContainer = document.getElementById(`${chartId}-bg-rings`);
+                this.dataRingsContainer = document.getElementById(`${chartId}-data-rings`);
+                this.centerValueEl = document.getElementById(`${chartId}-center-value`);
+                this.categoryItems = document.querySelectorAll(`[data-chart-id="${chartId}"]`);
+                
+                if (!this.bgRingsContainer || !this.dataRingsContainer || !this.centerValueEl) {
+                    console.error('Chart elements not found');
+                    return;
+                }
                 
                 this.init();
             }
             
             init() {
-                this.createRings();
+                this.calculateRings();
+                this.renderBackgroundRings();
+                this.renderDataRings();
                 this.attachEventListeners();
                 
                 if (this.animateOnLoad) {
-                    this.animateValue();
+                    this.animate();
                 }
             }
             
-            createRings() {
-                const viewBoxSize = this.chartSize + (this.padding * 2);
-                const centerPoint = viewBoxSize / 2;
-                // Match the PHP calculation exactly
-                const maxRadius = (this.chartSize / 2) - (this.ringThickness / 2);
+            calculateRings() {
+                const ringSpacing = 8;
+                const numCategories = this.categories.length;
                 
-                this.rings = this.categories.map((cat, index) => {
-                    const percentage = (cat.value / this.total) * 100;
-                    let radius = maxRadius - (index * (this.ringThickness + 10));
-                    
-                    // Ensure we don't go smaller than the minimum text radius
-                    if (radius < this.minTextRadius) {
-                        radius = this.minTextRadius + (this.ringThickness * (this.categories.length - index - 1));
-                    }
-                    
+                this.rings = this.categories.map((category, index) => {
+                    const radius = this.baseRadius - (index * (this.ringThickness + ringSpacing));
                     const circumference = 2 * Math.PI * radius;
-                    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+                    const percentage = (category.value / this.total) * 100;
+                    const offset = circumference - (circumference * percentage / 100);
                     
                     return {
-                        ...cat,
+                        ...category,
                         radius,
                         circumference,
-                        strokeDashoffset,
-                        percentage: percentage.toFixed(1)
+                        offset,
+                        percentage
                     };
-                });
-                
-                this.rings.forEach((ring, index) => {
-                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    circle.setAttribute('cx', centerPoint);
-                    circle.setAttribute('cy', centerPoint);
-                    circle.setAttribute('r', ring.radius);
-                    circle.setAttribute('fill', 'none');
-                    circle.setAttribute('stroke', ring.color);
-                    circle.setAttribute('stroke-width', this.ringThickness);
-                    circle.setAttribute('stroke-linecap', 'round');
-                    circle.setAttribute('stroke-dasharray', ring.circumference);
-                    circle.setAttribute('transform', `rotate(-90 ${centerPoint} ${centerPoint})`);
-                    circle.setAttribute('class', 'chart-ring');
-                    circle.setAttribute('data-ring-index', index);
-                    circle.style.cursor = 'pointer';
-                    
-                    if (this.animateOnLoad) {
-                        circle.setAttribute('stroke-dashoffset', ring.circumference);
-                        setTimeout(() => {
-                            circle.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1)';
-                            circle.setAttribute('stroke-dashoffset', ring.strokeDashoffset);
-                        }, 100 + (index * 200));
-                    } else {
-                        circle.setAttribute('stroke-dashoffset', ring.strokeDashoffset);
-                    }
-                    
-                    this.chartRingsContainer.appendChild(circle);
-                    
-                    // Add event listeners to rings
-                    circle.addEventListener('mouseenter', () => this.highlightCategory(index));
-                    circle.addEventListener('mouseleave', () => this.resetHighlight());
                 });
             }
             
+            renderBackgroundRings() {
+                this.rings.forEach((ring, index) => {
+                    const circle = this.createCircle(ring.radius, '#E5E7EB', this.ringThickness);
+                    circle.classList.add('chart-ring-bg', 'dark:stroke-gray-700');
+                    this.bgRingsContainer.appendChild(circle);
+                });
+            }
+            
+            renderDataRings() {
+                this.rings.forEach((ring, index) => {
+                    const circle = this.createCircle(ring.radius, ring.color, this.ringThickness);
+                    circle.classList.add('chart-ring-data');
+                    circle.setAttribute('stroke-linecap', 'round');
+                    circle.setAttribute('stroke-dasharray', ring.circumference);
+                    circle.setAttribute('stroke-dashoffset', ring.circumference);
+                    circle.setAttribute('data-ring-index', index);
+                    circle.style.cursor = 'pointer';
+                    
+                    this.dataRingsContainer.appendChild(circle);
+                });
+            }
+            
+            createCircle(radius, color, strokeWidth) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', this.centerX);
+                circle.setAttribute('cy', this.centerY);
+                circle.setAttribute('r', radius);
+                circle.setAttribute('fill', 'none');
+                circle.setAttribute('stroke', color);
+                circle.setAttribute('stroke-width', strokeWidth);
+                return circle;
+            }
+            
+            animate() {
+                // Animate center value
+                this.animateValue(0, this.total, 1500);
+                
+                // Animate rings with stagger
+                const dataRings = this.dataRingsContainer.querySelectorAll('.chart-ring-data');
+                dataRings.forEach((ring, index) => {
+                    const targetOffset = this.rings[index].offset;
+                    
+                    setTimeout(() => {
+                        ring.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1)';
+                        ring.setAttribute('stroke-dashoffset', targetOffset);
+                    }, 100 + (index * 150));
+                });
+            }
+            
+            animateValue(start, end, duration) {
+                const startTime = performance.now();
+                
+                const updateValue = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Easing function
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const currentValue = Math.floor(start + (end - start) * easeOutQuart);
+                    
+                    this.centerValueEl.textContent = currentValue.toLocaleString();
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateValue);
+                    }
+                };
+                
+                requestAnimationFrame(updateValue);
+            }
+            
             attachEventListeners() {
-                this.categoryElements.forEach((el, index) => {
-                    el.addEventListener('mouseenter', () => this.highlightCategory(index));
-                    el.addEventListener('mouseleave', () => this.resetHighlight());
+                const dataRings = this.dataRingsContainer.querySelectorAll('.chart-ring-data');
+                
+                // Ring hover
+                dataRings.forEach((ring, index) => {
+                    ring.addEventListener('mouseenter', () => this.highlightCategory(index));
+                    ring.addEventListener('mouseleave', () => this.resetHighlight());
+                });
+                
+                // Category item hover
+                this.categoryItems.forEach((item, index) => {
+                    item.addEventListener('mouseenter', () => this.highlightCategory(index));
+                    item.addEventListener('mouseleave', () => this.resetHighlight());
                 });
             }
             
             highlightCategory(index) {
                 const category = this.categories[index];
-                const rings = this.chartRingsContainer.querySelectorAll('.chart-ring');
+                const dataRings = this.dataRingsContainer.querySelectorAll('.chart-ring-data');
                 
-                // Animate center value
-                this.totalValueEl.style.transform = 'scale(0.9)';
-                this.totalValueEl.style.opacity = '0.5';
+                // Update center value
+                this.centerValueEl.style.transform = 'scale(0.95)';
+                this.centerValueEl.style.opacity = '0.7';
                 
                 setTimeout(() => {
-                    this.totalValueEl.textContent = category.value.toLocaleString();
-                    this.totalValueEl.style.transform = 'scale(1.1)';
-                    this.totalValueEl.style.opacity = '1';
+                    this.centerValueEl.textContent = category.value.toLocaleString();
+                    this.centerValueEl.style.transform = 'scale(1.05)';
+                    this.centerValueEl.style.opacity = '1';
                     
                     setTimeout(() => {
-                        this.totalValueEl.style.transform = 'scale(1)';
-                    }, 150);
+                        this.centerValueEl.style.transform = 'scale(1)';
+                    }, 200);
                 }, 150);
                 
                 // Highlight rings
-                rings.forEach((ring, i) => {
+                dataRings.forEach((ring, i) => {
                     if (i === index) {
                         ring.style.opacity = '1';
-                        ring.style.strokeWidth = this.ringThickness + 2;
-                        ring.style.filter = `drop-shadow(0 0 8px ${category.color})`;
+                        ring.style.strokeWidth = this.ringThickness;
+                        ring.style.filter = `drop-shadow(0 0 10px ${category.color})`;
                     } else {
                         ring.style.opacity = '0.3';
-                        ring.style.filter = 'none';
                     }
                 });
                 
-                // Highlight category
-                this.categoryElements.forEach((cat, i) => {
+                // Highlight category item
+                this.categoryItems.forEach((item, i) => {
                     if (i === index) {
-                        cat.style.transform = 'translateX(4px)';
+                        item.style.transform = 'translateX(4px)';
+                        item.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
                     } else {
-                        cat.style.opacity = '0.5';
+                        item.style.opacity = '0.5';
                     }
                 });
             }
             
             resetHighlight() {
-                const rings = this.chartRingsContainer.querySelectorAll('.chart-ring');
+                const dataRings = this.dataRingsContainer.querySelectorAll('.chart-ring-data');
                 
                 // Reset center value
-                this.totalValueEl.style.transform = 'scale(0.9)';
-                this.totalValueEl.style.opacity = '0.5';
+                this.centerValueEl.style.transform = 'scale(0.95)';
+                this.centerValueEl.style.opacity = '0.7';
                 
                 setTimeout(() => {
-                    this.totalValueEl.textContent = this.total.toLocaleString();
-                    this.totalValueEl.style.transform = 'scale(1.1)';
-                    this.totalValueEl.style.opacity = '1';
+                    this.centerValueEl.textContent = this.total.toLocaleString();
+                    this.centerValueEl.style.transform = 'scale(1.05)';
+                    this.centerValueEl.style.opacity = '1';
                     
                     setTimeout(() => {
-                        this.totalValueEl.style.transform = 'scale(1)';
-                    }, 150);
+                        this.centerValueEl.style.transform = 'scale(1)';
+                    }, 200);
                 }, 150);
                 
                 // Reset rings
-                rings.forEach(ring => {
+                dataRings.forEach(ring => {
                     ring.style.opacity = '1';
                     ring.style.strokeWidth = this.ringThickness;
                     ring.style.filter = 'none';
                 });
                 
-                // Reset categories
-                this.categoryElements.forEach(cat => {
-                    cat.style.transform = '';
-                    cat.style.opacity = '1';
+                // Reset category items
+                this.categoryItems.forEach(item => {
+                    item.style.transform = '';
+                    item.style.opacity = '1';
+                    item.style.backgroundColor = '';
                 });
-            }
-            
-            animateValue() {
-                let currentValue = 0;
-                const targetValue = this.total;
-                const duration = 1500;
-                const steps = 60;
-                const increment = targetValue / steps;
-                const stepDuration = duration / steps;
-                
-                const counter = setInterval(() => {
-                    currentValue += increment;
-                    if (currentValue >= targetValue) {
-                        currentValue = targetValue;
-                        clearInterval(counter);
-                    }
-                    this.totalValueEl.textContent = Math.floor(currentValue).toLocaleString();
-                }, stepDuration);
             }
         }
         
-        // Auto-initialize all charts on page
-        document.addEventListener('DOMContentLoaded', function() {
-            window.productStatisticCharts = window.productStatisticCharts || {};
-        });
+        if (typeof window.statisticCharts === 'undefined') {
+            window.statisticCharts = {};
+        }
     </script>
     @endpush
 @endonce
@@ -333,13 +348,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         const chartId = '{{ $chartId }}';
         
-        if (!window.productStatisticCharts[chartId]) {
-            window.productStatisticCharts[chartId] = new ProductStatisticChart(chartId, {
-                categories: @json($categories),
+        if (!window.statisticCharts[chartId]) {
+            window.statisticCharts[chartId] = new StatisticChart(chartId, {
                 total: {{ $total }},
-                animateOnLoad: {{ $animateOnLoad ? 'true' : 'false' }},
+                categories: @json($categories),
                 chartSize: {{ $chartSize }},
-                ringThickness: {{ $ringThickness }}
+                ringThickness: {{ $ringThickness }},
+                animateOnLoad: {{ $animateOnLoad ? 'true' : 'false' }}
             });
         }
     });
