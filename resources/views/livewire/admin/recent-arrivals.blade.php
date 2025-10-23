@@ -1,7 +1,7 @@
 <div wire:poll.5s class="w-full flex flex-col gap-4 p-4 rounded-lg bg-white dark:bg-gray-800">
     <x-labelwithvalue label="Recent Arrivals" :count="'(' . $recentArrivals->count() . ')'" />
     
-    <div class="overflow-y-auto h-56 pr-2">
+    <div class="overflow-y-auto h-52 pr-2">
         @if($recentArrivals->isEmpty())
             <div class="flex items-center justify-center h-full">
                 <p class="text-gray-500 dark:text-gray-400">No arrivals yet for today.</p>

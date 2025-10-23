@@ -20,30 +20,31 @@ use App\Http\Controllers\ClientAppointmentController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
+Route::get('/', action: function () {
+    return view('client-appointments');
+})->name('client-appointments');
+
+
 /*
-|--------------------------------------------------------------------------
+|-------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
 // Route::get('/', function () {
 //     if (Auth::check()) {
-//         $role = Auth::user()->role;
+//         $role = Auth::user()->role;    
 
 //         if ($role === 'admin') {
-//             return redirect()->route('admin.dashboard');
+//             return redirect()->route('admin.dashboard');    
 //         } elseif ($role === 'employee') {
-//             return redirect()->route('employee.dashboard');
+//             return redirect()->route('employee.dashboard');    
 //         } elseif ($role === 'external_client') {
-//             return redirect()->route('client.dashboard');
+//             return redirect()->route('client.dashboard');    
 //         }
 //     }
 
 //     return redirect()->route('login');
 // });
-
-Route::get('/', action: function () {
-    return view('client-appointments');
-})->name('client-appointments');
 
 
 Route::get('/employee-tasks', [EmployeeTasksController::class, 'index'])

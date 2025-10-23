@@ -21,7 +21,7 @@
 
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
+            document.documentElement.classList.add('dark');
         } else {
           document.documentElement.classList.remove('dark');
         }
@@ -40,13 +40,16 @@
 
     #sidebar nav a i {
         min-width: 20px;
-        /* keeps icons consistent */
         text-align: center;
     }
 
-    /* Center toggle button when sidebar is collapsed */
     #sidebar.w-20 #sidebar-header {
         justify-content: center;
+    }
+
+    /* Hide logo container's flex-1 when collapsed so toggle centers properly */
+    #sidebar.w-20 #sidebar-header > div:first-child {
+        flex: 0;
     }
 
     @keyframes rotate-flip {
@@ -63,7 +66,6 @@
         }
     }
 
-    /* Animation class applied by JS */
     .rotate-flip {
         animation: rotate-flip 0.4s ease-in-out;
         transform-origin: center;
@@ -84,28 +86,26 @@
         animation: spinOnce 0.5s ease;
     }
 
-    <style>
     /* Custom Scrollbar - Applied Globally to All Elements */
     *::-webkit-scrollbar {
-        width: 8px; /* scrollbar thickness */
+        width: 8px;
     }
 
     *::-webkit-scrollbar-track {
-        background: transparent; /* transparent background */
+        background: transparent;
         border-radius: 10px;
     }
 
     *::-webkit-scrollbar-thumb {
-        background-color: rgba(107, 114, 128, 0.4); /* gray-500 with transparency */
+        background-color: rgba(107, 114, 128, 0.4);
         border-radius: 10px;
         transition: background-color 0.3s ease;
     }
 
     *::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(107, 114, 128, 0.7); /* darker when hovered */
+        background-color: rgba(107, 114, 128, 0.7);
     }
 
-    /* For Firefox */
     * {
         scrollbar-width: thin;
         scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
@@ -118,9 +118,38 @@
 
         <!-- MAIN CONTENT -->
         <main class="flex-1 flex flex-col transition-colors duration-300">
+   
+            <!--DASHBOARD HEADER CONTENTS -->
+            @php
+                $notifications = [
+                    [
+                        'message' => 'New comment on your post',
+                        'time' => '5 minutes ago',
+                        'unread' => true,
+                        'icon' => 'fa-solid fa-comment',
+                        'icon_bg' => 'blue',
+                        'icon_color' => 'blue'
+                    ],
+                    [
+                        'message' => 'Your account was logged in from a new device',
+                        'time' => '1 hour ago',
+                        'unread' => true,
+                        'icon' => 'fa-solid fa-shield-halved',
+                        'icon_bg' => 'red',
+                        'icon_color' => 'red'
+                    ],
+                    [
+                        'message' => 'Payment successful',
+                        'time' => '2 hours ago',
+                        'unread' => false,
+                        'icon' => 'fa-solid fa-check-circle',
+                        'icon_bg' => 'green',
+                        'icon_color' => 'green'
+                    ]
+                ];
+            @endphp
 
-        <!-- DASHBOARD HEADER CONTENTS -->
-            <x-header />
+            <x-header :notifications="$notifications" />
             
             <!-- DASHBOARD PANEL CONTENTS -->
             {{ $slot }}
@@ -148,7 +177,7 @@
             const currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
 
             applyTheme(currentTheme);
-            updateIconRotation(currentTheme === 'dark'); // Set initial icon orientation
+            updateIconRotation(currentTheme === 'dark');
 
             themeToggle.addEventListener('click', () => {
                 icon.classList.add('rotate-flip');
@@ -167,13 +196,11 @@
                 const collapsed = sidebar.classList.contains('w-20');
 
                 if (collapsed) {
-                    // Expand sidebar
                     sidebar.classList.replace('w-20', 'w-64');
                     document.querySelectorAll('.nav-label, .sidebar-logo-text, .logout-label, .sidebar-logo')
                         .forEach(el => el.classList.remove('hidden'));
                     sidebarToggle.querySelector('i').className = 'fi fi-rr-angle-small-left';
                 } else {
-                    // Collapse sidebar
                     sidebar.classList.replace('w-64', 'w-20');
                     document.querySelectorAll('.nav-label, .sidebar-logo-text, .logout-label, .sidebar-logo')
                         .forEach(el => el.classList.add('hidden'));
@@ -196,7 +223,6 @@
                     iconClasses = 'fi fi-rr-brightness text-yellow-500';
                 }
 
-                // Keep transition/rotation classes
                 const keepClasses = Array.from(icon.classList).filter(cls =>
                     cls.startsWith('rotate-') || cls.startsWith('transition-') ||
                     cls.startsWith('duration-') || cls.startsWith('ease-')
@@ -210,10 +236,92 @@
                 icon.classList.add(isDark ? 'rotate-180' : 'rotate-0');
             }
 
+            // ===== DROPDOWN FUNCTIONALITY =====
+            const profileToggle = document.getElementById('profile-dropdown-toggle');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            const caretIcon = document.getElementById('caret-icon');
+            const notificationToggle = document.getElementById('notification-toggle');
+            const notificationDropdown = document.getElementById('notification-dropdown');
+
+            // Toggle profile dropdown
+            if (profileToggle && profileDropdown) {
+                profileToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    const isVisible = !profileDropdown.classList.contains('invisible');
+                    
+                    if (notificationDropdown) closeNotificationDropdown();
+                    
+                    if (isVisible) {
+                        closeProfileDropdown();
+                    } else {
+                        openProfileDropdown();
+                    }
+                });
+            }
+
+            // Toggle notification dropdown
+            if (notificationToggle && notificationDropdown) {
+                notificationToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    const isVisible = !notificationDropdown.classList.contains('invisible');
+                    
+                    if (profileDropdown) closeProfileDropdown();
+                    
+                    if (isVisible) {
+                        closeNotificationDropdown();
+                    } else {
+                        openNotificationDropdown();
+                    }
+                });
+            }
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (profileDropdown && profileToggle && 
+                    !profileDropdown.contains(e.target) && !profileToggle.contains(e.target)) {
+                    closeProfileDropdown();
+                }
+                if (notificationDropdown && notificationToggle && 
+                    !notificationDropdown.contains(e.target) && !notificationToggle.contains(e.target)) {
+                    closeNotificationDropdown();
+                }
+            });
+
+            // Close on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (profileDropdown) closeProfileDropdown();
+                    if (notificationDropdown) closeNotificationDropdown();
+                }
+            });
+
+            function openProfileDropdown() {
+                profileDropdown.classList.remove('invisible', 'opacity-0', 'scale-95');
+                profileDropdown.classList.add('opacity-100', 'scale-100');
+                if (caretIcon) caretIcon.classList.add('rotate-180');
+            }
+
+            function closeProfileDropdown() {
+                profileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                profileDropdown.classList.remove('opacity-100', 'scale-100');
+                if (caretIcon) caretIcon.classList.remove('rotate-180');
+            }
+
+            function openNotificationDropdown() {
+                notificationDropdown.classList.remove('invisible', 'opacity-0', 'scale-95');
+                notificationDropdown.classList.add('opacity-100', 'scale-100');
+            }
+
+            function closeNotificationDropdown() {
+                notificationDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                notificationDropdown.classList.remove('opacity-100', 'scale-100');
+            }
+
         });
     </script>
 
-    {{-- ADD THIS NEW SCRIPT BLOCK --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const loader = document.getElementById('page-loader');
@@ -221,7 +329,7 @@
                 loader.style.opacity = '0';
                 setTimeout(() => {
                     loader.style.display = 'none';
-                }, 400); // Wait for the fade-out transition
+                }, 400);
             }
         });
     </script>
