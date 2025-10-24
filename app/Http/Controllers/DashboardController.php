@@ -70,7 +70,7 @@ class DashboardController extends Controller
         });
 
         // === PASS ALL DATA TO THE VIEW ===
-        return view('admin-dash', [
+        return view('admin.dashboard', [
             'totalEmployees' => $totalEmployees,
             'presentEmployees' => $presentEmployees,
             'absentEmployees' => $absentEmployees,

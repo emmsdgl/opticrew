@@ -30,7 +30,7 @@ class ClientAppointmentController extends Controller
             ];
         });
 
-        return view('client-appointment-form', [
+        return view('client.appointment-form', [
             'currentStep' => 1,
             'client' => $client,
             'user' => $user,

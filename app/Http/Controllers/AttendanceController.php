@@ -120,7 +120,7 @@ class AttendanceController extends Controller
             ],
         ];
 
-        return view('employee-attendance', compact('stats', 'attendanceRecords'));
+        return view('employee.attendance', compact('stats', 'attendanceRecords'));
     }
 
     public function clockIn(Request $request)

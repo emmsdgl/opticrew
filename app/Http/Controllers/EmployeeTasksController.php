@@ -45,7 +45,7 @@ class EmployeeTasksController extends Controller
         $isClockedIn = $currentAttendance !== null;
         $clockInTime = $currentAttendance ? Carbon::parse($currentAttendance->clock_in)->format('g:i A') : null;
 
-        return view('employee-tasks', [
+        return view('employee.tasks', [
             'employee' => $employee,
             'todayTasks' => $todayTasks,
             'upcomingTasks' => $upcomingTasks,

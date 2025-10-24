@@ -83,7 +83,7 @@ class EmployeeDashboardController extends Controller
             ];
         });
 
-        return view('employee-dash', [
+        return view('employee.dashboard', [
             'employee' => $employee,
             'dailySchedule' => $dailySchedule,
             'todoList' => $todoList,
