@@ -20,8 +20,13 @@ use App\Http\Controllers\ClientAppointmentController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
+Route::get('/', action: function () {
+    return view('client-appointments');
+})->name('client-appointments');
+
+
 /*
-|--------------------------------------------------------------------------
+|-------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
