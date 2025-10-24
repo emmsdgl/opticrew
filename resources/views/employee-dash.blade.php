@@ -1,18 +1,4 @@
-<x-layouts.general-dashboard :title="'Employee Dashboard'">
-    @slot('sidebar')
-    @php
-        $navOptions = [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('employee.dashboard')],
-            ['label' => 'Tasks', 'icon' => 'fa-file-lines', 'href' => '/employee-tasks'],
-            ['label' => 'Attendance', 'icon' => 'fa-calendar', 'href' => route('employee.attendance')],
-            ['label' => 'Performance', 'icon' => 'fa-chart-line', 'href' => '/employee-performance']
-        ];
-
-        $teams = ['', ''];
-    @endphp
-    <x-sidebar :navOptions="$navOptions" :teams="$teams" />
-    @endslot
-
+<x-layouts.general-employee :title="'Employee Dashboard'">
     <section role="status" class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <!-- Left Panel - Dashboard Content -->
         <div
@@ -26,7 +12,7 @@
             <x-labelwithvalue label="My Calendar" count="" />
             <div
                 class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
-                <x-calendar />
+                <x-calendar :holidays="$holidays" />
             </div>
 
             <!-- Inner Bottom - Daily Schedule -->

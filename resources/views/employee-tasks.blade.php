@@ -11,13 +11,65 @@
             </div>
         @endif
 
+        @if(session()->has('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6" role="alert">
+                <p class="font-semibold">Error!</p>
+                <p>{{ session('error') }}</p>
+            </div>
+        @endif
+
+        <!-- Clock In/Out Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 {{ $isClockedIn ? 'border-green-500' : 'border-gray-400' }}">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-center h-12 w-12 rounded-full {{ $isClockedIn ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-700' }}">
+                        <i class="fas fa-clock text-2xl {{ $isClockedIn ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400' }}"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
+                            {{ $isClockedIn ? 'Clocked In' : 'Not Clocked In' }}
+                        </h3>
+                        @if($isClockedIn)
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Started at {{ $clockInTime }}
+                            </p>
+                        @else
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Click the button to start your work day
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    @if(!$isClockedIn)
+                        <form method="POST" action="{{ route('employee.attendance.clockin') }}">
+                            @csrf
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Clock In</span>
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('employee.attendance.clockout') }}">
+                            @csrf
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Clock Out</span>
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <!-- Today's Tasks Section -->
         <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
             <x-labelwithvalue label="My Tasks for Today" :count="'(' . $todayTasks->count() . ')'" />
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($todayTasks as $task)
-                    <x-task-action-card :task="$task" />
+                    <x-task-action-card :task="$task" :isClockedIn="$isClockedIn" />
                 @empty
                     <div class="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow-md p-12 text-center">
                         <i class="fas fa-tasks text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>

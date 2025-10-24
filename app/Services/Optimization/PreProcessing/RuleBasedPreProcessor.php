@@ -57,8 +57,8 @@ class RuleBasedPreProcessor
 
         $invalidTasks = $sortedTasks->diff($validTasks);
 
-        // ✅ 5-STEP WORKFORCE CALCULATION: Calculate optimal workforce size
-        $selectedEmployees = $this->workforceCalculator->selectOptimalWorkforce(
+        // ✅ 5-STEP WORKFORCE CALCULATION: Calculate minimum workforce needed (for validation)
+        $minimumWorkforceNeeded = $this->workforceCalculator->selectOptimalWorkforce(
             $validTasks,
             $employees,
             $constraints
@@ -66,37 +66,49 @@ class RuleBasedPreProcessor
 
         Log::info("Workforce calculation applied", [
             'employees_available' => $employees->count(),
-            'employees_selected' => $selectedEmployees->count()
+            'minimum_workforce_calculated' => $minimumWorkforceNeeded->count(),
+            'distribution_mode' => 'Using ALL available employees for task distribution'
         ]);
+
+        // ✅ DISTRIBUTION STRATEGY: Use ALL available employees for optimal distribution
+        // Instead of limiting to minimum workforce, distribute tasks across all employees
+        // This maximizes speed, quality, and workload balance
+        $employeesForDistribution = $employees; // Use ALL employees, not just minimum
 
         // ✅ Group employees by client/company
         $employeeAllocations = $this->allocateEmployeesByClient(
-            $selectedEmployees,
+            $employeesForDistribution,
             $validTasks
         );
+
+        // Collect all allocated employees from all client allocations
+        $allAllocatedEmployees = collect($employeeAllocations)->flatten(1)->unique('id')->values();
 
         Log::info("Pre-processing complete", [
             'valid_tasks' => $validTasks->count(),
             'invalid_tasks' => $invalidTasks->count(),
-            'total_employees_selected' => $selectedEmployees->count(),
-            'allocations' => array_map('count', $employeeAllocations)
+            'minimum_workforce_needed' => $minimumWorkforceNeeded->count(),
+            'total_employees_allocated' => $allAllocatedEmployees->count(),
+            'allocations_by_client' => array_map('count', $employeeAllocations)
         ]);
 
         return [
             'valid_tasks' => $validTasks,
             'invalid_tasks' => $invalidTasks,
-            'selected_employees' => $selectedEmployees->all(),
+            'selected_employees' => $allAllocatedEmployees->all(),
             'employee_allocations' => $employeeAllocations,
         ];
     }
 
     /**
      * ✅ Validate task (location, date, etc.)
+     * Updated to support client appointments (client_id) without location_id
      */
     protected function isValidTask($task): bool
     {
-        if (!$task->location_id) {
-            Log::warning("Task {$task->id} has no location");
+        // Must have either a location (contracted client) OR a client (external appointment)
+        if (!$task->location_id && !$task->client_id) {
+            Log::warning("Task {$task->id} has neither location nor client");
             return false;
         }
 
@@ -110,9 +122,10 @@ class RuleBasedPreProcessor
 
     /**
      * ✅ Allocate employees by client (Kakslauttanen vs Aikamatkat vs External)
+     * EXCLUSIVE allocation - each employee assigned to ONE client only
      */
     protected function allocateEmployeesByClient(
-        Collection $employees, 
+        Collection $employees,
         Collection $tasks
     ): array {
         $allocations = [];
@@ -127,59 +140,179 @@ class RuleBasedPreProcessor
             return 'unassigned';
         });
 
-        // ✅ RULE 1: Distribute employees across clients
-        // Strategy: Divide employees proportionally by task count
+        // ✅ RULE 1: Distribute employees EXCLUSIVELY across clients
+        // Strategy: Maximize distribution - allocate enough employees for parallel task execution
         $totalTasks = $tasks->count();
-        
+        $availableEmployees = $employees->values(); // Make a copy we can modify
+
+        // ✅ FIRST PASS: Calculate proportional allocation for each client
+        $clientAllocations = [];
+        $totalEmployeesToAllocate = $employees->count();
+
         foreach ($tasksByClient as $clientId => $clientTasks) {
             $taskRatio = $clientTasks->count() / $totalTasks;
-            $employeeCount = max(2, round($employees->count() * $taskRatio)); // Min 2 (1 pair)
+            $tasksForClient = $clientTasks->count();
+
+            // Calculate proportional share based on task count
+            $proportionalCount = round($totalEmployeesToAllocate * $taskRatio);
+
+            // Ensure minimum of 2 employees (1 pair) per client
+            $proportionalCount = max(2, $proportionalCount);
+
+            // Ensure even number for pairing
+            if ($proportionalCount % 2 !== 0) {
+                $proportionalCount++;
+            }
+
+            $clientAllocations[$clientId] = [
+                'tasks' => $clientTasks,
+                'task_count' => $tasksForClient,
+                'employee_count' => $proportionalCount
+            ];
+        }
+
+        // ✅ SECOND PASS: Adjust if total exceeds available employees
+        $totalAllocated = array_sum(array_column($clientAllocations, 'employee_count'));
+
+        if ($totalAllocated > $totalEmployeesToAllocate) {
+            Log::info("Adjusting allocations - exceed available", [
+                'total_allocated' => $totalAllocated,
+                'total_available' => $totalEmployeesToAllocate
+            ]);
+
+            // Reduce each client proportionally
+            $reductionFactor = $totalEmployeesToAllocate / $totalAllocated;
+            foreach ($clientAllocations as $clientId => &$allocation) {
+                $adjustedCount = max(2, floor($allocation['employee_count'] * $reductionFactor));
+                // Keep even for pairing
+                if ($adjustedCount % 2 !== 0) {
+                    $adjustedCount = max(2, $adjustedCount - 1);
+                }
+                $allocation['employee_count'] = $adjustedCount;
+            }
+        }
+
+        Log::info("Employee allocation plan", [
+            'total_employees' => $totalEmployeesToAllocate,
+            'total_tasks' => $totalTasks,
+            'clients' => array_map(function($alloc) {
+                return [
+                    'tasks' => $alloc['task_count'],
+                    'employees' => $alloc['employee_count']
+                ];
+            }, $clientAllocations)
+        ]);
+
+        // ✅ THIRD PASS: Actually allocate employees to each client
+        foreach ($clientAllocations as $clientId => $allocation) {
+            if ($availableEmployees->isEmpty()) {
+                Log::warning("No more employees available for client", [
+                    'client_id' => $clientId
+                ]);
+                break;
+            }
+
+            $employeeCount = min($allocation['employee_count'], $availableEmployees->count());
 
             // ✅ RULE 2: Ensure at least ONE driver per client group
+            // ⚠️ IMPORTANT: Select from AVAILABLE pool, then REMOVE from pool
             $clientEmployees = $this->selectEmployeesWithDriver(
-                $employees, 
+                $availableEmployees,
                 $employeeCount
             );
 
             $allocations[$clientId] = $clientEmployees;
 
-            Log::info("Allocated employees to client", [
+            // ✅ CRITICAL: Remove allocated employees from available pool
+            $allocatedIds = $clientEmployees->pluck('id')->toArray();
+            $availableEmployees = $availableEmployees->reject(function($employee) use ($allocatedIds) {
+                return in_array($employee->id, $allocatedIds);
+            })->values(); // Re-index
+
+            Log::info("Allocated employees to client (PROPORTIONAL DISTRIBUTION)", [
                 'client_id' => $clientId,
-                'task_count' => $clientTasks->count(),
-                'employee_count' => count($clientEmployees),
-                'has_driver' => $clientEmployees->contains(fn($e) => $e->has_driving_license)
+                'task_count' => $allocation['task_count'],
+                'planned_employee_count' => $allocation['employee_count'],
+                'actual_employee_count' => count($clientEmployees),
+                'employee_ids' => $allocatedIds,
+                'has_driver' => $clientEmployees->contains(fn($e) => $e->has_driving_license),
+                'remaining_employees' => $availableEmployees->count(),
+                'employees_per_task' => $allocation['task_count'] > 0 ? round(count($clientEmployees) / $allocation['task_count'], 2) : 0
             ]);
         }
+
+        // ✅ Final summary: Check employee utilization
+        $totalAllocated = collect($allocations)->flatten(1)->count();
+        $utilizationRate = $employees->count() > 0 ? ($totalAllocated / $employees->count()) * 100 : 0;
+
+        Log::info("Employee allocation summary", [
+            'total_employees_available' => $employees->count(),
+            'total_employees_allocated' => $totalAllocated,
+            'employees_unutilized' => $employees->count() - $totalAllocated,
+            'utilization_rate' => round($utilizationRate, 2) . '%',
+            'clients_served' => count($allocations),
+            'unutilized_employee_ids' => $availableEmployees->pluck('id')->toArray()
+        ]);
 
         return $allocations;
     }
 
     /**
      * ✅ RULE 2: Select employees ensuring at least one driver
+     * Selects employees from the available pool in order (deterministic)
      */
     protected function selectEmployeesWithDriver(Collection $employees, int $count): Collection
     {
-        // Get drivers
-        $drivers = $employees->filter(fn($e) => $e->has_driving_license);
+        if ($employees->isEmpty()) {
+            Log::warning("No employees available for selection");
+            return collect();
+        }
 
-        // Get non-drivers
-        $nonDrivers = $employees->filter(fn($e) => !$e->has_driving_license);
+        // Get drivers and non-drivers
+        $drivers = $employees->filter(fn($e) => $e->has_driving_license)->values();
+        $nonDrivers = $employees->filter(fn($e) => !$e->has_driving_license)->values();
 
         if ($drivers->isEmpty()) {
-            Log::warning("No drivers available! Selecting employees anyway.");
+            Log::warning("No drivers available! Selecting employees anyway.", [
+                'requested_count' => $count,
+                'available_count' => $employees->count()
+            ]);
             return $employees->take($count);
         }
 
-        // Strategy: 1 driver + (count-1) others
+        // Strategy: Take drivers first, then non-drivers
+        // This ensures at least one driver and distributes them fairly
         $selected = collect();
-        
-        // Add at least 1 driver
-        $selected->push($drivers->random());
-        
-        // Fill remaining slots
-        $remaining = $employees->diff($selected)->shuffle()->take($count - 1);
-        
-        return $selected->merge($remaining);
+
+        // Calculate how many drivers vs non-drivers
+        $driverCount = min($drivers->count(), ceil($count / 2)); // At least half should be drivers if possible
+        $nonDriverCount = $count - $driverCount;
+
+        // Take drivers first
+        $selected = $selected->merge($drivers->take($driverCount));
+
+        // Fill remaining slots with non-drivers
+        $nonDriversTaken = 0;
+        if ($nonDriverCount > 0 && $nonDrivers->isNotEmpty()) {
+            $nonDriversToTake = $nonDrivers->take($nonDriverCount);
+            $selected = $selected->merge($nonDriversToTake);
+            $nonDriversTaken = $nonDriversToTake->count();
+        }
+
+        // If we couldn't get enough non-drivers, fill remaining spots with more drivers
+        $remainingNeeded = $nonDriverCount - $nonDriversTaken;
+        if ($remainingNeeded > 0 && $drivers->count() > $driverCount) {
+            $selected = $selected->merge($drivers->skip($driverCount)->take($remainingNeeded));
+        }
+
+        Log::info("Selected employees with driver", [
+            'requested' => $count,
+            'selected' => $selected->count(),
+            'drivers' => $selected->filter(fn($e) => $e->has_driving_license)->count(),
+            'employee_ids' => $selected->pluck('id')->toArray()
+        ]);
+
+        return $selected->take($count); // Ensure we don't exceed requested count
     }
 
     // public function process(Collection $tasks, Collection $employees, array $constraints): array

@@ -13,21 +13,21 @@
 <style>
     @font-face {
         font-family: 'fam-regular';
-        src: url('/public/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
 
     @font-face {
         font-family: 'fam-bold';
-        src: url('/public/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
 
     @font-face {
         font-family: 'fam-bold-italic';
-        src: url('/public/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
@@ -127,7 +127,7 @@
     }
 
     /* body {
-        background-image: url(/public/images/backgrounds/aboutpage-bg.svg);
+        background-image: url(/images/backgrounds/aboutpage-bg.svg);
         background-size: cover;
         background-repeat: no-repeat;
     } */
@@ -135,7 +135,7 @@
 
 <body class="m-0 p-0 overflow-x-hidden transition-all duration-500
          sm:!bg-image-none sm:bg-white/80 sm:backdrop-blur-sm
-         lg:bg-[url('/public/images/backgrounds/aboutpage-bg.svg')] lg:bg-cover lg:bg-no-repeat">
+         lg:bg-[url('/images/backgrounds/aboutpage-bg.svg')] lg:bg-cover lg:bg-no-repeat">
 
     <!-- NAVBAR -->
     <header class="inset-x-0 top-0 z-50">
@@ -143,7 +143,7 @@
             <div class="flex lg:flex-1">
                 <a href="#" class="-m-1.5 p-1.5">
                     <span class="sr-only"></span>
-                    <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                    <img src="/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
                 </a>
             </div>
             <div class="flex lg:hidden">
@@ -158,13 +158,13 @@
                 </button>
             </div>
             <div class="hidden lg:flex lg:gap-x-12">
-                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Home</a>
-                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">About</a>
-                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Services</a>
-                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Price Quotation</a>
+                <a href="/" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Home</a>
+                <a href="/about" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">About</a>
+                <a href="/services" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Services</a>
+                <a href="/pricing" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Price Quotation</a>
             </div>
             <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-                <span aria-hidden="true"></span>
+                <a href="/login" class="text-sm/6 font-semibold text-blue-950 hover:text-blue-600">Log in <span aria-hidden="true">&rarr;</span></a>
             </div>
         </nav>
         <el-dialog>
@@ -175,7 +175,7 @@
                         <div class="flex items-center justify-between">
                             <a href="#" class="-m-1.5 p-1.5">
                                 <span class="sr-only">Fin-noys</span>
-                                <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                                <img src="/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
                             </a>
                             <button type="button" command="close" commandfor="mobile-menu"
                                 class="-m-2.5 rounded-md p-2.5 text-gray-200">
@@ -216,10 +216,10 @@
     <section id="container-1"
         class="relative flex flex-col items-center justify-center text-center w-[90%] md:w-[70%] mx-auto py-12 sm:py-24 min-h-[80vh]">
         <div class="absolute" style="top: 22%; left: -35%;">
-            <img src="/public/images/icons/cleaning_bucket.svg" class="w-73 h-73 hidden md:block sm:block">
+            <img src="/images/icons/cleaning_bucket.svg" class="w-73 h-73 hidden md:block sm:block">
         </div>
         <div class="absolute" style="top: -20%; right: -40%;">
-            <img src="/public/images/icons/cleaning_spray.svg" class="w-73 h-73 hidden md:block sm:block">
+            <img src="/images/icons/cleaning_spray.svg" class="w-73 h-73 hidden md:block sm:block">
         </div>
 
         <h1 id="header-1" class="text-6xl tracking-normal text-blue-950 p-10 sm:text-6xl">
@@ -229,7 +229,7 @@
             We are
             <span id="cleanliness" class="text-blue-500 font-bold inline-flex items-center">
                 <span id="spark" class="mr-3">
-                    <img src="/public/images/icons/single-sparkle.svg" alt="" class="h-12 w-auto">
+                    <img src="/images/icons/single-sparkle.svg" alt="" class="h-12 w-auto">
                 </span>
                 Fin-noys
             </span>
@@ -247,7 +247,7 @@
         <div class="absolute hidden lg:block w-90 p-6 rounded-2xl shadow-xl frosted-card text-center"
             style="top: 25%; right: -15%;">
             <div class="absolute -top-3 left-1/4 -translate-x-1/2 h-6 w-6 rounded-full"><img
-                    src="/public/images/backgrounds/gradient-circle.svg"></div>
+                    src="/images/backgrounds/gradient-circle.svg"></div>
             <p class="text-sm mt-0">
                 “ Commitment to quality cleaning services. “
             </p>
@@ -256,7 +256,7 @@
         <div class="absolute hidden lg:block w-85 p-6 rounded-2xl shadow-xl frosted-card text-center"
             style="top: 25%; left: -2%; transform: translateX(-50%);">
             <div class="absolute -top-3 left-1/4 -translate-x-1/2 h-6 w-6 rounded-full"><img
-                    src="/public/images/backgrounds/gradient-circle.svg"></div>
+                    src="/images/backgrounds/gradient-circle.svg"></div>
             <p class="text-sm">
                 “ Flexible and responsive to your needs. “
             </p>
@@ -264,7 +264,7 @@
         <div class="absolute hidden lg:block w-85 p-6 rounded-2xl shadow-xl frosted-card text-center"
             style="top: 89%; left: 13%; transform: translateX(-50%);">
             <div class="absolute -top-3 left-1/4 -translate-x-1/2 h-6 w-6 rounded-full"><img
-                    src="/public/images/backgrounds/gradient-circle.svg"></div>
+                    src="/images/backgrounds/gradient-circle.svg"></div>
             <p class="text-sm">
                 “ Proven track record in hotel and holiday cottages cleaning services. “
             </p>
@@ -272,7 +272,7 @@
         <div class="absolute hidden lg:block w-72 p-6 rounded-2xl shadow-xl frosted-card text-center"
             style="top: 80%; left: 95%; transform: translateX(-50%);">
             <div class="absolute -top-3 left-1/2 -translate-x-1/2 h-6 w-6 rounded-full"><img
-                    src="/public/images/backgrounds/gradient-circle.svg"></div>
+                    src="/images/backgrounds/gradient-circle.svg"></div>
             <p class="text-sm">
                 “ Wide range of cleaning services. “
             </p>
@@ -302,7 +302,7 @@
                 <h1 class="text-2xl sm:text-4xl md:text-5xl font-[fam-bold] leading-snug">
                     Cleaning is more than a <br>task;
                     <span class="text-blue-500 font-[fam-bold]">it’s a promise of comfort and care</span>
-                    <img src="/public/images/icons/single-sparkle.svg" alt=""
+                    <img src="/images/icons/single-sparkle.svg" alt=""
                         class="inline-block h-8 sm:h-10 align-middle">
                 </h1>
                 <p class="font-[fam-bold] text-base text-blue-500 mt-8 mb-8 sm:text-base">Meet Fin-noys</p>
@@ -334,8 +334,8 @@
 
                     <!-- Front -->
                     <div
-                        class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden bg-[url('/public/images/people/team-member-bg.svg')] bg-center bg-[length:155%] bg-no-repeat [backface-visibility:hidden]">
-                        <img src="/public/images/people/team-member.svg" alt="Founder 1"
+                        class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden bg-[url('/images/people/team-member-bg.svg')] bg-center bg-[length:155%] bg-no-repeat [backface-visibility:hidden]">
+                        <img src="/images/people/team-member.svg" alt="Founder 1"
                             class="absolute inset-0 w-full h-full object-cover rounded-full">
                     </div>
 

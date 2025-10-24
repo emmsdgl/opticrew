@@ -15,7 +15,7 @@
                 My Calendar
             </p>
             <div class="w-full">
-                <x-calendar />
+                <x-calendar :holidays="$holidays" />
             </div>
 
             @livewire('admin.task-overview')

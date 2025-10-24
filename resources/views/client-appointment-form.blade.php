@@ -52,12 +52,12 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">First
-                                Name</label>
+                                Name <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                     <i class="fi fi-rr-user"></i>
                                 </span>
-                                <input type="text" x-model="formData.first_name" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                <input type="text" x-model="formData.first_name" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="Firstname">
@@ -66,8 +66,8 @@
 
                         <div>
                             <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Last
-                                Name</label>
-                            <input type="text" x-model="formData.last_name" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                Name <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="formData.last_name" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Lastname">
                         </div>
@@ -76,12 +76,12 @@
                     <!-- Email Address -->
                     <div class="mb-4">
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Email
-                            Address</label>
+                            Address <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fi fi-rr-envelope"></i>
                             </span>
-                            <input type="email" x-model="formData.email" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                            <input type="email" x-model="formData.email" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Ex: yourname@example.com">
@@ -91,12 +91,12 @@
                     <!-- Finnish Address Structure -->
                     <div class="mb-4">
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Street
-                            Address</label>
+                            Address <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fi fi-rr-marker"></i>
                             </span>
-                            <input type="text" x-model="formData.street_address" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
+                            <input type="text" x-model="formData.street_address" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Ex: Mannerheimintie 123 A 45">
@@ -107,8 +107,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Postal
-                                Code</label>
-                            <input type="text" x-model="formData.postal_code"
+                                Code <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="formData.postal_code" required
                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -116,8 +116,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">City</label>
-                            <input type="text" x-model="formData.city"
+                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">City <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="formData.city" required
                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -128,10 +128,10 @@
                     <!-- Mobile Number -->
                     <div class="mb-4">
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Mobile
-                            Number</label>
+                            Number <span class="text-red-500">*</span></label>
                         <div class="flex gap-2">
                             <div class="relative w-36">
-                                <select x-model="formData.country_code" class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
+                                <select x-model="formData.country_code" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     <option value="+358">🇫🇮 +358</option>
@@ -142,7 +142,7 @@
                                     <option value="+44">🇬🇧 +44</option>
                                 </select>
                             </div>
-                            <input type="tel" x-model="formData.mobile_number" class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
+                            <input type="tel" x-model="formData.mobile_number" required class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="40 1234567">
@@ -227,14 +227,14 @@
                 <div class="p-48 pt-3 mt-6 m-12">
                     <div class="mb-6">
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Service
-                            Type</label>
-                        <select x-model="formData.service_type" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                            Type <span class="text-red-500">*</span></label>
+                        <select x-model="formData.service_type" required @change="calculateQuotation()" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                    bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select service type</option>
-                            <option value="annual">Annual</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="weekly">Weekly</option>
+                            <option value="">Select a Service</option>
+                            <option value="Deep Cleaning">Deep Cleaning</option>
+                            <option value="Daily Room Cleaning">Daily Room Cleaning</option>
+                            <option value="Snowout Cleaning">Snowout Cleaning</option>
                         </select>
                     </div>
 
@@ -242,25 +242,32 @@
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div>
                             <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Service
-                                Date</label>
+                                Date <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                     <i class="fi fi-rr-calendar"></i>
                                 </span>
-                                <input type="date" x-model="formData.service_date" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                <input type="date" x-model="formData.service_date" required @change="checkDateAndCalculate()" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <!-- Sunday/Holiday indicator -->
+                            <div x-show="formData.is_sunday || formData.is_holiday" class="mt-2 text-xs text-orange-600 dark:text-orange-400 flex items-center">
+                                <i class="fi fi-rr-calendar-star mr-1"></i>
+                                <span x-show="formData.is_holiday && !formData.is_sunday">Holiday rate will apply (+50%)</span>
+                                <span x-show="formData.is_sunday && !formData.is_holiday">Sunday rate will apply (+50%)</span>
+                                <span x-show="formData.is_sunday && formData.is_holiday">Sunday & Holiday rate will apply (+50%)</span>
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Service
-                                Time</label>
+                                Time <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                     <i class="fi fi-rr-clock"></i>
                                 </span>
-                                <input type="time" x-model="formData.service_time" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                <input type="time" x-model="formData.service_time" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
@@ -271,11 +278,11 @@
                     <div class="mb-6">
                         <div class="flex justify-between mb-2">
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Number of
-                                Units</label>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white"
-                                x-text="'$' + formData.units * 4.5"></span>
+                                Units <span class="text-red-500">*</span></label>
+                            <span class="text-sm font-semibold text-blue-600 dark:text-blue-400"
+                                x-text="formData.units + ' unit(s)'"></span>
                         </div>
-                        <input type="range" x-model="formData.units" min="1" max="10"
+                        <input type="range" x-model="formData.units" @input="calculateQuotation()" min="1" max="10" required
                             class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
                         <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                             <span>1 Unit</span>
@@ -287,30 +294,51 @@
                     <!-- Unit Size -->
                     <div class="mb-6">
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Unit
-                            Size</label>
-                        <div class="flex gap-2">
-                            <input type="number" x-model="formData.unit_length" class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Length">
-                            <span class="flex items-center text-gray-400">×</span>
-                            <input type="number" x-model="formData.unit_width" class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Width">
-                            <button
-                                class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-400 rounded-lg text-sm">
-                                No Added Unit Yet
-                            </button>
+                            Size <span class="text-red-500">*</span></label>
+                        <select x-model="formData.unit_size" required @change="calculateQuotation()" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
+                                   bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select unit size</option>
+                            <option value="40-60">40-60 m²</option>
+                            <option value="60-90">60-90 m²</option>
+                            <option value="90-120">90-120 m²</option>
+                            <option value="120-150">120-150 m²</option>
+                            <option value="150-180">150-180 m²</option>
+                            <option value="180-220">180-220 m²</option>
+                        </select>
+                    </div>
+
+                    <!-- Quotation Display -->
+                    <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800" x-show="quotation > 0">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Estimated Quotation</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <span x-text="formData.units"></span> unit(s) ×
+                                    <span x-text="formData.unit_size"></span> m²
+                                    <span x-show="formData.is_holiday && !formData.is_sunday" class="text-orange-600 dark:text-orange-400 font-semibold">(Holiday rate)</span>
+                                    <span x-show="formData.is_sunday && !formData.is_holiday" class="text-orange-600 dark:text-orange-400 font-semibold">(Sunday rate)</span>
+                                    <span x-show="formData.is_sunday && formData.is_holiday" class="text-orange-600 dark:text-orange-400 font-semibold">(Sunday & Holiday rate)</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                    €<span x-text="quotation.toFixed(2)"></span>
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Total Price (excl. VAT)</div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Room Identifier -->
+                    <!-- Room Identifier (Cabin Name) -->
                     <div class="mb-6">
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Room
-                            Identifier</label>
-                        <input type="text" x-model="formData.room_identifier" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg 
+                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Cabin/Unit Name
+                            <span class="text-red-500">*</span></label>
+                        <input type="text" x-model="formData.room_identifier" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
                                    bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="What do you call the unit?">
+                            placeholder="Ex: Kelo A, Cabin 5, Metsakoti B">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter the name or identifier of the cabin/unit</p>
                     </div>
 
                     <!-- Special Requests -->
@@ -402,13 +430,15 @@
                             <div class="space-y-3 text-sm">
                                 <div class="flex justify-between">
                                     <span class="text-gray-500 dark:text-gray-400">Service Type</span>
-                                    <span class="font-medium text-gray-900 dark:text-white capitalize"
+                                    <span class="font-medium text-gray-900 dark:text-white"
                                         x-text="formData.service_type || '-'"></span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-500 dark:text-gray-400">Service Date</span>
-                                    <span class="font-medium text-gray-900 dark:text-white"
-                                        x-text="formData.service_date || '-'"></span>
+                                    <span class="font-medium text-gray-900 dark:text-white">
+                                        <span x-text="formData.service_date || '-'"></span>
+                                        <span x-show="formData.is_sunday" class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Sunday)</span>
+                                    </span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-500 dark:text-gray-400">Service Time</span>
@@ -416,7 +446,7 @@
                                         x-text="formData.service_time || '-'"></span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-500 dark:text-gray-400">Room Identifier</span>
+                                    <span class="text-gray-500 dark:text-gray-400">Cabin/Unit Name</span>
                                     <span class="font-medium text-gray-900 dark:text-white"
                                         x-text="formData.room_identifier || '-'"></span>
                                 </div>
@@ -425,13 +455,22 @@
 
                         <!-- Units -->
                         <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Units</h4>
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Units & Pricing</h4>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400"
-                                        x-text="formData.units + ' units (' + (formData.unit_length || '0') + ' x ' + (formData.unit_width || '0') + ')'"></span>
+                                    <span class="text-gray-600 dark:text-gray-400">Number of Units</span>
                                     <span class="font-medium text-gray-900 dark:text-white"
-                                        x-text="'$' + (formData.units * 4.5).toFixed(2)"></span>
+                                        x-text="formData.units + ' unit(s)'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-gray-400">Unit Size</span>
+                                    <span class="font-medium text-gray-900 dark:text-white"
+                                        x-text="formData.unit_size ? formData.unit_size + ' m²' : '-'"></span>
+                                </div>
+                                <div class="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <span class="text-gray-600 dark:text-gray-400 font-semibold">Subtotal</span>
+                                    <span class="font-semibold text-gray-900 dark:text-white"
+                                        x-text="quotation > 0 ? '€' + quotation.toFixed(2) : '-'"></span>
                                 </div>
                             </div>
                         </div>
@@ -457,29 +496,25 @@
                         <!-- Price Summary -->
                         <div class="space-y-2 text-sm mb-6">
                             <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                                <span>Subtotal</span>
-                                <span x-text="'$' + (formData.units * 4.5).toFixed(2)"></span>
+                                <span>Subtotal (excl. VAT)</span>
+                                <span x-text="quotation > 0 ? '€' + quotation.toFixed(2) : '-'"></span>
                             </div>
                             <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                                <span>Discount</span>
-                                <span>-</span>
-                            </div>
-                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                                <span>Tax</span>
-                                <span x-text="'$' + ((formData.units * 4.5) * 0.12).toFixed(2)"></span>
+                                <span>VAT (24%)</span>
+                                <span x-text="quotation > 0 ? '€' + (quotation * 0.24).toFixed(2) : '-'"></span>
                             </div>
                         </div>
 
                         <!-- Total -->
                         <div
                             class="flex justify-between items-center pt-4 border-t-2 border-gray-300 dark:border-gray-600 mb-2">
-                            <span class="text-lg font-bold text-gray-900 dark:text-white">Total</span>
+                            <span class="text-lg font-bold text-gray-900 dark:text-white">Total (incl. VAT)</span>
                             <span class="text-2xl font-bold text-gray-900 dark:text-white"
-                                x-text="'$' + ((formData.units * 4.5) * 1.12).toFixed(2)"></span>
+                                x-text="quotation > 0 ? '€' + (quotation * 1.24).toFixed(2) : '-'"></span>
                         </div>
 
                         <div class="text-sm font-bold text-blue-600 dark:text-blue-400 mb-6">
-                            Payment Amount: <span x-text="'$' + ((formData.units * 4.5) * 1.12).toFixed(2)"></span>
+                            Payment Amount: <span x-text="quotation > 0 ? '€' + (quotation * 1.24).toFixed(2) : '-'"></span>
                         </div>
 
                         <!-- Confirm Button -->
@@ -513,6 +548,10 @@
             submitting: false,
             showDistrictSuggestions: false,
             filteredDistricts: [],
+            quotation: 0,
+
+            // Holidays data from backend
+            holidays: @json($holidays ?? []),
 
             // Popular Helsinki districts (kaupunginosa)
             helsinkiDistricts: [
@@ -522,6 +561,16 @@
                 'Malmi', 'Vuosaari', 'Mellunmäki', 'Kontula', 'Herttoniemi',
                 'Kulosaari', 'Jollas', 'Roihuvuori', 'Koskela', 'Oulunkylä'
             ],
+
+            // Pricing data for all cleaning services (standard rates)
+            pricingRates: {
+                '40-60': { normal: 68.25, sunday: 102.50 },
+                '60-90': { normal: 84.00, sunday: 126.00 },
+                '90-120': { normal: 99.75, sunday: 149.50 },
+                '120-150': { normal: 115.50, sunday: 173.25 },
+                '150-180': { normal: 131.25, sunday: 196.75 },
+                '180-220': { normal: 157.50, sunday: 236.25 }
+            },
 
             formData: {
                 // Step 1 - Client Details
@@ -542,9 +591,10 @@
                 service_type: '',
                 service_date: '',
                 service_time: '',
+                is_sunday: false,        // Auto-detected from service_date
+                is_holiday: false,       // To be flagged by admin later
                 units: 5,
-                unit_length: '',
-                unit_width: '',
+                unit_size: '',
                 room_identifier: '',
                 special_requests: ''
             },
@@ -572,11 +622,22 @@
                             streetTimeout = setTimeout(async () => {
                                 try {
                                     const response = await fetch(
-                                        `${NOMINATIM_API}?format=json&country=Finland&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`
+                                        `${NOMINATIM_API}?format=json&country=Finland&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`,
+                                        {
+                                            headers: {
+                                                'User-Agent': 'OptiCrew/1.0'
+                                            }
+                                        }
                                     );
+
+                                    if (!response.ok) {
+                                        console.warn('Street lookup error:', response.status);
+                                        return;
+                                    }
+
                                     const data = await response.json();
 
-                                    if (data.length > 0 && data[0].address) {
+                                    if (Array.isArray(data) && data.length > 0 && data[0].address) {
                                         const addr = data[0].address;
 
                                         // Auto-fill city if empty
@@ -613,11 +674,22 @@
                             postalTimeout = setTimeout(async () => {
                                 try {
                                     const response = await fetch(
-                                        `${NOMINATIM_API}?format=json&country=Finland&postalcode=${postcode}&addressdetails=1&limit=1`
+                                        `${NOMINATIM_API}?format=json&country=Finland&postalcode=${postcode}&addressdetails=1&limit=1`,
+                                        {
+                                            headers: {
+                                                'User-Agent': 'OptiCrew/1.0'
+                                            }
+                                        }
                                     );
+
+                                    if (!response.ok) {
+                                        console.warn('Postal code lookup error:', response.status);
+                                        return;
+                                    }
+
                                     const data = await response.json();
 
-                                    if (data.length > 0 && data[0].address) {
+                                    if (Array.isArray(data) && data.length > 0 && data[0].address) {
                                         const addr = data[0].address;
 
                                         // Auto-fill city
@@ -645,13 +717,29 @@
 
                 try {
                     const response = await fetch(
-                        `https://nominatim.openstreetmap.org/search?format=json&country=Finland&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=20`
+                        `https://nominatim.openstreetmap.org/search?format=json&country=Finland&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=20`,
+                        {
+                            headers: {
+                                'User-Agent': 'OptiCrew/1.0'
+                            }
+                        }
                     );
+
+                    if (!response.ok) {
+                        console.warn('District fetch error:', response.status);
+                        return;
+                    }
+
                     const data = await response.json();
+
+                    if (!Array.isArray(data)) {
+                        console.warn('Invalid response format for districts');
+                        return;
+                    }
 
                     const districts = new Set();
                     data.forEach(item => {
-                        if (item.address) {
+                        if (item && item.address) {
                             if (item.address.suburb) districts.add(item.address.suburb);
                             if (item.address.neighbourhood) districts.add(item.address.neighbourhood);
                             if (item.address.quarter) districts.add(item.address.quarter);
@@ -686,6 +774,64 @@
             selectDistrict(district) {
                 this.formData.district = district;
                 this.showDistrictSuggestions = false;
+            },
+
+            checkDateAndCalculate() {
+                // Check if the selected date is a Sunday or Holiday
+                if (this.formData.service_date) {
+                    const selectedDate = new Date(this.formData.service_date);
+                    // getDay() returns 0 for Sunday, 1 for Monday, etc.
+                    this.formData.is_sunday = (selectedDate.getDay() === 0);
+
+                    // Check if the selected date is a holiday
+                    this.formData.is_holiday = this.holidays.some(holiday => holiday.date === this.formData.service_date);
+
+                    console.log('Date checked:', {
+                        date: this.formData.service_date,
+                        dayOfWeek: selectedDate.getDay(),
+                        isSunday: this.formData.is_sunday,
+                        isHoliday: this.formData.is_holiday
+                    });
+                }
+
+                // Trigger calculation
+                this.calculateQuotation();
+            },
+
+            calculateQuotation() {
+                // Reset quotation
+                this.quotation = 0;
+
+                // Validate required fields
+                if (!this.formData.service_type || !this.formData.unit_size || !this.formData.units) {
+                    return;
+                }
+
+                // Get pricing for selected unit size
+                const sizeRates = this.pricingRates[this.formData.unit_size];
+
+                if (!sizeRates) {
+                    console.warn('No pricing data for size:', this.formData.unit_size);
+                    return;
+                }
+
+                // Get rate based on whether it's Sunday/Holiday
+                const ratePerUnit = (this.formData.is_sunday || this.formData.is_holiday)
+                    ? sizeRates.sunday
+                    : sizeRates.normal;
+
+                // Calculate total: units × rate
+                this.quotation = this.formData.units * ratePerUnit;
+
+                console.log('Quotation calculated:', {
+                    service: this.formData.service_type,
+                    units: this.formData.units,
+                    size: this.formData.unit_size,
+                    isSunday: this.formData.is_sunday,
+                    isHoliday: this.formData.is_holiday,
+                    ratePerUnit: ratePerUnit,
+                    total: this.quotation
+                });
             },
 
             nextStep() {

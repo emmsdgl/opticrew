@@ -109,11 +109,27 @@ class GeneticAlgorithmOptimizer
                 $teamEfficiencies
             );
 
-            // 3. Initialize population
+            // 3. Initialize population with BALANCED schedules
             $population = new Population(self::POPULATION_SIZE);
             $population->addIndividual($greedySchedule);
 
-            for ($i = 1; $i < self::POPULATION_SIZE; $i++) {
+            // ✅ FIX: Create MORE balanced schedules instead of random ones
+            // Generate 70% balanced + 30% random for diversity
+            $balancedCount = (int) (self::POPULATION_SIZE * 0.7);
+            $randomCount = self::POPULATION_SIZE - $balancedCount;
+
+            // Create variations of the greedy schedule (balanced)
+            for ($i = 1; $i < $balancedCount; $i++) {
+                $balancedSchedule = $this->generateFairGreedySchedule($teams, $clientTasks, $teamEfficiencies);
+                // Add slight randomness for diversity
+                if (rand(0, 100) < 30) {
+                    $balancedSchedule = $this->mutation->mutate($balancedSchedule);
+                }
+                $population->addIndividual($balancedSchedule);
+            }
+
+            // Add some random schedules for diversity
+            for ($i = 0; $i < $randomCount; $i++) {
                 $randomSchedule = $this->generateRandomSchedule($teams, $clientTasks);
                 $population->addIndividual($randomSchedule);
             }

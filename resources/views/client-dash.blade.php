@@ -12,7 +12,7 @@
             <x-labelwithvalue label="My Calendar" count="" />
             <div
                 class="w-full mb-6 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto sm:h-72 md:h-80 lg:h-auto">
-                <x-calendar />
+                <x-calendar :holidays="$holidays" />
             </div>
 
             <!-- Inner Bottom - Recent Orders -->

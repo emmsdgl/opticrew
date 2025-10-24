@@ -1,4 +1,4 @@
-@props(['clients', 'events', 'bookedLocationsByDate'])
+@props(['clients', 'events', 'bookedLocationsByDate', 'holidays'])
 
 <style>
     /* Prevent modal flash on page load */
@@ -7,7 +7,7 @@
     }
 </style>
 
-<div x-data="calendarComponent(@js($clients), @js($events), @js($bookedLocationsByDate))" x-init="init()"
+<div x-data="calendarComponent(@js($clients), @js($events), @js($bookedLocationsByDate), @js($holidays))" x-init="init()"
     class="w-full h-full bg-gray-50 dark:bg-gray-900 rounded-lg p-4 transition-colors duration-300">
 
     <!-- Calendar Header -->
@@ -61,20 +61,39 @@
                 <!-- Date Number with Today Indicator -->
                 <template x-if="date.date">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold"
-                            :class="{
-                                'text-blue-600 dark:text-blue-400': isToday(date),
-                                'text-gray-400 dark:text-gray-500': isPastDate(date) && !isToday(date),
-                                'text-gray-700 dark:text-gray-200': !isPastDate(date) && !isToday(date)
-                            }"
-                            x-text="date.date"></span>
+                        <div class="flex items-center gap-1">
+                            <span class="text-xs font-semibold"
+                                :class="{
+                                    'text-blue-600 dark:text-blue-400': isToday(date),
+                                    'text-gray-400 dark:text-gray-500': isPastDate(date) && !isToday(date),
+                                    'text-gray-700 dark:text-gray-200': !isPastDate(date) && !isToday(date)
+                                }"
+                                x-text="date.date"></span>
 
-                        <!-- TODAY Badge -->
-                        <template x-if="isToday(date)">
-                            <span class="text-xs font-bold bg-blue-600 dark:bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                                TODAY
-                            </span>
-                        </template>
+                            <!-- Holiday Badge -->
+                            <template x-if="date.holiday">
+                                <span class="text-xs font-semibold bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded-full flex items-center gap-1" :title="date.holiday.name">
+                                    <i class="fa-solid fa-star text-xs"></i>
+                                </span>
+                            </template>
+                        </div>
+
+                        <div class="flex items-center gap-1">
+                            <!-- TODAY Badge -->
+                            <template x-if="isToday(date)">
+                                <span class="text-xs font-bold bg-blue-600 dark:bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                                    TODAY
+                                </span>
+                            </template>
+
+                            <!-- Holiday Management Button -->
+                            <button @click.stop="handleHolidayClick(date)"
+                                class="text-xs p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                                :class="date.holiday ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'"
+                                :title="date.holiday ? 'Manage Holiday' : 'Add Holiday'">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </button>
+                        </div>
                     </div>
                 </template>
 
@@ -476,9 +495,72 @@
 
             <!-- Footer -->
             <div x-show="!optimizationLoading" class="border-t border-gray-200 dark:border-gray-700 px-6 py-4 bg-gray-50 dark:bg-gray-900">
-                <button @click="closeOptimizationModal" 
+                <button @click="closeOptimizationModal"
                     class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
                     Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Holiday Modal -->
+    <div x-show="showAddHolidayModal" x-cloak x-transition.opacity
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Add Holiday</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                Do you want to add a holiday to <span class="font-semibold" x-text="selectedHolidayDate"></span>?
+            </p>
+            <div class="flex gap-3">
+                <button @click="promptHolidayName()"
+                    class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
+                    Yes
+                </button>
+                <button @click="closeHolidayModals()"
+                    class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition">
+                    No
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Holiday Name Input Modal -->
+    <div x-show="showHolidayNameModal" x-cloak x-transition.opacity
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Holiday Name</h2>
+            <input type="text" x-model="holidayName" placeholder="Enter holiday name"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4"
+                @keydown.enter="confirmAddHoliday()">
+            <div class="flex gap-3">
+                <button @click="confirmAddHoliday()"
+                    class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                    Confirm
+                </button>
+                <button @click="closeHolidayModals()"
+                    class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Holiday Modal -->
+    <div x-show="showDeleteHolidayModal" x-cloak x-transition.opacity
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Delete Holiday</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                Do you want to delete holiday "<span class="font-semibold" x-text="selectedHolidayName"></span>"?
+            </p>
+            <div class="flex gap-3">
+                <button @click="confirmDeleteHoliday()"
+                    class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+                    Confirm
+                </button>
+                <button @click="closeHolidayModals()"
+                    class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition">
+                    Cancel
                 </button>
             </div>
         </div>
@@ -487,7 +569,7 @@
 
 @push('scripts')
 <script>
-function calendarComponent(initialClients, initialEvents, bookedLocationsByDate) { // 1. Accept new data
+function calendarComponent(initialClients, initialEvents, bookedLocationsByDate, initialHolidays) { // 1. Accept new data
     return {
         today: new Date(),
         currentMonth: new Date().getMonth(),
@@ -509,7 +591,18 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
         eventDetailsList: [],
         bookedLocationsByDate: bookedLocationsByDate || {}, // 2. Store the data
         hasUnsavedSchedule: false, // Track if there's an unsaved optimization run
-        currentOptimizationRunId: null, // Store the current run ID
+        currentOptimizationRunId: null, // Store the current run ID (backward compatibility)
+        currentServiceDate: null, // Store the service date with unsaved schedules
+
+        // Holiday management
+        holidays: initialHolidays || {}, // Store holidays by date key
+        showAddHolidayModal: false,
+        showHolidayNameModal: false,
+        showDeleteHolidayModal: false,
+        selectedHolidayDate: null,
+        selectedHolidayId: null,
+        selectedHolidayName: null,
+        holidayName: '',
 
         formData: {
             client: '',
@@ -536,11 +629,13 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
 
                 if (data.has_unsaved) {
                     this.currentOptimizationRunId = data.optimization_run_id;
+                    this.currentServiceDate = data.service_date; // ✅ Store service date
                     this.hasUnsavedSchedule = true;
                     console.log('Found unsaved schedule:', data);
                 } else {
                     this.hasUnsavedSchedule = false;
                     this.currentOptimizationRunId = null;
+                    this.currentServiceDate = null;
                 }
             } catch (error) {
                 console.error('Error checking for unsaved schedule:', error);
@@ -591,10 +686,12 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
             for (let d = 1; d <= totalDays; d++) {
                 const key = `${this.currentYear}-${this.currentMonth + 1}-${d}`;
                 const dayEvents = this.events[key] || [];
+                const holiday = this.holidays[key] || null;
                 this.dates.push({
                     date: d,
                     events: dayEvents,
-                    groupedEvents: this.groupEventsByClient(dayEvents)
+                    groupedEvents: this.groupEventsByClient(dayEvents),
+                    holiday: holiday // Add holiday data to each date
                 });
             }
         },
@@ -853,8 +950,9 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
 
                 if (response.ok) {
                     if (data.optimization_run_id) {
-                        // Store the optimization run ID and mark as unsaved
+                        // Store the optimization run ID and service date, mark as unsaved
                         this.currentOptimizationRunId = data.optimization_run_id;
+                        this.currentServiceDate = this.formData.serviceDate; // ✅ Store service date
                         this.hasUnsavedSchedule = true;
 
                         await this.loadOptimizationResults(data.optimization_run_id);
@@ -922,12 +1020,12 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
         },
 
         async saveSchedule() {
-            if (!this.hasUnsavedSchedule || !this.currentOptimizationRunId) {
+            if (!this.hasUnsavedSchedule || !this.currentServiceDate) {
                 alert('No unsaved schedule to save.');
                 return;
             }
 
-            if (!confirm('Are you sure you want to save this schedule? This will lock the current teams and enable real-time task addition for today.')) {
+            if (!confirm('Are you sure you want to save ALL schedules for ' + this.currentServiceDate + '? This will lock all teams for that day and enable real-time task addition.')) {
                 return;
             }
 
@@ -942,7 +1040,7 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        optimization_run_id: this.currentOptimizationRunId
+                        service_date: this.currentServiceDate // ✅ Send service_date instead of run_id
                     })
                 });
 
@@ -951,7 +1049,13 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
                 if (response.ok) {
                     this.hasUnsavedSchedule = false;
                     this.currentOptimizationRunId = null;
-                    alert('Schedule saved successfully! Teams are now locked for real-time task addition.');
+                    this.currentServiceDate = null;
+
+                    // Show detailed success message
+                    const runCount = data.runs_saved || 1;
+                    const clientText = runCount > 1 ? `${runCount} clients` : '1 client';
+                    alert(`✅ All schedules saved successfully! (${clientText})\n\nTeams are now locked for real-time task addition on ${data.service_date}.`);
+
                     window.location.reload();
                 } else {
                     alert('Error saving schedule: ' + (data.message || 'Unknown error'));
@@ -1006,6 +1110,136 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate)
                 'Incomplete': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
             };
             return colors[status] || colors['Incomplete'];
+        },
+
+        // Holiday Management Methods
+        handleHolidayClick(date) {
+            if (!date || !date.date) return;
+
+            const dateString = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(date.date).padStart(2, '0')}`;
+            this.selectedHolidayDate = new Date(this.currentYear, this.currentMonth, date.date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            if (date.holiday) {
+                // Holiday exists - show delete confirmation
+                this.selectedHolidayId = date.holiday.id;
+                this.selectedHolidayName = date.holiday.name;
+                this.showDeleteHolidayModal = true;
+            } else {
+                // No holiday - show add confirmation
+                this.showAddHolidayModal = true;
+            }
+        },
+
+        promptHolidayName() {
+            this.showAddHolidayModal = false;
+            this.holidayName = '';
+            this.showHolidayNameModal = true;
+        },
+
+        async confirmAddHoliday() {
+            if (!this.holidayName.trim()) {
+                alert('Please enter a holiday name');
+                return;
+            }
+
+            try {
+                const dateString = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(this.dates.find(d => {
+                    const ds = new Date(this.currentYear, this.currentMonth, d.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    return ds === this.selectedHolidayDate;
+                })?.date).padStart(2, '0')}`;
+
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                const response = await fetch('/admin/holidays', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        date: dateString,
+                        name: this.holidayName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Add holiday to local data
+                    const key = `${this.currentYear}-${this.currentMonth + 1}-${parseInt(dateString.split('-')[2])}`;
+                    this.holidays[key] = data.holiday;
+
+                    // Refresh calendar to show the holiday
+                    this.renderCalendar();
+
+                    alert('✅ Holiday added successfully!');
+                    this.closeHolidayModals();
+                } else {
+                    alert('❌ Error: ' + (data.message || 'Failed to add holiday'));
+                }
+            } catch (error) {
+                console.error('Error adding holiday:', error);
+                alert('❌ Error adding holiday. Please try again.');
+            }
+        },
+
+        async confirmDeleteHoliday() {
+            if (!this.selectedHolidayId) return;
+
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                const response = await fetch(`/admin/holidays/${this.selectedHolidayId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Remove holiday from local data
+                    Object.keys(this.holidays).forEach(key => {
+                        if (this.holidays[key]?.id === this.selectedHolidayId) {
+                            delete this.holidays[key];
+                        }
+                    });
+
+                    // Refresh calendar to hide the holiday
+                    this.renderCalendar();
+
+                    alert('✅ Holiday deleted successfully!');
+                    this.closeHolidayModals();
+                } else {
+                    alert('❌ Error: ' + (data.message || 'Failed to delete holiday'));
+                }
+            } catch (error) {
+                console.error('Error deleting holiday:', error);
+                alert('❌ Error deleting holiday. Please try again.');
+            }
+        },
+
+        closeHolidayModals() {
+            this.showAddHolidayModal = false;
+            this.showHolidayNameModal = false;
+            this.showDeleteHolidayModal = false;
+            this.selectedHolidayDate = null;
+            this.selectedHolidayId = null;
+            this.selectedHolidayName = null;
+            this.holidayName = '';
         }
     }
 }

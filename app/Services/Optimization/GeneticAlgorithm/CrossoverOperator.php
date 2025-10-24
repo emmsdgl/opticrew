@@ -128,21 +128,33 @@ class CrossoverOperator
 
     /**
      * Repair schedule to ensure all tasks are assigned exactly once
+     * ✅ FIX: Assign missing tasks to LEAST LOADED team to maintain balance
      */
     protected function repairSchedule(array $schedule, array $referenceSchedule): array
     {
         $allTasksInReference = $this->getAllTasks($referenceSchedule);
         $assignedTasks = $this->getAllTasks($schedule);
-        
+
         $assignedIds = $assignedTasks->pluck('id');
         $missingTasks = $allTasksInReference->reject(fn($task) => $assignedIds->contains($task->id));
-        
-        // Assign missing tasks to random teams
+
+        // ✅ FIX: Assign missing tasks to LEAST LOADED team (not random!)
         foreach ($missingTasks as $task) {
-            $randomTeam = array_rand($schedule);
-            $schedule[$randomTeam]['tasks']->push($task);
+            // Find team with minimum workload
+            $minWorkload = PHP_INT_MAX;
+            $selectedTeam = 0;
+
+            foreach ($schedule as $teamIndex => $teamSchedule) {
+                $workload = $teamSchedule['tasks']->sum('duration');
+                if ($workload < $minWorkload) {
+                    $minWorkload = $workload;
+                    $selectedTeam = $teamIndex;
+                }
+            }
+
+            $schedule[$selectedTeam]['tasks']->push($task);
         }
-        
+
         return $schedule;
     }
 

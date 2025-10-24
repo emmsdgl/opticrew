@@ -3,7 +3,7 @@
         <!-- Main Panel - Dashboard Content -->
         <div class="main-panel flex flex-col gap-6 flex-1 w-full p-4">
             <!-- Pass data to the calendar -->
-            <x-taskcalendar :clients="$clients" :events="$events" :booked-locations-by-date="$bookedLocationsByDate" />
+            <x-taskcalendar :clients="$clients" :events="$events" :booked-locations-by-date="$bookedLocationsByDate" :holidays="$holidays" />
 
             <!-- Pass data to the Kanban board -->
             <div class="w-full max-h-[600px] min-h-[400px]">

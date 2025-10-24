@@ -1,18 +1,4 @@
-<x-layouts.general-dashboard :title="'Attendance'">
-    @slot('sidebar')
-    @php
-        $navOptions = [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('employee.dashboard')],
-            ['label' => 'Tasks', 'icon' => 'fa-file-lines', 'href' => '/employee-tasks'],
-            ['label' => 'Attendance', 'icon' => 'fa-calendar', 'href' => route('employee.attendance')],
-            ['label' => 'Performance', 'icon' => 'fa-chart-line', 'href' => '/employee-performance']
-        ];
-
-        $teams = ['', ''];
-    @endphp
-    <x-sidebar :navOptions="$navOptions" :teams="$teams" />
-    @endslot
-
+<x-layouts.general-employee :title="'Attendance'">
     <section role="status" class="flex flex-col lg:flex-col gap-1 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         
         <!-- Success/Error Messages -->
@@ -27,8 +13,8 @@
                 {{ session('error') }}
             </div>
         @endif
-
-        <!-- Clock In/Out Buttons -->
+<!-- 
+        // Clock In/Out Buttons
         <div class="flex gap-4 mb-6">
             <form action="{{ route('employee.attendance.clockin') }}" method="POST">
                 @csrf
@@ -43,7 +29,7 @@
                     <i class="fa-solid fa-clock mr-2"></i>Clock Out
                 </button>
             </form>
-        </div>
+        </div> -->
 
         <!-- Inner Panel - Summary Cards Container -->
         <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">

@@ -22,21 +22,21 @@
 
     @font-face {
         font-family: 'fam-regular';
-        src: url('/public/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
 
     @font-face {
         font-family: 'fam-bold';
-        src: url('/public/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
 
     @font-face {
         font-family: 'fam-bold-italic';
-        src: url('/public/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
@@ -52,9 +52,9 @@
     <header class="inset-x-0 top-0 z-50">
         <nav aria-label="Global" class="flex items-center justify-between p-6 lg:px-8">
             <div class="flex lg:flex-1">
-                <a href="#" class="-m-1.5 p-1.5">
+                <a href="/" class="-m-1.5 p-1.5">
                     <span class="sr-only"></span>
-                    <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                    <img src="/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
                 </a>
             </div>
             <div class="flex lg:hidden">
@@ -68,15 +68,15 @@
                     </svg>
                 </button>
             </div>
-            <div class="hidden lg:flex lg:gap-x-12">
-                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Home</a>
-                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">About</a>
-                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Services</a>
-                <a href="#" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Price Quotation</a>
-            </div>
+                <div class="hidden lg:flex lg:gap-x-12">
+                    <a href="/" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Home</a>
+                    <a href="/about" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">About</a>
+                    <a href="/services" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Services</a>
+                    <a href="/pricing" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Price Quotation</a>
+                </div>
             <div class="hidden lg:flex lg:flex-1 lg:justify-end">
                 <span aria-hidden="true"></span>
-            </div>
+           </div>
         </nav>
         <el-dialog>
             <dialog id="mobile-menu" class="backdrop:bg-transparent lg:hidden">
@@ -84,9 +84,9 @@
                     <el-dialog-panel
                         class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-blue-100 bg-blend-color-multiply  p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-100/10">
                         <div class="flex items-center justify-between">
-                            <a href="#" class="-m-1.5 p-1.5">
+                            <a href="/" class="-m-1.5 p-1.5">
                                 <span class="sr-only">Fin-noys</span>
-                                <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                                <img src="/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
                             </a>
                             <button type="button" command="close" commandfor="mobile-menu"
                                 class="-m-2.5 rounded-md p-2.5 text-gray-200">
@@ -100,13 +100,13 @@
                         <div class="mt-6 flow-root">
                             <div class="-my-6 divide-y divide-white/10">
                                 <div class="space-y-2 py-6">
-                                    <a href="#"
+                                    <a href="/"
                                         class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Home</a>
-                                    <a href="#"
+                                    <a href="/about"
                                         class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">About</a>
-                                    <a href="#"
+                                    <a href="/services"
                                         class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Services</a>
-                                    <a href="#"
+                                    <a href="/pricing"
                                         class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Pricing
                                         Quotation</a>
                                 </div>
@@ -128,14 +128,14 @@
         <!-- SERVICES -->
         <div id="container-1">
             <!-- SERVICES CAROUSEL -->
-            <div id="indicators-carousel" class="relative w-full" data-carousel="slide">
+            <div id="indicators-carousel" class="relative w-full">
                 <!-- Carousel wrapper -->
                 <div class="relative h-[40rem] sm:h-[30rem] lg:h-[40rem] overflow-hidden rounded-xl">
 
                     <!-- Cover Page -->
                     <div class="duration-700 ease-in-out" data-carousel-item="active">
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
-                            style="background-image: url('/public/images/backgrounds/services_carousel/cover-page.svg');">
+                            style="background-image: url('/images/backgrounds/services_carousel/cover-page.svg');">
                             <h3 class="text-base text-[#ffffff]">Our Services</h3>
                             <h2 class="text-5xl font-[fam-bold] text-[#ffffff] pt-6 pb-6 tracking-tight">What do we
                                 offer?</h2>
@@ -153,7 +153,7 @@
                     <!-- Item 1 -->
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
-                            style="background-image: url('/public/images/backgrounds/services_carousel/deep-cleaning.svg');">
+                            style="background-image: url('/images/backgrounds/services_carousel/deep-cleaning.svg');">
                             <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
@@ -193,7 +193,7 @@
                     <!-- Item 2 -->
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
-                            style="background-image: url('/public/images/backgrounds/services_carousel/daily-room-cleaning.svg');">
+                            style="background-image: url('/images/backgrounds/services_carousel/daily-room-cleaning.svg');">
                             <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
@@ -240,7 +240,7 @@
                     <!-- Item 3 -->
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
-                            style="background-image: url('/public/images/backgrounds/services_carousel/snow-out-cleaning.svg');">
+                            style="background-image: url('/images/backgrounds/services_carousel/snow-out-cleaning.svg');">
                             <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
@@ -287,7 +287,7 @@
                     <!-- Item 4 -->
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
-                            style="background-image: url('/public/images/backgrounds/services_carousel/light-daily-cleaning.svg');">
+                            style="background-image: url('/images/backgrounds/services_carousel/light-daily-cleaning.svg');">
                             <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
@@ -334,7 +334,7 @@
                     <!-- Item 5 -->
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
-                            style="background-image: url('/public/images/backgrounds/services_carousel/full-daily-cleaning.svg');">
+                            style="background-image: url('/images/backgrounds/services_carousel/full-daily-cleaning.svg');">
                             <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
@@ -643,12 +643,102 @@
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
 <script>
+    // Simple custom carousel implementation
+    document.addEventListener('DOMContentLoaded', function() {
+        const carousel = document.getElementById('indicators-carousel');
+        if (!carousel) return;
+
+        const items = carousel.querySelectorAll('[data-carousel-item]');
+        const prevBtn = carousel.querySelector('[data-carousel-prev]');
+        const nextBtn = carousel.querySelector('[data-carousel-next]');
+        const indicators = carousel.querySelectorAll('[data-carousel-slide-to]');
+
+        let currentIndex = 0;
+        let autoplayInterval;
+
+        function showSlide(index) {
+            // Hide all items
+            items.forEach(item => {
+                item.classList.add('hidden');
+                item.classList.remove('block');
+            });
+
+            // Show current item
+            if (items[index]) {
+                items[index].classList.remove('hidden');
+                items[index].classList.add('block');
+            }
+
+            // Update indicators
+            indicators.forEach((indicator, i) => {
+                if (i === index) {
+                    indicator.setAttribute('aria-current', 'true');
+                } else {
+                    indicator.removeAttribute('aria-current');
+                }
+            });
+
+            currentIndex = index;
+        }
+
+        function nextSlide() {
+            const next = (currentIndex + 1) % items.length;
+            showSlide(next);
+        }
+
+        function prevSlide() {
+            const prev = (currentIndex - 1 + items.length) % items.length;
+            showSlide(prev);
+        }
+
+        function startAutoplay() {
+            stopAutoplay();
+            autoplayInterval = setInterval(nextSlide, 5000);
+        }
+
+        function stopAutoplay() {
+            if (autoplayInterval) {
+                clearInterval(autoplayInterval);
+            }
+        }
+
+        // Event listeners
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                prevSlide();
+                startAutoplay(); // Restart autoplay after manual navigation
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                nextSlide();
+                startAutoplay(); // Restart autoplay after manual navigation
+            });
+        }
+
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                showSlide(index);
+                startAutoplay(); // Restart autoplay after manual navigation
+            });
+        });
+
+        // Initialize
+        showSlide(0);
+        startAutoplay();
+
+        // Pause on hover
+        carousel.addEventListener('mouseenter', stopAutoplay);
+        carousel.addEventListener('mouseleave', startAutoplay);
+    });
+
     const cities = {
         inari: {
             label: "",
             name: "Municipality of Inari",
             desc: "This is one of the municipalities inside Lapland, on the northernmost region, taking up roughly the entire top third of the country, above the Arctic Circle.",
-            bg: "/public/images/backgrounds/inari-bg.svg",
+            bg: "/images/backgrounds/inari-bg.svg",
             nameColor: "#ffffff",
             descColor: "#dbe2ff",
             services: ["All"],
@@ -658,7 +748,7 @@
             label: "",
             name: "Lapland Region",
             desc: "The capital of Lapland and the official hometown of Santa Claus, known for its vibrant urban life and Northern Lights views.",
-            bg: "/public/images/backgrounds/lapland-region-bg.svg",
+            bg: "/images/backgrounds/lapland-region-bg.svg",
             nameColor: "#ffffff",
             descColor: "#dbe2ff",
             services: ["Home Cleaning", "Office Cleaning", "Snow Removal"],
@@ -668,7 +758,7 @@
             label: "",
             name: "Saariselkä",
             desc: "In Lapland, with the shimmering northern lights dance above snow-covered fells, reindeer roam freely, and adventure awaits year-round through skiing, hiking, and the serene beauty of the Arctic wilderness.",
-            bg: "/public/images/backgrounds/sar-bg.svg",
+            bg: "/images/backgrounds/sar-bg.svg",
             nameColor: "#ffffff",
             descColor: "#dbe2ff",
             services: ["Home Cleaning", "Office Cleaning", "Snow Removal"],

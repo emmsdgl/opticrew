@@ -13,21 +13,21 @@
 <style>
     @font-face {
         font-family: 'fam-regular';
-        src: url('/public/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-Regular.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
 
     @font-face {
         font-family: 'fam-bold';
-        src: url('/public/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-Bold.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
 
     @font-face {
         font-family: 'fam-bold-italic';
-        src: url('/public/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
+        src: url('/fonts/FamiljenGrotesk-BoldItalic.otf') format('opentype');
         font-weight: normal;
         font-style: normal;
     }
@@ -38,7 +38,7 @@
     }
 
     body {
-        background-image: url(/public/images/backgrounds/login_bg.svg);
+        background-image: url(/images/backgrounds/login_bg.svg);
         background-size: cover;
     }
 
@@ -92,7 +92,7 @@
             <div class="flex lg:flex-1">
                 <a href="#" class="-m-1.5 p-1.5">
                     <span class="sr-only"></span>
-                    <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                    <img src="/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
                 </a>
             </div>
             <div class="flex lg:hidden">
@@ -107,13 +107,13 @@
                 </button>
             </div>
             <div class="hidden lg:flex lg:gap-x-12">
-                <a href="#" class="text-sm/6 text-blue-950">Home</a>
-                <a href="#" class="text-sm/6 text-blue-950">About</a>
-                <a href="#" class="text-sm/6 text-blue-950">Services</a>
-                <a href="#" class="text-sm/6 text-blue-950">Price Quotation</a>
+                <a href="/" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Home</a>
+                <a href="/about" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">About</a>
+                <a href="/services" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Services</a>
+                <a href="/pricing" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Price Quotation</a>
             </div>
             <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-                <span aria-hidden="true"></span>
+                <a href="/login" class="text-sm/6 font-semibold text-blue-950 hover:text-blue-600">Log in <span aria-hidden="true">&rarr;</span></a>
             </div>
         </nav>
         <el-dialog>
@@ -124,7 +124,7 @@
                         <div class="flex items-center justify-between">
                             <a href="#" class="-m-1.5 p-1.5">
                                 <span class="sr-only">Fin-noys</span>
-                                <img src="/public/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
+                                <img src="/images/finnoys-text-logo.svg" alt="" class="h-20 w-auto">
                             </a>
                             <button type="button" command="close" commandfor="mobile-menu"
                                 class="-m-2.5 rounded-md p-2.5 text-gray-200">
