@@ -17,6 +17,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScenarioController;
 use App\Http\Controllers\ClientAppointmentController;
+use App\Http\Controllers\LanguageController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
@@ -30,6 +31,10 @@ Route::get('/', action: function () {
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// --- LANGUAGE SWITCHING ROUTES ---
+Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
+Route::post('/api/language/switch', [LanguageController::class, 'switchApi'])->name('language.switch.api');
 
 // --- LANDING PAGE ROUTES (Public) ---
 Route::get('/', function () {
@@ -47,7 +52,7 @@ Route::get('/', function () {
     }
 
     // Show landing page for guests
-    return response()->file(resource_path('views/html/landing-page/home.html'));
+    return view('home');
 })->name('home');
 
 Route::get('/about', function () {

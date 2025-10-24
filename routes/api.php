@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TaskStatusController;
 use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\ChatbotController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,3 +74,14 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
             ->name('api.admin.alerts.acknowledge');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Public API Routes
+|--------------------------------------------------------------------------
+*/
+
+// Chatbot API (Public - No authentication required)
+Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage'])
+    ->middleware('throttle:30,1')  // 30 requests per minute to prevent abuse
+    ->name('api.chatbot.message');
