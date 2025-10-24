@@ -64,9 +64,9 @@ Route::get('/pricing', function () {
 
 
 // --- AUTHENTICATED ROUTES ---
-Route::middleware(['auth'])->group(function () {
 
-    // --- ADMIN ROUTES ---
+// --- ADMIN ROUTES ---
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Display task calendar and kanban board
@@ -142,8 +142,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 // --- EMPLOYEE ROUTES ---
-
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
         ->name('employee.dashboard');
 
@@ -166,40 +165,40 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // --- CLIENT ROUTES ---
-Route::get('/client/dashboard', function () {
-    // 1. Get the currently authenticated user.
-    $user = Auth::user();
+Route::middleware(['auth', 'client'])->group(function () {
+    Route::get('/client/dashboard', function () {
+        // 1. Get the currently authenticated user.
+        $user = Auth::user();
 
-    // 2. Get the associated client record using the relationship.
-    $client = $user->client;
+        // 2. Get the associated client record using the relationship.
+        $client = $user->client;
 
-    // 3. Fetch holidays
-    $holidays = App\Models\Holiday::all()->map(function ($holiday) {
-        return [
-            'date' => $holiday->date->format('Y-m-d'),
-            'name' => $holiday->name,
-        ];
-    });
+        // 3. Fetch holidays
+        $holidays = App\Models\Holiday::all()->map(function ($holiday) {
+            return [
+                'date' => $holiday->date->format('Y-m-d'),
+                'name' => $holiday->name,
+            ];
+        });
 
-    // 4. Pass the $client and holidays to the view.
-    return view('client-dash', compact('client', 'holidays'));
+        // 4. Pass the $client and holidays to the view.
+        return view('client-dash', compact('client', 'holidays'));
+    })->name('client.dashboard');
 
-})->middleware('auth')->name('client.dashboard');
+    // Client Appointment/Booking Routes
+    Route::get('/client/book-service', [ClientAppointmentController::class, 'create'])->name('client.appointment.create');
+    Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
 
-// Client Appointment/Booking Routes
-Route::get('/client/book-service', [ClientAppointmentController::class, 'create'])->name('client.appointment.create');
-Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
+    Route::get('/client/appointments', function () {
+        $user = Auth::user();
 
-Route::get('/client/appointments', function () {
-    $user = Auth::user();
+        // Fetch all appointments for the current client
+        $appointments = $user->client->appointments()->orderBy('service_date', 'asc')->get();
 
-    // Fetch all appointments for the current client
-    $appointments = $user->client->appointments()->orderBy('service_date', 'asc')->get();
-
-    // Pass the fetched data to the new view file
-    return view('client-appointments', compact('appointments'));
-
-})->middleware('auth')->name('client.appointments');
+        // Pass the fetched data to the new view file
+        return view('client-appointments', compact('appointments'));
+    })->name('client.appointments');
+});
 
 
 //ALL ROUTES FOR BUTTONS
