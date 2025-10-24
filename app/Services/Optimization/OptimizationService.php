@@ -43,33 +43,132 @@ class OptimizationService
             
             // ✅ RULE 8: Check if this is real-time addition for TODAY
             $isRealTimeAddition = $this->isRealTimeAddition($serviceDate);
-            
-            // ✅ RULE 4 & 9: Check if schedule exists and is saved
-            $existingRun = OptimizationRun::where('service_date', $serviceDate)
-                ->where('is_saved', true) // Only consider saved schedules
-                ->first();
 
-            if ($isRealTimeAddition && $existingRun) {
-                Log::info("Real-time addition detected - adding to existing teams", [
-                    'optimization_run_id' => $existingRun->id
+            // ✅ RULE 4 & 9: Check if schedule exists and is saved
+            $savedRuns = OptimizationRun::where('service_date', $serviceDate)
+                ->where('is_saved', true) // Only consider saved schedules
+                ->get();
+
+            if ($isRealTimeAddition && $savedRuns->isNotEmpty()) {
+                // ✅ MULTI-TASK FIX: Find ALL pending tasks for this date, not just the triggered one
+                $allPendingTasks = Task::with(['location.contractedClient', 'client'])
+                    ->whereDate('scheduled_date', $serviceDate)
+                    ->where('status', 'Pending')
+                    ->get();
+
+                if ($allPendingTasks->isEmpty()) {
+                    Log::warning("No pending tasks found for real-time addition", [
+                        'service_date' => $serviceDate
+                    ]);
+                    DB::commit(); // Commit empty transaction before returning
+                    return [
+                        'status' => 'success',
+                        'message' => 'No pending tasks to assign'
+                    ];
+                }
+
+                Log::info("Real-time addition detected - processing ALL pending tasks", [
+                    'service_date' => $serviceDate,
+                    'total_pending_tasks' => $allPendingTasks->count(),
+                    'pending_task_ids' => $allPendingTasks->pluck('id')->toArray(),
+                    'total_saved_runs_for_date' => $savedRuns->count()
                 ]);
-                
-                return $this->addTaskToExistingTeams(
-                    $serviceDate,
-                    $triggeredByTaskId,
-                    $existingRun
-                );
+
+                // Group pending tasks by client
+                $tasksByClient = $allPendingTasks->groupBy(function($task) {
+                    if ($task->location && $task->location->contracted_client_id) {
+                        return 'contracted_' . $task->location->contracted_client_id;
+                    } elseif ($task->client_id) {
+                        return 'client_' . $task->client_id;
+                    }
+                    return 'unassigned';
+                });
+
+                $assignmentResults = [];
+
+                // Process each client's pending tasks
+                foreach ($tasksByClient as $clientIdentifier => $clientTasks) {
+                    // Find the saved run for this client
+                    $correctRun = null;
+                    foreach ($savedRuns as $run) {
+                        $runTeams = \App\Models\OptimizationTeam::where('optimization_run_id', $run->id)->first();
+                        if ($runTeams) {
+                            $runTask = Task::with(['location.contractedClient'])
+                                ->where('assigned_team_id', $runTeams->id)
+                                ->first();
+
+                            if ($runTask) {
+                                $runClientIdentifier = null;
+                                if ($runTask->location && $runTask->location->contracted_client_id) {
+                                    $runClientIdentifier = 'contracted_' . $runTask->location->contracted_client_id;
+                                } elseif ($runTask->client_id) {
+                                    $runClientIdentifier = 'client_' . $runTask->client_id;
+                                }
+
+                                if ($runClientIdentifier === $clientIdentifier) {
+                                    $correctRun = $run;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!$correctRun) {
+                        Log::warning("No saved run found for client, skipping", [
+                            'client_identifier' => $clientIdentifier,
+                            'task_count' => $clientTasks->count()
+                        ]);
+                        continue;
+                    }
+
+                    // Assign ALL tasks for this client to teams in the correct run
+                    foreach ($clientTasks as $task) {
+                        $result = $this->addSingleTaskToExistingTeams(
+                            $serviceDate,
+                            $task->id,
+                            $correctRun
+                        );
+                        $assignmentResults[] = $result;
+                    }
+                }
+
+                DB::commit(); // Commit transaction before returning
+                return [
+                    'status' => 'success',
+                    'message' => 'All pending tasks assigned to existing teams',
+                    'total_tasks_assigned' => count($assignmentResults),
+                    'assignments' => $assignmentResults
+                ];
             }
 
-            // ✅ RULE 4: Delete unsaved optimization runs before re-optimizing
-            if (!$existingRun) {
-                $deletedCount = OptimizationRun::where('service_date', $serviceDate)
-                    ->where('is_saved', false)
-                    ->delete();
-                
-                Log::info("Deleted unsaved optimization runs", [
-                    'count' => $deletedCount,
-                    'service_date' => $serviceDate
+            // ✅ RE-OPTIMIZATION LOGIC: Check for existing unsaved runs
+            $unsavedRuns = OptimizationRun::where('service_date', $serviceDate)
+                ->where('is_saved', false)
+                ->get();
+
+            if ($unsavedRuns->isNotEmpty()) {
+                Log::warning("🔄 RE-OPTIMIZATION TRIGGERED - New task added to unsaved schedule", [
+                    'service_date' => $serviceDate,
+                    'unsaved_runs_found' => $unsavedRuns->count(),
+                    'run_ids' => $unsavedRuns->pluck('id')->toArray(),
+                    'triggered_by_task' => $triggeredByTaskId,
+                    'action' => 'Deleting unsaved runs and re-optimizing entire schedule with ALL tasks'
+                ]);
+
+                // Delete all UNSAVED runs - CASCADE will handle teams, team_members
+                // Tasks will have optimization_run_id and assigned_team_id set to NULL
+                foreach ($unsavedRuns as $run) {
+                    Log::info("Deleting unsaved optimization run for re-optimization", [
+                        'id' => $run->id,
+                        'total_tasks' => $run->total_tasks,
+                        'total_teams' => $run->total_teams,
+                        'created_at' => $run->created_at
+                    ]);
+                    $run->delete();
+                }
+
+                Log::info("✅ All unsaved runs deleted - proceeding with full re-optimization", [
+                    'deleted_count' => $unsavedRuns->count()
                 ]);
             }
 
@@ -114,10 +213,9 @@ class OptimizationService
             }
 
             // ✅ RULE 9: Get locked teams if schedule is saved
+            // Note: During re-optimization, we don't use locked teams (Phase 2 feature)
+            // Locked teams are only used for what-if scenarios
             $lockedTeams = null;
-            if ($existingRun) {
-                $lockedTeams = $this->getLockedTeams($existingRun);
-            }
 
             // PHASE 2: Genetic Algorithm Optimization
             $optimalSchedules = $this->optimizer->optimize(
@@ -256,24 +354,35 @@ class OptimizationService
     }
 
     /**
-     * ✅ RULE 8: Add task to existing saved teams (real-time addition)
+     * ✅ RULE 8: Add a single task to existing saved teams (real-time addition)
      */
-    protected function addTaskToExistingTeams(
+    protected function addSingleTaskToExistingTeams(
         string $serviceDate,
         ?int $newTaskId,
         OptimizationRun $existingRun
     ): array {
-        Log::info("Adding new task to existing teams", [
-            'task_id' => $newTaskId,
-            'optimization_run_id' => $existingRun->id
-        ]);
-
         if (!$newTaskId) {
             throw new \Exception('Task ID is required for real-time addition');
         }
 
         $newTask = Task::with(['location.contractedClient', 'client'])
             ->findOrFail($newTaskId);
+
+        // Determine which client this task belongs to
+        $taskClientName = 'Unknown';
+        if ($newTask->location && $newTask->location->contractedClient) {
+            $taskClientName = $newTask->location->contractedClient->name;
+        } elseif ($newTask->client) {
+            $taskClientName = $newTask->client->first_name . ' ' . $newTask->client->last_name;
+        }
+
+        Log::info("Adding new task to existing teams (SAVED SCHEDULE)", [
+            'task_id' => $newTaskId,
+            'task_description' => $newTask->task_description,
+            'client_name' => $taskClientName,
+            'optimization_run_id' => $existingRun->id,
+            'service_date' => $serviceDate
+        ]);
 
         // Get existing teams from this optimization run
         $existingTeams = \App\Models\OptimizationTeam::where('optimization_run_id', $existingRun->id)
@@ -328,17 +437,27 @@ class OptimizationService
             'status' => 'Scheduled'
         ]);
 
-        Log::info("Task assigned to existing team", [
+        // Calculate final workload for logging
+        $teamTasks = Task::where('assigned_team_id', $selectedTeam->id)->get();
+        $finalHours = $teamTasks->sum(fn($t) => ($t->duration + $t->travel_time) / 60);
+
+        Log::info("✅ Task assigned to existing team (REAL-TIME)", [
             'task_id' => $newTask->id,
+            'task_description' => $newTask->task_description,
+            'client_name' => $taskClientName,
             'team_id' => $selectedTeam->id,
-            'team_members' => $selectedTeam->members->pluck('employee.full_name')->toArray()
+            'team_members' => $selectedTeam->members->pluck('employee.full_name')->toArray(),
+            'team_task_count_before' => $teamTasks->count() - 1,
+            'team_task_count_after' => $teamTasks->count(),
+            'team_hours_after' => round($finalHours, 2)
         ]);
 
         return [
             'status' => 'success',
-            'message' => 'Task added to existing team',
+            'message' => 'Task added to existing ' . $taskClientName . ' team',
             'assigned_team_id' => $selectedTeam->id,
-            'team_members' => $selectedTeam->members->pluck('employee.full_name')->toArray()
+            'team_members' => $selectedTeam->members->pluck('employee.full_name')->toArray(),
+            'optimization_run_id' => $existingRun->id
         ];
     }
 
@@ -390,14 +509,23 @@ class OptimizationService
             
             $scheduleData = $schedule->getSchedule();
             $totalTeams = count($scheduleData);
-            $totalTasks = collect($scheduleData)->sum(fn($team) => $team['tasks']->count());
+
+            // ✅ Count UNIQUE tasks, not total assignments (prevents double-counting)
+            $uniqueTaskIds = collect($scheduleData)
+                ->flatMap(fn($team) => $team['tasks'])
+                ->pluck('id')
+                ->unique();
+            $totalTasks = $uniqueTaskIds->count();
+
             $totalEmployees = collect($scheduleData)->sum(fn($team) => count($team['team']));
             $generationsRun = $schedule->getMetadata('generations_run') ?? 100;
-    
+
             Log::info("Saving optimization run", [
                 'client_identifier' => $clientIdentifier,
                 'total_teams' => $totalTeams,
                 'total_tasks' => $totalTasks,
+                'total_task_assignments' => collect($scheduleData)->sum(fn($team) => $team['tasks']->count()),
+                'unique_task_ids' => $uniqueTaskIds->toArray(),
                 'total_employees' => $totalEmployees,
                 'generations_run' => $generationsRun
             ]);
@@ -489,14 +617,17 @@ class OptimizationService
     protected function updateTasksWithOptimization($schedule, int $optimizationRunId): void
     {
         $scheduleData = $schedule->getSchedule();
-        
+
         // Get service date from optimization run
         $optimizationRun = \App\Models\OptimizationRun::find($optimizationRunId);
-        
+
+        // ✅ Track assigned tasks to detect duplicates
+        $assignedTaskIds = [];
+
         foreach ($scheduleData as $teamIndex => $teamSchedule) {
             $team = $teamSchedule['team'];
             $tasks = $teamSchedule['tasks'];
-            
+
             // ✅ Create optimization team
             $optimizationTeam = \App\Models\OptimizationTeam::create([
                 'optimization_run_id' => $optimizationRunId,
@@ -504,7 +635,7 @@ class OptimizationService
                 'service_date' => $optimizationRun->service_date,
                 'car_id' => null, // Can be assigned later
             ]);
-            
+
             // ✅ Create team members
             foreach ($team as $employee) {
                 \App\Models\OptimizationTeamMember::create([
@@ -512,16 +643,30 @@ class OptimizationService
                     'employee_id' => $employee->id,
                 ]);
             }
-            
+
             Log::info("Optimization team created", [
                 'optimization_team_id' => $optimizationTeam->id,
                 'team_index' => $teamIndex + 1,
                 'employee_ids' => collect($team)->pluck('id')->toArray(),
                 'optimization_run_id' => $optimizationRunId
             ]);
-            
-            // ✅ Assign tasks to this team
+
+            // ✅ Assign tasks to this team (skip duplicates)
             foreach ($tasks as $task) {
+                // Check if task was already assigned to another team
+                if (in_array($task->id, $assignedTaskIds)) {
+                    Log::warning("⚠️ Duplicate task assignment detected - skipping", [
+                        'task_id' => $task->id,
+                        'current_team' => $optimizationTeam->id,
+                        'team_index' => $teamIndex + 1,
+                        'optimization_run_id' => $optimizationRunId
+                    ]);
+                    continue; // Skip this duplicate assignment
+                }
+
+                // Mark task as assigned
+                $assignedTaskIds[] = $task->id;
+
                 Task::where('id', $task->id)->update([
                     'status' => 'Scheduled',
                     'optimization_run_id' => $optimizationRunId,
@@ -537,6 +682,18 @@ class OptimizationService
                 ]);
             }
         }
+
+        // ✅ Log summary of task assignments
+        $totalTasksInSchedule = collect($scheduleData)->sum(fn($team) => $team['tasks']->count());
+        $duplicateCount = $totalTasksInSchedule - count($assignedTaskIds);
+
+        Log::info("Task assignment summary", [
+            'optimization_run_id' => $optimizationRunId,
+            'total_task_assignments_in_schedule' => $totalTasksInSchedule,
+            'unique_tasks_assigned' => count($assignedTaskIds),
+            'duplicates_detected_and_skipped' => $duplicateCount,
+            'assigned_task_ids' => $assignedTaskIds
+        ]);
     }
 
     protected function generateStatistics(array $schedules, array $preprocessResult): array

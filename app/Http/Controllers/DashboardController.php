@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Models\Holiday;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
@@ -59,7 +60,15 @@ class DashboardController extends Controller
     
         // === ADMIN DATA ===
         $admin = Auth::user()->employee;
-    
+
+        // === HOLIDAYS DATA ===
+        $holidays = Holiday::all()->map(function ($holiday) {
+            return [
+                'date' => $holiday->date->format('Y-m-d'),
+                'name' => $holiday->name,
+            ];
+        });
+
         // === PASS ALL DATA TO THE VIEW ===
         return view('admin-dash', [
             'totalEmployees' => $totalEmployees,
@@ -69,7 +78,8 @@ class DashboardController extends Controller
             'tasks' => $tasks,
             'taskCount' => $taskCount,
             'admin' => $admin,
-            'recentArrivals' => $recentArrivals // Ensure this is being passed
+            'recentArrivals' => $recentArrivals,
+            'holidays' => $holidays // Pass holidays to the view
         ]);
     }
 }

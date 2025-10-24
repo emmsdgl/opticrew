@@ -25,27 +25,34 @@ class ClientRegistrationController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validate all the data coming from your multi-step form.
-        $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'middle_initial' => ['nullable', 'string', 'max:10'],
-            'birthdate' => ['required', 'date_format:m-d-Y'],
-            'phone_number' => ['required', 'string', 'min:7'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'street_address' => ['required', 'string', 'max:255'],
-            'postal_code' => ['required', 'string', 'size:5'],
-            'city' => ['required', 'string', 'max:100'],
-            'district' => ['required', 'string', 'max:100'],
-            'username' => ['required', 'string', 'max:255', 'unique:users,name'], // Validate username against the 'name' column
-            'password' => ['required', 'confirmed', Password::min(8)],
-            'security_question' => ['required', 'array', 'size:2'],
-            'security_answer_1' => ['required', 'string', 'min:3'],
-            'security_answer_2' => ['required', 'string', 'min:3'],
-        ]);
-    
-        // 2. Use a transaction to ensure everything saves or nothing does.
-        DB::transaction(function () use ($request) {
+        try {
+            // 1. Validate all the data coming from your multi-step form.
+            $request->validate([
+                'first_name' => ['required', 'string', 'max:255'],
+                'last_name' => ['required', 'string', 'max:255'],
+                'middle_initial' => ['nullable', 'string', 'max:5'],
+                'birthdate' => ['required', 'date_format:m-d-Y'],
+                'phone_number' => ['required', 'string', 'min:7'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'street_address' => ['required', 'string', 'max:255'],
+                'postal_code' => ['required', 'string', 'size:5'],
+                'city' => ['required', 'string', 'max:100'],
+                'district' => ['required', 'string', 'max:100'],
+                'username' => ['required', 'string', 'max:255', 'unique:users,name'], // Validate username against the 'name' column
+                'password' => ['required', 'confirmed', Password::min(8)],
+                'security_question' => ['required', 'array', 'size:2'],
+                'security_answer_1' => ['required', 'string', 'min:3'],
+                'security_answer_2' => ['required', 'string', 'min:3'],
+            ], [
+                'email.unique' => 'This email is already registered. Please use a different email or log in to your existing account.',
+                'username.unique' => 'This username is already taken. Please choose a different username.',
+                'password.confirmed' => 'Password confirmation does not match.',
+                'postal_code.size' => 'Postal code must be exactly 5 digits.',
+                'middle_initial.max' => 'Middle initial must not exceed 5 characters.',
+            ]);
+
+            // 2. Use a transaction to ensure everything saves or nothing does.
+            DB::transaction(function () use ($request) {
             
             // 3. Create the User record first.
             $user = User::create([
@@ -83,12 +90,28 @@ class ClientRegistrationController extends Controller
                 'security_answer_2' => Hash::make(strtolower($request->security_answer_2)), // Hash the answer
             ]);
     
-            // 5. Log the new user in.
-            Auth::login($user);
-        });
-    
-        // 6. Redirect to the client's dashboard.
-        return redirect()->route('client.dashboard');
+                // 5. Log the new user in.
+                Auth::login($user);
+            });
+
+            // 6. Redirect to the client's dashboard.
+            return redirect()->route('client.dashboard')->with('success', 'Registration successful! Welcome to OptiCrew.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Re-throw validation exceptions to show validation errors
+            throw $e;
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Client registration error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'user_data' => $request->except(['password', 'password_confirmation'])
+            ]);
+
+            // Redirect back with error message
+            return redirect()->back()
+                ->withInput($request->except(['password', 'password_confirmation']))
+                ->withErrors(['error' => 'An error occurred during registration. Please try again. If the problem persists, contact support.']);
+        }
     }
 
     /**
@@ -96,7 +119,14 @@ class ClientRegistrationController extends Controller
      */
     public function sendOtp(Request $request)
     {
-        $request->validate(['email' => 'required|email|unique:users,email']);
+        $request->validate(
+            ['email' => 'required|email|unique:users,email'],
+            [
+                'email.required' => 'Email address is required.',
+                'email.email' => 'Please enter a valid email address.',
+                'email.unique' => 'This email is already registered. Please use a different email or log in to your existing account.'
+            ]
+        );
 
         $otp = random_int(100000, 999999); // Generate a 6-digit OTP
 

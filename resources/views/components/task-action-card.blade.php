@@ -1,6 +1,6 @@
-@props(['task'])
+@props(['task', 'isClockedIn' => false])
 
-<div x-data="taskActionCard({{ $task->id }}, '{{ $task->status }}', '{{ $task->on_hold_reason ?? '' }}')"
+<div x-data="taskActionCard({{ $task->id }}, '{{ $task->status }}', '{{ $task->on_hold_reason ?? '' }}', {{ $isClockedIn ? 'true' : 'false' }})"
      class="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-6 border-l-4"
      :class="{
          'border-blue-500': status === 'Scheduled',
@@ -64,6 +64,18 @@
     </div>
     @endif
 
+    <!-- Clock In Warning -->
+    <div x-show="!isClockedIn && (status === 'Scheduled' || status === 'On Hold')"
+         class="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-400 rounded">
+        <div class="flex items-start gap-2">
+            <i class="fas fa-exclamation-triangle text-orange-600 dark:text-orange-400 mt-0.5"></i>
+            <div>
+                <p class="font-semibold text-orange-800 dark:text-orange-300 text-sm">Clock In Required</p>
+                <p class="text-orange-700 dark:text-orange-400 text-xs mt-1">You must clock in before you can start any tasks. Please use the Clock In button at the top of the page.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- On Hold Reason -->
     <div x-show="status === 'On Hold' && holdReason"
          class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 rounded">
@@ -85,7 +97,7 @@
     <div class="flex gap-2">
         <!-- Start/Resume Button -->
         <button @click="startTask"
-                :disabled="(status !== 'Scheduled' && status !== 'On Hold') || loading"
+                :disabled="(status !== 'Scheduled' && status !== 'On Hold') || loading || !isClockedIn"
                 class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <i class="fas fa-play" x-show="!loading || action !== 'start'"></i>
             <i class="fas fa-spinner fa-spin" x-show="loading && action === 'start'"></i>
@@ -94,10 +106,10 @@
 
         <!-- Hold Button -->
         <button @click="openHoldModal"
-                :disabled="status !== 'In Progress' || loading"
+                :disabled="status === 'Completed' || loading"
                 class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <i class="fas fa-pause"></i>
-            <span>Hold</span>
+            <span x-text="status === 'On Hold' ? 'Update Hold' : 'Hold'"></span>
         </button>
 
         <!-- Complete Button -->
@@ -132,8 +144,7 @@
                             <i class="fas fa-pause text-yellow-600 dark:text-yellow-400"></i>
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
-                                Put Task On Hold
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" x-text="status === 'On Hold' ? 'Update Hold Reason' : (status === 'Scheduled' ? 'Put Task On Hold (Before Starting)' : 'Put Task On Hold')">
                             </h3>
                             <div class="mt-4">
                                 <label for="holdReasonInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -149,7 +160,9 @@
                                 <p x-show="holdReasonError" class="mt-2 text-sm text-red-600 dark:text-red-400" x-text="holdReasonError"></p>
                             </div>
                             <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                                <p>⚠️ Note: If the delay exceeds 30 minutes, the admin will be automatically notified.</p>
+                                <p x-show="status === 'Scheduled'">💡 You can put a task on hold before starting if you anticipate issues (e.g., guest still in cabin).</p>
+                                <p x-show="status === 'In Progress'">⚠️ Note: If the delay exceeds 30 minutes, the admin will be automatically notified.</p>
+                                <p x-show="status === 'On Hold'">⚠️ Updating the hold reason will refresh the delay timer notification.</p>
                             </div>
                         </div>
                     </div>
@@ -177,11 +190,12 @@
 
 @push('scripts')
 <script>
-function taskActionCard(taskId, initialStatus, initialHoldReason) {
+function taskActionCard(taskId, initialStatus, initialHoldReason, isClockedIn) {
     return {
         taskId: taskId,
         status: initialStatus,
         holdReason: initialHoldReason,
+        isClockedIn: isClockedIn,
         showHoldModal: false,
         holdReasonInput: '',
         holdReasonError: '',
@@ -191,6 +205,12 @@ function taskActionCard(taskId, initialStatus, initialHoldReason) {
         messageType: '',
 
         async startTask() {
+            // Check if employee is clocked in
+            if (!this.isClockedIn) {
+                this.showMessage('You must clock in before starting tasks', 'error');
+                return;
+            }
+
             this.loading = true;
             this.action = 'start';
             this.message = '';
@@ -224,7 +244,8 @@ function taskActionCard(taskId, initialStatus, initialHoldReason) {
 
         openHoldModal() {
             this.showHoldModal = true;
-            this.holdReasonInput = '';
+            // Pre-populate with existing reason if task is already on hold
+            this.holdReasonInput = this.status === 'On Hold' ? this.holdReason : '';
             this.holdReasonError = '';
         },
 
@@ -260,6 +281,7 @@ function taskActionCard(taskId, initialStatus, initialHoldReason) {
                 const result = await response.json();
 
                 if (result.success) {
+                    const wasOnHold = this.status === 'On Hold';
                     this.status = 'On Hold';
                     this.holdReason = this.holdReasonInput;
                     this.closeHoldModal();
@@ -267,7 +289,8 @@ function taskActionCard(taskId, initialStatus, initialHoldReason) {
                     if (result.data.alert_triggered) {
                         this.showMessage('Task put on hold. Admin has been notified of the delay.', 'warning');
                     } else {
-                        this.showMessage('Task put on hold successfully.', 'success');
+                        const message = wasOnHold ? 'Hold reason updated successfully.' : 'Task put on hold successfully.';
+                        this.showMessage(message, 'success');
                     }
 
                     // Reload page after 2 seconds

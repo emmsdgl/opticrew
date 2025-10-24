@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Client;
-use App\Models\Task;
+use App\Models\ClientAppointment;
+use App\Models\Holiday;
 use Carbon\Carbon;
 
 class ClientAppointmentController extends Controller
@@ -21,10 +22,19 @@ class ClientAppointmentController extends Controller
         $user = Auth::user();
         $client = $user ? $user->client : null;
 
+        // Fetch holidays
+        $holidays = Holiday::all()->map(function ($holiday) {
+            return [
+                'date' => $holiday->date->format('Y-m-d'),
+                'name' => $holiday->name,
+            ];
+        });
+
         return view('client-appointment-form', [
             'currentStep' => 1,
             'client' => $client,
-            'user' => $user
+            'user' => $user,
+            'holidays' => $holidays
         ]);
     }
 
@@ -50,12 +60,13 @@ class ClientAppointmentController extends Controller
             'einvoice_number' => 'nullable|string|max:100',
 
             // Step 2: Service Details
-            'service_type' => 'required|string|in:annual,monthly,weekly',
+            'service_type' => 'required|string',
             'service_date' => 'required|date|after_or_equal:today',
-            'service_time' => 'required|date_format:H:i',
+            'service_time' => 'required',
+            'is_sunday' => 'required|boolean',
+            'is_holiday' => 'nullable|boolean',
             'units' => 'required|integer|min:1|max:10',
-            'unit_length' => 'nullable|numeric',
-            'unit_width' => 'nullable|numeric',
+            'unit_size' => 'required|string',
             'room_identifier' => 'required|string|max:255',
             'special_requests' => 'nullable|string|max:1000'
         ]);
@@ -112,51 +123,62 @@ class ClientAppointmentController extends Controller
                 ]);
             }
 
-            // Calculate estimated duration based on units and service type
-            $baseDurationPerUnit = 60; // 60 minutes per unit
-            switch ($request->service_type) {
-                case 'annual':
-                    $baseDurationPerUnit = 120; // Deep cleaning
-                    break;
-                case 'monthly':
-                    $baseDurationPerUnit = 90;
-                    break;
-                case 'weekly':
-                    $baseDurationPerUnit = 60;
-                    break;
-            }
+            // Calculate pricing for external clients
+            $pricingRates = [
+                '40-60' => ['normal' => 68.25, 'sunday' => 102.50],
+                '60-90' => ['normal' => 84.00, 'sunday' => 126.00],
+                '90-120' => ['normal' => 99.75, 'sunday' => 149.50],
+                '120-150' => ['normal' => 115.50, 'sunday' => 173.25],
+                '150-180' => ['normal' => 131.25, 'sunday' => 196.75],
+                '180-220' => ['normal' => 157.50, 'sunday' => 236.25],
+            ];
 
-            $estimatedDuration = $request->units * $baseDurationPerUnit;
+            $unitSize = $request->unit_size;
+            $isSunday = $request->is_sunday ?? false;
+            $isHoliday = $request->is_holiday ?? false;
 
-            // Create task from appointment
-            $task = Task::create([
+            // External client rates: Sunday/Holiday use the same premium rate
+            $ratePerUnit = ($isSunday || $isHoliday)
+                ? $pricingRates[$unitSize]['sunday']
+                : $pricingRates[$unitSize]['normal'];
+
+            $quotation = $request->units * $ratePerUnit;
+            $vatAmount = $quotation * 0.24; // 24% VAT
+            $totalAmount = $quotation + $vatAmount;
+
+            // Create appointment (NOT task yet - waits for admin approval)
+            $appointment = ClientAppointment::create([
                 'client_id' => $client->id,
-                'location_id' => null, // Will be null for client-submitted appointments
-                'task_description' => ucfirst($request->service_type) . ' Cleaning - ' . $request->room_identifier,
-                'scheduled_date' => $request->service_date,
-                'scheduled_time' => $request->service_time,
-                'duration' => $estimatedDuration,
-                'estimated_duration_minutes' => $estimatedDuration,
-                'travel_time' => 30, // Default 30 minutes travel time
-                'status' => 'Pending',
-                'arrival_status' => false, // Client bookings are not urgent by default
-                'notes' => $request->special_requests,
-                'assigned_team_id' => null // Will be assigned during optimization
+                'booking_type' => $request->booking_type,
+                'service_type' => $request->service_type,
+                'service_date' => $request->service_date,
+                'service_time' => $request->service_time,
+                'is_sunday' => $isSunday,
+                'is_holiday' => $isHoliday,
+                'number_of_units' => $request->units,
+                'unit_size' => $unitSize,
+                'cabin_name' => $request->room_identifier,
+                'special_requests' => $request->special_requests,
+                'quotation' => $quotation,
+                'vat_amount' => $vatAmount,
+                'total_amount' => $totalAmount,
+                'status' => 'pending',
             ]);
 
-            Log::info('Task created from client appointment', [
-                'task_id' => $task->id,
+            Log::info('Client appointment created (pending approval)', [
+                'appointment_id' => $appointment->id,
                 'client_id' => $client->id,
                 'service_date' => $request->service_date,
-                'units' => $request->units
+                'quotation' => $quotation,
+                'total_amount' => $totalAmount
             ]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Appointment booked successfully!',
-                'task_id' => $task->id,
+                'message' => 'Appointment request submitted successfully! Waiting for admin approval.',
+                'appointment_id' => $appointment->id,
                 'client_id' => $client->id,
                 'redirect_url' => route('client.dashboard')
             ]);

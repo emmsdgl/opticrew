@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Task;
+use App\Models\Attendance;
 use Carbon\Carbon;
 
 class EmployeeTasksController extends Controller
@@ -35,10 +36,21 @@ class EmployeeTasksController extends Controller
             ->limit(10)
             ->get();
 
+        // Check if employee is currently clocked in
+        $currentAttendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('clock_in', $today)
+            ->whereNull('clock_out')
+            ->first();
+
+        $isClockedIn = $currentAttendance !== null;
+        $clockInTime = $currentAttendance ? Carbon::parse($currentAttendance->clock_in)->format('g:i A') : null;
+
         return view('employee-tasks', [
             'employee' => $employee,
             'todayTasks' => $todayTasks,
             'upcomingTasks' => $upcomingTasks,
+            'isClockedIn' => $isClockedIn,
+            'clockInTime' => $clockInTime,
         ]);
     }
 }

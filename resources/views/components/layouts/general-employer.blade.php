@@ -6,9 +6,9 @@
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('admin.dashboard')],
             ['label' => 'Accounts', 'icon' => 'fa-users', 'href' => '/users'],
             ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => route('admin.tasks')],
-            ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => '/calendar'],
-            ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => route('admin.analytics')],
-            ['label' => 'Reports', 'icon' => 'fa-file-lines', 'href' => '/reports'],
+            ['label' => 'Appointments', 'icon' => 'fa-calendar-check', 'href' => route('admin.appointments.index')],
+            ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/analytics'],
+            ['label' => 'Optimization Result', 'icon' => 'fa-file-lines', 'href' => route('optimization.result')],
         ];
 
         $teams = ['HR Team', 'Research Team'];

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     // Define which fields can be mass-assigned
     protected $fillable = [
@@ -19,7 +20,7 @@ class Client extends Model
         'company_name',
         'first_name',
         'last_name',
-        'middle_initial',
+        'middle_initial', // Max 5 characters
         'birthdate',
         'email',
         'phone_number',
@@ -45,7 +46,11 @@ class Client extends Model
 
     public function appointments(): HasMany
     {
-        // This assumes a standard setup where the 'appointments' table has a 'client_id' foreign key.
+        return $this->hasMany(\App\Models\ClientAppointment::class);
+    }
+
+    public function tasks(): HasMany
+    {
         return $this->hasMany(Task::class);
     }
 

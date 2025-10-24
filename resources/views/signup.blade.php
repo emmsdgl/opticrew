@@ -343,6 +343,18 @@
             <form method="POST" action="{{ route('register.client') }}">
                 @csrf
 
+                <!-- Display All Validation Errors -->
+                @if ($errors->any())
+                    <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Oops! There were some problems with your submission:</strong>
+                        <ul class="mt-2 ml-4 list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <!-- ====================================================== -->
                 <!--                       STEP 1                           -->
                 <!-- ====================================================== -->
@@ -367,7 +379,7 @@
                                 <label for="input-lname">Last Name</label>
                             </div>
                             <div class="input-container w-[7rem] max-sm:w-full">
-                                <input type="text" id="input-mname" placeholder=" "
+                                <input type="text" id="input-mname" placeholder=" " maxlength="5"
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="middle_initial">
                                 <label for="input-mname">M.I.</label>
@@ -614,10 +626,24 @@
 
                 try {
                     const response = await fetch(
-                        `${NOMINATIM_API}?format=json&country=Finland&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`
+                        `${NOMINATIM_API}?format=json&countrycodes=FI&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`,
+                        {
+                            headers: {
+                                'User-Agent': 'OptiCrew/1.0'
+                            }
+                        }
                     );
+
+                    // Check if response is ok
+                    if (!response.ok) {
+                        console.warn('Nominatim API error:', response.status, response.statusText);
+                        return [];
+                    }
+
                     const data = await response.json();
-                    return data;
+
+                    // Ensure we return an array
+                    return Array.isArray(data) ? data : [];
                 } catch (error) {
                     console.error('Error fetching street suggestions:', error);
                     return [];
@@ -625,7 +651,8 @@
             }
 
             function showStreetSuggestions(suggestions) {
-                if (suggestions.length === 0) {
+                // Check if suggestions is an array
+                if (!Array.isArray(suggestions) || suggestions.length === 0) {
                     streetSuggestionsDiv.classList.add('hidden');
                     return;
                 }
@@ -714,10 +741,21 @@
 
                 try {
                     const response = await fetch(
-                        `${NOMINATIM_API}?format=json&country=Finland&postalcode=${postcode}&addressdetails=1&limit=1`
+                        `${NOMINATIM_API}?format=json&countrycodes=FI&postalcode=${postcode}&addressdetails=1&limit=1`,
+                        {
+                            headers: {
+                                'User-Agent': 'OptiCrew/1.0'
+                            }
+                        }
                     );
+
+                    if (!response.ok) {
+                        console.warn('Postal code lookup error:', response.status);
+                        return null;
+                    }
+
                     const data = await response.json();
-                    return data.length > 0 ? data[0] : null;
+                    return (Array.isArray(data) && data.length > 0) ? data[0] : null;
                 } catch (error) {
                     console.error('Error looking up postal code:', error);
                     return null;
@@ -758,10 +796,21 @@
 
                 try {
                     const response = await fetch(
-                        `${NOMINATIM_API}?format=json&country=Finland&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=5`
+                        `${NOMINATIM_API}?format=json&countrycodes=FI&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=5`,
+                        {
+                            headers: {
+                                'User-Agent': 'OptiCrew/1.0'
+                            }
+                        }
                     );
+
+                    if (!response.ok) {
+                        console.warn('City lookup error:', response.status);
+                        return [];
+                    }
+
                     const data = await response.json();
-                    return data;
+                    return Array.isArray(data) ? data : [];
                 } catch (error) {
                     console.error('Error looking up city:', error);
                     return [];
@@ -793,13 +842,28 @@
 
                 try {
                     const response = await fetch(
-                        `${NOMINATIM_API}?format=json&country=Finland&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=20`
+                        `${NOMINATIM_API}?format=json&countrycodes=FI&city=${encodeURIComponent(cityName)}&addressdetails=1&limit=20`,
+                        {
+                            headers: {
+                                'User-Agent': 'OptiCrew/1.0'
+                            }
+                        }
                     );
+
+                    if (!response.ok) {
+                        console.warn('District fetch error:', response.status);
+                        return [];
+                    }
+
                     const data = await response.json();
+
+                    if (!Array.isArray(data)) {
+                        return [];
+                    }
 
                     const districts = new Set();
                     data.forEach(item => {
-                        if (item.address) {
+                        if (item && item.address) {
                             if (item.address.suburb) districts.add(item.address.suburb);
                             if (item.address.neighbourhood) districts.add(item.address.neighbourhood);
                             if (item.address.quarter) districts.add(item.address.quarter);
@@ -1385,8 +1449,15 @@
                         let errorMessage = "An error occurred. Please try again.";
                         if (error.errors && error.errors.email) {
                             errorMessage = error.errors.email[0];
+                        } else if (error.message) {
+                            errorMessage = error.message;
                         }
-                        alert(errorMessage);
+
+                        // Display error in a more visible way
+                        alert('❌ ' + errorMessage + '\n\nPlease use a different email address or log in if you already have an account.');
+
+                        // Also log to console for debugging
+                        console.error('OTP sending failed:', error);
                     })
                     .finally(() => {
                         // Restore button state
