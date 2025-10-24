@@ -97,7 +97,7 @@
                     @endphp
 
                     @foreach($services as $service)
-                        <div class="snap-start shrink-0 w-[300px]">
+                        <div class="snap-start shrink-0 w-full">
                             <x-servicecard :service="$service" onBook="handleBook" onFavorite="handleFavorite" />
                         </div>
                     @endforeach

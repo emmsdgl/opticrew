@@ -71,9 +71,9 @@
                 @forelse($todayTasks as $task)
                     <x-task-action-card :task="$task" :isClockedIn="$isClockedIn" />
                 @empty
-                    <div class="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow-md p-12 text-center">
-                        <i class="fas fa-tasks text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                        <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No tasks assigned for today</p>
+                    <div class="flex flex-col w-full rounded-xl p-12 text-center">
+                        <i class="fa-solid fa-magnifying-glass text-3xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No tasks assigned for today</p>
                         <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Check back later or contact your supervisor</p>
                     </div>
                 @endforelse
@@ -118,9 +118,9 @@
                         @endif
                     </div>
                 @empty
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center">
-                        <i class="fas fa-calendar-check text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
-                        <p class="text-gray-500 dark:text-gray-400">No upcoming tasks scheduled</p>
+                    <div class="rounded-xl p-8 text-center">
+                        <i class="fa-solid fa-calendar-week text-3xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">No upcoming tasks scheduled</p>
                     </div>
                 @endforelse
             </div>
