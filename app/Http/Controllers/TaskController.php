@@ -251,7 +251,7 @@ class TaskController extends Controller
         }
 
         // --- 7. RETURN TO VIEW ---
-        return view('admin-tasks', [
+        return view('admin.tasks', [
             'tasks' => $tasks,
             'clients' => $allClients,
             'events' => $events,

@@ -22,7 +22,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
 Route::get('/', action: function () {
-    return view('client-appointments');
+    return view('client.appointments');
 })->name('client-appointments');
 
 
@@ -52,7 +52,7 @@ Route::get('/', function () {
     }
 
     // Show landing page for guests
-    return view('home');
+    return view('landing.home');
 })->name('home');
 
 Route::get('/about', function () {
@@ -121,7 +121,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     Route::get('/analytics', action: function () {
-        return view('admin-analytics');
+        return view('admin.analytics');
     })->name('admin.analytics');
 
 
@@ -164,7 +164,7 @@ Route::middleware(['auth', 'employee'])->group(function () {
     ->name('employee.tasks');
 
     Route::get('/employee/performance', action: function () {
-    return view('employee-performance');
+    return view('employee.performance');
     })->name('employee.performance');
 
 });
@@ -187,7 +187,7 @@ Route::middleware(['auth', 'client'])->group(function () {
         });
 
         // 4. Pass the $client and holidays to the view.
-        return view('client-dash', compact('client', 'holidays'));
+        return view('client.dashboard', compact('client', 'holidays'));
     })->name('client.dashboard');
 
     // Client Appointment/Booking Routes
@@ -201,14 +201,14 @@ Route::middleware(['auth', 'client'])->group(function () {
         $appointments = $user->client->appointments()->orderBy('service_date', 'asc')->get();
 
         // Pass the fetched data to the new view file
-        return view('client-appointments', compact('appointments'));
+        return view('client.appointments', compact('appointments'));
     })->name('client.appointments');
 });
 
 
 //ALL ROUTES FOR BUTTONS
 Route::get('/signup', function () {
-    return view('signup');
+    return view('auth.signup');
 })->middleware('guest')->name('signup');
 
 // ADD THIS NEW POST ROUTE to handle the form submission
