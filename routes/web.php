@@ -20,10 +20,38 @@ use App\Http\Controllers\ClientAppointmentController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
-Route::get('/', action: function () {
-    return view('client-appointments');
-})->name('client-appointments');
+Route::get('/', function () {
+    return view('landingpage-home');
+})->name('home');
 
+// About Page
+Route::get('/about', function () {
+    return view('landingpage-about');
+})->name('about');
+
+// Services Page
+Route::get('/services', function () {
+    return view('landingpage-services');
+})->name('services');
+
+// Price Quotation Page
+Route::get('/quotation', function () {
+    return view('landingpage-quotation');
+})->name('quotation');
+
+// Contact Page
+Route::get('/contact', function () {
+    return view('landingpage-contact');
+})->name('contact');
+
+// Authentication Routes
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register');
 
 /*
 |-------------------------------------------------------------------------
@@ -80,7 +108,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/optimization/check-unsaved', [TaskController::class, 'checkUnsavedSchedule'])
         ->name('admin.optimization.check-unsaved');
 
-    // ✅ NEW: Save schedule (mark as saved)
+    // ✅ NEW: Save schedule (mark as saved
     Route::post('/admin/optimization/save-schedule', [TaskController::class, 'saveSchedule'])
         ->name('admin.optimization.save');
 
