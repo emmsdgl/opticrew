@@ -294,13 +294,34 @@
                     </button>
                 </div>
                 <div class="hidden lg:flex lg:gap-x-12">
-                    <a href="/" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Home</a>
-                    <a href="/about" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">About</a>
-                    <a href="/services" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Services</a>
-                    <a href="/pricing" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">Price Quotation</a>
+                    <a href="/" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">{{ __('common.nav.home') }}</a>
+                    <a href="/about" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">{{ __('common.nav.about') }}</a>
+                    <a href="/services" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">{{ __('common.nav.services') }}</a>
+                    <a href="/pricing" class="text-sm/6 text-blue-950 hover:text-blue-600 hover:font-bold">{{ __('common.nav.pricing') }}</a>
                 </div>
-                <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-                    <a href="/login" class="text-sm/6 font-semibold text-blue-950 hover:text-blue-600">Log in <span aria-hidden="true">&rarr;</span></a>
+                <div class="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-4">
+                    <!-- Language Switcher -->
+                    <div class="relative">
+                        <button id="language-toggle" class="flex items-center gap-2 text-sm text-blue-950 hover:text-blue-600">
+                            @if(app()->getLocale() == 'fi')
+                                <span class="text-lg">🇫🇮</span>
+                                <span>Suomi</span>
+                            @else
+                                <span class="text-lg">🇬🇧</span>
+                                <span>English</span>
+                            @endif
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="language-dropdown" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                            <a href="{{ route('language.switch', 'en') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2">
+                                <span class="text-lg">🇬🇧</span> English
+                            </a>
+                            <a href="{{ route('language.switch', 'fi') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2">
+                                <span class="text-lg">🇫🇮</span> Suomi
+                            </a>
+                        </div>
+                    </div>
+                    <a href="/login" class="text-sm/6 font-semibold text-blue-950 hover:text-blue-600">{{ __('common.nav.login') }} <span aria-hidden="true">&rarr;</span></a>
                 </div>
             </nav>
             <el-dialog>
@@ -326,19 +347,28 @@
                                 <div class="-my-6 divide-y divide-white/10">
                                     <div class="space-y-2 py-6">
                                         <a href="/"
-                                            class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Home</a>
+                                            class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">{{ __('common.nav.home') }}</a>
                                         <a href="/about"
-                                            class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">About</a>
+                                            class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">{{ __('common.nav.about') }}</a>
                                         <a href="/services"
-                                            class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Services</a>
+                                            class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">{{ __('common.nav.services') }}</a>
                                         <a href="/pricing"
-                                            class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">Pricing
-                                            Quotation</a>
+                                            class="-mx-3 block rounded-lg px-3 py-2 text-base/7 text-blue-950 hover:bg-blue-600/10">{{ __('common.nav.pricing') }}</a>
                                     </div>
-                                    <div class="py-6">
+                                    <div class="py-6 space-y-2">
+                                        <!-- Language Switcher Mobile -->
+                                        <div class="flex gap-2 px-3">
+                                            <a href="{{ route('language.switch', 'en') }}"
+                                               class="flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-blue-950 hover:bg-blue-600/10 {{ app()->getLocale() == 'en' ? 'bg-blue-600/20 font-bold' : '' }}">
+                                                <span class="text-lg">🇬🇧</span> English
+                                            </a>
+                                            <a href="{{ route('language.switch', 'fi') }}"
+                                               class="flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-blue-950 hover:bg-blue-600/10 {{ app()->getLocale() == 'fi' ? 'bg-blue-600/20 font-bold' : '' }}">
+                                                <span class="text-lg">🇫🇮</span> Suomi
+                                            </a>
+                                        </div>
                                         <a href="/login"
-                                            class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 text-blue-950 hover:bg-blue-600/10">Log
-                                            in</a>
+                                            class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 text-blue-950 hover:bg-blue-600/10">{{ __('common.nav.login') }}</a>
                                     </div>
                                 </div>
                             </div>
@@ -351,35 +381,34 @@
             <div class="hidden sm:mb-8 sm:flex sm:justify-center">
                 <div
                     class="relative rounded-full px-3 py-1 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
-                    OptiCrew: Your Doorway To A Clean Space.
+                    {{ __('home.hero.tagline') }}
                 </div>
             </div>
             <h1 id="header-1" class="text-6xl tracking-normal text-blue-950 p-10 sm:text-6xl">
-                Delivering
+                {{ __('home.hero.title_1') }}
                 <span id="cleanliness" class="text-blue-500 inline-flex items-center">
                     <span id="spark" class="mr-2">
                         <img src="/images/icons/sparkle.svg" alt="" class="h-12 w-auto">
                     </span>
-                    cleanliness
+                    {{ __('home.hero.title_cleanliness') }}
                 </span>
                 <br>
-                in every corner
+                {{ __('home.hero.title_2') }}
             </h1>
             <p class="mt-8 text-[12px] text-pretty sm:text-base w-[75%] mx-auto text-justify">
-                Introducing Fin-noys, a trusted cleaning agency. We go beyond surface-level sparkle to deliver thorough,
-                reliable, and detail-focused cleaning services you can count on.
+                {{ __('home.hero.description') }}
             </p>
             <div class="mt-10 flex items-center justify-center gap-x-5">
                 <a href="/signup"
                     class="flex items-center justify-center rounded-full bg-blue-600 px-3 py-2.5 text-sm text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                     <span aria-hidden="true"
                         class="ml-2 bg-amber-50 rounded-full mr-1 px-3 py-2 text-sm text-[#000c1b]"><i
-                            class="fa-solid fa-arrow-right fa-xs"></i></span>Get started <span aria-hidden="true"
+                            class="fa-solid fa-arrow-right fa-xs"></i></span>{{ __('common.buttons.get_started') }} <span aria-hidden="true"
                         class="ml-2"></span>
                 </a>
                 <a href="/pricing"
                     class="rounded-full px-3.5 py-2.5 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
-                    Get a Free Quote
+                    {{ __('common.buttons.get_quote') }}
                 </a>
             </div>
 
@@ -509,7 +538,7 @@
                 <div class="chat-header">
                     <div class="flex flex-row items-center">
                         <img src="/images/icons/opticrew-logo.svg" class="h-8 w-8 m-3 mr-2">
-                        <h2 class="text-blue-950 font-semibold mr-6">OptiCrew Assistant</h2>
+                        <h2 class="text-blue-950 font-semibold mr-6">{{ __('common.chatbot.title') }}</h2>
                         <button id="close-chat" class="text-white hover:text-gray-200">
                             <i class="fas fa-times"></i>
                         </button>
@@ -520,23 +549,23 @@
                 <div id="rate-limit-indicator" class="rate-limit-indicator" style="display: none;">
                     <div class="rate-limit-badge plenty">
                         <i class="fas fa-comments"></i>
-                        <span id="rate-limit-text">15/15 messages</span>
+                        <span id="rate-limit-text">15/15 {{ __('common.chatbot.messages') }}</span>
                     </div>
                     <div id="cooldown-container" class="cooldown-timer" style="display: none;">
                         <i class="fas fa-clock"></i>
-                        <span id="cooldown-text">Wait 0s</span>
+                        <span id="cooldown-text">{{ __('common.chatbot.wait') }} 0s</span>
                     </div>
                 </div>
 
                 <div id="chat-messages" class="chat-messages">
                     <div class="assistant-message chat-message">
-                        Hello! I'm your <span class="font-bold">OptiCrew Assistant</span> for Fin-noys. I can help you with cleaning service quotes, booking options, and general questions about our company. How can I help you today?
+                        {!! __('common.chatbot.welcome') !!}
                     </div>
                 </div>
 
                 <div class="chat-input-container">
                     <div class="flex items-center">
-                        <input type="text" id="user-input" placeholder="Ask a question..."
+                        <input type="text" id="user-input" placeholder="{{ __('common.chatbot.placeholder') }}"
                             class="flex-grow p-1.5 border border-gray-100 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
                         <button id="send-button"
                             class="bg-blue-600 text-white p-3 rounded-r-lg hover:bg-blue-700 transition duration-150">
@@ -555,6 +584,25 @@
         </div>
     </div>
 </body>
+<script>
+    // LANGUAGE DROPDOWN TOGGLE
+    document.addEventListener('DOMContentLoaded', function() {
+        const languageToggle = document.getElementById('language-toggle');
+        const languageDropdown = document.getElementById('language-dropdown');
+
+        if (languageToggle && languageDropdown) {
+            languageToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                languageDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function() {
+                languageDropdown.classList.add('hidden');
+            });
+        }
+    });
+</script>
 <script>
     // COUNTER-UP ANIMATION FUNCTION
     function animateCount(el) {
