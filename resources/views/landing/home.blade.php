@@ -738,11 +738,65 @@
     const cooldownText = document.getElementById('cooldown-text');
     const unreadBadge = document.getElementById('unread-badge');
 
+    // ========== CONVERSATION RETENTION WITH SESSIONSTORAGE ==========
+    const STORAGE_KEY = 'opticrew_chat_history';
+    const STORAGE_MESSAGES_KEY = 'opticrew_chat_messages';
+
     let chatHistory = [];
     let cooldownInterval = null;
     let unreadCount = 0;
     let isChatOpen = false;
     const apiUrl = "/api/chatbot/message"; // Laravel backend API endpoint
+
+    // Load chat history from sessionStorage (persists until browser/tab closes)
+    function loadChatFromStorage() {
+        try {
+            const stored = sessionStorage.getItem(STORAGE_KEY);
+            const storedMessages = sessionStorage.getItem(STORAGE_MESSAGES_KEY);
+
+            if (stored) {
+                chatHistory = JSON.parse(stored);
+            }
+
+            if (storedMessages) {
+                const messages = JSON.parse(storedMessages);
+                // Restore previous messages
+                messages.forEach(msg => {
+                    appendMessage(msg.role, msg.text, false); // false = don't save again
+                });
+                scrollToBottom();
+            }
+        } catch (error) {
+            console.error('Error loading chat from storage:', error);
+        }
+    }
+
+    // Save chat history to sessionStorage
+    function saveChatToStorage() {
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
+
+            // Also save rendered messages for UI restoration
+            const messages = [];
+            const messageElements = messagesContainer.querySelectorAll('.chat-message:not(:first-child)'); // Skip welcome message
+            messageElements.forEach(el => {
+                const role = el.classList.contains('user-message') ? 'user' : 'assistant';
+                const text = el.innerHTML.replace(/<br>/g, '\n');
+                messages.push({ role, text });
+            });
+            sessionStorage.setItem(STORAGE_MESSAGES_KEY, JSON.stringify(messages));
+        } catch (error) {
+            console.error('Error saving chat to storage:', error);
+        }
+    }
+
+    // Clear chat storage (call this when user logs in)
+    window.clearChatStorage = function() {
+        sessionStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_MESSAGES_KEY);
+        chatHistory = [];
+        console.log('Chat history cleared');
+    };
 
     // Function to scroll to the bottom of the chat messages
     function scrollToBottom() {
@@ -841,7 +895,7 @@
     }
 
     // Function to append a message to the chat UI
-    function appendMessage(role, text) {
+    function appendMessage(role, text, saveToStorage = true) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('chat-message', role === 'user' ? 'user-message' : 'assistant-message');
         messageDiv.innerHTML = text.replace(/\n/g, '<br>'); // Use innerHTML to handle markdown formatting and line breaks
@@ -853,6 +907,11 @@
         messagesContainer.appendChild(clearDiv);
 
         scrollToBottom();
+
+        // Save to sessionStorage
+        if (saveToStorage) {
+            saveChatToStorage();
+        }
     }
 
     // Function to handle the actual API call to Laravel backend
@@ -887,6 +946,9 @@
                     role: "model",
                     parts: [{ text: result.message }]
                 });
+
+                // Save updated history to storage
+                saveChatToStorage();
 
                 return result.message;
             } else {
@@ -959,6 +1021,11 @@
         if (e.key === 'Enter') {
             sendMessage();
         }
+    });
+
+    // ========== INITIALIZE: LOAD CHAT HISTORY ON PAGE LOAD ==========
+    window.addEventListener('DOMContentLoaded', () => {
+        loadChatFromStorage();
     });
 
 </script>
