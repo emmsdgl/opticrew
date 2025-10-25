@@ -56,15 +56,15 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/about', function () {
-    return response()->file(resource_path('views/html/landing-page/about.html'));
+    return response()->file(resource_path('views/landing/about.blade.php'));
 })->name('about');
 
 Route::get('/services', function () {
-    return response()->file(resource_path('views/html/landing-page/services.html'));
+    return response()->file(resource_path('views/landing/service.blade.php'));
 })->name('services');
 
 Route::get('/pricing', function () {
-    return response()->file(resource_path('views/html/landing-page/guest-pricing.html'));
+    return response()->file(resource_path('views/landing/guest-pricing.blade.php'));
 })->name('pricing');
 
 
