@@ -13,6 +13,11 @@
                     <i class="fas fa-archive mr-2"></i>
                     View Archived
                 </a>
+                <a href="{{ route('admin.accounts.create', ['type' => 'company']) }}"
+                   class="inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out">
+                    <i class="fas fa-building mr-2"></i>
+                    Add Company
+                </a>
                 <a href="{{ route('admin.accounts.create') }}"
                    class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out">
                     <i class="fas fa-plus mr-2"></i>
@@ -47,13 +52,16 @@
                         onchange="window.location.href='{{ route('admin.accounts.index') }}?type=' + this.value"
                         class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                     <option value="all" {{ $accountType === 'all' ? 'selected' : '' }}>
-                        All Accounts ({{ $employeesCount + $companyCount + $personalCount }})
+                        All Accounts ({{ $employeesCount + $contractedCompanyCount + $companyCount + $personalCount }})
                     </option>
                     <option value="employees" {{ $accountType === 'employees' ? 'selected' : '' }}>
                         Employee Accounts ({{ $employeesCount }})
                     </option>
+                    <option value="contracted_company" {{ $accountType === 'contracted_company' ? 'selected' : '' }}>
+                        Contracted Company Accounts ({{ $contractedCompanyCount }})
+                    </option>
                     <option value="company" {{ $accountType === 'company' ? 'selected' : '' }}>
-                        Company Accounts ({{ $companyCount }})
+                        External Company Accounts ({{ $companyCount }})
                     </option>
                     <option value="personal" {{ $accountType === 'personal' ? 'selected' : '' }}>
                         Personal/Private Accounts ({{ $personalCount }})

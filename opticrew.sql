@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 29, 2025 at 11:50 AM
+-- Generation Time: Oct 29, 2025 at 09:10 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -896,7 +896,14 @@ INSERT INTO `company_settings` (`id`, `key`, `value`, `type`, `description`, `cr
 
 CREATE TABLE `contracted_clients` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
   `name` varchar(255) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(255) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `business_id` varchar(255) DEFAULT NULL,
+  `contract_start` date DEFAULT NULL,
+  `contract_end` date DEFAULT NULL,
   `latitude` decimal(10,8) DEFAULT NULL,
   `longitude` decimal(11,8) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -908,9 +915,9 @@ CREATE TABLE `contracted_clients` (
 -- Dumping data for table `contracted_clients`
 --
 
-INSERT INTO `contracted_clients` (`id`, `name`, `latitude`, `longitude`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Kakslauttanen', 68.33470361, 27.33426652, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(2, 'Aikamatkat', 14.52682705, 121.01600925, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL);
+INSERT INTO `contracted_clients` (`id`, `user_id`, `name`, `email`, `phone`, `address`, `business_id`, `contract_start`, `contract_end`, `latitude`, `longitude`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 19, 'Kakslauttanen', 'kakslauttanen@company.com', '+358 00 000 0000', 'Address to be updated', '1234567-8', NULL, NULL, 68.33470361, 27.33426652, '2025-10-02 18:51:46', '2025-10-29 07:25:47', NULL),
+(2, 20, 'Aikamatkat', 'aikamatkat@company.com', '+358 00 000 0000', 'Address to be updated', '1234567-0', NULL, NULL, 14.52682705, 121.01600925, '2025-10-02 18:51:46', '2025-10-29 07:25:47', NULL);
 
 -- --------------------------------------------------------
 
@@ -1083,8 +1090,7 @@ CREATE TABLE `holidays` (
 INSERT INTO `holidays` (`id`, `date`, `name`, `created_by`, `created_at`, `updated_at`) VALUES
 (5, '2025-09-10', 'Special Holiday', 1, '2025-10-26 14:04:03', '2025-10-26 14:04:03'),
 (6, '2025-09-11', 'Non-Working Holiday', 1, '2025-10-26 14:04:14', '2025-10-26 14:04:14'),
-(7, '2025-09-12', 'Everyday Holiday', 1, '2025-10-26 14:04:25', '2025-10-26 14:04:25'),
-(8, '2025-10-29', 'Special Day', 1, '2025-10-27 07:17:22', '2025-10-27 07:17:22');
+(7, '2025-09-12', 'Everyday Holiday', 1, '2025-10-26 14:04:25', '2025-10-26 14:04:25');
 
 -- --------------------------------------------------------
 
@@ -1288,7 +1294,11 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (40, '2025_10_27_200441_add_performance_indexes_to_tables', 32),
 (41, '2025_10_29_074500_add_coordinates_to_contracted_clients', 33),
 (42, '2025_10_29_074600_remove_coordinates_from_tasks', 34),
-(43, '2025_10_29_110940_add_rate_type_to_tasks_table', 35);
+(43, '2025_10_29_110940_add_rate_type_to_tasks_table', 35),
+(44, '2025_10_29_135821_add_company_role_and_link_to_contracted_clients', 36),
+(45, '2025_10_29_150832_add_contact_fields_to_contracted_clients_table', 37),
+(46, '2025_10_29_152501_add_company_role_to_users_table', 38),
+(47, '2025_10_29_202422_create_quotations_table', 39);
 
 -- --------------------------------------------------------
 
@@ -3179,6 +3189,66 @@ CREATE TABLE `personal_access_tokens` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `quotations`
+--
+
+CREATE TABLE `quotations` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `booking_type` enum('personal','company') NOT NULL,
+  `cleaning_services` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`cleaning_services`)),
+  `date_of_service` date DEFAULT NULL,
+  `duration_of_service` int(11) DEFAULT NULL,
+  `type_of_urgency` varchar(255) DEFAULT NULL,
+  `property_type` varchar(255) NOT NULL,
+  `floors` int(11) NOT NULL DEFAULT 1,
+  `rooms` int(11) NOT NULL DEFAULT 1,
+  `people_per_room` int(11) DEFAULT NULL,
+  `floor_area` decimal(10,2) DEFAULT NULL,
+  `area_unit` varchar(255) DEFAULT NULL,
+  `location_type` varchar(255) DEFAULT NULL,
+  `street_address` varchar(255) DEFAULT NULL,
+  `postal_code` varchar(10) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `district` varchar(255) DEFAULT NULL,
+  `latitude` decimal(10,7) DEFAULT NULL,
+  `longitude` decimal(10,7) DEFAULT NULL,
+  `company_name` varchar(255) DEFAULT NULL,
+  `client_name` varchar(255) NOT NULL,
+  `phone_number` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `estimated_price` decimal(10,2) DEFAULT NULL,
+  `vat_amount` decimal(10,2) DEFAULT NULL,
+  `total_price` decimal(10,2) DEFAULT NULL,
+  `pricing_notes` text DEFAULT NULL,
+  `status` enum('pending_review','under_review','quoted','accepted','rejected','converted') NOT NULL DEFAULT 'pending_review',
+  `reviewed_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `quoted_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `quoted_at` timestamp NULL DEFAULT NULL,
+  `admin_notes` text DEFAULT NULL,
+  `rejection_reason` text DEFAULT NULL,
+  `appointment_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `converted_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `converted_at` timestamp NULL DEFAULT NULL,
+  `client_responded_at` timestamp NULL DEFAULT NULL,
+  `client_message` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `quotations`
+--
+
+INSERT INTO `quotations` (`id`, `booking_type`, `cleaning_services`, `date_of_service`, `duration_of_service`, `type_of_urgency`, `property_type`, `floors`, `rooms`, `people_per_room`, `floor_area`, `area_unit`, `location_type`, `street_address`, `postal_code`, `city`, `district`, `latitude`, `longitude`, `company_name`, `client_name`, `phone_number`, `email`, `estimated_price`, `vat_amount`, `total_price`, `pricing_notes`, `status`, `reviewed_by`, `reviewed_at`, `quoted_by`, `quoted_at`, `admin_notes`, `rejection_reason`, `appointment_id`, `converted_by`, `converted_at`, `client_responded_at`, `client_message`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(4, 'company', '[\"Hotel Rooms Cleaning\",\"Cabins\",\"Igloos\",\"Restaurant\",\"Saunas\"]', NULL, NULL, NULL, 'hotel', 1, 1, 2, 12.00, 'sqyd', 'address', 'Rotstigen', '22150', 'Mariehamn', 'Österbacka', NULL, NULL, 'EFG Company', 'Mary Roberts', '+358 40 123 4578', 'mary@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-29 14:03:20', '2025-10-29 14:03:20', NULL),
+(5, 'personal', '[\"snowout_cleaning\"]', '2025-10-31', 2, 'this_week', 'summer_cottage', 1, 1, 2, 20.00, 'sqm', 'address', 'Pellervonkatu 9', '33540', 'Tampere', 'Kaleva', NULL, NULL, NULL, 'Emma Digol', '+358 40 123 4567', 'emma@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-29 14:04:34', '2025-10-29 14:04:34', NULL),
+(6, 'company', '[\"Light Daily Cleaning\",\"Cabins\",\"Igloos\",\"Cottages\"]', NULL, NULL, NULL, 'studio', 1, 1, 3, 5.00, 'are', 'address', 'Dinopath', '50180', 'Mikkeli', 'Visulahti', NULL, NULL, 'HIJ Company', 'Juan Dela Cruz', '+358 40 258 7963', 'juan@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-29 14:06:23', '2025-10-29 14:06:23', NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `scenario_analyses`
 --
 
@@ -4567,7 +4637,7 @@ CREATE TABLE `users` (
   `location` varchar(255) DEFAULT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','employee','external_client') NOT NULL,
+  `role` enum('admin','employee','external_client','company') NOT NULL,
   `remember_token` varchar(100) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -4579,7 +4649,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `username`, `email`, `profile_picture`, `phone`, `location`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Admin', 'admin', 'admin@opticrew.com', 'profile_pictures/kMkdVeDfYpYvi9nC94Ohceut2lk14HMFnmgEqVXg.jpg', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', 'jJeYuNVhoAbr9qoyKGGSI5ehyg6I9Ycg9FUgNbY9xrgCt2FTTKuckmpZ5sfH', '2025-10-02 18:51:46', '2025-10-25 06:42:28', NULL),
+(1, 'Admin', 'admin', 'admin@opticrew.com', 'profile_pictures/kMkdVeDfYpYvi9nC94Ohceut2lk14HMFnmgEqVXg.jpg', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', '7VBCFsRkyWWuDzZd7Ni46mwBR3uIyt2olMqUbZcKjNLqZAePtZO5yxRnDO3a', '2025-10-02 18:51:46', '2025-10-25 06:42:28', NULL),
 (2, 'Vincent Rey Digol', 'vince123', 'vincentreydigol@finnoys.com', 'profile_pictures/IDMjQjtw1oK4v43oJLaET1NlUk863qV9mMM0mFgh.png', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$oo44Ffamrr.hoI349F5rzOVkuiDEKbKNHX9Q/DFlZRNLOSCSKYBCW', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-29 02:24:13', NULL),
 (3, 'Martin Yvann Leonardo', 'martin123', 'martinyvannleonardo@finnoys.com', NULL, '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$fEn6ftE4hV6qwLE6Pu7i5uTTpwHeEKyXtviZ7oTI7mh2hKzE660GS', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-25 06:42:00', NULL),
 (4, 'Earl Leonardo', NULL, 'earlleonardo@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$UyZcyuwzjz1SrB6dPNZ3J.hCGWcCJ9ixAA0NP59Y7n9tkR/1JGdDW', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
@@ -4591,7 +4661,9 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `profile_picture`, `phon
 (10, 'Cherrylyn Morales ', NULL, 'cherrylynmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$1swK95thyuDIKhCj1CDFJ.T591GF9ysJ4KvKJRaTfAiV7QTdU9Yaa', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
 (11, 'John Carl Morales', NULL, 'johncarlmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$rLfpy6PWrrJYqVOkZUyFa.cLOLrTwLbKfkdp7tAS/vLQUotLTYOhi', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
 (12, 'John Kevin Morales', NULL, 'johnkevinmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$/CV5zvi4rk3qSqg6JuYsme9FU7O06qgGq2eKBtDTSJXGhSPRAUAt.', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(17, 'Miradel Leonardo', 'mira123', 'miradel@gmail.com', NULL, '0401234567', 'Inari, Finland', NULL, '$2y$10$ogpFC.oYTxztWlLor7uXaecaHk9TA6jOrwk3DIOIt5TTQFAjFFB0C', 'external_client', NULL, '2025-10-26 07:09:50', '2025-10-27 12:19:57', NULL);
+(17, 'Miradel Leonardo', 'mira123', 'miradel@gmail.com', NULL, '0401234567', 'Inari, Finland', NULL, '$2y$10$ogpFC.oYTxztWlLor7uXaecaHk9TA6jOrwk3DIOIt5TTQFAjFFB0C', 'external_client', NULL, '2025-10-26 07:09:50', '2025-10-27 12:19:57', NULL),
+(19, 'Kakslauttanen', 'kakslauttanen', 'kakslauttanen@company.com', NULL, '+358 00 000 0000', NULL, '2025-10-29 07:25:47', '$2y$10$caOzaZwOF315fH011mFFJegP0nJTHhXbHzXguXH/92NwCTh/zCx0y', 'company', NULL, '2025-10-29 07:25:47', '2025-10-29 07:25:47', NULL),
+(20, 'Aikamatkat', 'aikamatkat', 'aikamatkat@company.com', NULL, '+358 00 000 0000', NULL, '2025-10-29 07:25:47', '$2y$10$Ne4U0KoxXs3KpJe.8Gob/e00tfBGmYDt/RogDhlB36eWpglZNC7bW', 'company', NULL, '2025-10-29 07:25:47', '2025-10-29 07:25:47', NULL);
 
 --
 -- Indexes for dumped tables
@@ -4651,7 +4723,8 @@ ALTER TABLE `company_settings`
 --
 ALTER TABLE `contracted_clients`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `contracted_clients_name_unique` (`name`);
+  ADD UNIQUE KEY `contracted_clients_name_unique` (`name`),
+  ADD KEY `contracted_clients_user_id_foreign` (`user_id`);
 
 --
 -- Indexes for table `day_offs`
@@ -4793,6 +4866,20 @@ ALTER TABLE `personal_access_tokens`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   ADD KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`);
+
+--
+-- Indexes for table `quotations`
+--
+ALTER TABLE `quotations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `quotations_reviewed_by_foreign` (`reviewed_by`),
+  ADD KEY `quotations_quoted_by_foreign` (`quoted_by`),
+  ADD KEY `quotations_appointment_id_foreign` (`appointment_id`),
+  ADD KEY `quotations_converted_by_foreign` (`converted_by`),
+  ADD KEY `quotations_booking_type_index` (`booking_type`),
+  ADD KEY `quotations_status_index` (`status`),
+  ADD KEY `quotations_email_index` (`email`),
+  ADD KEY `quotations_created_at_index` (`created_at`);
 
 --
 -- Indexes for table `scenario_analyses`
@@ -4945,7 +5032,7 @@ ALTER TABLE `locations`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -4996,6 +5083,12 @@ ALTER TABLE `personal_access_tokens`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `quotations`
+--
+ALTER TABLE `quotations`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
 -- AUTO_INCREMENT for table `scenario_analyses`
 --
 ALTER TABLE `scenario_analyses`
@@ -5023,7 +5116,7 @@ ALTER TABLE `task_performance_histories`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Constraints for dumped tables
@@ -5057,6 +5150,12 @@ ALTER TABLE `client_appointments`
   ADD CONSTRAINT `client_appointments_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `client_appointments_recommended_team_id_foreign` FOREIGN KEY (`recommended_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `client_appointments_rejected_by_foreign` FOREIGN KEY (`rejected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `contracted_clients`
+--
+ALTER TABLE `contracted_clients`
+  ADD CONSTRAINT `contracted_clients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `day_offs`
@@ -5152,6 +5251,15 @@ ALTER TABLE `performance_flags`
   ADD CONSTRAINT `performance_flags_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `performance_flags_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `performance_flags_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `quotations`
+--
+ALTER TABLE `quotations`
+  ADD CONSTRAINT `quotations_appointment_id_foreign` FOREIGN KEY (`appointment_id`) REFERENCES `client_appointments` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `quotations_converted_by_foreign` FOREIGN KEY (`converted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `quotations_quoted_by_foreign` FOREIGN KEY (`quoted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `quotations_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `tasks`

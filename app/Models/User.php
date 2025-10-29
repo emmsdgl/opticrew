@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
     }
 
+    public function contractedClient(): HasOne
+    {
+        return $this->hasOne(ContractedClient::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

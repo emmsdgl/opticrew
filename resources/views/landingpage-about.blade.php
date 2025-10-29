@@ -222,7 +222,7 @@
                         <div class="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-8 lg:gap-10 justify-center lg:justify-start pt-4">
                             <div class="flex flex-col items-center lg:items-start min-w-[140px]">
                                 <p class="font-[fam-bold] text-[#071957] dark:text-white text-sm sm:text-base mb-1">
-                                    Adam Jay M. Bolano
+                                    Merlyn Guzman
                                 </p>
                                 <p class="font-[fam-regular] text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
                                     CEO
@@ -234,7 +234,7 @@
                             
                             <div class="flex flex-col items-center lg:items-start min-w-[140px]">
                                 <p class="font-[fam-bold] text-[#071957] dark:text-white text-sm sm:text-base mb-1">
-                                    Emmaus L. Digol
+                                    Earl Leonardo
                                 </p>
                                 <p class="font-[fam-regular] text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
                                     CFO
@@ -262,9 +262,9 @@
                 <div class="w-1/3 flex justify-center lg:justify-end items-center mt-8 lg:mt-0">
                     <div class="flip-card w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] md:w-[340px] md:h-[340px] lg:w-[380px] lg:h-[380px] cursor-pointer transition-all duration-700">
                         <div class="flip-inner relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d]">
-                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden 
-                                        bg-[url('/public/images/people/team-member-bg.svg')] 
-                                        dark:bg-[url('/public/images/people/team-member-bg-dark.svg')] 
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden
+                                        bg-[url('/images/people/team-member-bg.svg')]
+                                        dark:bg-[url('/images/people/team-member-bg-dark.svg')]
                                         bg-center bg-[length:155%] bg-no-repeat [backface-visibility:hidden]">
                                 <img src="{{ asset('images/people/cleaner-avatar.svg') }}" alt="Team Member"
                                     class="absolute inset-0 w-full h-full object-cover rounded-full">

@@ -44,19 +44,63 @@
         </div>
 
         <!-- Nav -->
-        <nav class="mt-6 space-y-1">
-                @foreach($navOptions as $nav)
-                    @php
-                        // Check if current route matches this nav item
-                        $isActive = request()->url() === $nav['href'] ||
-                                    (isset($nav['href']) && request()->is(trim(parse_url($nav['href'], PHP_URL_PATH), '/').'*'));
-                    @endphp
-                    <a href="{{ $nav['href'] ?? '#' }}"
-                       class="flex items-center px-3 py-3.5 text-sm font-medium rounded-lg transition-colors duration-200
-                              {{ $isActive ? 'bg-[#2A6DFA] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-[#2A6DFA] hover:text-white' }}">
-                        <i class="fa-solid {{ $nav['icon'] }} w-5"></i>
-                        <span class="ml-8 nav-label">{{ $nav['label'] }}</span>
-                    </a>
+        <nav class="mt-6 space-y-1" x-data="{ openDropdowns: {} }">
+                @foreach($navOptions as $index => $nav)
+                    @if(isset($nav['children']) && count($nav['children']) > 0)
+                        {{-- Dropdown Menu Item --}}
+                        @php
+                            $hasActiveChild = false;
+                            foreach ($nav['children'] as $child) {
+                                if (isset($child['href']) && (request()->url() === $child['href'] || request()->is(trim(parse_url($child['href'], PHP_URL_PATH), '/').'*'))) {
+                                    $hasActiveChild = true;
+                                    break;
+                                }
+                            }
+                        @endphp
+                        <div x-data="{ open: {{ $hasActiveChild ? 'true' : 'false' }} }">
+                            <button @click="open = !open"
+                                   class="w-full flex items-center justify-between px-3 py-3.5 text-sm font-medium rounded-lg transition-colors duration-200
+                                          {{ $hasActiveChild ? 'bg-[#2A6DFA] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                                <div class="flex items-center">
+                                    <i class="fa-solid {{ $nav['icon'] }} w-5"></i>
+                                    <span class="ml-8 nav-label">{{ $nav['label'] }}</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down nav-label transition-transform duration-200"
+                                   :class="{ 'rotate-180': open }"></i>
+                            </button>
+                            <div x-show="open"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 -translate-y-1"
+                                 class="mt-1 ml-5 space-y-1">
+                                @foreach($nav['children'] as $child)
+                                    @php
+                                        $isChildActive = isset($child['href']) && (request()->url() === $child['href'] || request()->is(trim(parse_url($child['href'], PHP_URL_PATH), '/').'*'));
+                                    @endphp
+                                    <a href="{{ $child['href'] ?? '#' }}"
+                                       class="flex items-center px-3 py-2.5 text-sm rounded-lg transition-colors duration-200
+                                              {{ $isChildActive ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                                        <i class="fa-solid {{ $child['icon'] ?? 'fa-circle' }} text-xs w-4"></i>
+                                        <span class="ml-6 nav-label">{{ $child['label'] }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        {{-- Regular Menu Item --}}
+                        @php
+                            $isActive = isset($nav['href']) && (request()->url() === $nav['href'] || request()->is(trim(parse_url($nav['href'], PHP_URL_PATH), '/').'*'));
+                        @endphp
+                        <a href="{{ $nav['href'] ?? '#' }}"
+                           class="flex items-center px-3 py-3.5 text-sm font-medium rounded-lg transition-colors duration-200
+                                  {{ $isActive ? 'bg-[#2A6DFA] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-[#2A6DFA] hover:text-white' }}">
+                            <i class="fa-solid {{ $nav['icon'] }} w-5"></i>
+                            <span class="ml-8 nav-label">{{ $nav['label'] }}</span>
+                        </a>
+                    @endif
                 @endforeach
 
                 @php

@@ -6,7 +6,14 @@
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('admin.dashboard')],
             ['label' => 'Accounts', 'icon' => 'fa-users', 'href' => route('admin.accounts.index')],
             ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => route('admin.tasks')],
-            ['label' => 'Appointments', 'icon' => 'fa-calendar-check', 'href' => route('admin.appointments.index')],
+            [
+                'label' => 'Appointments',
+                'icon' => 'fa-calendar-check',
+                'children' => [
+                    ['label' => 'Appointments', 'icon' => 'fa-calendar-days', 'href' => route('admin.appointments.index')],
+                    ['label' => 'Quotation Requests', 'icon' => 'fa-file-invoice', 'href' => route('admin.quotations.index')],
+                ]
+            ],
             ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/analytics'],
             ['label' => 'Optimization Result', 'icon' => 'fa-file-lines', 'href' => route('optimization.result')],
         ];

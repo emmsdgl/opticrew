@@ -259,7 +259,7 @@
                 <span id="cleaning" class="text-blue-500 dark:text-blue-400 inline-flex items-center font-bold">
                     cleaning
                     <span id="spark" class="mr-2">
-                        <img src="/public/images/icons/single-sparkle.svg" alt="" class="h-12 w-auto">
+                        <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="" class="h-12 w-auto">
                     </span>
                 </span>
                 <br>
