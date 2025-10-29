@@ -20,21 +20,21 @@
     <style>
         @font-face {
             font-family: 'fam-regular';
-            src: url('{{ asset('fonts/FamiljenGrotesk-Regular.otf') }}') format('opentype');
+            src: url("{{ asset('fonts/FamiljenGrotesk-Regular.otf') }}") format('opentype');
             font-weight: normal;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'fam-bold';
-            src: url('{{ asset('fonts/FamiljenGrotesk-Bold.otf') }}') format('opentype');
+            src: url("{{ asset('fonts/FamiljenGrotesk-Bold.otf') }}") format('opentype');
             font-weight: normal;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'fam-bold-italic';
-            src: url('{{ asset('fonts/FamiljenGrotesk-BoldItalic.otf') }}') format('opentype');
+            src: url("{{ asset('fonts/FamiljenGrotesk-BoldItalic.otf') }}") format('opentype');
             font-weight: normal;
             font-style: normal;
         }
@@ -141,7 +141,7 @@
                     <a href="{{ route('home') }}" class="-m-1.5 p-1.5">
                         <span class="sr-only">Fin-noys</span>
                         <!-- Light mode logo -->
-                        <img src="{{ asset('images/finnoys-text-logo.svg') }}" alt="Fin-noys Logo" 
+                        <img src="{{ asset('images/finnoys-text-logo-light.svg') }}" alt="Fin-noys Logo" 
                              class="h-20 w-auto dark:hidden">
                         <!-- Dark mode logo (use same if you don't have a light version) -->
                         <img src="{{ asset('images/finnoys-text-logo.svg') }}" alt="Fin-noys Logo" 
