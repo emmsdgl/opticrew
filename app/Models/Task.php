@@ -14,6 +14,7 @@ class Task extends Model
         'location_id',
         'client_id',
         'task_description',
+        'rate_type',              // Rate type: Normal or Student
         'estimated_duration_minutes',
         'scheduled_date',
         'status',

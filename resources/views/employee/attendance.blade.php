@@ -1,6 +1,13 @@
 <x-layouts.general-employee :title="'Attendance'">
-    <section role="status" class="flex flex-col lg:flex-col gap-1 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
-        
+
+    {{-- MOBILE LAYOUT (< 1024px) - Hidden on large screens --}}
+    <div class="lg:hidden">
+        @include('employee.mobile.attendance')
+    </div>
+
+    {{-- DESKTOP LAYOUT (≥ 1024px) - Hidden on small screens --}}
+    <section role="status" class="hidden lg:flex flex-col lg:flex-col gap-1 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
+
         <!-- Success/Error Messages -->
         @if(session('success'))
             <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
@@ -13,23 +20,6 @@
                 {{ session('error') }}
             </div>
         @endif
-<!-- 
-        // Clock In/Out Buttons
-        <div class="flex gap-4 mb-6">
-            <form action="{{ route('employee.attendance.clockin') }}" method="POST">
-                @csrf
-                <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                    <i class="fa-solid fa-clock mr-2"></i>Clock In
-                </button>
-            </form>
-
-            <form action="{{ route('employee.attendance.clockout') }}" method="POST">
-                @csrf
-                <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                    <i class="fa-solid fa-clock mr-2"></i>Clock Out
-                </button>
-            </form>
-        </div> -->
 
         <!-- Inner Panel - Summary Cards Container -->
         <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
@@ -70,4 +60,3 @@
 
     </section>
 </x-layouts.general-dashboard>
-@stack('scripts')

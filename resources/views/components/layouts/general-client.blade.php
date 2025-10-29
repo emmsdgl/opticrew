@@ -5,11 +5,11 @@
         $navOptions = [
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('client.dashboard')],
             ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => route('client.appointments')],
-            ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => '/reports'],
-            ['label' => 'Feedbacks', 'icon' => 'fa-chart-line', 'href' => route('client.appointments')]
+            ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => route('client.pricing')],
+            ['label' => 'Feedbacks', 'icon' => 'fa-chart-line', 'href' => route('client.feedback')]
         ];
 
-        $teams = ['', ''];
+        $teams = []; // No teams for client sidebar
     @endphp
     <x-sidebar :navOptions="$navOptions" :teams="$teams" />
     @endslot

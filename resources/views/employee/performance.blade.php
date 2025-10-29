@@ -254,4 +254,3 @@
         </div>
     </div>
 </x-layouts.general-employee>
-@stack('scripts')

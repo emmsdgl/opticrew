@@ -85,6 +85,7 @@ class OptimizationService
                 });
 
                 $assignmentResults = [];
+                $unassignedTaskIds = [];
 
                 // Process each client's pending tasks
                 foreach ($tasksByClient as $clientIdentifier => $clientTasks) {
@@ -114,10 +115,13 @@ class OptimizationService
                     }
 
                     if (!$correctRun) {
-                        Log::warning("No saved run found for client, skipping", [
+                        // ✅ FIX: Track unassigned tasks instead of skipping
+                        Log::warning("No saved run found for client - will trigger full optimization", [
                             'client_identifier' => $clientIdentifier,
-                            'task_count' => $clientTasks->count()
+                            'task_count' => $clientTasks->count(),
+                            'task_ids' => $clientTasks->pluck('id')->toArray()
                         ]);
+                        $unassignedTaskIds = array_merge($unassignedTaskIds, $clientTasks->pluck('id')->toArray());
                         continue;
                     }
 
@@ -132,13 +136,24 @@ class OptimizationService
                     }
                 }
 
-                DB::commit(); // Commit transaction before returning
-                return [
-                    'status' => 'success',
-                    'message' => 'All pending tasks assigned to existing teams',
-                    'total_tasks_assigned' => count($assignmentResults),
-                    'assignments' => $assignmentResults
-                ];
+                // ✅ FIX: If there are unassigned tasks, fall through to full optimization
+                if (!empty($unassignedTaskIds)) {
+                    Log::info("⚠️ Real-time addition incomplete - falling through to full optimization", [
+                        'assigned_tasks' => count($assignmentResults),
+                        'unassigned_tasks' => count($unassignedTaskIds),
+                        'unassigned_task_ids' => $unassignedTaskIds
+                    ]);
+                    // Don't return - continue to standard optimization flow below
+                } else {
+                    // All tasks successfully assigned
+                    DB::commit(); // Commit transaction before returning
+                    return [
+                        'status' => 'success',
+                        'message' => 'All pending tasks assigned to existing teams',
+                        'total_tasks_assigned' => count($assignmentResults),
+                        'assignments' => $assignmentResults
+                    ];
+                }
             }
 
             // ✅ RE-OPTIMIZATION LOGIC: Check for existing unsaved runs
@@ -446,7 +461,7 @@ class OptimizationService
             'task_description' => $newTask->task_description,
             'client_name' => $taskClientName,
             'team_id' => $selectedTeam->id,
-            'team_members' => $selectedTeam->members->pluck('employee.full_name')->toArray(),
+            'team_members' => $selectedTeam->members->pluck('employee.user.name')->toArray(),
             'team_task_count_before' => $teamTasks->count() - 1,
             'team_task_count_after' => $teamTasks->count(),
             'team_hours_after' => round($finalHours, 2)
@@ -456,7 +471,7 @@ class OptimizationService
             'status' => 'success',
             'message' => 'Task added to existing ' . $taskClientName . ' team',
             'assigned_team_id' => $selectedTeam->id,
-            'team_members' => $selectedTeam->members->pluck('employee.full_name')->toArray(),
+            'team_members' => $selectedTeam->members->pluck('employee.user.name')->toArray(),
             'optimization_run_id' => $existingRun->id
         ];
     }

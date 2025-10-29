@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -21,7 +22,12 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
+        'email_verified_at',
+        'profile_picture',
+        'phone',
+        'location',
         'password',
         'role',
     ];
@@ -37,6 +43,11 @@ class User extends Authenticatable
         // This tells Laravel that a User has one Employee,
         // linked by the 'user_id' column in the 'employees' table.
         return $this->hasOne(Employee::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
     }
 
     /**

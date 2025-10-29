@@ -10,18 +10,22 @@ class TaskValidator
     {
         $valid = collect();
         $invalid = collect();
-    
+
         foreach ($tasks as $task) {
+            // Get coordinates from contracted_client via location relationship
+            $latitude = $task->location?->contractedClient?->latitude ?? null;
+            $longitude = $task->location?->contractedClient?->longitude ?? null;
+
             \Log::info("Validating task", [
                 'id' => $task->id,
                 'location_id' => $task->location_id,
-                'latitude' => $task->latitude,
-                'longitude' => $task->longitude,
+                'client_latitude' => $latitude,
+                'client_longitude' => $longitude,
                 'scheduled_date' => $task->scheduled_date,
                 'duration' => $task->duration,
                 'travel_time' => $task->travel_time
             ]);
-    
+
             if ($this->isValid($task, $constraints)) {
                 \Log::info("Task PASSED validation", ['id' => $task->id]);
                 $valid->push($task);
@@ -37,12 +41,12 @@ class TaskValidator
                 ]);
             }
         }
-    
+
         \Log::info("Validation complete", [
             'valid_count' => $valid->count(),
             'invalid_count' => $invalid->count()
         ]);
-    
+
         return [
             'valid' => $valid,
             'invalid' => $invalid,
@@ -71,12 +75,16 @@ class TaskValidator
 
     protected function isLocationAccessible($task): bool
     {
-        // For now, just check if location_id exists
-        // Coordinates are optional for initial testing
-        // return !empty($task->location_id);
-        
-        // Later, when you have coordinates, enable this:
-        return !empty($task->latitude) && !empty($task->longitude);
+        // Check if task has location with contracted client coordinates
+        if (empty($task->location_id)) {
+            return false;
+        }
+
+        // Get coordinates from contracted_client via location relationship
+        $latitude = $task->location?->contractedClient?->latitude ?? null;
+        $longitude = $task->location?->contractedClient?->longitude ?? null;
+
+        return !empty($latitude) && !empty($longitude);
     }
 
     protected function isWithinTimeWindow($task, array $constraints): bool

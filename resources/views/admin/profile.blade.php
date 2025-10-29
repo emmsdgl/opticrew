@@ -8,16 +8,24 @@
                 <div
                     class="w-full h-full rounded-lg">
                     @php
+                        $user = Auth::user();
                         $employer = [
-                            'full_name' => 'Robert Johnson',
-                            'work_email' => 'r.johnson@company.com',
-                            'work_phone' => '+1 (415) 555-8888',
-                            'profile_photo' => null,
-                            'office_status' => 'In Headquarters',
-                            'username' => 'robert.j',
-                            'work_location' => 'Inari, Finland'
+                            'full_name' => $user->name,
+                            'work_email' => $user->email,
+                            'work_phone' => $user->phone ?? '+358 40 123 4567',
+                            'profile_photo' => $user->profile_picture ? asset('storage/' . $user->profile_picture) : null,
+                            'office_status' => 'Administrator',
+                            'username' => $user->username,
+                            'work_location' => $user->location ?? 'Inari, Finland'
                         ];
                     @endphp
+
+                    <!-- Success Message -->
+                    @if(session('success'))
+                        <div class="mb-4 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded-lg">
+                            {{ session('success') }}
+                        </div>
+                    @endif
 
                     <x-profilecard :name="$employer['full_name']" greeting="Welcome Back,"
                         subtitle="You have a productive day ahead!" :avatar="$employer['profile_photo']"
