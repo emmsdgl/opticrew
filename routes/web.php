@@ -21,15 +21,12 @@ use App\Http\Controllers\LanguageController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
-<<<<<<< HEAD
 Route::get('/', function () {
     return view('landingpage-home');
 })->name('home');
-=======
 Route::get('/', action: function () {
     return view('client.appointments');
 })->name('client-appointments');
->>>>>>> aa6f03b313d67b10825b022646ccc82cf8f9c0b3
 
 // About Page
 Route::get('/about', function () {
