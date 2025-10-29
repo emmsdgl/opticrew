@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Holiday;
 use Carbon\Carbon;
 
 class EmployeeDashboardController extends Controller
@@ -74,12 +75,21 @@ class EmployeeDashboardController extends Controller
             )
             ->first();
 
-        return view('employee-dash', [
+        // --- Fetch holidays for calendar display ---
+        $holidays = Holiday::all()->map(function ($holiday) {
+            return [
+                'date' => $holiday->date->format('Y-m-d'),
+                'name' => $holiday->name,
+            ];
+        });
+
+        return view('employee.dashboard', [
             'employee' => $employee,
             'dailySchedule' => $dailySchedule,
             'todoList' => $todoList,
             'tasksSummary' => (array) $tasksSummary,
             'period' => $period, // Pass the current period back to the view
+            'holidays' => $holidays, // Pass holidays to the view
         ]);
     }
 }

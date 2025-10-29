@@ -31,9 +31,4 @@ class OptimizationGeneration extends Model
     {
         return $this->belongsTo(OptimizationRun::class);
     }
-
-    public function schedules()
-    {
-        return $this->hasMany(OptimizationSchedule::class);
-    }
 }

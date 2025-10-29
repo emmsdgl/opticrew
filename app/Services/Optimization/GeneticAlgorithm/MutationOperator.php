@@ -67,42 +67,62 @@ class MutationOperator
     }
 
     /**
-     * Move a random task from one team to another
+     * Move a task from MOST loaded team to LEAST loaded team (balance-preserving)
+     * ✅ FIX: This mutation now improves balance instead of destroying it
      */
     protected function insertMutation(array $schedule): array
     {
         $teamIndices = array_keys($schedule);
-        
+
         if (count($teamIndices) < 2) {
             return $schedule;
         }
-        
-        // Find team with tasks
+
+        // ✅ Find MOST loaded team (source)
+        $maxWorkload = -1;
         $sourceTeamIndex = null;
         foreach ($teamIndices as $index) {
-            if ($schedule[$index]['tasks']->isNotEmpty()) {
+            if ($schedule[$index]['tasks']->isEmpty()) {
+                continue;
+            }
+            $workload = $schedule[$index]['tasks']->sum('duration');
+            if ($workload > $maxWorkload) {
+                $maxWorkload = $workload;
                 $sourceTeamIndex = $index;
-                break;
             }
         }
-        
+
         if ($sourceTeamIndex === null) {
             return $schedule;
         }
-        
-        // Select random task from source team
+
+        // ✅ Find LEAST loaded team (target)
+        $minWorkload = PHP_INT_MAX;
+        $targetTeamIndex = null;
+        foreach ($teamIndices as $index) {
+            if ($index === $sourceTeamIndex) {
+                continue; // Skip source team
+            }
+            $workload = $schedule[$index]['tasks']->sum('duration');
+            if ($workload < $minWorkload) {
+                $minWorkload = $workload;
+                $targetTeamIndex = $index;
+            }
+        }
+
+        if ($targetTeamIndex === null) {
+            return $schedule;
+        }
+
+        // Select random task from MOST loaded team
         $sourceTasks = $schedule[$sourceTeamIndex]['tasks'];
         $taskIndex = rand(0, $sourceTasks->count() - 1);
         $task = $sourceTasks[$taskIndex];
-        
-        // Remove task from source
+
+        // Move task from MOST loaded to LEAST loaded
         $schedule[$sourceTeamIndex]['tasks'] = $sourceTasks->forget($taskIndex)->values();
-        
-        // Add to random different team
-        $availableTeams = array_diff($teamIndices, [$sourceTeamIndex]);
-        $targetTeamIndex = $availableTeams[array_rand($availableTeams)];
         $schedule[$targetTeamIndex]['tasks']->push($task);
-        
+
         return $schedule;
     }
 

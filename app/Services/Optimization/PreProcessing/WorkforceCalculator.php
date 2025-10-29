@@ -46,7 +46,7 @@ class WorkforceCalculator
 
     /**
      * Step (b): Calculate total required work hours from Task models
-     * Formula: T_req = Σ(Di + Li) for all tasks
+     * Formula: T_req = Σ(Di) + one-time travel per client group
      *
      * @param Collection $tasks Collection of Task models
      * @return float Total required work hours
@@ -54,20 +54,35 @@ class WorkforceCalculator
     protected function calculateTotalHours(Collection $tasks): float
     {
         $totalHours = 0.0;
-        $defaultTravelTime = config('optimization.workforce.default_travel_time', 0.5); // hours
 
+        // Calculate task duration hours
         foreach ($tasks as $task) {
             // Duration in minutes, convert to hours
             $Di = ($task->estimated_duration_minutes ?? $task->duration ?? 60) / 60.0;
+            $totalHours += $Di;
+        }
 
-            // Travel time in minutes, convert to hours (or use default)
-            $Li = isset($task->travel_time) ? $task->travel_time / 60.0 : $defaultTravelTime;
+        // ✅ Add one-time travel time per client group
+        // Group tasks by contracted client
+        $clientGroups = $tasks->groupBy(function($task) {
+            if ($task->location && $task->location->contracted_client_id) {
+                return $task->location->contracted_client_id;
+            }
+            return 'unknown';
+        });
 
-            $totalHours += ($Di + $Li);
+        // Add travel time for each client group
+        foreach ($clientGroups as $clientId => $clientTasks) {
+            if ($clientId === 'unknown') continue;
+
+            // Kakslauttanen (ID=1): 30 min, Aikamatkat (ID=2): 15 min
+            $travelMinutes = ($clientId == 1) ? 30 : 15;
+            $totalHours += $travelMinutes / 60.0;
         }
 
         Log::info("Workforce - Step (b): Total Required Hours", [
             'task_count' => $tasks->count(),
+            'client_groups' => $clientGroups->keys()->toArray(),
             'total_hours' => round($totalHours, 2),
             'avg_hours_per_task' => $tasks->count() > 0 ? round($totalHours / $tasks->count(), 2) : 0
         ]);
@@ -159,12 +174,13 @@ class WorkforceCalculator
 
     /**
      * Step (e): Determine final workforce size
-     * Formula: N_final = Maximum(N_base, Minimum(N_set, N_cost-max))
+     * ✅ FIXED Formula: N_final = Minimum(N_base, N_set, N_cost-max)
      *
      * Ensures:
-     * 1. N_final ≥ N_base (enough to complete work)
+     * 1. N_final ≤ N_base (don't allocate more than needed)
      * 2. N_final ≤ N_set (doesn't exceed available employees)
      * 3. N_final ≤ N_cost-max (doesn't exceed budget)
+     * 4. Warns if N_base > N_set (insufficient employees for workload)
      *
      * @param int $baseWorkforce Minimum workforce needed
      * @param int $availableEmployees Number of available employees (N_set)
@@ -176,8 +192,9 @@ class WorkforceCalculator
         int $availableEmployees,
         int $maxAffordable
     ): int {
-        // N_final = max(N_base, min(N_set, N_cost-max))
-        $nFinal = max($baseWorkforce, min($availableEmployees, $maxAffordable));
+        // ✅ FIX: Use MINIMUM of needed/available/affordable
+        // Don't allocate ALL employees when only a few are needed!
+        $nFinal = min($baseWorkforce, $availableEmployees, $maxAffordable);
 
         // RULE 1: Ensure even number for PAIRS, or +1 for TRIO if odd
         if ($nFinal % 2 !== 0 && $nFinal < $availableEmployees) {

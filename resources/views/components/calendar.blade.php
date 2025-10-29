@@ -1,4 +1,5 @@
 @props([
+    'holidays' => []
 ])
 
   <!-- Calendar Container -->
@@ -46,6 +47,13 @@
   const nextWeekBtn = document.getElementById("next-week");
   const html = document.documentElement;
 
+  // Load holidays data
+  const holidays = @js($holidays);
+  const holidayDates = holidays.reduce((acc, holiday) => {
+    acc[holiday.date] = holiday.name;
+    return acc;
+  }, {});
+
   let currentDate = new Date();
   let selectedDate = new Date();
 
@@ -71,10 +79,21 @@
       const current = new Date(startOfWeek);
       current.setDate(startOfWeek.getDate() + i);
 
+      // Format date without timezone conversion to avoid date shifting
+      const year = current.getFullYear();
+      const month = String(current.getMonth() + 1).padStart(2, '0');
+      const day = String(current.getDate()).padStart(2, '0');
+      const dateString = `${year}-${month}-${day}`;
+
+      const isHoliday = holidayDates[dateString];
+
+      const container = document.createElement("div");
+      container.className = "relative mx-auto w-8 h-8";
+
       const button = document.createElement("button");
       button.textContent = current.getDate();
       button.className =
-        "mx-auto w-8 h-8 flex items-center justify-center rounded-lg transition-colors duration-200 " +
+        "w-full h-full flex items-center justify-center rounded-lg transition-colors duration-200 " +
         (current.toDateString() === selectedDate.toDateString()
           ? "bg-blue-500 text-white"
           : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800");
@@ -85,7 +104,18 @@
         renderWeek(selectedDate);
       });
 
-      weekDaysContainer.appendChild(button);
+      container.appendChild(button);
+
+      // Add holiday indicator with better visibility
+      if (isHoliday) {
+        const holidayBadge = document.createElement("span");
+        holidayBadge.className = "absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg border border-white dark:border-gray-800";
+        holidayBadge.title = isHoliday;
+        holidayBadge.innerHTML = '<i class="fa-solid fa-star text-white" style="font-size: 8px;"></i>';
+        container.appendChild(holidayBadge);
+      }
+
+      weekDaysContainer.appendChild(container);
     }
   }
 

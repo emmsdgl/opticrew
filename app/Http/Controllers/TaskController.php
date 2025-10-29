@@ -13,6 +13,7 @@ use App\Models\OptimizationRun;
 use App\Models\OptimizationGeneration;
 use App\Models\Location;
 use App\Services\Optimization\OptimizationService; // ✅ FIXED: Correct namespace
+use App\Models\Holiday;
 
 class TaskController extends Controller
 {
@@ -87,12 +88,26 @@ class TaskController extends Controller
 
             // ✅ Parse task_description to extract service type and cabin type
             // Format: "ServiceType (CabinType)" e.g. "Daily Room Cleaning (Arrival)"
+            // OR for client appointments: "ServiceType - CabinName" e.g. "Deep Cleaning - Kelo A"
             $pureServiceType = $task->task_description;
             $cabinType = null;
 
             if (preg_match('/^(.+?)\s*\((.+?)\)\s*$/', $task->task_description, $matches)) {
                 $pureServiceType = trim($matches[1]); // "Daily Room Cleaning"
                 $cabinType = trim($matches[2]); // "Arrival"
+            }
+
+            // ✅ Get location name (for contracted clients) or cabin name (for external clients)
+            $locationName = 'Unknown';
+            if ($task->location && $task->location->location_name) {
+                // Contracted client - use location name
+                $locationName = $task->location->location_name;
+            } elseif ($task->client) {
+                // External client - extract cabin name from task_description
+                // Format: "Service Type - Cabin Name"
+                if (preg_match('/^.+?\s*-\s*(.+)$/', $task->task_description, $matches)) {
+                    $locationName = trim($matches[1]); // "Kelo A"
+                }
             }
 
             $events[$dateKey][] = [
@@ -103,7 +118,7 @@ class TaskController extends Controller
                 'pureServiceType' => $pureServiceType, // ✅ Just the service type
                 'cabinType' => $cabinType, // ✅ Just the cabin type (Arrival/Departure/Daily Clean)
                 'client' => $clientName, // ✅ Client name
-                'location' => $task->location->location_name ?? 'Unknown',
+                'location' => $locationName, // ✅ Location name or cabin name
                 'employees' => $employeeNames, // ✅ Add employee names
                 'team_id' => $task->assigned_team_id,
                 'arrival_status' => $task->arrival_status ?? false, // ✅ Include arrival status
@@ -194,6 +209,19 @@ class TaskController extends Controller
                     break;
             }
 
+            // ✅ Get location name (for contracted clients) or cabin name (for external clients)
+            $locationName = null;
+            if ($task->location && $task->location->location_name) {
+                // Contracted client - use location name
+                $locationName = $task->location->location_name;
+            } elseif ($task->client) {
+                // External client - extract cabin name from task_description
+                // Format: "Service Type - Cabin Name"
+                if (preg_match('/^.+?\s*-\s*(.+)$/', $task->task_description, $matches)) {
+                    $locationName = trim($matches[1]); // "Kelo A"
+                }
+            }
+
             return [
                 'id' => $task->id,
                 'client' => $clientName,
@@ -206,16 +234,29 @@ class TaskController extends Controller
                 'priorityColor' => $priorityColor,
                 'status' => $kanbanStatus,
                 'arrival_status' => $task->arrival_status ?? false,
-                'location' => $task->location->location_name ?? null,
+                'location' => $locationName, // ✅ Location name or cabin name
             ];
         });
 
-        // --- 6. RETURN TO VIEW ---
-        return view('admin-tasks', [
+        // --- 6. FETCH HOLIDAYS ---
+        $rawHolidays = Holiday::all();
+        $holidays = [];
+        foreach ($rawHolidays as $holiday) {
+            $dateKey = date('Y-n-j', strtotime($holiday->date));
+            $holidays[$dateKey] = [
+                'id' => $holiday->id,
+                'name' => $holiday->name,
+                'date' => $holiday->date,
+            ];
+        }
+
+        // --- 7. RETURN TO VIEW ---
+        return view('admin.tasks', [
             'tasks' => $tasks,
             'clients' => $allClients,
             'events' => $events,
-            'bookedLocationsByDate' => $bookedLocationsByDate // Pass the new data
+            'bookedLocationsByDate' => $bookedLocationsByDate,
+            'holidays' => $holidays // Pass holidays data
         ]);
     }
 
@@ -291,8 +332,8 @@ class TaskController extends Controller
                 $task->duration = $location->base_cleaning_duration_minutes ?? 60;
                 $task->estimated_duration_minutes = $task->duration;
 
-                // Set travel time (default 30 minutes)
-                $task->travel_time = 30;
+                // Travel time is 0 per task (calculated once per team based on client destination)
+                $task->travel_time = 0;
 
                 // ✅ RULE 3: Set arrival status based on cabinType (Arrival/Departure/Daily Clean)
                 // If cabin's type is "Arrival", mark as high priority
@@ -351,8 +392,8 @@ class TaskController extends Controller
                     $task->duration = max(30, min(480, $estimatedHours * 60)); // Between 30min and 8 hours
                     $task->estimated_duration_minutes = $task->duration;
 
-                    // Set travel time
-                    $task->travel_time = 30;
+                    // Travel time is 0 per task (calculated once per team based on client destination)
+                    $task->travel_time = 0;
 
                     // Extra tasks are not arrival-related
                     $task->arrival_status = false;
@@ -525,36 +566,97 @@ class TaskController extends Controller
      */
     public function saveSchedule(Request $request)
     {
+        // ✅ SUPPORT BOTH: Single run ID (old) OR service_date (new - saves all runs for that date)
         $request->validate([
-            'optimization_run_id' => 'required|integer|exists:optimization_runs,id'
+            'optimization_run_id' => 'nullable|integer|exists:optimization_runs,id',
+            'service_date' => 'nullable|date'
         ]);
 
         try {
-            $optimizationRun = OptimizationRun::findOrFail($request->optimization_run_id);
+            $savedRuns = [];
+            $alreadySavedRuns = [];
 
-            if ($optimizationRun->is_saved) {
+            // ✅ NEW: Save all runs for a service date
+            if ($request->service_date) {
+                $optimizationRuns = OptimizationRun::where('service_date', $request->service_date)
+                    ->where('is_saved', false)
+                    ->get();
+
+                if ($optimizationRuns->isEmpty()) {
+                    // Check if already saved
+                    $allRuns = OptimizationRun::where('service_date', $request->service_date)->get();
+                    if ($allRuns->isNotEmpty() && $allRuns->every(fn($r) => $r->is_saved)) {
+                        return response()->json([
+                            'message' => 'All schedules for this date are already saved',
+                            'service_date' => $request->service_date
+                        ], 400);
+                    }
+
+                    return response()->json([
+                        'message' => 'No unsaved schedules found for this date',
+                        'service_date' => $request->service_date
+                    ], 404);
+                }
+
+                // Save all unsaved runs for this date
+                foreach ($optimizationRuns as $run) {
+                    $run->update(['is_saved' => true]);
+                    $savedRuns[] = [
+                        'id' => $run->id,
+                        'total_tasks' => $run->total_tasks,
+                        'total_teams' => $run->total_teams,
+                        'total_employees' => $run->total_employees
+                    ];
+                }
+
+                Log::info("✅ Saved ALL schedules for service date", [
+                    'service_date' => $request->service_date,
+                    'runs_saved' => count($savedRuns),
+                    'run_ids' => collect($savedRuns)->pluck('id')->toArray()
+                ]);
+
                 return response()->json([
-                    'message' => 'This schedule is already saved'
-                ], 400);
+                    'status' => 'success',
+                    'message' => 'All schedules for ' . $request->service_date . ' saved successfully',
+                    'service_date' => $request->service_date,
+                    'runs_saved' => count($savedRuns),
+                    'saved_runs' => $savedRuns
+                ]);
             }
 
-            // ✅ Mark as saved
-            $optimizationRun->update(['is_saved' => true]);
+            // ✅ OLD: Save single run by ID (backward compatibility)
+            if ($request->optimization_run_id) {
+                $optimizationRun = OptimizationRun::findOrFail($request->optimization_run_id);
 
-            Log::info("Schedule saved", [
-                'optimization_run_id' => $optimizationRun->id,
-                'service_date' => $optimizationRun->service_date
-            ]);
+                if ($optimizationRun->is_saved) {
+                    return response()->json([
+                        'message' => 'This schedule is already saved'
+                    ], 400);
+                }
 
+                $optimizationRun->update(['is_saved' => true]);
+
+                Log::info("Schedule saved (single run)", [
+                    'optimization_run_id' => $optimizationRun->id,
+                    'service_date' => $optimizationRun->service_date
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Schedule saved successfully',
+                    'optimization_run_id' => $optimizationRun->id
+                ]);
+            }
+
+            // Neither parameter provided
             return response()->json([
-                'status' => 'success',
-                'message' => 'Schedule saved successfully',
-                'optimization_run_id' => $optimizationRun->id
-            ]);
+                'message' => 'Either optimization_run_id or service_date is required'
+            ], 400);
 
         } catch (\Exception $e) {
             Log::error('Failed to save schedule', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
@@ -682,8 +784,9 @@ class TaskController extends Controller
         $locationIds = $pendingTasks->pluck('location_id')->unique()->toArray();
 
         $optimizationService = app(OptimizationService::class);
-        
-        // ✅ Will automatically delete unsaved runs
+
+        // ✅ Will automatically delete ALL previous runs for this date (saved and unsaved)
+        // Only the most recent re-optimized schedule will be kept
         $optimizationResult = $optimizationService->optimizeSchedule(
             $request->service_date,
             $locationIds,
