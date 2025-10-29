@@ -27,6 +27,18 @@ class OptimizationTeam extends Model
         return $this->hasMany(OptimizationTeamMember::class);
     }
 
+    public function employees()
+    {
+        return $this->hasManyThrough(
+            Employee::class,
+            OptimizationTeamMember::class,
+            'optimization_team_id', // Foreign key on optimization_team_members table
+            'id',                   // Foreign key on employees table
+            'id',                   // Local key on optimization_teams table
+            'employee_id'           // Local key on optimization_team_members table
+        );
+    }
+
     public function car()
     {
         return $this->belongsTo(Car::class);

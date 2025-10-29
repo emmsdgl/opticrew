@@ -19,11 +19,18 @@ use Carbon\Carbon;
 class TaskStatusController extends Controller
 {
     protected AlertService $alertService;
-    protected const ALERT_THRESHOLD_MINUTES = 30;
 
     public function __construct(AlertService $alertService)
     {
         $this->alertService = $alertService;
+    }
+
+    /**
+     * Get alert threshold from config
+     */
+    protected function getAlertThreshold(): int
+    {
+        return config('optimization.alerts.on_hold_threshold_minutes', 30);
     }
 
     /**
@@ -113,9 +120,9 @@ class TaskStatusController extends Controller
                     'delay_minutes' => $delayMinutes
                 ]);
 
-                // ✅ Trigger alert if delay > 30 minutes
+                // ✅ Trigger alert if delay exceeds threshold
                 $alertTriggered = false;
-                if ($delayMinutes > self::ALERT_THRESHOLD_MINUTES) {
+                if ($delayMinutes > $this->getAlertThreshold()) {
                     $alert = $this->alertService->triggerTaskDelayedAlert($task, [
                         'delay_minutes' => $delayMinutes,
                         'reason' => $request->reason,

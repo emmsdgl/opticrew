@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TaskStatusController;
 use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\ChatbotController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,14 +27,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('employee')->group(function () {
+Route::prefix('employee')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // Get tasks for employee's team
     Route::get('/tasks', [TaskStatusController::class, 'getEmployeeTasks'])
         ->name('api.employee.tasks');
 });
 
 // Task Status Management (Employee App)
-Route::prefix('tasks')->group(function () {
+Route::prefix('tasks')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // Get task details
     Route::get('/{taskId}', [TaskStatusController::class, 'getTaskDetails'])
         ->name('api.tasks.details');
@@ -57,7 +58,7 @@ Route::prefix('tasks')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // Alert Management
     Route::prefix('alerts')->group(function () {
         // Get unacknowledged alerts (for real-time notifications)
@@ -73,3 +74,14 @@ Route::prefix('admin')->group(function () {
             ->name('api.admin.alerts.acknowledge');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Public API Routes
+|--------------------------------------------------------------------------
+*/
+
+// Chatbot API (Public - No authentication required)
+Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage'])
+    ->middleware('throttle:30,1')  // 30 requests per minute to prevent abuse
+    ->name('api.chatbot.message');

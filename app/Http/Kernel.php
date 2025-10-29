@@ -37,12 +37,14 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
 
-            \App\Http\Middleware\PreventBackHistory::class, 
+            \App\Http\Middleware\PreventBackHistory::class,
+            \App\Http\Middleware\SetLocale::class, // Set application locale from session 
 
         ],
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \App\Http\Middleware\ApiExceptionHandler::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
@@ -66,5 +68,10 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+
+        // Role-based access control middleware
+        'admin' => \App\Http\Middleware\CheckAdmin::class,
+        'employee' => \App\Http\Middleware\CheckEmployee::class,
+        'client' => \App\Http\Middleware\CheckClient::class,
     ];
 }
