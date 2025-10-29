@@ -4,11 +4,11 @@
         $navOptions = [
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('client.dashboard')],
             ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => route('client.appointments')],
-            ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => '/reports'],
-            ['label' => 'Feedbacks', 'icon' => 'fa-chart-line', 'href' => '/analytics']
+            ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => route('client.pricing')],
+            ['label' => 'Feedbacks', 'icon' => 'fa-chart-line', 'href' => route('client.feedback')]
         ];
 
-        $teams = ['', ''];
+        $teams = []; // No teams for client sidebar
     @endphp
     <x-sidebar :navOptions="$navOptions" :teams="$teams" />
     @endslot
@@ -76,38 +76,35 @@
             <x-labelwithvalue label="Availed Services Overview" count="" />
 
             @php
-                $stats = [
+                $statCards = [
                     [
-                        'title' => 'Total Services Availed',
-                        'value' => '50',
-                        'trend' => 'up',
-                        'trendValue' => '3.4%',
-                        'trendLabel' => 'vs last month',
-                        'icon' => 'fa-solid fa-money-check-dollar',
+                        'title' => 'Total Appointments',
+                        'value' => $stats['total'],
+                        'subtitle' => 'All your service requests',
+                        'icon' => 'fa-solid fa-calendar-check',
                         'iconBg' => '',
                         'iconColor' => 'text-blue-600',
                     ],
                     [
-                        'title' => 'Ongoing Services',
-                        'value' => '30',
-                        'subtitle' => 'We are currently working on it',
+                        'title' => 'Ongoing Appointments',
+                        'value' => $stats['ongoing'],
+                        'subtitle' => 'Pending or confirmed services',
                         'icon' => 'fa-solid fa-broom',
                         'iconBg' => '',
-                        'iconColor' => 'text-blue-600',
+                        'iconColor' => 'text-orange-600',
                     ],
                     [
-                        'title' => 'Cancelled Services',
-                        'value' => '20',
-                        'trend' => 'up',
-                        'subtitle' => 'Share with us your feedback on our services',
-                        'icon' => 'fa-solid fa-ban',
+                        'title' => 'Completed Services',
+                        'value' => $stats['completed'],
+                        'subtitle' => 'Successfully finished services',
+                        'icon' => 'fa-solid fa-check-circle',
                         'iconBg' => '',
-                        'iconColor' => 'text-blue-600',
+                        'iconColor' => 'text-green-600',
                     ],
                 ];
             @endphp
             <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 p-6">
-                @foreach($stats as $stat)
+                @foreach($statCards as $stat)
                     <x-statisticscard :title="$stat['title']" :value="$stat['value']" :subtitle="$stat['subtitle'] ?? ''"
                         :trend="$stat['trend'] ?? null" :trend-value="$stat['trendValue'] ?? null"
                         :trend-label="$stat['trendLabel'] ?? 'vs last month'" :icon="$stat['icon'] ?? null"
@@ -120,84 +117,40 @@
         <!-- Inner Panel - Appointments History -->
         <div
             class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
-            <div class="flex flex-row justify-between w-full">
-                <x-labelwithvalue label="All Appointments" count="(5)" />
-                <div class="flex flex-row gap-3">
-                    @php
-                        $timeOptions = ['Completed', 'In Progress', 'Incomplete'];
-                        $serviceOptions = ['Deep Cleaning', 'Daily Full Cleaning', 'Daily Room Cleaning', 'Full Room Cleaning'];
-                    @endphp
-
-                    <x-dropdown :options="$timeOptions" id="dropdown-time" />
-                    <x-dropdown :options="$serviceOptions" default="Service Type" id="dropdown-service-type" />
-                </div>
+            <div class="flex flex-row justify-between w-full items-center">
+                <x-labelwithvalue label="My Appointments" count="({{ $appointments->count() }})" />
+                <a href="{{ route('client.appointment.create') }}"
+                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                    <i class="fi fi-rr-plus mr-2"></i>
+                    Book New Appointment
+                </a>
             </div>
-            @php
-                $appointments = [
-                    [
-                        'id' => 1,
-                        'title' => 'Deep Cleaning',
-                        'location' => 'Cabin 1',
-                        'status' => 'in_progress',
-                        'duration' => '02 h 30 m',
-                        'progress' => 30,
-                        'date' => '2025-07-07',
-                        'time' => '10:00 AM'
-                    ],
-                    [
-                        'id' => 2,
-                        'title' => 'Deep Cleaning',
-                        'location' => 'Cabin 1',
-                        'status' => 'incomplete',
-                        'duration' => '02 h 30 m',
-                        'progress' => 50,
-                        'date' => '2025-07-07',
-                        'time' => '10:00 AM'
-                    ],
-                ];
-            @endphp
 
-            <x-appointmentlistitem :appointments="$appointments" :editable="false" :show-progress="true"
-                :show-duration="true" on-item-click="handleAppointmentClick">
-            </x-appointmentlistitem>
+            <x-clientappointmentlist :appointments="$appointments" :show-header="true" />
         </div>
 
         <!-- Inner Panel - Services Container with Horizontal Scroll -->
         <div
             class="flex flex-col gap-6 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4 overflow-hidden">
-            <x-labelwithvalue label="Explore Our Services" count="(5)" />
+            <x-labelwithvalue label="Explore Our Services" count="(2)" />
 
             @php
+                // Get average ratings from real feedback data
+                $finalCleaningRating = \App\Models\Feedback::averageRatingForService('Final Cleaning');
+                $deepCleaningRating = \App\Models\Feedback::averageRatingForService('Deep Cleaning');
+
                 $services = [
                     [
-                        'title' => 'Hotel Cleaning',
-                        'badge' => 'Top Choice',
-                        'rating' => 4.4,
-                        'description' => 'Room Cleaning, Linen Cleaning, Window Cleaning, Rug Cleaning',
+                        'title' => 'Final Cleaning',
+                        'badge' => 'Most Popular',
+                        'rating' => $finalCleaningRating > 0 ? number_format($finalCleaningRating, 1) : 'New',
+                        'description' => 'Complete cleaning service covering kitchen, living room, bedrooms, bathroom and sauna.',
                     ],
                     [
-                        'title' => 'Office Cleaning',
-                        'badge' => 'Popular',
-                        'rating' => 4.7,
-                        'description' => 'Desk Sanitization, Floor Cleaning, Trash Removal',
-                    ],
-                    [
-                        'title' => 'Window Cleaning',
-                        'badge' => 'Popular',
-                        'rating' => 4.6,
-                        'description' => 'Exterior/Interior window cleaning for all types of buildings',
-                    ],
-                    [
-                        'title' => 'Full Facility Cleaning',
-                        'badge' => 'Top Rated',
-                        'rating' => 4.8,
-                        'description' => 'Full floor sanitization, restocking, and trash removal',
-                    ],
-                    [
-                        'title' => 'Carpet Deep Cleaning',
-                        'badge' => 'Recommended',
-                        'rating' => 4.9,
-                        'description' => 'Carpet Shampooing, Vacuuming, and Odor Removal',
+                        'title' => 'Deep Cleaning',
+                        'badge' => 'Thorough',
+                        'rating' => $deepCleaningRating > 0 ? number_format($deepCleaningRating, 1) : 'New',
+                        'description' => 'Intensive cleaning service for a deeper clean. Includes all Final Cleaning tasks plus extra attention to hard-to-reach areas, detailed scrubbing, and sanitization of all surfaces for a spotless finish.',
                     ],
                 ];
             @endphp
@@ -208,32 +161,11 @@
                     style="scrollbar-width: thin;">
                     @foreach($services as $service)
                         <div class="flex-none snap-start" style="width: calc((100% - 2rem) / 3); min-width: 280px;">
-                            <x-servicecard :service="$service" onBook="handleBook" onFavorite="handleFavorite" />
+                            <x-servicecard :service="$service" />
                         </div>
                     @endforeach
                 </div>
             </div>
         </div>
     </section>
-
-    @push('scripts')
-        <script>
-            // Global callback functions for service cards
-            window.handleBook = function (serviceTitle) {
-                console.log('Booking service:', serviceTitle);
-                // Add your booking logic here
-                alert('Booking ' + serviceTitle);
-            };
-
-            window.handleFavorite = function (isFavorite, serviceTitle) {
-                console.log('Favorite toggled for:', serviceTitle, 'Status:', isFavorite);
-                // Add your favorite logic here (e.g., API call to save favorite)
-            };
-
-            window.handleAppointmentClick = function (appointmentId) {
-                console.log('Appointment clicked:', appointmentId);
-                // Add your appointment click logic here
-            };
-        </script>
-    @endpush
 </x-layouts.general-dashboard>

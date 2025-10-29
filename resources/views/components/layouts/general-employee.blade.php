@@ -18,6 +18,5 @@
     <section class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 flex-1">
             {{ $slot }}
     </section>
-    @stack('scripts')
 
 </x-layouts.general-dashboard>

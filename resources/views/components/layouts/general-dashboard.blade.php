@@ -112,12 +112,11 @@
     }
 </style>
 
-<body class="bg-[#F3F3F3] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300">
-    <div class="flex min-h-screen">
-        {{$sidebar}}
+<body class="bg-[#F3F3F3] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
+    {{$sidebar}}
 
-        <!-- MAIN CONTENT -->
-        <main class="flex-1 flex flex-col transition-colors duration-300">
+    <!-- MAIN CONTENT -->
+    <main id="main-content" class="lg:ml-64 min-h-screen flex flex-col transition-all duration-300">
    
             <!--DASHBOARD HEADER CONTENTS -->
             @php
@@ -154,8 +153,7 @@
             <!-- DASHBOARD PANEL CONTENTS -->
             {{ $slot }}
 
-        </main>
-    </div>
+    </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/js/all.min.js"></script>
     <script>
         tailwind.config = {
@@ -171,6 +169,9 @@
             const sidebarToggle = document.getElementById('sidebar-toggle');
             const themeToggle = document.getElementById('theme-toggle');
             const icon = document.getElementById('theme-icon');
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mobileSidebarClose = document.getElementById('mobile-sidebar-close');
+            const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 
             const savedTheme = localStorage.getItem('theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -192,20 +193,71 @@
                 updateIconRotation(newTheme === 'dark');
             });
 
+            const mainContent = document.getElementById('main-content');
+
+            // Desktop sidebar toggle (collapse/expand)
             sidebarToggle.addEventListener('click', () => {
                 const collapsed = sidebar.classList.contains('w-20');
 
                 if (collapsed) {
                     sidebar.classList.replace('w-20', 'w-64');
-                    document.querySelectorAll('.nav-label, .sidebar-logo-text, .logout-label, .sidebar-logo')
+                    if (window.innerWidth >= 1024) { // Only adjust margin on desktop
+                        mainContent.classList.replace('lg:ml-20', 'lg:ml-64');
+                    }
+                    document.querySelectorAll('.nav-label, .sidebar-logo-text, .sidebar-logo')
                         .forEach(el => el.classList.remove('hidden'));
                     sidebarToggle.querySelector('i').className = 'fi fi-rr-angle-small-left';
                 } else {
                     sidebar.classList.replace('w-64', 'w-20');
-                    document.querySelectorAll('.nav-label, .sidebar-logo-text, .logout-label, .sidebar-logo')
+                    if (window.innerWidth >= 1024) { // Only adjust margin on desktop
+                        mainContent.classList.replace('lg:ml-64', 'lg:ml-20');
+                    }
+                    document.querySelectorAll('.nav-label, .sidebar-logo-text, .sidebar-logo')
                         .forEach(el => el.classList.add('hidden'));
                     sidebarToggle.querySelector('i').className = 'fi fi-rr-angle-small-right';
                 }
+            });
+
+            // Mobile menu toggle (slide in/out)
+            function toggleMobileSidebar() {
+                const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+                if (isOpen) {
+                    // Close sidebar
+                    sidebar.classList.add('-translate-x-full');
+                    sidebarBackdrop.classList.add('hidden');
+                    document.body.style.overflow = ''; // Restore scroll
+                } else {
+                    // Open sidebar
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebarBackdrop.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; // Prevent scroll
+                }
+            }
+
+            // Mobile menu button click
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleMobileSidebar);
+            }
+
+            // Mobile close button click
+            if (mobileSidebarClose) {
+                mobileSidebarClose.addEventListener('click', toggleMobileSidebar);
+            }
+
+            // Backdrop click to close
+            if (sidebarBackdrop) {
+                sidebarBackdrop.addEventListener('click', toggleMobileSidebar);
+            }
+
+            // Close sidebar when clicking nav links on mobile
+            const navLinks = sidebar.querySelectorAll('a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) {
+                        toggleMobileSidebar();
+                    }
+                });
             });
 
             function applyTheme(mode) {

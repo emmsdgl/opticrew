@@ -16,28 +16,45 @@ class EmployeeDashboardController extends Controller
         $employee = $user->employee;
         $today = Carbon::today();
 
-        // --- Daily Schedule & To-Do List (Updated to use NEW optimization_teams tables) ---
+        // --- Daily Schedule (Grouped by Company) ---
         $dailySchedule = DB::table('tasks')
-            ->join('locations', 'tasks.location_id', '=', 'locations.id')
+            ->leftJoin('locations', 'tasks.location_id', '=', 'locations.id')
+            ->leftJoin('contracted_clients', 'locations.contracted_client_id', '=', 'contracted_clients.id')
             ->join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
             ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
             ->where('optimization_team_members.employee_id', $employee->id)
             ->whereDate('tasks.scheduled_date', $today)
-            ->select('tasks.id', 'tasks.task_description as title', 'locations.location_name as location', 'tasks.status', 'tasks.estimated_duration_minutes as duration', 'tasks.started_at as time')
+            ->select(
+                DB::raw("COALESCE(contracted_clients.name, 'No Client Assigned') as client_name"),
+                DB::raw("MIN(tasks.scheduled_time) as start_time"),
+                DB::raw("MAX(ADDTIME(tasks.scheduled_time, SEC_TO_TIME(tasks.estimated_duration_minutes * 60))) as end_time"),
+                DB::raw("SUM(tasks.estimated_duration_minutes) as total_duration"),
+                DB::raw("COUNT(*) as task_count")
+            )
+            ->groupBy('contracted_clients.name')
+            ->orderBy('start_time')
             ->get()
             ->map(function ($item) {
-                $item->duration = $item->duration . ' m';
-                $item->time = $item->time ? Carbon::parse($item->time)->format('h:i A') : 'N/A';
                 return $item;
             });
 
+        // --- To-Do List (Detailed Task Information) ---
         $todoList = DB::table('tasks')
-            ->join('locations', 'tasks.location_id', '=', 'locations.id')
+            ->leftJoin('locations', 'tasks.location_id', '=', 'locations.id')
+            ->leftJoin('contracted_clients', 'locations.contracted_client_id', '=', 'contracted_clients.id')
             ->join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
             ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
             ->where('optimization_team_members.employee_id', $employee->id)
             ->whereIn('tasks.status', ['Pending', 'Scheduled', 'In Progress'])
-            ->select('tasks.task_description as title', 'locations.location_name as company', DB::raw("'Cleaning Task' as subtitle"), 'tasks.scheduled_date as date', DB::raw("'N/A' as dueTime"), DB::raw("'bg-blue-100' as iconBg"))
+            ->select(
+                DB::raw("COALESCE(contracted_clients.name, 'No Client Assigned') as client_name"),
+                'tasks.scheduled_date as date',
+                'locations.location_name as cabin_name',
+                'tasks.task_description',
+                'tasks.estimated_duration_minutes as duration',
+                'tasks.status'
+            )
+            ->orderBy('tasks.scheduled_date')
             ->get();
 
         // --- UPDATED: Tasks Summary Logic ---
@@ -83,6 +100,18 @@ class EmployeeDashboardController extends Controller
             ];
         });
 
+        // --- Check if employee has ANY attendance record for today ---
+        // This matches the validation logic in AttendanceController
+        $todayAttendance = \App\Models\Attendance::where('employee_id', $employee->id)
+            ->whereDate('clock_in', Carbon::today())
+            ->first();
+
+        // Check if there's an active clock-in (not clocked out yet)
+        $isClockedIn = $todayAttendance && $todayAttendance->clock_out === null;
+
+        // Check if employee already has attendance record for today (prevents duplicate clock-ins)
+        $hasAttendanceToday = $todayAttendance !== null;
+
         return view('employee.dashboard', [
             'employee' => $employee,
             'dailySchedule' => $dailySchedule,
@@ -90,6 +119,8 @@ class EmployeeDashboardController extends Controller
             'tasksSummary' => (array) $tasksSummary,
             'period' => $period, // Pass the current period back to the view
             'holidays' => $holidays, // Pass holidays to the view
+            'isClockedIn' => $isClockedIn, // Pass clock in status (for button label)
+            'hasAttendanceToday' => $hasAttendanceToday, // Pass attendance check (for preventing duplicates)
         ]);
     }
 }

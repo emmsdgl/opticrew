@@ -85,7 +85,7 @@ class PayrollReport extends Component
             $totalHours = $totalRegularHours + $totalOvertimeHours + $totalSundayHolidayHours;
             
             $this->payrollData[] = [
-                'employee_name' => $employee->full_name,
+                'employee_name' => $employee->user->name,
                 'total_hours' => round($totalHours, 2),
                 'regular_hours' => round($totalRegularHours, 2),
                 'overtime_hours' => round($totalOvertimeHours, 2), // New data point for the report

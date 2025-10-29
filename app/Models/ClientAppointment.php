@@ -11,8 +11,10 @@ class ClientAppointment extends Model
 
     protected $fillable = [
         'client_id',
+        'is_company_inquiry',
         'booking_type',
         'service_type',
+        'company_service_types',
         'service_date',
         'service_time',
         'is_sunday',
@@ -20,7 +22,9 @@ class ClientAppointment extends Model
         'number_of_units',
         'unit_size',
         'cabin_name',
+        'unit_details',
         'special_requests',
+        'other_concerns',
         'quotation',
         'vat_amount',
         'total_amount',
@@ -41,6 +45,9 @@ class ClientAppointment extends Model
         'service_time' => 'datetime',
         'is_sunday' => 'boolean',
         'is_holiday' => 'boolean',
+        'is_company_inquiry' => 'boolean',
+        'company_service_types' => 'array',
+        'unit_details' => 'array',
         'quotation' => 'decimal:2',
         'vat_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
@@ -90,5 +97,15 @@ class ClientAppointment extends Model
     public function scopeRejected($query)
     {
         return $query->where('status', 'rejected');
+    }
+
+    public function scopeCompanyInquiry($query)
+    {
+        return $query->where('is_company_inquiry', true);
+    }
+
+    public function scopePersonalBooking($query)
+    {
+        return $query->where('is_company_inquiry', false);
     }
 }

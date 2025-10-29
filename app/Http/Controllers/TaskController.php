@@ -22,8 +22,20 @@ class TaskController extends Controller
      */
     public function index()
     {
-        // --- 1. FETCH ALL TASKS WITH CLIENT RELATIONSHIPS ---
-        $rawTasks = Task::with(['location.contractedClient', 'client'])->get();
+        // --- 1. FETCH TASKS WITH CLIENT RELATIONSHIPS (OPTIMIZED) ---
+        // Only load tasks within a reasonable date range for calendar view (3 months back, 3 months forward)
+        $startDate = now()->subMonths(3)->startOfDay();
+        $endDate = now()->addMonths(3)->endOfDay();
+
+        // Eager load ALL relationships to avoid N+1 queries
+        $rawTasks = Task::with([
+            'location.contractedClient',
+            'client',
+            'optimizationTeam.members.employee.user'  // ✅ FIX: Eager load optimization team members
+        ])
+        ->whereBetween('scheduled_date', [$startDate, $endDate])
+        ->orderBy('scheduled_date', 'asc')
+        ->get();
 
         // --- 2. COMBINE CONTRACTED + EXTERNAL CLIENTS FOR DROPDOWN ---
         $contractedClients = ContractedClient::with('locations')->get();
@@ -57,19 +69,18 @@ class TaskController extends Controller
         foreach ($rawTasks as $task) {
             $dateKey = date('Y-n-j', strtotime($task->scheduled_date));
 
-            // Get employee names for this task from OptimizationTeam
+            // ✅ FIX: Get employee names from eager-loaded relationship (NO additional queries!)
             $employeeNames = [];
-            if ($task->assigned_team_id) {
-                $optimizationTeam = \App\Models\OptimizationTeam::with('members.employee')
-                    ->find($task->assigned_team_id);
-
-                if ($optimizationTeam) {
-                    $employeeNames = $optimizationTeam->members()
-                        ->with('employee')
-                        ->get()
-                        ->pluck('employee.full_name')
-                        ->toArray();
-                }
+            if ($task->optimizationTeam && $task->optimizationTeam->members) {
+                $employeeNames = $task->optimizationTeam->members
+                    ->map(function($member) {
+                        return $member->employee && $member->employee->user
+                            ? $member->employee->user->name
+                            : null;
+                    })
+                    ->filter()  // Remove nulls
+                    ->values()
+                    ->toArray();
             }
             
             // \Log::info("Task employee lookup", [
@@ -151,21 +162,29 @@ class TaskController extends Controller
             $teamMembers = [];
             $teamName = null;
             if ($task->assigned_team_id) {
-                $optimizationTeam = \App\Models\OptimizationTeam::with('members.employee')
+                $optimizationTeam = \App\Models\OptimizationTeam::with('members.employee.user')
                     ->find($task->assigned_team_id);
 
                 if ($optimizationTeam) {
                     $teamName = $optimizationTeam->team_name;
                     $teamMembers = $optimizationTeam->members()
-                        ->with('employee')
+                        ->with('employee.user')
                         ->get()
                         ->map(function($member) {
+                            // Get profile picture and name from user
+                            $profilePicture = null;
+                            $userName = 'Unknown';
+
+                            if ($member->employee && $member->employee->user) {
+                                $userName = $member->employee->user->name;
+                                $profilePicture = $member->employee->user->profile_picture;
+                            }
+
                             return [
                                 'id' => $member->employee->id,
-                                'name' => $member->employee->first_name . ' ' . $member->employee->last_name,
-                                'role' => $member->employee->role,
-                                // Picture placeholder - will be populated when images are added
-                                'picture' => null
+                                'name' => $userName,
+                                'role' => $member->employee->role ?? 'employee',
+                                'picture' => $profilePicture
                             ];
                         })
                         ->toArray();
@@ -276,7 +295,10 @@ class TaskController extends Controller
             'rateType' => 'nullable|string',
             'extraTasks' => 'nullable|array',
             'extraTasks.*.type' => 'required_with:extraTasks|string',
-            'extraTasks.*.price' => 'nullable|numeric'
+            'extraTasks.*.basePrice' => 'nullable|numeric',
+            'extraTasks.*.finalPrice' => 'nullable|numeric',
+            'extraTasks.*.duration' => 'required_with:extraTasks|integer|in:30,60,150',
+            'extraTasks.*.price' => 'nullable|numeric' // Keep for backward compatibility
         ]);
 
         // Ensure at least one of cabinsList or extraTasks is provided
@@ -325,6 +347,7 @@ class TaskController extends Controller
                 // ✅ Option B: Each cabin has own serviceType and cabinType
                 // Format: "ServiceType (CabinType)" e.g., "Daily Room Cleaning (Arrival)"
                 $task->task_description = $cabinInfo['serviceType'] . ' (' . $cabinInfo['cabinType'] . ')';
+                $task->rate_type = $request->rateType ?? 'Normal'; // Save the rate type (Normal or Student)
                 $task->scheduled_date = $request->serviceDate;
                 $task->scheduled_time = '08:00:00'; // ✅ ADD THIS LINE - Start of work day... Remove this, to get the proper time, after development phase
 
@@ -338,41 +361,48 @@ class TaskController extends Controller
                 // ✅ RULE 3: Set arrival status based on cabinType (Arrival/Departure/Daily Clean)
                 // If cabin's type is "Arrival", mark as high priority
                 $task->arrival_status = ($cabinInfo['cabinType'] === 'Arrival') ? true : false;
-                            
-                // Set coordinates from location query
-                // Get coordinates based on contracted client
-                if ($clientType === 'contracted') {
-                    if ($clientId == 1) { // Kakslauttanen
-                        $task->latitude = 68.33470361;
-                        $task->longitude = 27.33426652;
-                    } elseif ($clientId == 2) { // Aikamatkat
-                        $task->latitude = 68.42573267;
-                        $task->longitude = 27.41235379;
-                    }
-                }
-                
+
                 $task->status = 'Pending'; // Start as Pending, optimization will change to Scheduled
                 $task->save();
-                
+
                 $createdTasks[] = $task;
-                
+
                     Log::info("Created cabin task", [
                         'id' => $task->id,
                         'location' => $location->location_name,
                         'duration' => $task->duration,
-                        'arrival_status' => $task->arrival_status,
-                        'coordinates' => ['lat' => $task->latitude, 'lon' => $task->longitude]
+                        'arrival_status' => $task->arrival_status
                     ]);
                 }
             }
 
-            // Process extra tasks (no location required)
+            // Process extra tasks (assign to a location from the contracted client)
             if (!empty($request->extraTasks)) {
+                // Get a location from the contracted client for extra tasks
+                $clientLocation = null;
+                if ($clientType === 'contracted') {
+                    $clientLocation = Location::where('contracted_client_id', $clientId)->first();
+
+                    if (!$clientLocation) {
+                        throw new \Exception('No location found for this contracted client. Please add a location first.');
+                    }
+                }
+
                 foreach ($request->extraTasks as $extraTask) {
                     $task = new Task();
 
-                    // Extra tasks don't have a specific location
-                    $task->location_id = null;
+                    // Assign extra task to a location from the contracted client
+                    if ($clientType === 'contracted' && $clientLocation) {
+                        $task->location_id = $clientLocation->id;
+
+                        // Add location to the list if not already there
+                        if (!in_array($clientLocation->id, $newLocationIds)) {
+                            $newLocationIds[] = $clientLocation->id;
+                        }
+                    } else {
+                        // For non-contracted clients, location_id remains null
+                        $task->location_id = null;
+                    }
 
                     // Set client_id based on type
                     if ($clientType === 'contracted') {
@@ -383,13 +413,12 @@ class TaskController extends Controller
 
                     // Task description is the extra task type
                     $task->task_description = $extraTask['type'];
+                    $task->rate_type = $request->rateType ?? 'Normal'; // Save the rate type (Normal or Student)
                     $task->scheduled_date = $request->serviceDate;
                     $task->scheduled_time = '08:00:00';
 
-                    // Extra tasks: Estimate duration based on price or use default
-                    // Rough estimate: €50 = ~2 hours work
-                    $estimatedHours = isset($extraTask['price']) ? ($extraTask['price'] / 25) : 2;
-                    $task->duration = max(30, min(480, $estimatedHours * 60)); // Between 30min and 8 hours
+                    // Use the actual duration provided in the form (30, 60, or 150 minutes)
+                    $task->duration = isset($extraTask['duration']) ? (int)$extraTask['duration'] : 60; // Default to 60 if not provided
                     $task->estimated_duration_minutes = $task->duration;
 
                     // Travel time is 0 per task (calculated once per team based on client destination)
@@ -397,17 +426,6 @@ class TaskController extends Controller
 
                     // Extra tasks are not arrival-related
                     $task->arrival_status = false;
-
-                    // Set coordinates based on contracted client
-                    if ($clientType === 'contracted') {
-                        if ($clientId == 1) { // Kakslauttanen
-                            $task->latitude = 68.33470361;
-                            $task->longitude = 27.33426652;
-                        } elseif ($clientId == 2) { // Aikamatkat
-                            $task->latitude = 68.42573267;
-                            $task->longitude = 27.41235379;
-                        }
-                    }
 
                     $task->status = 'Pending';
                     $task->save();
@@ -417,33 +435,37 @@ class TaskController extends Controller
                     Log::info("Created extra task", [
                         'id' => $task->id,
                         'type' => $extraTask['type'],
-                        'price' => $extraTask['price'] ?? 'N/A',
+                        'location_id' => $task->location_id,
+                        'base_price' => $extraTask['basePrice'] ?? 'N/A',
+                        'final_price' => $extraTask['finalPrice'] ?? $extraTask['price'] ?? 'N/A',
                         'duration' => $task->duration
                     ]);
                 }
             }
-    
-            // Validate we have locations and tasks
+
+            // Validate we have locations (both cabin tasks and extra tasks now have locations)
             if (empty($newLocationIds)) {
-                throw new \Exception('No valid locations found for the selected cabins');
+                throw new \Exception('No valid locations found. Please ensure the client has at least one location.');
             }
-            
+
             if (empty($createdTasks)) {
                 throw new \Exception('No tasks were created');
             }
-    
+
             DB::commit();
-    
+
             // ✅ RULE 8: Trigger optimization (will auto-detect real-time)
             Log::info("Triggering optimization", [
                 'service_date' => $request->serviceDate,
                 'location_ids' => $newLocationIds,
                 'task_count' => count($createdTasks),
-                'is_today' => $request->serviceDate === Carbon::now()->format('Y-m-d')
+                'is_today' => $request->serviceDate === Carbon::now()->format('Y-m-d'),
+                'has_cabin_tasks' => !empty($request->cabinsList),
+                'has_extra_tasks' => !empty($request->extraTasks)
             ]);
-            
+
             $optimizationService = app(OptimizationService::class);
-            
+
             // Pass the first created task ID for real-time detection
             $optimizationResult = $optimizationService->optimizeSchedule(
                 $request->serviceDate,

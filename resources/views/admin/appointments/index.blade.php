@@ -78,8 +78,29 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">#{{ $appointment->id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->first_name }} {{ $appointment->client->last_name }}</div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $appointment->client->email }}</div>
+                                <div class="flex items-center gap-2">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                            @if($appointment->is_company_inquiry && $appointment->client->company_name)
+                                                {{ $appointment->client->company_name }}
+                                            @else
+                                                {{ $appointment->client->first_name }} {{ $appointment->client->last_name }}
+                                            @endif
+                                        </div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                                            @if($appointment->client->user)
+                                                {{ $appointment->client->user->email }}
+                                            @else
+                                                No account (inquiry only)
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @if($appointment->is_company_inquiry)
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">
+                                            Company
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900 dark:text-white">{{ $appointment->service_type }}</div>

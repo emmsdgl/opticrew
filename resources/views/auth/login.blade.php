@@ -153,11 +153,20 @@
                     <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm mb-3">Welcome to OptiCrew</p>
                 </div>
 
-                <!-- USERNAME FIELD -->
+                <!-- Display Validation Errors -->
+                @if ($errors->any())
+                    <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                        @foreach ($errors->all() as $error)
+                            <p>{{ $error }}</p>
+                        @endforeach
+                    </div>
+                @endif
+
+                <!-- LOGIN FIELD -->
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon"></i>
                     <input type="text" id="input-username" name="login" class="bg-gray-100">
-                    <label for="input-username" class="text-[#07185788] text-sm font-sans">Email/Username</label>
+                    <label for="input-username" class="text-[#07185788] text-sm font-sans">Email / Username</label>
                 </div>
 
                 <!-- PASSWORD FIELD -->
