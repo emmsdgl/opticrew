@@ -32,75 +32,204 @@
             <div class="lg:col-span-2 space-y-6">
                 <!-- Client Information -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                        <i class="fi fi-rr-user mr-2"></i> Client Information
-                    </h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Name</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->first_name }} {{ $appointment->client->last_name }}</p>
+                    @if($appointment->is_company_inquiry)
+                        <!-- Company Inquiry Information -->
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                            <i class="fi fi-rr-building mr-2"></i> Company Information
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Company Name</p>
+                                <p class="text-base font-semibold text-gray-900 dark:text-white">{{ $appointment->client->company_name }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Contact Person</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->first_name }} {{ $appointment->client->last_name }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Business ID</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->business_id }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->email }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->phone_number }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">E-Invoice Number</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->einvoice_number }}</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Address</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->address }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Booking Type</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white capitalize">{{ $appointment->booking_type }}</p>
+                    @else
+                        <!-- Personal Client Information -->
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                            <i class="fi fi-rr-user mr-2"></i> Client Information
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Name</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->first_name }} {{ $appointment->client->last_name }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Booking Type</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white capitalize">{{ $appointment->booking_type }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->user->email }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->user->phone }}</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Address</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->address }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->email }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Phone</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->phone_number }}</p>
-                        </div>
-                        <div class="col-span-2">
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Address</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->address }}</p>
-                        </div>
-                    </div>
+                    @endif
                 </div>
 
                 <!-- Service Details -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                        <i class="fi fi-rr-broom mr-2"></i> Service Details
-                    </h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Service Type</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->service_type }}</p>
+                    @if($appointment->is_company_inquiry)
+                        <!-- Company Service Inquiry -->
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                            <i class="fi fi-rr-document mr-2"></i> Service Inquiry Details
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Requested Services</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @php
+                                        $serviceTypes = $appointment->company_service_types;
+                                        if (is_string($serviceTypes)) {
+                                            $serviceTypes = json_decode($serviceTypes, true);
+                                        }
+                                    @endphp
+                                    @if($serviceTypes && is_array($serviceTypes))
+                                        @foreach($serviceTypes as $serviceType)
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 rounded-full text-xs font-medium">
+                                                {{ $serviceType }}
+                                            </span>
+                                        @endforeach
+                                    @else
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">No services specified</span>
+                                    @endif
+                                </div>
+                            </div>
+                            @if($appointment->other_concerns)
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Additional Information / Other Concerns</p>
+                                <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <p class="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ $appointment->other_concerns }}</p>
+                                </div>
+                            </div>
+                            @endif
+                            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                                <p class="text-sm text-yellow-800 dark:text-yellow-400">
+                                    <i class="fi fi-rr-info-circle mr-1"></i>
+                                    This is a service inquiry. A custom quotation needs to be prepared and sent to the client via email.
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Cabin/Unit Name</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->cabin_name }}</p>
+                    @else
+                        <!-- Personal Client Service Details -->
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                            <i class="fi fi-rr-broom mr-2"></i> Service Details
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Service Type</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->service_type }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Number of Units</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->number_of_units }} unit(s)</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Service Date</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ $appointment->service_date->format('l, F d, Y') }}
+                                    @if($appointment->is_sunday)
+                                        <span class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Sunday)</span>
+                                    @endif
+                                    @if($appointment->is_holiday)
+                                        <span class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Holiday)</span>
+                                    @endif
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Service Time</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($appointment->service_time)->format('g:i A') }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Service Date</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                {{ $appointment->service_date->format('l, F d, Y') }}
-                                @if($appointment->is_sunday)
-                                    <span class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Sunday)</span>
-                                @endif
-                            </p>
+
+                        <!-- Unit Details -->
+                        <div class="mt-6">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Unit Details</h4>
+                            @if($appointment->unit_details && is_array($appointment->unit_details) && count($appointment->unit_details) > 0)
+                                <div class="space-y-3">
+                                    @foreach($appointment->unit_details as $index => $unit)
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                                    Unit {{ $index + 1 }}
+                                                </div>
+                                                @if(isset($unit['price']))
+                                                <div class="text-right">
+                                                    <div class="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                                        €{{ number_format($unit['price'], 2) }}
+                                                    </div>
+                                                </div>
+                                                @endif
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                                <div>
+                                                    <span class="text-gray-600 dark:text-gray-400">Name:</span>
+                                                    <span class="font-medium text-gray-900 dark:text-white ml-1">{{ $unit['name'] ?? '-' }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-600 dark:text-gray-400">Size:</span>
+                                                    <span class="font-medium text-gray-900 dark:text-white ml-1">{{ $unit['size'] ?? '-' }} m²</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <!-- Fallback to old single unit display -->
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <div class="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <span class="text-gray-600 dark:text-gray-400">Cabin/Unit Name:</span>
+                                            <span class="font-medium text-gray-900 dark:text-white ml-1">{{ $appointment->cabin_name }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-600 dark:text-gray-400">Unit Size:</span>
+                                            <span class="font-medium text-gray-900 dark:text-white ml-1">{{ $appointment->unit_size }} m²</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Service Time</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($appointment->service_time)->format('H:i') }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Number of Units</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->number_of_units }} unit(s)</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Unit Size</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->unit_size }} m²</p>
-                        </div>
+
                         @if($appointment->special_requests)
-                        <div class="col-span-2">
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Special Requests</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->special_requests }}</p>
+                        <div class="mt-6">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Special Requests</p>
+                            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->special_requests }}</p>
+                            </div>
                         </div>
                         @endif
-                    </div>
+                    @endif
                 </div>
 
                 <!-- Team Assignment (Only show if approved) -->
@@ -205,7 +334,8 @@
 
             <!-- Sidebar -->
             <div class="lg:col-span-1 space-y-6">
-                <!-- Pricing Summary -->
+                <!-- Pricing Summary (Only for personal bookings) -->
+                @if(!$appointment->is_company_inquiry)
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                         <i class="fi fi-rr-receipt mr-2"></i> Pricing
@@ -225,6 +355,21 @@
                         </div>
                     </div>
                 </div>
+                @else
+                <!-- Quotation Notice for Company Inquiries -->
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg shadow p-6 border border-purple-200 dark:border-purple-800">
+                    <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-400 mb-2 flex items-center">
+                        <i class="fi fi-rr-file-invoice mr-2"></i> Quotation Required
+                    </h3>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                        This is a service inquiry from a company. Please prepare a custom quotation based on their requirements and send it to their email address.
+                    </p>
+                    <div class="mt-4 p-3 bg-white dark:bg-gray-800 rounded border border-purple-200 dark:border-purple-700">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Contact Email</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->client->email }}</p>
+                    </div>
+                </div>
+                @endif
 
                 <!-- Action Buttons -->
                 @if($appointment->status === 'pending')

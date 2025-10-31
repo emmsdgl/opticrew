@@ -72,23 +72,36 @@
                                         <!-- Avatar -->
                                         <div class="mb-4">
                                             <template x-if="task.teamMembers && task.teamMembers.length > 0">
-                                                <div class="flex -space-x-2">
+                                                <div class="flex -space-x-1.5">
                                                     <template x-for="(member, mIndex) in task.teamMembers.slice(0, 3)"
                                                         :key="member.id">
-                                                        <div class="relative group/avatar">
-                                                            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xs font-semibold border-2 border-white dark:border-gray-800 shadow-sm ring-2 ring-gray-100 dark:ring-gray-700"
-                                                                :title="member.name">
-                                                                <span
-                                                                    x-text="member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()"></span>
+                                                        <div class="relative group/avatar flex-shrink-0">
+                                                            <!-- Show uploaded picture if available, otherwise show initials -->
+                                                            <img x-show="member.picture"
+                                                                 :src="member.picture ? '/storage/' + member.picture : ''"
+                                                                 :alt="member.name"
+                                                                 :title="member.name"
+                                                                 class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm flex-shrink-0">
+
+                                                            <div x-show="!member.picture"
+                                                                 class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-sm relative overflow-hidden flex-shrink-0"
+                                                                 :title="member.name"
+                                                                 x-data="{
+                                                                     getInitials(name) {
+                                                                         if (!name) return '??';
+                                                                         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                                                                     }
+                                                                 }">
+                                                                <span class="text-white text-[10px] font-semibold relative z-10 select-none leading-none"
+                                                                      style="text-shadow: 0 1px 2px rgba(0,0,0,0.25);"
+                                                                      x-text="getInitials(member.name)"></span>
                                                             </div>
+
                                                             <!-- Tooltip -->
-                                                            <div
-                                                                class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover/avatar:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                                                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover/avatar:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
                                                                 <span x-text="member.name"></span>
-                                                                <div
-                                                                    class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                                                                    <div
-                                                                        class="border-4 border-transparent">
+                                                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                                    <div class="border-4 border-transparent">
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -96,7 +109,7 @@
                                                     </template>
                                                     <template x-if="task.teamMembers.length > 3">
                                                         <div
-                                                            class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 text-xs font-semibold border-2 border-white dark:border-gray-800 shadow-sm ring-2 ring-gray-100 dark:ring-gray-700">
+                                                            class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 text-[10px] font-semibold border-2 border-white dark:border-gray-800 shadow-sm flex-shrink-0">
                                                             <span x-text="'+' + (task.teamMembers.length - 3)"></span>
                                                         </div>
                                                     </template>
@@ -190,6 +203,12 @@
 
             init() {
                 console.log('Kanban board loaded with', this.tasks.length, 'tasks from database');
+                // Debug: Check team members data
+                this.tasks.forEach(task => {
+                    if (task.teamMembers && task.teamMembers.length > 0) {
+                        console.log('Task:', task.title, 'Team Members:', task.teamMembers);
+                    }
+                });
                 this.updateTheme();
             },
 

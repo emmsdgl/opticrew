@@ -19,18 +19,33 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScenarioController;
 use App\Http\Controllers\ClientAppointmentController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\FeedbackController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
+// --- LANDING PAGE ROUTES (Public) ---
 Route::get('/', function () {
+    // If user is already authenticated, redirect to their dashboard
+    if (Auth::check()) {
+        $role = Auth::user()->role;
+
+        if ($role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($role === 'employee') {
+            return redirect()->route('employee.dashboard');
+        } elseif ($role === 'external_client') {
+            return redirect()->route('client.dashboard');
+        }
+    }
+
+    // Show landing page for guests
     return view('landingpage-home');
 })->name('home');
-
-Route::get('/', action: function () {
-    return view('client.appointments');
-})->name('client-appointments');
 
 // About Page
 Route::get('/about', function () {
@@ -46,6 +61,9 @@ Route::get('/services', function () {
 Route::get('/quotation', function () {
     return view('landingpage-quotation');
 })->name('quotation');
+
+// Submit Quotation Form
+Route::post('/quotation/submit', [\App\Http\Controllers\Admin\QuotationController::class, 'store'])->name('quotation.submit');
 
 // Contact Page
 Route::get('/contact', function () {
@@ -72,26 +90,26 @@ Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('l
 Route::post('/api/language/switch', [LanguageController::class, 'switchApi'])->name('language.switch.api');
 
 // --- LANDING PAGE ROUTES (Public) ---
-Route::get('/', function () {
-    // If user is already authenticated, redirect to their dashboard
-    if (Auth::check()) {
-        $role = Auth::user()->role;
+// Route::get('/', function () {
+//     // If user is already authenticated, redirect to their dashboard
+//     if (Auth::check()) {
+//         $role = Auth::user()->role;
 
-        if ($role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        } elseif ($role === 'employee') {
-            return redirect()->route('employee.dashboard');
-        } elseif ($role === 'external_client') {
-            return redirect()->route('client.dashboard');
-        }
-    }
+//         if ($role === 'admin') {
+//             return redirect()->route('admin.dashboard');
+//         } elseif ($role === 'employee') {
+//             return redirect()->route('employee.dashboard');
+//         } elseif ($role === 'external_client') {
+//             return redirect()->route('client.dashboard');
+//         }
+//     }
 
-    // Show landing page for guests
-    return view('landingpage-home');
-})->name('home');
+//     // Show landing page for guests
+//     return view('landing.home');
+// })->name('home');
 
 // Route::get('/about', function () {
-//     return response()->file(resource_path('views/landingpage-about.blade.php'));
+//     return response()->file(resource_path('views/landing/about.blade.php'));
 // })->name('about');
 
 // Route::get('/services', function () {
@@ -104,6 +122,27 @@ Route::get('/', function () {
 
 
 // --- AUTHENTICATED ROUTES ---
+
+// --- NOTIFICATION ROUTES (Available to all authenticated users) ---
+Route::middleware(['auth'])->group(function () {
+    // View all notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+    // Get unread count (for AJAX/header badge)
+    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
+
+    // Mark single notification as read
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+
+    // Mark all notifications as read
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
+
+    // Delete notification
+    Route::delete('/notifications/{id}', [NotificationController::class, 'delete'])->name('notifications.delete');
+
+    // TEST ROUTE - Create sample notifications (REMOVE THIS IN PRODUCTION)
+    Route::get('/notifications/test/create', [NotificationController::class, 'createTestNotifications'])->name('notifications.test');
+});
 
 // --- ADMIN ROUTES ---
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -148,6 +187,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/{id}/assign-team', [\App\Http\Controllers\Admin\AppointmentController::class, 'assignTeam'])->name('assign-team');
     });
 
+    // --- ADMIN QUOTATION ROUTES ---
+    Route::prefix('admin/quotations')->name('admin.quotations.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\QuotationController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\QuotationController::class, 'show'])->name('show');
+    });
+
     // --- ADMIN HOLIDAY ROUTES ---
     Route::prefix('admin/holidays')->name('admin.holidays.')->group(function () {
         Route::post('/', [\App\Http\Controllers\Admin\HolidayController::class, 'store'])->name('store');
@@ -155,10 +200,59 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/by-date', [\App\Http\Controllers\Admin\HolidayController::class, 'getByDate'])->name('by-date');
     });
 
-    Route::get('/analytics', action: function () {
-        return view('admin.analytics');
-    })->name('admin.analytics');
+    // --- ADMIN REPORT ROUTES ---
+    Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
 
+        // Client Reports
+        Route::get('/clients', [ReportController::class, 'clientReports'])->name('clients');
+        Route::get('/clients/{clientId}', [ReportController::class, 'clientDetail'])->name('client-detail');
+        Route::get('/clients/export/csv', [ReportController::class, 'exportClientReport'])->name('clients.export');
+
+        // Employee Payroll Reports
+        Route::get('/payroll', [ReportController::class, 'employeePayroll'])->name('payroll');
+        Route::get('/payroll/{employeeId}', [ReportController::class, 'employeeDetail'])->name('employee-detail');
+        Route::get('/payroll/export/csv', [ReportController::class, 'exportPayrollReport'])->name('payroll.export');
+    });
+
+    // --- ADMIN ACCOUNT ROUTES ---
+    Route::prefix('admin/accounts')->name('admin.accounts.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AccountController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\AccountController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\AccountController::class, 'store'])->name('store');
+        Route::post('/verify-password', [\App\Http\Controllers\Admin\AccountController::class, 'verifyPassword'])->name('verify-password');
+        Route::get('/archived', [\App\Http\Controllers\Admin\AccountController::class, 'archived'])->name('archived');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\AccountController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [\App\Http\Controllers\Admin\AccountController::class, 'forceDelete'])->name('force-delete');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\AccountController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\Admin\AccountController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\AccountController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\AccountController::class, 'destroy'])->name('destroy');
+
+        // Company account location management (legacy - individual locations)
+        Route::post('/{userId}/locations', [\App\Http\Controllers\Admin\AccountController::class, 'addLocation'])->name('locations.add');
+        Route::put('/{userId}/locations/{locationId}', [\App\Http\Controllers\Admin\AccountController::class, 'updateLocation'])->name('locations.update');
+        Route::delete('/{userId}/locations/{locationId}', [\App\Http\Controllers\Admin\AccountController::class, 'deleteLocation'])->name('locations.delete');
+
+        // Company account cabin type management (grouped locations)
+        Route::post('/{userId}/cabin-types', [\App\Http\Controllers\Admin\AccountController::class, 'addCabinType'])->name('cabin-types.add');
+        Route::put('/{userId}/cabin-types/{locationType}', [\App\Http\Controllers\Admin\AccountController::class, 'updateCabinType'])->name('cabin-types.update');
+        Route::delete('/{userId}/cabin-types/{locationType}', [\App\Http\Controllers\Admin\AccountController::class, 'deleteCabinType'])->name('cabin-types.delete');
+
+        Route::post('/{userId}/update-details', [\App\Http\Controllers\Admin\AccountController::class, 'updateContractedClient'])->name('update-details');
+    });
+
+    Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
+
+    Route::get('/admin/profile', function () {
+        return view('admin.profile');
+    })->name('admin.profile');
+
+    Route::get('/admin/profile/edit', [ProfileController::class, 'edit'])->name('admin.profile.edit');
+    Route::post('/admin/profile/update', [ProfileController::class, 'update'])->name('admin.profile.update');
+    Route::post('/admin/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('admin.profile.upload-picture');
+    Route::get('/admin/settings', [ProfileController::class, 'settings'])->name('admin.settings');
+    Route::post('/admin/settings/update-password', [ProfileController::class, 'updatePassword'])->name('admin.settings.update-password');
 
     // Analytics dashboard for optimization metrics
     Route::get('/optimization-result', EmployeeAnalytics::class)->name('optimization.result');
@@ -198,48 +292,59 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/tasks', [EmployeeTasksController::class, 'index'])
     ->name('employee.tasks');
 
-    Route::get('/employee/performance', action: function () {
-    return view('employee.performance');
-    })->name('employee.performance');
+    Route::get('/employee/performance', [App\Http\Controllers\EmployeePerformanceController::class, 'index'])
+    ->name('employee.performance');
+
+    Route::get('/employee/profile', function () {
+        return view('employee.profile');
+    })->name('employee.profile');
+
+    Route::get('/employee/profile/edit', [ProfileController::class, 'edit'])->name('employee.profile.edit');
+    Route::post('/employee/profile/update', [ProfileController::class, 'update'])->name('employee.profile.update');
+    Route::post('/employee/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('employee.profile.upload-picture');
+    Route::get('/employee/settings', [ProfileController::class, 'settings'])->name('employee.settings');
+    Route::post('/employee/settings/update-password', [ProfileController::class, 'updatePassword'])->name('employee.settings.update-password');
+
+    // Coming Soon Pages
+    Route::get('/calendar', function () {
+        return view('coming-soon');
+    })->name('employee.schedule');
 
 });
 
 // --- CLIENT ROUTES ---
 Route::middleware(['auth', 'client'])->group(function () {
-    Route::get('/client/dashboard', function () {
-        // 1. Get the currently authenticated user.
-        $user = Auth::user();
-
-        // 2. Get the associated client record using the relationship.
-        $client = $user->client;
-
-        // 3. Fetch holidays
-        $holidays = App\Models\Holiday::all()->map(function ($holiday) {
-            return [
-                'date' => $holiday->date->format('Y-m-d'),
-                'name' => $holiday->name,
-            ];
-        });
-
-        // 4. Pass the $client and holidays to the view.
-        return view('client.dashboard', compact('client', 'holidays'));
-    })->name('client.dashboard');
+    Route::get('/client/dashboard', [ClientAppointmentController::class, 'dashboard'])->name('client.dashboard');
 
     // Client Appointment/Booking Routes
     Route::get('/client/book-service', [ClientAppointmentController::class, 'create'])->name('client.appointment.create');
     Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
+    Route::get('/client/appointments', [ClientAppointmentController::class, 'index'])->name('client.appointments');
 
-    Route::get('/client/appointments', function () {
-        $user = Auth::user();
+    Route::get('/client/pricing', function () {
+        return view('client.pricing');
+    })->name('client.pricing');
 
-        // Fetch all appointments for the current client
-        $appointments = $user->client->appointments()->orderBy('service_date', 'asc')->get();
+    Route::get('/client/feedback', function () {
+        return view('client.feedback');
+    })->name('client.feedback');
+    Route::post('/client/feedback', [FeedbackController::class, 'store'])->name('client.feedback.store');
 
-        // Pass the fetched data to the new view file
-        return view('client.appointments', compact('appointments'));
-    })->name('client.appointments');
+    Route::get('/client/profile', function () {
+        return view('client.profile');
+    })->name('client.profile');
+
+    Route::get('/client/profile/edit', [ProfileController::class, 'edit'])->name('client.profile.edit');
+    Route::post('/client/profile/update', [ProfileController::class, 'update'])->name('client.profile.update');
+    Route::post('/client/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('client.profile.upload-picture');
+    Route::get('/client/settings', [ProfileController::class, 'settings'])->name('client.settings');
+    Route::post('/client/settings/update-password', [ProfileController::class, 'updatePassword'])->name('client.settings.update-password');
 });
 
+// Geofencing API endpoint (needs web session authentication)
+Route::get('/api/company-settings', [App\Http\Controllers\Api\CompanySettingsController::class, 'index'])
+    ->middleware('auth')
+    ->name('api.company-settings');
 
 //ALL ROUTES FOR BUTTONS
 Route::get('/signup', function () {

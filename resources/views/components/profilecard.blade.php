@@ -20,9 +20,33 @@
         'lg' => ['card' => 'max-w-2xl', 'avatar' => 'w-40 h-40', 'greeting' => 'text-3xl'],
     ];
     $currentSize = $sizes[$size] ?? $sizes['default'];
+
+    // Get user role for routing
+    $userRole = auth()->user()->role;
+    $updateRoute = $userRole === 'admin' ? route('admin.profile.update') :
+                   ($userRole === 'employee' ? route('employee.profile.update') : route('client.profile.update'));
+    $uploadRoute = $userRole === 'admin' ? route('admin.profile.upload-picture') :
+                   ($userRole === 'employee' ? route('employee.profile.upload-picture') : route('client.profile.upload-picture'));
 @endphp
 
-<div class="w-full {{ $currentSize['card'] }} mx-auto rounded-3xl transition-all duration-300 p-4">
+<div class="w-full {{ $currentSize['card'] }} mx-auto rounded-3xl transition-all duration-300 p-4"
+     x-data="{
+         editing: false,
+         name: '{{ $name }}',
+         username: '{{ $username }}',
+         email: '{{ $email }}',
+         phone: '{{ $phone }}',
+         location: '{{ $location }}',
+         toggleEdit() {
+             if (this.editing) {
+                 // Save changes
+                 this.$refs.profileForm.submit();
+             } else {
+                 // Enter edit mode
+                 this.editing = true;
+             }
+         }
+     }">
     <!-- Avatar Section with Animated Ring -->
     <div class="flex justify-center mb-6">
         <div class="relative">
@@ -75,85 +99,124 @@
             </div>
     </div>
 
-    <!-- Contact Information Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-        <!-- Email -->
-        <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 cursor-pointer">
-            <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Email</div>
-                    @if($email)
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ $email }}</div>
-                    @else
-                        <div class="text-sm text-gray-400 dark:text-gray-500">example.john.doe@gmail.com</div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Phone -->
-        <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 cursor-pointer">
-            <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Phone</div>
-                    @if($phone)
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $phone }}</div>
-                    @else
-                        <div class="text-sm text-gray-400 dark:text-gray-500">+1 (415) 209-6798</div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Username -->
-        <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 cursor-pointer">
-            <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition-colors">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12.069 18.874c-4.023 0-5.82-1.979-5.82-3.464 0-.765.561-1.296 1.333-1.296 1.723 0 1.273 2.477 4.487 2.477 1.641 0 2.55-.895 2.55-1.811 0-.551-.269-1.16-1.354-1.429l-3.576-.895c-2.88-.724-3.403-2.286-3.403-3.751 0-3.047 2.861-4.191 5.549-4.191 2.471 0 5.393 1.373 5.393 3.199 0 .784-.688 1.24-1.453 1.24-1.469 0-1.198-2.037-4.164-2.037-1.469 0-2.292.664-2.292 1.617s1.153 1.258 2.157 1.487l2.637.587c2.891.649 3.624 2.346 3.624 3.944 0 2.476-1.902 4.324-5.722 4.324m11.084-4.882l-.029.135-.044-.24c.015.045.044.074.059.12.12-.675.181-1.363.181-2.052 0-1.529-.301-3.047-.898-4.512-.569-1.348-1.395-2.562-2.427-3.596-1.049-1.033-2.247-1.856-3.595-2.426-1.318-.631-2.801-.93-4.512-.898l.179.119c-.119-.074-.209-.179-.314-.224-1.743 0-3.496.494-4.944 1.483-1.275.871-2.317 2.087-2.969 3.446-.614 1.274-.929 2.638-.929 4.033 0 1.783.479 3.496 1.482 4.961.871 1.275 2.087 2.317 3.446 2.984 1.274.614 2.638.914 4.033.914 1.783 0 3.481-.479 4.961-1.467 1.275-.871 2.317-2.087 2.969-3.446.614-1.274.929-2.638.929-4.033 0-.119-.015-.239-.03-.359l-.029-.135z"/>
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Username</div>
-                    @if($username)
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $username }}</div>
-                    @else
-                        <div class="text-sm text-gray-400 dark:text-gray-500">Add a Username</div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Location -->
-        <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 cursor-pointer w-full">
-            <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition-colors">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Location</div>
-                    @if($location)
-                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $location }}</div>
-                    @else
-                        <div class="text-sm text-gray-400 dark:text-gray-500">Add a location</div>
-                    @endif
-                </div>
-            </div>
-        </div>
+    <!-- Profile Picture Upload (Shown in Edit Mode) -->
+    <div x-show="editing" x-cloak class="mb-6 bg-purple-50 dark:bg-purple-900/20 rounded-2xl p-4">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Update Profile Picture</h3>
+        <form method="POST" action="{{ $uploadRoute }}" enctype="multipart/form-data" class="space-y-3">
+            @csrf
+            <input type="file"
+                   name="profile_picture"
+                   accept="image/*"
+                   class="block w-full text-sm text-gray-500 dark:text-gray-400
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-lg file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-blue-50 file:text-blue-700
+                          hover:file:bg-blue-100
+                          dark:file:bg-blue-900 dark:file:text-blue-200
+                          dark:hover:file:bg-blue-800"
+                   required>
+            <button type="submit"
+                    class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm">
+                Upload Picture
+            </button>
+        </form>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">JPG, PNG or GIF. Max size 2MB.</p>
     </div>
+
+    <!-- Profile Update Form -->
+    <form x-ref="profileForm" method="POST" action="{{ $updateRoute }}">
+        @csrf
+
+        <!-- Contact Information Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <!-- Name (Hidden input, displayed in greeting) -->
+            <input type="hidden" name="name" x-model="name">
+
+            <!-- Email -->
+            <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Email</div>
+                        <input x-show="editing"
+                               type="email"
+                               name="email"
+                               x-model="email"
+                               class="w-full text-sm font-medium px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate" x-text="email"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Phone</div>
+                        <input x-show="editing"
+                               type="text"
+                               name="phone"
+                               x-model="phone"
+                               placeholder="+358 XX XXX XXXX"
+                               class="w-full text-sm font-medium px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="phone || '+358 XX XXX XXXX'"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Username (Editable) -->
+            <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12.069 18.874c-4.023 0-5.82-1.979-5.82-3.464 0-.765.561-1.296 1.333-1.296 1.723 0 1.273 2.477 4.487 2.477 1.641 0 2.55-.895 2.55-1.811 0-.551-.269-1.16-1.354-1.429l-3.576-.895c-2.88-.724-3.403-2.286-3.403-3.751 0-3.047 2.861-4.191 5.549-4.191 2.471 0 5.393 1.373 5.393 3.199 0 .784-.688 1.24-1.453 1.24-1.469 0-1.198-2.037-4.164-2.037-1.469 0-2.292.664-2.292 1.617s1.153 1.258 2.157 1.487l2.637.587c2.891.649 3.624 2.346 3.624 3.944 0 2.476-1.902 4.324-5.722 4.324m11.084-4.882l-.029.135-.044-.24c.015.045.044.074.059.12.12-.675.181-1.363.181-2.052 0-1.529-.301-3.047-.898-4.512-.569-1.348-1.395-2.562-2.427-3.596-1.049-1.033-2.247-1.856-3.595-2.426-1.318-.631-2.801-.93-4.512-.898l.179.119c-.119-.074-.209-.179-.314-.224-1.743 0-3.496.494-4.944 1.483-1.275.871-2.317 2.087-2.969 3.446-.614 1.274-.929 2.638-.929 4.033 0 1.783.479 3.496 1.482 4.961.871 1.275 2.087 2.317 3.446 2.984 1.274.614 2.638.914 4.033.914 1.783 0 3.481-.479 4.961-1.467 1.275-.871 2.317-2.087 2.969-3.446.614-1.274.929-2.638.929-4.033 0-.119-.015-.239-.03-.359l-.029-.135z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Username</div>
+                        <input x-show="editing"
+                               type="text"
+                               name="username"
+                               x-model="username"
+                               placeholder="Enter username"
+                               class="w-full text-sm font-medium px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="username || 'Add a Username'"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 w-full">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Location</div>
+                        <input x-show="editing"
+                               type="text"
+                               name="location"
+                               x-model="location"
+                               class="w-full text-sm font-medium px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="location || 'Add a location'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 <div class="w-full flex justify-center items-center">
     <div class="w-1/3 flex justify-center items-center py-4 rounded-lg">
         <x-button 

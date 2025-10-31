@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TaskStatusController;
 use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\Api\CompanySettingsController;
 
 /*
 |--------------------------------------------------------------------------

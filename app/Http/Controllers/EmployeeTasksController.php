@@ -22,7 +22,7 @@ class EmployeeTasksController extends Controller
             ->whereHas('optimizationTeam.members', function ($query) use ($employee) {
                 $query->where('employee_id', $employee->id);
             })
-            ->with(['location', 'optimizationTeam.members.employee', 'optimizationTeam.car'])
+            ->with(['location', 'optimizationTeam.members.employee.user', 'optimizationTeam.car'])
             ->orderBy('scheduled_date')
             ->get();
 
@@ -31,7 +31,7 @@ class EmployeeTasksController extends Controller
             ->whereHas('optimizationTeam.members', function ($query) use ($employee) {
                 $query->where('employee_id', $employee->id);
             })
-            ->with(['location', 'optimizationTeam.members.employee', 'optimizationTeam.car'])
+            ->with(['location', 'optimizationTeam.members.employee.user', 'optimizationTeam.car'])
             ->orderBy('scheduled_date')
             ->limit(10)
             ->get();

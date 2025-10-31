@@ -9,7 +9,26 @@ class ContractedClient extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'phone', 'address', 'contract_start', 'contract_end'];
+    protected $fillable = [
+        'name',
+        'email',
+        'phone',
+        'address',
+        'contract_start',
+        'contract_end',
+        'user_id',
+        'latitude',
+        'longitude',
+        'business_id'
+    ];
+
+    /**
+     * Get the user account for this company
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Get all locations for this contracted client

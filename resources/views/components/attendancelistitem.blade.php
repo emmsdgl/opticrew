@@ -27,7 +27,7 @@
             </svg>
         </div>
         <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Time Out</div>
-        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Meal Break</div>
+        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Hours Worked</div>
         <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Action</div>
     </div>
     @endif
@@ -84,11 +84,10 @@
                 <span class="text-xs text-gray-500 dark:text-gray-400" x-text="timeOutNote"></span>
             </div>
 
-            <!-- Meal Break -->
+            <!-- Hours Worked -->
             <div class="flex flex-col">
-                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Meal Break:</span>
-                <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="mealBreak || '-'"></span>
-                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="mealBreakDuration"></span>
+                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Hours Worked:</span>
+                <span class="text-sm font-bold text-blue-600 dark:text-blue-400" x-text="hoursWorked || '-'"></span>
             </div>
 
             <!-- Action Button -->
@@ -129,8 +128,7 @@ function attendanceRow(index, record) {
         timeInNote: record.timeInNote || '',
         timeOut: record.timeOut || null,
         timeOutNote: record.timeOutNote || '',
-        mealBreak: record.mealBreak || null,
-        mealBreakDuration: record.mealBreakDuration || '',
+        hoursWorked: record.hoursWorked || null,
         timedIn: record.timedIn || false,
         isTimedOut: record.isTimedOut || false,
         isHighlighted: false,

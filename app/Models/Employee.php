@@ -14,7 +14,7 @@ class Employee extends Model
     // UPDATED: Added new fields for optimization system
     protected $fillable = [
         'user_id',
-        'full_name',
+        // full_name removed - this is stored as 'name' in users table
         'skills',
         // New fields for optimization
         'is_active',
@@ -23,6 +23,7 @@ class Employee extends Model
         'efficiency',
         'has_driving_license',
         'years_of_experience',
+        'salary_per_hour',
     ];
 
     // UPDATED: Added new casts for optimization fields
@@ -58,5 +59,11 @@ class Employee extends Model
     public function dayOffs()
     {
         return $this->hasMany(DayOff::class);
+    }
+
+    // ACCESSOR: Get employee's full name from related user
+    public function getFullNameAttribute()
+    {
+        return $this->user ? $this->user->name : 'Unknown Employee';
     }
 }

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GPS Coordinate Checker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .result {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>GPS Coordinate Checker</h1>
+
+    <button onclick="getLocation()">Get My Current GPS Coordinates</button>
+
+    <div id="result" class="result" style="display:none;">
+        <h3>Your Current Location:</h3>
+        <p><strong>Latitude:</strong> <span id="lat"></span></p>
+        <p><strong>Longitude:</strong> <span id="lon"></span></p>
+        <p><strong>Accuracy:</strong> <span id="accuracy"></span> meters</p>
+        <p><strong>Copy this:</strong></p>
+        <textarea id="copyText" readonly style="width:100%; height:60px;"></textarea>
+    </div>
+
+    <div id="apiResult" class="info" style="display:none;">
+        <h3>API Returns (Task Location):</h3>
+        <p><strong>Latitude:</strong> <span id="apiLat"></span></p>
+        <p><strong>Longitude:</strong> <span id="apiLon"></span></p>
+        <p><strong>Client:</strong> <span id="apiClient"></span></p>
+    </div>
+
+    <div id="distance" class="info" style="display:none;">
+        <h3>Distance Calculation:</h3>
+        <p><strong>Distance:</strong> <span id="distanceValue"></span> meters</p>
+    </div>
+
+    <div id="error" style="color:red; margin-top:10px;"></div>
+
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            } else {
+                document.getElementById('error').innerHTML = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        function showPosition(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            document.getElementById('lat').textContent = lat;
+            document.getElementById('lon').textContent = lon;
+            document.getElementById('accuracy').textContent = accuracy;
+            document.getElementById('copyText').value = `Latitude: ${lat}\nLongitude: ${lon}\nAccuracy: ${accuracy}m\n\nSQL Update:\nUPDATE contracted_clients SET latitude = ${lat}, longitude = ${lon} WHERE id = 2;`;
+            document.getElementById('result').style.display = 'block';
+
+            // Fetch API coordinates
+            fetch('/api/company-settings?_=' + new Date().getTime(), {
+                credentials: 'same-origin',
+                cache: 'no-store'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.office_latitude && data.office_longitude) {
+                    document.getElementById('apiLat').textContent = data.office_latitude;
+                    document.getElementById('apiLon').textContent = data.office_longitude;
+                    document.getElementById('apiClient').textContent = data.location_name || 'N/A';
+                    document.getElementById('apiResult').style.display = 'block';
+
+                    // Calculate distance
+                    const distance = calculateDistance(lat, lon, parseFloat(data.office_latitude), parseFloat(data.office_longitude));
+                    document.getElementById('distanceValue').textContent = distance.toFixed(2);
+                    document.getElementById('distance').style.display = 'block';
+                }
+            });
+        }
+
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById('error').innerHTML = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById('error').innerHTML = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById('error').innerHTML = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById('error').innerHTML = "An unknown error occurred.";
+                    break;
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000; // Earth's radius in meters
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+    </script>
+</body>
+</html>
