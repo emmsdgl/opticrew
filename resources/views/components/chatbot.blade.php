@@ -1,225 +1,432 @@
-<!-- Chatbot Toggle Button -->
-<button id="toggle-chat"
-    class="fixed bottom-6 right-6 z-50 bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-110">
-    <i class="fa-solid fa-comment text-2xl"></i>
-</button>
+{{-- resources/views/components/chatbot.blade.php --}}
 
-<!-- Chatbot Window -->
-<div id="chat-window"
-    class="hidden fixed bottom-24 right-6 z-50 w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
-    <!-- Chat Header -->
-    <div class="bg-blue-500 text-white p-4 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <i class="fa-solid fa-robot text-blue-500"></i>
+{{-- Chatbot Styles --}}
+@push('styles')
+    <style>
+        /* Minimal custom styles - only what Tailwind can't do */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-message {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        #chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: #D1D5DB;
+            border-radius: 10px;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF;
+        }
+
+        .dark #chat-messages::-webkit-scrollbar-thumb {
+            background: #4B5563;
+        }
+
+        @keyframes pulse-loading {
+            0%, 100% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .loading-indicator {
+            animation: pulse-loading 1.5s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .unread-badge {
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+    </style>
+@endpush
+
+{{-- Chatbot HTML --}}
+<div class="fixed bottom-6 right-6 z-50">
+    <!-- Toggle Button (Floating Action Button) -->
+    <button id="toggle-chat" type="button"
+        class="relative flex items-center justify-center w-16 h-16 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-700">
+        <i class="fas fa-comment-dots text-xl"></i>
+        <span id="unread-badge" 
+            class="unread-badge absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold border-2 border-white dark:border-gray-900 hidden">
+            0
+        </span>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chat-window"
+        class="hidden absolute bottom-20 right-0 w-96 h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-colors">
+
+        <!-- Chat Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 text-white p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <!-- Bot Icon -->
+                <div class="w-10 h-10 flex items-center justify-center">
+                    <img src="{{ asset('images/opticrew-logo-white.svg') }}" class="w-10 h-10 dark:hidden" alt="OptiCrew">
+                    <img src="{{ asset('images/opticrew-icon-dark.svg') }}" class="w-10 h-10 hidden dark:block" alt="OptiCrew">
+                </div>
+                <!-- Bot Info -->
+                <div>
+                    <h3 class="font-bold text-white text-base">OptiCrew Assistant</h3>
+                    <p class="text-xs text-blue-100 flex items-center">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-1.5 animate-pulse"></span>
+                        Online
+                    </p>
+                </div>
             </div>
-            <div>
-                <h3 class="font-semibold text-white">Fin-noys Assistant</h3>
-                <p class="text-xs text-blue-100">Always here to help</p>
+            <!-- Header Actions -->
+            <div class="flex items-center space-x-2">
+                <button id="refresh-chat"
+                    class="text-white hover:text-blue-100 transition p-2 rounded-full hover:bg-blue-500 dark:hover:bg-blue-600"
+                    title="Refresh chat">
+                    <i class="fas fa-redo text-sm"></i>
+                </button>
+                <button id="close-chat"
+                    class="text-white hover:text-blue-100 transition p-2 rounded-full hover:bg-blue-500 dark:hover:bg-blue-600"
+                    title="Close chat">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
             </div>
         </div>
-        <button id="close-chat" class="hover:bg-blue-600 p-2 rounded-full transition">
-            <i class="fa-solid fa-times"></i>
-        </button>
-    </div>
 
-    <!-- Chat Messages Container -->
-    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-        <div class="chat-message assistant-message bg-blue-100 text-blue-950 p-3 rounded-lg max-w-[80%]">
-            Hello! I'm your Fin-noys cleaning assistant. How can I help you today?
+        <!-- Date Separator -->
+        <div class="px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+            <p class="text-xs text-center text-gray-500 dark:text-gray-400" id="chat-date">
+                {{ date('F j, Y') }}
+            </p>
         </div>
-    </div>
 
-    <!-- Chat Input -->
-    <div class="p-4 border-t border-gray-200 bg-white">
-        <div class="flex gap-2">
-            <input type="text" id="user-input" placeholder="Ask a question..."
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-            <button id="send-button"
-                class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
+        <!-- Chat Messages Container -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto py-4 bg-white dark:bg-gray-800 space-y-2">
+            <!-- Welcome Message -->
+            <div class="flex justify-start px-3">
+                <div class="chat-message max-w-[75%] bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 text-sm shadow-sm break-words">
+                    Hi there! 👋 I'm your Fin-noys cleaning assistant. How can I help you today?
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Reply Buttons (Dynamic) -->
+        <div id="quick-replies" class="hidden px-4 py-2 flex flex-wrap gap-2 bg-white dark:bg-gray-800">
+            <!-- Quick replies will be inserted here dynamically -->
+        </div>
+
+        <!-- Chat Input Area -->
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div class="flex items-center space-x-2">
+                <!-- Input Field -->
+                <input type="text" id="user-input" placeholder="Type a message..."
+                    class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+
+                <!-- Send Button -->
+                <button id="send-button"
+                    class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white p-2.5 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center w-10 h-10">
+                    <i class="fas fa-paper-plane text-sm"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<style>
-    .chat-message {
-        animation: slideIn 0.3s ease-out;
-    }
+{{-- Chatbot JavaScript --}}
+@push('scripts')
+    <script>
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
+        if (!csrfToken) {
+            console.error('CSRF token not found. Please add <meta name="csrf-token" content="{{ csrf_token() }}"> to your layout head section.');
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+
+        // --- CHATBOT LOGIC ---
+        const chatWindow = document.getElementById('chat-window');
+        const toggleButton = document.getElementById('toggle-chat');
+        const closeButton = document.getElementById('close-chat');
+        const refreshButton = document.getElementById('refresh-chat');
+        const messagesContainer = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const unreadBadge = document.getElementById('unread-badge');
+
+        // ========== CONVERSATION RETENTION WITH SESSIONSTORAGE ==========
+        const STORAGE_KEY = 'opticrew_chat_history';
+        const STORAGE_MESSAGES_KEY = 'opticrew_chat_messages';
+
+        let chatHistory = [];
+        let unreadCount = 0;
+        let isChatOpen = false;
+        const apiUrl = "/api/chatbot/message";
+
+        // Load chat history from sessionStorage
+        function loadChatFromStorage() {
+            try {
+                const stored = sessionStorage.getItem(STORAGE_KEY);
+                const storedMessages = sessionStorage.getItem(STORAGE_MESSAGES_KEY);
+
+                if (stored) {
+                    chatHistory = JSON.parse(stored);
+                }
+
+                if (storedMessages) {
+                    const messages = JSON.parse(storedMessages);
+                    messages.forEach(msg => {
+                        appendMessage(msg.role, msg.text, false);
+                    });
+                    scrollToBottom();
+                }
+            } catch (error) {
+                console.error('Error loading chat from storage:', error);
+            }
         }
-    }
 
-    .user-message {
-        background-color: #3B82F6;
-        color: white;
-        margin-left: auto;
-        padding: 12px;
-        border-radius: 12px;
-        max-width: 80%;
-    }
+        // Save chat history to sessionStorage
+        function saveChatToStorage() {
+            try {
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
 
-    .assistant-message {
-        background-color: #DBEAFE;
-        color: #071957;
-        padding: 12px;
-        border-radius: 12px;
-        max-width: 80%;
-    }
-
-    .loading-indicator {
-        animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
+                const messages = [];
+                const messageElements = messagesContainer.querySelectorAll('.chat-message');
+                
+                messageElements.forEach((el, index) => {
+                    // Skip the welcome message (first message)
+                    if (index === 0) return;
+                    
+                    const isUser = el.classList.contains('bg-blue-600') || el.classList.contains('bg-[#5B5FEF]');
+                    const role = isUser ? 'user' : 'assistant';
+                    const text = el.textContent.trim();
+                    messages.push({ role, text });
+                });
+                
+                sessionStorage.setItem(STORAGE_MESSAGES_KEY, JSON.stringify(messages));
+            } catch (error) {
+                console.error('Error saving chat to storage:', error);
+            }
         }
-        50% {
-            opacity: 0.5;
+
+        // Clear chat storage
+        window.clearChatStorage = function() {
+            sessionStorage.removeItem(STORAGE_KEY);
+            sessionStorage.removeItem(STORAGE_MESSAGES_KEY);
+            chatHistory = [];
+            
+            // Clear all messages except welcome message
+            const firstMessage = messagesContainer.firstElementChild;
+            messagesContainer.innerHTML = '';
+            messagesContainer.appendChild(firstMessage);
+            
+            console.log('Chat history cleared');
+        };
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-    }
 
-    #chat-messages::-webkit-scrollbar {
-        width: 6px;
-    }
+        // Update unread badge
+        function updateUnreadBadge() {
+            if (unreadCount > 0) {
+                unreadBadge.textContent = unreadCount;
+                unreadBadge.classList.remove('hidden');
+            } else {
+                unreadBadge.classList.add('hidden');
+            }
+        }
 
-    #chat-messages::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
+        // Increment unread count
+        function incrementUnread() {
+            if (!isChatOpen) {
+                unreadCount++;
+                updateUnreadBadge();
+            }
+        }
 
-    #chat-messages::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 10px;
-    }
+        // Clear unread count
+        function clearUnread() {
+            unreadCount = 0;
+            updateUnreadBadge();
+        }
 
-    #chat-messages::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-</style>
+        // Append message to chat UI
+        function appendMessage(role, text, saveToStorage = true) {
+            const messageWrapper = document.createElement('div');
+            const isUser = role === 'user';
+            
+            // Container with proper alignment
+            messageWrapper.className = `flex ${isUser ? 'justify-end' : 'justify-start'} px-3`;
+            
+            // Message bubble
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm break-words whitespace-pre-wrap ${
+                isUser 
+                    ? 'bg-[#5B5FEF] text-white rounded-br-sm' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm'
+            }`;
+            messageDiv.textContent = text;
+            
+            messageWrapper.appendChild(messageDiv);
+            messagesContainer.appendChild(messageWrapper);
 
-<script type="module">
-    // Chatbot Logic
-    const chatWindow = document.getElementById('chat-window');
-    const toggleButton = document.getElementById('toggle-chat');
-    const closeButton = document.getElementById('close-chat');
-    const messagesContainer = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const sendButton = document.getElementById('send-button');
+            scrollToBottom();
 
-    let chatHistory = [];
-    const apiKey = "{{ config('services.gemini.api_key', '') }}";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-    const systemPrompt = "You are the Fin-noys Cleaning Service Assistant. Your primary goal is to answer questions about the company's services, provide cleaning quotes, and encourage booking. Keep responses friendly, professional, and concise. Do not answer questions unrelated to cleaning or Fin-noys services.";
+            if (saveToStorage) {
+                saveChatToStorage();
+            }
+        }
 
-    function scrollToBottom() {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    function appendMessage(role, text) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('chat-message', role === 'user' ? 'user-message' : 'assistant-message');
-        messageDiv.innerHTML = text.replace(/\n/g, '<br>');
-        messagesContainer.appendChild(messageDiv);
-        scrollToBottom();
-    }
-
-    async function getGeminiResponse(query) {
-        chatHistory.push({ role: "user", parts: [{ text: query }] });
-
-        try {
-            const payload = {
-                contents: chatHistory,
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                tools: [{ "google_search": {} }],
-            };
-
-            const maxRetries = 5;
-            let delay = 1000;
-
-            for (let i = 0; i < maxRetries; i++) {
+        // Handle API call to Laravel backend
+        async function getAssistantResponse(query) {
+            try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        message: query,
+                        chat_history: chatHistory
+                    })
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    const candidate = result.candidates?.[0];
-                    const text = candidate?.content?.parts?.[0]?.text || "Sorry, I couldn't process that request.";
-
-                    chatHistory.push({ role: "model", parts: [{ text: text }] });
-
-                    return text;
-                } else if (response.status === 429) {
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2;
-                } else {
-                    console.error("API error:", response.status, await response.text());
-                    return "An error occurred while connecting to the assistant. Please try again.";
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    chatHistory = result.chat_history || chatHistory;
+                    
+                    chatHistory.push({
+                        role: "model",
+                        parts: [{ text: result.message }]
+                    });
+
+                    saveChatToStorage();
+                    return result.message;
+                } else {
+                    console.error("API error:", result.message);
+                    return result.message || "Sorry, I couldn't process that request.";
+                }
+
+            } catch (error) {
+                console.error("Fetch error:", error);
+                return "A network error occurred. Please check your connection and try again.";
             }
-            return "The assistant is busy right now. Please try again in a moment.";
-
-        } catch (error) {
-            console.error("Fetch error:", error);
-            return "A network error occurred. Please check your connection.";
         }
-    }
 
-    async function sendMessage() {
-        const query = userInput.value.trim();
-        if (!query) return;
+        // Handle sending a message
+        async function sendMessage() {
+            const query = userInput.value.trim();
+            if (!query) return;
 
-        appendMessage('user', query);
-        userInput.value = '';
-        sendButton.disabled = true;
-        userInput.placeholder = "Assistant is typing...";
+            // Add user message to chat history
+            chatHistory.push({
+                role: "user",
+                parts: [{ text: query }]
+            });
 
-        const thinkingMessage = document.createElement('div');
-        thinkingMessage.classList.add('assistant-message', 'chat-message', 'loading-indicator');
-        thinkingMessage.innerHTML = '...';
-        messagesContainer.appendChild(thinkingMessage);
-        scrollToBottom();
+            // Display user message
+            appendMessage('user', query);
+            userInput.value = '';
+            sendButton.disabled = true;
+            userInput.disabled = true;
+            userInput.placeholder = "Typing...";
 
-        const responseText = await getGeminiResponse(query);
+            // Display loading indicator
+            const loadingWrapper = document.createElement('div');
+            loadingWrapper.className = 'flex justify-start px-3 loading-container';
+            
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'chat-message max-w-[75%] bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 text-sm shadow-sm loading-indicator opacity-70';
+            loadingDiv.textContent = 'Typing...';
+            
+            loadingWrapper.appendChild(loadingDiv);
+            messagesContainer.appendChild(loadingWrapper);
+            scrollToBottom();
 
-        messagesContainer.removeChild(thinkingMessage);
+            // Get response from backend
+            const responseText = await getAssistantResponse(query);
 
-        appendMessage('assistant', responseText);
+            // Remove loading indicator
+            messagesContainer.removeChild(loadingWrapper);
 
-        sendButton.disabled = false;
-        userInput.placeholder = "Ask a question...";
-        userInput.focus();
-    }
+            // Display assistant response
+            appendMessage('assistant', responseText);
 
-    toggleButton.addEventListener('click', () => {
-        chatWindow.classList.toggle('hidden');
-        if (!chatWindow.classList.contains('hidden')) {
+            // Increment unread count if chat is closed
+            incrementUnread();
+
+            // Re-enable input
+            sendButton.disabled = false;
+            userInput.disabled = false;
+            userInput.placeholder = "Type a message...";
             userInput.focus();
         }
-    });
 
-    closeButton.addEventListener('click', () => {
-        chatWindow.classList.add('hidden');
-    });
+        // Event Listeners
+        toggleButton.addEventListener('click', () => {
+            chatWindow.classList.toggle('hidden');
+            isChatOpen = !chatWindow.classList.contains('hidden');
 
-    sendButton.addEventListener('click', sendMessage);
+            if (isChatOpen) {
+                clearUnread();
+                userInput.focus();
+            }
+        });
 
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-</script>
+        closeButton.addEventListener('click', () => {
+            chatWindow.classList.add('hidden');
+            isChatOpen = false;
+        });
+
+        refreshButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the chat history?')) {
+                window.clearChatStorage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initialize: Load chat history on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChatFromStorage();
+        });
+    </script>
+@endpush

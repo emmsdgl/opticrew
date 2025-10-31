@@ -31,7 +31,7 @@
         <button
             type="button"
             @click="open = !open"
-            class="w-full px-4 py-3 text-left border-1 border-gray-300 dark:border-gray-600 rounded-xl
+            class="w-full px-4 py-3 text-left border border-2 border-gray-300 dark:border-gray-600 rounded-xl
                    focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white
                    hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300"

@@ -14,6 +14,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentList;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ScenarioController;
 use App\Http\Controllers\ClientAppointmentController;
@@ -21,9 +22,12 @@ use App\Http\Controllers\LanguageController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
+Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
+
 Route::get('/', function () {
     return view('landingpage-home');
 })->name('home');
+
 Route::get('/', action: function () {
     return view('client.appointments');
 })->name('client-appointments');
@@ -83,20 +87,20 @@ Route::get('/', function () {
     }
 
     // Show landing page for guests
-    return view('landing.home');
+    return view('landingpage-home');
 })->name('home');
 
-Route::get('/about', function () {
-    return response()->file(resource_path('views/landing/about.blade.php'));
-})->name('about');
+// Route::get('/about', function () {
+//     return response()->file(resource_path('views/landingpage-about.blade.php'));
+// })->name('about');
 
-Route::get('/services', function () {
-    return response()->file(resource_path('views/landing/service.blade.php'));
-})->name('services');
+// Route::get('/services', function () {
+//     return response()->file(resource_path('views/landing/service.blade.php'));
+// })->name('services');
 
-Route::get('/pricing', function () {
-    return response()->file(resource_path('views/landing/guest-pricing.blade.php'));
-})->name('pricing');
+// Route::get('/pricing', function () {
+//     return response()->file(resource_path('views/landing/guest-pricing.blade.php'));
+// })->name('pricing');
 
 
 // --- AUTHENTICATED ROUTES ---
