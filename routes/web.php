@@ -26,6 +26,7 @@ use App\Http\Controllers\FeedbackController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
+
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
 // --- LANDING PAGE ROUTES (Public) ---

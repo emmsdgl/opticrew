@@ -5,145 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Not Found - OptiCrew</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-20px); }
         }
         .float-animation {
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .spin-slow {
-            animation: spin-slow 20s linear infinite;
+            animation: float 5s ease-in-out infinite;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
-    <div class="text-center max-w-2xl mx-auto">
-        <!-- Animated 404 Icon -->
-        <div class="mb-8 relative">
-            <div class="inline-block float-animation">
-                <div class="relative">
-                    <!-- Background circle -->
-                    <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-2xl opacity-30 spin-slow"></div>
+<body class="bg-white min-h-screen flex items-center justify-center p-4 overflow-hidden relative h-full">
+    
+    <!-- Background SVG Circle -->
+    <div class="fixed inset-0 flex items-center justify-center pointer-events-none">
+        <img src="{{ asset('images/backgrounds/404-bg.svg') }}" alt="" class="w-full h-full opacity-30 object-cover bg-no-repeat">
+    </div>
 
-                    <!-- Icon container -->
-                    <div class="relative p-8 bg-white rounded-full shadow-2xl">
-                        <i class="fas fa-search text-blue-500 text-8xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="text-center max-w-2xl mx-auto relative z-10">
+        <!-- Top Text -->
+        <p class="text-gray-600 text-sm md:text-base mb-2">
+            You look a little lost.
+        </p>
 
-        <!-- 404 Text -->
-        <h1 class="text-9xl md:text-[180px] font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 leading-none mb-4">
-            404
+        <!-- Main Heading -->
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+            Ooops! Page not found
         </h1>
 
-        <!-- Main Message -->
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            Oops! Page Not Found
-        </h2>
-
-        <!-- Description -->
-        <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg border border-gray-200">
-            <p class="text-gray-700 text-lg leading-relaxed mb-4">
-                The page you're looking for doesn't exist or hasn't been implemented yet.
-            </p>
-            <p class="text-gray-600 text-base">
-                Don't worry! You can navigate back or return to the dashboard.
-            </p>
+        <!-- Illustration SVG -->
+        <div class="relative float-animation">
+            <img src="{{ asset('images/icons/404-illustration.svg') }}" alt="404 illustration" class="w-64 h-64 md:w-64 md:h-64 mx-auto">
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <button onclick="window.history.back()"
-                    class="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg shadow-lg border-2 border-gray-300 transform transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300">
-                <i class="fas fa-arrow-left"></i>
-                <span>Go Back</span>
-            </button>
+        <!-- Description Text -->
+        <p class="text-gray-600 text-sm md:text-base mb-6 max-w-md mx-auto leading-relaxed">
+            It looks like the page you're looking for has wandered off. But don't worry — there's plenty more to explore!
+        </p>
 
+                <!-- Home Page Button with Glassmorphism -->
+        <div class="flex justify-center">
             @auth
                 @if(Auth::user()->role === 'admin')
                     <a href="{{ route('admin.dashboard') }}"
-                       class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg transform transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
-                        <i class="fas fa-home"></i>
-                        <span>Go to Dashboard</span>
+                       class="group relative inline-flex items-center justify-between gap-4 px-3 py-4 bg-cyan-50/60 backdrop-blur-lg hover:bg-cyan-50/70 text-gray-900 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/40 transform transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.25)] focus:outline-none w-full max-w-lg">
+                        <!-- Icon and Text -->
+                        <div class="flex items-center gap-5">
+                            <div class="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <rect x="3" y="3" width="6" height="6" rx="1"/>
+                                    <rect x="11" y="3" width="6" height="6" rx="1"/>
+                                    <rect x="3" y="11" width="6" height="6" rx="1"/>
+                                    <rect x="11" y="11" width="6" height="6" rx="1"/>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="text-sm text-gray-900">Home Page</div>
+                                <div class="text-sm text-gray-500">Let's get you back on track</div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <svg class="w-3 h-3 text-gray-900 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </a>
                 @elseif(Auth::user()->role === 'employee')
                     <a href="{{ route('employee.dashboard') }}"
-                       class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg transform transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
-                        <i class="fas fa-home"></i>
-                        <span>Go to Dashboard</span>
+                       class="group relative inline-flex items-center justify-between gap-4 px-6 py-4 bg-cyan-50/60 backdrop-blur-lg hover:bg-cyan-50/70 text-gray-900 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/40 transform transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.25)] focus:outline-none w-84">
+                        <!-- Icon and Text -->
+                        <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <rect x="3" y="3" width="6" height="6" rx="1"/>
+                                    <rect x="11" y="3" width="6" height="6" rx="1"/>
+                                    <rect x="3" y="11" width="6" height="6" rx="1"/>
+                                    <rect x="11" y="11" width="6" height="6" rx="1"/>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="text-base font-bold text-gray-900">Home Page</div>
+                                <div class="text-sm text-gray-500">Let's get you back on track</div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <svg class="w-6 h-6 text-gray-900 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </a>
                 @elseif(Auth::user()->role === 'client')
                     <a href="{{ route('client.dashboard') }}"
-                       class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg transform transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
-                        <i class="fas fa-home"></i>
-                        <span>Go to Dashboard</span>
+                       class="group relative inline-flex items-center justify-between gap-4 px-6 py-4 bg-cyan-50/60 backdrop-blur-lg hover:bg-cyan-50/70 text-gray-900 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/40 transform transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.25)] focus:outline-none w-84">
+                        <!-- Icon and Text -->
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <rect x="3" y="3" width="6" height="6" rx="1"/>
+                                    <rect x="11" y="3" width="6" height="6" rx="1"/>
+                                    <rect x="3" y="11" width="6" height="6" rx="1"/>
+                                    <rect x="11" y="11" width="6" height="6" rx="1"/>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="text-base font-bold text-gray-900">Home Page</div>
+                                <div class="text-sm text-gray-500">Let's get you back on track</div>
+                            </div>
+                        </div>
+                        <!-- Arrow -->
+                        <svg class="w-6 h-6 text-gray-900 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </a>
                 @endif
             @else
                 <a href="{{ route('home') }}"
-                   class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg transform transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
-                    <i class="fas fa-home"></i>
-                    <span>Go Home</span>
+                   class="group relative inline-flex items-center justify-between gap-4 px-6 py-4 bg-cyan-50/60 backdrop-blur-lg hover:bg-cyan-50/70 text-gray-900 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/40 transform transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.25)] focus:outline-none w-84">
+                    <!-- Icon and Text -->
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <rect x="3" y="3" width="6" height="6" rx="1"/>
+                                <rect x="11" y="3" width="6" height="6" rx="1"/>
+                                <rect x="3" y="11" width="6" height="6" rx="1"/>
+                                <rect x="11" y="11" width="6" height="6" rx="1"/>
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-base font-bold text-gray-900">Home Page</div>
+                            <div class="text-sm text-gray-500">Let's get you back on track</div>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <svg class="w-6 h-6 text-gray-900 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
                 </a>
             @endauth
         </div>
 
-        <!-- Quick Links -->
-        @auth
-        <div class="bg-white/60 backdrop-blur-sm rounded-xl p-6 shadow-md border border-gray-200">
-            <p class="text-sm text-gray-600 font-semibold mb-3">Quick Links:</p>
-            <div class="flex flex-wrap gap-3 justify-center">
-                @if(Auth::user()->role === 'employee')
-                    <a href="{{ route('employee.tasks') }}" class="text-blue-600 hover:text-blue-800 text-sm hover:underline">
-                        <i class="fas fa-tasks mr-1"></i> My Tasks
-                    </a>
-                    <span class="text-gray-400">|</span>
-                    <a href="{{ route('employee.attendance') }}" class="text-blue-600 hover:text-blue-800 text-sm hover:underline">
-                        <i class="fas fa-calendar-check mr-1"></i> Attendance
-                    </a>
-                    <span class="text-gray-400">|</span>
-                    <a href="{{ route('employee.profile') }}" class="text-blue-600 hover:text-blue-800 text-sm hover:underline">
-                        <i class="fas fa-user mr-1"></i> Profile
-                    </a>
-                @elseif(Auth::user()->role === 'admin')
-                    <a href="{{ route('admin.tasks') }}" class="text-blue-600 hover:text-blue-800 text-sm hover:underline">
-                        <i class="fas fa-tasks mr-1"></i> Tasks
-                    </a>
-                    <span class="text-gray-400">|</span>
-                    <a href="{{ route('admin.analytics') }}" class="text-blue-600 hover:text-blue-800 text-sm hover:underline">
-                        <i class="fas fa-chart-line mr-1"></i> Analytics
-                    </a>
-                    <span class="text-gray-400">|</span>
-                    <a href="{{ route('admin.profile') }}" class="text-blue-600 hover:text-blue-800 text-sm hover:underline">
-                        <i class="fas fa-user mr-1"></i> Profile
-                    </a>
-                @endif
-            </div>
-        </div>
-        @endauth
+
+        <!-- Optional: Back button -->
+        <button onclick="window.history.back()" 
+                class="mt-4 text-gray-500 hover:text-gray-700 text-sm focus:outline-none">
+            Go back to previous page
+        </button>
     </div>
 
-    <!-- Decorative Elements -->
-    <div class="fixed top-20 left-10 text-blue-200 opacity-20">
-        <i class="fas fa-circle text-4xl float-animation" style="animation-delay: 0.5s;"></i>
-    </div>
-    <div class="fixed top-1/3 right-20 text-purple-200 opacity-20">
-        <i class="fas fa-square text-5xl float-animation" style="animation-delay: 1s;"></i>
-    </div>
-    <div class="fixed bottom-20 left-1/4 text-indigo-200 opacity-20">
-        <i class="fas fa-triangle-exclamation text-6xl float-animation" style="animation-delay: 1.5s;"></i>
-    </div>
-    <div class="fixed bottom-1/3 right-1/4 text-blue-300 opacity-20">
-        <i class="fas fa-star text-3xl float-animation" style="animation-delay: 2s;"></i>
-    </div>
 </body>
 </html>
