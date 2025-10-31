@@ -10,11 +10,35 @@
             background-repeat: no-repeat;
             background-position: center;
         }
-
-        /* Dark mode background override */
-        body.dark {
-            background-image: url('{{ asset('images/backgrounds/aboutpage-bg-dark.svg') }}');
+                /* Smooth scroll zoom animation */
+        .scroll-zoom {
+            opacity: 0;
+            transform: scale(0.85);
+            transition: opacity 1s ease-out, transform 1s ease-out;
         }
+        
+        .scroll-zoom.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Stagger animation delays for child elements */
+        .scroll-zoom-child {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        
+        .scroll-zoom-child.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        
+        .scroll-zoom-child:nth-child(1) { transition-delay: 0.1s; }
+        .scroll-zoom-child:nth-child(2) { transition-delay: 0.2s; }
+        .scroll-zoom-child:nth-child(3) { transition-delay: 0.3s; }
+        .scroll-zoom-child:nth-child(4) { transition-delay: 0.4s; }
+        .scroll-zoom-child:nth-child(5) { transition-delay: 0.5s; }
 
         /* Frosted glass effect */
         .frosted-card {
@@ -69,12 +93,6 @@
             filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.4));
         }
 
-        /* Ensure proper centering for sections */
-        #container-1, #container-2 {
-            margin-left: auto;
-            margin-right: auto;
-        }
-
         /* Full height map styling */
         #container-3 .map-full-height {
             height: 100vh;
@@ -110,25 +128,17 @@
 @section('content')
     <!-- Section 1: Original About Section -->
     <section id="container-1"
-        class="relative flex flex-col items-center justify-center text-center w-full max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 py-12 sm:py-24 min-h-[80vh]">
+        class="scroll-zoom relative flex flex-col items-center justify-center text-center w-full mx-auto px-6 sm:px-8 md:px-12 lg:px-16 py-12 sm:py-24 min-h-[80vh]">
         
-        <!-- Decorative Images -->
-        <div class="absolute hidden xl:block" style="top: 22%; left: -20%;">
-            <img src="{{ asset('images/icons/cleaning_bucket.svg') }}" class="w-48 h-48 opacity-40 dark:opacity-30" alt="Cleaning Bucket">
-        </div>
-        <div class="absolute hidden xl:block" style="top: -10%; right: -20%;">
-            <img src="{{ asset('images/icons/cleaning_spray.svg') }}" class="w-48 h-48 opacity-40 dark:opacity-30" alt="Cleaning Spray">
-        </div>
-
         <!-- Main Content - Centered Container -->
         <div class="z-10 w-full max-w-4xl mx-auto">
             <!-- Hello there text -->
-            <p class="mb-4 text-sm sm:text-base text-blue-500 dark:text-blue-400 font-semibold">
+            <p class="scroll-zoom-child mb-4 text-sm sm:text-base text-blue-500 dark:text-blue-400 font-semibold">
                 Hello there,
             </p>
 
             <!-- Main Heading -->
-            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
+            <h1 class="scroll-zoom-child text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
                 We are 
                 <span class="text-blue-500 dark:text-blue-400 inline-flex items-center gap-2">
                     <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="Sparkle" class="h-6 sm:h-8 md:h-10 lg:h-12 w-auto inline-block">
@@ -137,12 +147,12 @@
             </h1>
 
             <!-- Subtitle -->
-            <p class="mt-6 text-sm sm:text-base md:text-lg text-gray-700 dark:text-gray-300 font-medium">
+            <p class="scroll-zoom-child mt-6 text-sm sm:text-base md:text-lg text-gray-700 dark:text-gray-300 font-medium">
                 Your hassle-free buddy for a sparkling clean space.
             </p>
 
             <!-- Description -->
-            <p class="mt-6 sm:mt-8 text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed max-w-3xl mx-auto text-center sm:text-justify px-0 sm:px-4">
+            <p class="scroll-zoom-child mt-6 sm:mt-8 text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed max-w-3xl mx-auto text-center sm:text-justify px-0 sm:px-4">
                 Fin-noys is a professional cleaning services provider with extensive experience in the hospitality industry 
                 and are dedicated to maintaining a clean, healthy environment and ensuring a secure efficient cleaning process.
             </p>
@@ -191,22 +201,23 @@
     </section>
 
     <!-- Section 2: Development Team with Flip Card -->
-    <section id="container-2" class="relative w-full bg-gradient-to-b from-transparent via-white/60 to-white/80
+    <section id="container-2" class="scroll-zoom relative w-full bg-gradient-to-b from-transparent via-white/60 to-white/80
                dark:via-slate-900/60 dark:to-slate-900/80
-               backdrop-blur-sm py-16 sm:py-20 lg:py-24 mt-20 sm:mt-32 min-h-[80vh] transition-all duration-700">
+               backdrop-blur-sm py-16 sm:py-20 lg:py-24 mt-20 sm:mt-32 min-h-screen transition-all duration-700 flex items-center">
 
         <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white/70 dark:from-slate-900/70 to-transparent pointer-events-none">
         </div>
 
-        <div class="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16">
-            <div class="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 xl:gap-16">
-                <div class="w-full lg:w-full text-center lg:text-left">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 w-full">
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 xl:gap-16">
+                <!-- Text Content - Larger Width -->
+                <div class="w-full lg:w-3/5 text-center lg:text-left">
                     <div class="space-y-6">
-                        <h2 class="text-blue-500 dark:text-blue-400 font-[fam-bold] text-xs sm:text-sm md:text-base">
+                        <h2 class="scroll-zoom-child text-blue-500 dark:text-blue-400 font-[fam-bold] text-xs sm:text-sm md:text-base">
                             Introducing the Development Team: Ela-vate
                         </h2>
                         
-                        <h1 class="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-[fam-bold] leading-tight text-gray-900 dark:text-white">
+                        <h1 class="scroll-zoom-child text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-[fam-bold] leading-tight text-gray-900 dark:text-white">
                             Cleaning is more than a task;
                             <span class="text-blue-500 dark:text-blue-400 font-[fam-bold]">
                                 it's a promise of comfort and care
@@ -215,11 +226,11 @@
                                 class="inline-block h-6 sm:h-7 md:h-8 lg:h-9 align-middle ml-2">
                         </h1>
                         
-                        <p class="font-[fam-bold] text-xs sm:text-sm md:text-base text-blue-500 dark:text-blue-400 italic">
+                        <p class="scroll-zoom-child font-[fam-bold] text-xs sm:text-sm md:text-base text-blue-500 dark:text-blue-400 italic">
                             Behind Fin-noys: <span class="not-italic">Making Clean Spaces Possible</span>
                         </p>
                         
-                        <div class="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-8 lg:gap-10 justify-center lg:justify-start pt-4">
+                        <div class="scroll-zoom-child flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-8 lg:gap-10 justify-center lg:justify-start pt-4">
                             <div class="flex flex-col items-center lg:items-start min-w-[140px]">
                                 <p class="font-[fam-bold] text-[#071957] dark:text-white text-sm sm:text-base mb-1">
                                     Adam Jay M. Bolano
@@ -259,7 +270,8 @@
                     </div>
                 </div>
 
-                <div class="w-1/3 flex justify-center lg:justify-end items-center mt-8 lg:mt-0">
+                <!-- Flip Card - Smaller Width -->
+                <div class="scroll-zoom-child w-full lg:w-2/5 flex justify-center items-center mt-8 lg:mt-0">
                     <div class="flip-card w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] md:w-[340px] md:h-[340px] lg:w-[380px] lg:h-[380px] cursor-pointer transition-all duration-700">
                         <div class="flip-inner relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d]">
                             <div class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden 
@@ -290,7 +302,7 @@
 
     <!-- Section 3: Contact Section with Full Height Map -->
     <section id="container-3"
-        class="relative flex flex-col lg:flex-row items-stretch
+        class="scroll-zoom relative flex flex-col lg:flex-row items-stretch
                w-full 
                bg-white dark:bg-slate-900 
                transition-all duration-700">
@@ -302,7 +314,7 @@
                 <div id="hs-grayscale-leaflet" class="w-full h-full relative z-10">
                     <iframe
                         src="https://www.openstreetmap.org/export/embed.html?bbox=120.976%2C14.599%2C120.986%2C14.605&amp;layer=mapnik&amp;marker=14.6020%2C120.9810"
-                        class="w-full h-full border-0 grayscale dark:brightness-75 dark:contrast-125" 
+                        class="w-full h-full border-0 dark:brightness-90" 
                         loading="lazy"
                         title="Fin-noys Location Map"
                         allowfullscreen>
@@ -330,11 +342,11 @@
 
         <!-- Contact Info Section - Scrollable Right Side -->
         <div class="w-full lg:w-1/2 py-16 sm:py-20 lg:py-24 px-6 sm:px-8 md:px-12 lg:px-16">
-            <div class="max-w-2xl mx-auto lg:mx-0">
+            <div class="max-w-2xl mx-auto">
                 <div class="text-center lg:text-left space-y-8">
                     
                     <!-- Header -->
-                    <div class="mb-6">
+                    <div class="scroll-zoom-child mb-6">
                         <h3 class="text-3xl sm:text-4xl md:text-5xl font-[fam-bold] text-[#071957] dark:text-white mb-3 sm:mb-4">
                             Get In Touch
                         </h3>
@@ -347,7 +359,7 @@
                     <ul class="space-y-6 sm:space-y-8">
                         
                         <!-- Head Office -->
-                        <li class="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
+                        <li class="scroll-zoom-child flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
                             <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                 <i class="fa-solid fa-location-dot text-blue-500 dark:text-blue-400 text-xl sm:text-2xl"></i>
                             </div>
@@ -362,9 +374,9 @@
                         </li>
 
                         <!-- Email -->
-                        <li class="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
-                            <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="fa-solid fa-envelope text-purple-500 dark:text-purple-400 text-xl sm:text-2xl"></i>
+                        <li class="scroll-zoom-child flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
+                            <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <i class="fa-solid fa-envelope text-blue-500 dark:text-blue-400 text-xl sm:text-2xl"></i>
                             </div>
                             <div class="text-center sm:text-left flex-1">
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
@@ -378,9 +390,9 @@
                         </li>
 
                         <!-- Phone -->
-                        <li class="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
-                            <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="fa-solid fa-phone text-green-500 dark:text-green-400 text-xl sm:text-2xl"></i>
+                        <li class="scroll-zoom-child flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
+                            <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <i class="fa-solid fa-phone text-blue-500 dark:text-blue-400 text-xl sm:text-2xl"></i>
                             </div>
                             <div class="text-center sm:text-left flex-1">
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
@@ -394,7 +406,7 @@
                         </li>
 
                         <!-- Social Media -->
-                        <li class="pt-4 sm:pt-6">
+                        <li class="scroll-zoom-child pt-4 sm:pt-6">
                             <div class="flex flex-col items-center sm:items-start gap-4">
                                 <span class="font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white">
                                     Follow us on
@@ -402,14 +414,14 @@
                                 <div class="flex flex-row gap-4 sm:gap-6">
                                     <!-- Facebook -->
                                     <a href="#" 
-                                       class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-500 dark:text-blue-400 hover:bg-blue-500 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transform hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl"
+                                       class="w-10 h-10 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-500 dark:text-blue-400 hover:bg-blue-500 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transform hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl"
                                        aria-label="Follow us on Facebook">
                                         <i class="fa-brands fa-facebook text-2xl sm:text-3xl"></i>
                                     </a>
                                     
                                     <!-- WhatsApp -->
                                     <a href="#" 
-                                       class="w-12 h-12 sm:w-14 sm:h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-500 dark:text-green-400 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:hover:text-white transform hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl"
+                                       class="w-10 h-10 sm:w-14 sm:h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-500 dark:text-green-400 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:hover:text-white transform hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl"
                                        aria-label="Contact us on WhatsApp">
                                         <i class="fa-brands fa-whatsapp text-2xl sm:text-3xl"></i>
                                     </a>
@@ -418,23 +430,6 @@
                         </li>
 
                     </ul>
-
-                    <!-- Call to Action Button -->
-                    <div class="pt-6 sm:pt-8">
-                        <a href="#contact-form" 
-                           class="inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-3 sm:py-4 
-                                  bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 
-                                  text-white font-semibold text-sm sm:text-base 
-                                  rounded-xl shadow-lg hover:shadow-xl 
-                                  transform hover:scale-105 transition-all duration-300
-                                  group">
-                            <span>Send us a message</span>
-                            <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                            </svg>
-                        </a>
-                    </div>
-
                 </div>
             </div>
         </div>
@@ -443,8 +438,46 @@
 
 @push('scripts')
     <script>
+        // Force scroll to top on page load/refresh
+        if (history.scrollRestoration) {
+            history.scrollRestoration = 'manual';
+        }
+        
+        window.addEventListener('beforeunload', function() {
+            window.scrollTo(0, 0);
+        });
+        
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+            }, 0);
+        });
+        
+        // Additional fallback
+        document.addEventListener('DOMContentLoaded', function() {
+            window.scrollTo(0, 0);
+        });
 
-        // Smooth scroll animations for cards
+        // Smooth scroll zoom-in animation
+        const zoomObserverOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const zoomObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, zoomObserverOptions);
+
+        // Observe all scroll-zoom elements
+        document.querySelectorAll('.scroll-zoom, .scroll-zoom-child').forEach(element => {
+            zoomObserver.observe(element);
+        });
+
+        // Smooth scroll animations for frosted cards
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'

@@ -261,7 +261,7 @@
 <div class="mx-auto max-w-4xl text-center">
         <h2 class="text-base text-blue-600 dark:text-blue-400 font-semibold">Pricing</h2>
         <p class="p-12 pb-6 pt-6 justify-center mt-2 text-5xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
-            Find the <span class="text-blue-600 dark:text-blue-400 font-bold">best plan</span> for your cleaning needs
+            Find the <span class="text-blue-600 dark:text-blue-400 font-bold">best plan</span> for your cleaning needs.
         </p>
     </div>
     <p class="mx-auto mt-6 max-w-3xl text-center text-lg text-gray-600 dark:text-gray-300 sm:text-xl">
@@ -285,7 +285,7 @@
                 </span>
             </p>
             <p class="mt-6 text-base text-gray-600 dark:text-gray-300 group-hover:text-gray-300">
-                Ideal for occasional home cleaning needs.
+                Ideal for occasional home cleaning and requests.
             </p>
             <ul role="list" class="mt-8 space-y-3 text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-300">
                 <li class="flex gap-x-3">

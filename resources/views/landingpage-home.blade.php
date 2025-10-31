@@ -1,6 +1,6 @@
 @extends('components.layouts.general-landing')
 
-@section('title', 'Home')
+@section('title', __('common.nav.home'))
 
 @push ('styles')
     <style>
@@ -56,31 +56,29 @@
         }
     </style>
 @endpush
+
 @section('content')
-    <!-- Hero Section - DONE REVISION-->
+    <!-- Hero Section -->
     <div id="container-1" class="relative isolate text-center w-[60%] mx-auto pt-11 pb-24">
         <div class="hidden sm:mb-8 sm:flex sm:justify-center">
             <div
                 class="relative rounded-full px-3 py-1 text-sm/6 text-gray-600 dark:text-gray-300 ring-1 ring-gray-900/10 dark:ring-gray-100/10 hover:ring-gray-900/20 dark:hover:ring-gray-100/20 transition-all">
-                OptiCrew: Your Doorway To A Clean Space.
+                {{ __('home.hero.tagline') }}
             </div>
         </div>
         <h1 id="header-1" class="text-6xl tracking-normal text-blue-950 dark:text-white p-10 sm:text-6xl">
-            Delivering
+            {{ __('home.hero.title_1') }}
             <span id="cleanliness" class="text-blue-500 dark:text-blue-400 inline-flex items-center">
                 <span id="spark" class="mr-2">
                     <img src="{{ asset('images/icons/sparkle.svg') }}" alt="Sparkle" class="h-12 w-auto">
                 </span>
-                cleanliness
+                {{ __('home.hero.title_cleanliness') }}
             </span>
             <br>
-            in every corner
+            {{ __('home.hero.title_2') }}
         </h1>
         <p class="mt-8 text-[12px] text-pretty sm:text-base w-[75%] mx-auto text-justify text-gray-700 dark:text-gray-300">
-            At Fin-noys, we believe a clean space is the foundation for a productive and healthy life. As a trusted
-            cleaning service provider, we specialize in delivering tailored solutions for homes, offices, and commercial
-            spaces. From routine maintenance to deep cleaning, our skilled team is committed to delivering exceptional
-            quality with attention to every detail. Choose Fin-noys for a spotless environment you can rely on.
+            {{ __('home.hero.description') }}
         </p>
         <div class="mt-10 flex items-center justify-center gap-x-6">
             <a href="{{ route('services') }}"
@@ -95,12 +93,12 @@
                     </svg>
                 </span>
                 <!-- Button Text -->
-                <span class="font-sans text-sm font-semibold dark:text-blue-950 text-white">Get Started</span>
+                <span class="font-sans text-sm font-semibold dark:text-blue-950 text-white">{{ __('common.buttons.get_started') }}</span>
             </a>
 
             <a href="{{ route('quotation') }}"
                 class="font-sans text-sm border border-blue-950 dark:border-blue-400 px-6 py-4 rounded-full font-semibold text-blue-950 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 hover:border-blue-600 dark:hover:border-blue-300 transition-all">
-                Get a Free Quote
+                {{ __('common.buttons.get_quote') }}
             </a>
         </div>
     </div>
@@ -127,7 +125,7 @@
             </div>
         </div>
 
-        <!-- Floating Stats Cards - Positioned like screenshot -->
+        <!-- Floating Stats Cards -->
 
         <!-- Card 1: Top Left - Trusted Professionals -->
         <div class="absolute -top-4 -left-8 sm:-left-12 lg:-left-16 
@@ -146,11 +144,10 @@
 
                 <div class="text-center">
                     <h3 class="text-sm sm:text-base lg:text-lg font-bold text-blue-950 dark:text-white mb-2 sm:mb-3">
-                        Trusted Professionals
+                        {{ __('home.cards.professionals_title') }}
                     </h3>
                     <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        Our well-trained and professional cleaning staff are dedicated to maintaining a clean, healthy
-                        environment.
+                        {{ __('home.cards.professionals_desc') }}
                     </p>
                 </div>
             </div>
@@ -174,10 +171,10 @@
 
                 <div class="text-center">
                     <h3 class="text-sm sm:text-base lg:text-lg font-bold text-blue-950 dark:text-white mb-2 sm:mb-3">
-                        Extensive Cleaning Experience
+                        {{ __('home.cards.experience_title') }}
                     </h3>
                     <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        Professional cleaning services provider with extensive experience in the hospitality industry
+                        {{ __('home.cards.experience_desc') }}
                     </p>
                 </div>
             </div>
@@ -201,10 +198,10 @@
 
                 <div class="text-center">
                     <h3 class="text-sm sm:text-base lg:text-lg font-bold text-blue-950 dark:text-white mb-2 sm:mb-3">
-                        Hassle-Free Online Booking
+                        {{ __('home.cards.booking_title') }}
                     </h3>
                     <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        Secure efficient cleaning process in a click.
+                        {{ __('home.cards.booking_desc') }}
                     </p>
                 </div>
             </div>
@@ -216,21 +213,21 @@
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <dl class="grid grid-cols-1 gap-x-8 gap-y-16 text-center lg:grid-cols-3">
                 <div class="mx-auto flex max-w-xs flex-col gap-y-4">
-                    <dt class="font-sans text-base/7 text-gray-600 dark:text-gray-300">Transactions every 24 hours</dt>
+                    <dt class="font-sans text-base/7 text-gray-600 dark:text-gray-300">{{ __('home.stats.transactions_label') }}</dt>
                     <dd
                         class="order-first font-sans text-3xl font-bold tracking-tight text-blue-950 dark:text-white sm:text-5xl">
                         <span class="counter text-blue-950 dark:text-white" data-target="44">0</span> million
                     </dd>
                 </div>
                 <div class="mx-auto flex max-w-xs flex-col gap-y-4">
-                    <dt class="font-sans text-base/7 text-gray-600 dark:text-gray-300">Assets under holding</dt>
+                    <dt class="font-sans text-base/7 text-gray-600 dark:text-gray-300">{{ __('home.stats.clients_label') }}</dt>
                     <dd
                         class="order-first font-sans text-3xl font-bold tracking-tight text-blue-950 dark:text-white sm:text-5xl">
                         $<span class="counter text-blue-950 dark:text-white" data-target="119">0</span> trillion
                     </dd>
                 </div>
                 <div class="mx-auto flex max-w-xs flex-col gap-y-4">
-                    <dt class="font-sans text-base/7 text-gray-600 dark:text-gray-300">New users annually</dt>
+                    <dt class="font-sans text-base/7 text-gray-600 dark:text-gray-300">{{ __('home.stats.users_label') }}</dt>
                     <dd
                         class="order-first font-sans text-3xl font-bold tracking-tight text-blue-950 dark:text-white sm:text-5xl">
                         <span class="counter text-blue-950 dark:text-white" data-target="46000">0</span>
@@ -245,30 +242,26 @@
         <div class="relative isolate text-center w-[60%] mx-auto pt-3 pb-16">
             <div id="badge-container">
                 <span
-                    class="bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-300 text-xs me-2 px-2.5 py-0.5 rounded-xl transition-colors">Hotel
-                    Cleaning</span>
+                    class="bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-300 text-xs me-2 px-2.5 py-0.5 rounded-xl transition-colors">{{ __('home.services.badge_hotel') }}</span>
                 <span
-                    class="bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-300 text-xs me-2 px-2.5 py-0.5 rounded-xl transition-colors">Snowout</span>
+                    class="bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-300 text-xs me-2 px-2.5 py-0.5 rounded-xl transition-colors">{{ __('home.services.badge_snow') }}</span>
                 <span
-                    class="bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-300 text-xs me-2 px-2.5 py-0.5 rounded-xl transition-colors">Daily
-                    Cleaning</span>
+                    class="bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-300 text-xs me-2 px-2.5 py-0.5 rounded-xl transition-colors">{{ __('home.services.badge_daily') }}</span>
             </div>
-            <p id="subheader-1" class="text-blue-600 dark:text-blue-400 p-12 font-bold">Why Choose Fin-noys?</p>
+            <p id="subheader-1" class="text-blue-600 dark:text-blue-400 p-12 font-bold">{{ __('home.services.subtitle') }}</p>
             <h1 id="header-1" class="text-6xl tracking-normal text-blue-950 dark:text-white p-3 sm:text-6xl">
-                Your trusted partner in professional
+                {{ __('home.services.title') }}
                 <span id="cleaning" class="text-blue-500 dark:text-blue-400 inline-flex items-center font-bold">
-                    cleaning
+                    {{ __('home.services.title_cleaning') }}
                     <span id="spark" class="mr-2">
-                        <img src="/public/images/icons/single-sparkle.svg" alt="" class="h-12 w-auto">
+                        <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="" class="h-12 w-auto">
                     </span>
                 </span>
                 <br>
             </h1>
             <p id="para-desc"
                 class="mt-8 text-[12px] text-pretty sm:text-base w-[75%] mx-auto text-justify text-gray-700 dark:text-gray-300">
-                With a team of dedicated experts and a commitment to excellence, we make every space feel fresh,
-                safe, and inviting — so you can focus on what truly matters — ensuring premium, meticulous, and
-                worry-free cleaning for every client
+                {{ __('home.services.description') }}
             </p>
 
             <div class="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8 w-full max-w-5xl mx-auto">
@@ -276,41 +269,34 @@
                 </div>
                 <div class="frosted-card px-3 py-3 rounded-2xl soft-glow-2 bg-white/70 dark:bg-gray-800/70 border border-white/40 dark:border-gray-700/40 feature-card scroll-hidden transition-all duration-300 ease-in-out hover:scale-[1.02] hover:rotate-1 hover:shadow-2xl"
                     data-animation-delay="0">
-                    <h3 class="text-base font-bold mt-2 mb-4 text-blue-950 dark:text-white">Proven Expertise</h3>
+                    <h3 class="text-base font-bold mt-2 mb-4 text-blue-950 dark:text-white">{{ __('home.features.expertise_title') }}</h3>
                     <p class="text-sm text-gray-700 dark:text-gray-300 text-justify">
-                        Our proven expertise, reliable team, and commitment to excellence ensure every home
-                        and business receives the highest standard of care — every time.
+                        {{ __('home.features.expertise_desc') }}
                     </p>
                 </div>
 
                 <div class="frosted-card px-6 py-3 rounded-2xl soft-glow-2 bg-white/70 dark:bg-gray-800/70 border border-white/40 dark:border-gray-700/40 feature-card scroll-hidden transition-all duration-300 ease-in-out hover:scale-[1.02] hover:rotate-1 hover:shadow-2xl"
                     data-animation-delay="200">
                     <div id="icon-trustworthy" class="feature-icon"></div>
-                    <h3 class="text-base font-bold mt-4 mb-4 text-blue-950 dark:text-white">Professional and Trustworthy
-                    </h3>
+                    <h3 class="text-base font-bold mt-4 mb-4 text-blue-950 dark:text-white">{{ __('home.features.trustworthy_title') }}</h3>
                     <p class="text-sm text-gray-700 dark:text-gray-300 text-justify">
-                        We deliver meticulous, high-quality cleaning that transforms spaces and leaves lasting
-                        impressions.
+                        {{ __('home.features.trustworthy_desc') }}
                     </p>
                 </div>
 
                 <div class="frosted-card px-6 py-3 rounded-2xl soft-glow-2 bg-white/70 dark:bg-gray-800/70 border border-white/40 dark:border-gray-700/40 feature-card scroll-hidden transition-all duration-300 ease-in-out hover:scale-[1.02] hover:rotate-1 hover:shadow-2xl"
                     data-animation-delay="400">
                     <div id="icon-licensed" class="feature-icon"></div>
-                    <h3 class="text-base font-bold mt-3 mb-4 text-blue-950 dark:text-white">Licensed Business</h3>
+                    <h3 class="text-base font-bold mt-3 mb-4 text-blue-950 dark:text-white">{{ __('home.features.licensed_title') }}</h3>
                     <p class="text-sm text-gray-700 dark:text-gray-300 text-justify">
-                        Our official certification ensures that every service we provide meets strict quality
-                        and
-                        safety
-                        standards, giving you complete peace of mind.
+                        {{ __('home.features.licensed_desc') }}
                     </p>
                 </div>
             </div>
 
             <div class="mt-10 flex items-center justify-center gap-x-5">
                 <button id="see-features-btn" type="button"
-                    class="w-full sm:w-auto px-10 py-4 text-white z-10 bg-blue-950 dark:bg-blue-600 hover:bg-blue-900 dark:hover:bg-blue-700 font-medium rounded-full text-sm transition-all">See
-                    Features</button>
+                    class="w-full sm:w-auto px-10 py-4 text-white z-10 bg-blue-950 dark:bg-blue-600 hover:bg-blue-900 dark:hover:bg-blue-700 font-medium rounded-full text-sm transition-all">{{ __('common.buttons.see_features') }}</button>
             </div>
 
         </div>

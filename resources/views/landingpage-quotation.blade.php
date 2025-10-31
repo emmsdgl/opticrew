@@ -15,7 +15,7 @@
 
         /* Custom scrollbar for form panel */
         .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
@@ -49,7 +49,6 @@
 
         /* Active breadcrumb pulse */
         @keyframes pulse-slow {
-
             0%,
             100% {
                 opacity: 1;
@@ -63,13 +62,68 @@
         .breadcrumb-active {
             animation: pulse-slow 2s ease-in-out infinite;
         }
+
+        /* Scroll tooltip animation */
+        .scroll-tooltip {
+            animation: bounce-tooltip 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce-tooltip {
+            0%, 100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-10px);
+                opacity: 0.8;
+            }
+        }
+
+        /* Fade out animation for tooltip */
+        .tooltip-fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Reduce overall text sizes */
+        #quotation-form label {
+            @apply text-xs font-medium;
+        }
+
+        #quotation-form input,
+        #quotation-form select,
+        #quotation-form button[type="button"] {
+            @apply text-sm;
+        }
+
+        #quotation-form .space-y-6 {
+            @apply space-y-4;
+        }
+
+        #quotation-form .space-y-3 {
+            @apply space-y-2;
+        }
+
+        #quotation-form .space-y-2 {
+            @apply space-y-1.5;
+        }
     </style>
 @endpush
 
 @section('content')
     <!-- MAIN SECTION CONTAINER -->
     <section id="main-container" class="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 px-4 lg:px-12 py-8">
-
+        
         <!-- LEFT PANEL - Fixed/Sticky -->
         <section id="container-1"
             class="flex flex-col justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl px-8 lg:px-12 py-8 lg:py-12 shadow-sm lg:sticky lg:top-8 lg:h-full">
@@ -139,7 +193,21 @@
         </section>
 
         <!-- RIGHT PANEL - Scrollable -->
-        <section id="container-2" class="flex flex-col">
+        <section id="container-2" class="flex flex-col justify-center align-items-center">
+            <!-- Scroll More Tooltip - Centered -->
+                <!-- <div id="scroll-tooltip" 
+                    class="scroll-tooltip absolute bottom-8 right-4 z-50
+                            bg-gradient-to-r from-blue-600 to-blue-500 
+                            dark:from-blue-500 dark:to-blue-600 
+                            text-white 
+                            px-3 py-3 rounded-full shadow-xl
+                            flex text-center items-center gap-2.5 text-sm
+                            pointer-events-none
+                            border-2 border-white/20">
+                    <span>Scroll for more</span>
+                    <i class="fa-solid fa-chevron-down text-xs animate-pulse"></i>
+                </div> -->
+
             <div class="overflow-hidden">
                 <!-- Scrollable Container -->
                 <div id="form-scroll-container"
@@ -445,7 +513,7 @@
                                 </div>
                                 <div class="space-y-2">
                                         <x-client-components.quotation-page.quantity-picker label="Number of Floors"
-                                        name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-door-open"
+                                        name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-layer-group"
                                         :required="true" :showUnit="false" />
 
                                 </div>
@@ -461,7 +529,7 @@
 
                                 <div class="space-y-2">
                                     <x-client-components.quotation-page.quantity-picker label="Number of People Per Room"
-                                        name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-door-open"
+                                        name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-people-roof"
                                         :required="true" :showUnit="false" />
                                 </div>
                             </div>
@@ -470,7 +538,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div class="space-y-2">
                                     <x-client-components.quotation-page.quantity-picker label="Floor Area Value"
-                                        name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-door-open"
+                                        name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-ruler-combined"
                                         :required="true" :showUnit="false" />
                                 </div>
 
@@ -625,7 +693,6 @@
     </section>
 @endsection
 
-@push('scripts')
 @push('scripts')
     <script>
         function quotationForm() {
@@ -1051,17 +1118,85 @@
         document.addEventListener('DOMContentLoaded', function () {
             initScrollSpy();
 
-            // Check for saved theme preference
-            const currentTheme = localStorage.getItem('theme') || 'light';
-            if (currentTheme === 'dark') {
-                document.documentElement.classList.add('dark');
-            }
-
             // Initialize geocoder for current location feature
             if (typeof google !== 'undefined' && google.maps) {
                 geocoder = new google.maps.Geocoder();
             }
         });
+        // Scroll tooltip management
+document.addEventListener('DOMContentLoaded', function() {
+    const scrollContainer = document.getElementById('form-scroll-container');
+    const scrollTooltip = document.getElementById('scroll-tooltip');
+    
+    if (scrollContainer && scrollTooltip) {
+        let autoHideTimer = null;
+        
+        // Function to check if user has reached the end
+        function isAtBottom() {
+            const scrollTop = scrollContainer.scrollTop;
+            const scrollHeight = scrollContainer.scrollHeight;
+            const clientHeight = scrollContainer.clientHeight;
+            
+            // Consider "end" as within 50px of the bottom
+            return (scrollTop + clientHeight) >= (scrollHeight - 50);
+        }
+        
+        // Function to check if user is at the top
+        function isAtTop() {
+            return scrollContainer.scrollTop <= 100; // Within 100px of top
+        }
+        
+        // Function to hide tooltip
+        function hideTooltip() {
+            scrollTooltip.classList.remove('tooltip-fade-out');
+            scrollTooltip.classList.add('tooltip-fade-out');
+            
+            setTimeout(() => {
+                scrollTooltip.style.display = 'none';
+            }, 500);
+        }
+        
+        // Function to show tooltip
+        function showTooltip() {
+            scrollTooltip.style.display = 'flex';
+            scrollTooltip.classList.remove('tooltip-fade-out');
+            
+            // Reset auto-hide timer
+            clearTimeout(autoHideTimer);
+            autoHideTimer = setTimeout(() => {
+                if (!isAtBottom()) {
+                    hideTooltip();
+                }
+            }, 5000);
+        }
+        
+        // Handle scroll events
+        scrollContainer.addEventListener('scroll', function() {
+            if (isAtBottom()) {
+                // Hide when at bottom
+                hideTooltip();
+                clearTimeout(autoHideTimer);
+            } else if (isAtTop()) {
+                // Show when back at top
+                showTooltip();
+            }
+        });
+        
+        // Check if content is scrollable, if not, hide tooltip immediately
+        setTimeout(() => {
+            if (scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
+                scrollTooltip.style.display = 'none';
+            } else {
+                // Start initial auto-hide timer
+                autoHideTimer = setTimeout(() => {
+                    if (!isAtBottom()) {
+                        hideTooltip();
+                    }
+                }, 5000);
+            }
+        }, 100);
+    }
+});
     </script>
 
     <!-- Google Maps API - Replace YOUR_API_KEY with your actual API key -->

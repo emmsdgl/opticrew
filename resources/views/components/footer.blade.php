@@ -100,10 +100,7 @@
                         <i class="fab fa-instagram fa-lg"></i>
                     </a>
                     <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition">
-                        <i class="fab fa-twitter fa-lg"></i>
-                    </a>
-                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition">
-                        <i class="fab fa-github fa-lg"></i>
+                        <i class="fab fa-whatsapp fa-lg"></i>
                     </a>
                 </div>
             </div>
