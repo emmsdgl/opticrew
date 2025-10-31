@@ -75,6 +75,22 @@ class AttendanceController extends Controller
                 $timeInNote = $minutesEarly . ' m early';
             }
 
+            // Calculate hours worked
+            $hoursWorkedText = null;
+            if ($clockOut) {
+                $minutesWorked = $attendance->total_minutes_worked ?? $clockOut->diffInMinutes($clockIn);
+                $hours = floor($minutesWorked / 60);
+                $minutes = $minutesWorked % 60;
+
+                if ($hours > 0 && $minutes > 0) {
+                    $hoursWorkedText = "{$hours} hr {$minutes} min";
+                } elseif ($hours > 0) {
+                    $hoursWorkedText = $hours == 1 ? "{$hours} hr" : "{$hours} hrs";
+                } else {
+                    $hoursWorkedText = "{$minutes} min";
+                }
+            }
+
             return [
                 'status' => $status,
                 'date' => $clockIn->format('F d'),
@@ -83,8 +99,7 @@ class AttendanceController extends Controller
                 'timeInNote' => $timeInNote ?? '',
                 'timeOut' => $clockOut ? $clockOut->format('g:i a') : null,
                 'timeOutNote' => '',
-                'mealBreak' => '1:00 pm',
-                'mealBreakDuration' => '30 mins',
+                'hoursWorked' => $hoursWorkedText,
                 'timedIn' => true,
                 'isTimedOut' => $clockOut !== null
             ];
@@ -128,21 +143,63 @@ class AttendanceController extends Controller
         $user = Auth::user();
         $employee = Employee::where('user_id', $user->id)->first();
 
-        // Check if already clocked in today
-        $existingAttendance = Attendance::where('employee_id', $employee->id)
+        // TRIPLE-CHECK: Prevent multiple clock-ins for the same day
+        // Check 1: Is there ANY attendance record for today (regardless of clock_out status)?
+        $attendanceToday = Attendance::where('employee_id', $employee->id)
             ->whereDate('clock_in', now()->toDateString())
+            ->first();
+
+        if ($attendanceToday) {
+            // Already have an attendance record for today
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have already clocked in today'
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'You have already clocked in today');
+        }
+
+        // Check 2: Is there an active clock-in without clock-out (from previous day)?
+        $activeClockIn = Attendance::where('employee_id', $employee->id)
             ->whereNull('clock_out')
             ->first();
 
-        if ($existingAttendance) {
-            return redirect()->back()->with('error', 'You are already clocked in');
+        if ($activeClockIn) {
+            // There's an unclosed attendance from a previous day
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have an unclosed clock-in from ' . Carbon::parse($activeClockIn->clock_in)->format('F d, Y')
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'You have an unclosed clock-in from ' . Carbon::parse($activeClockIn->clock_in)->format('F d, Y'));
         }
 
-        // Create new attendance record
+        // Check 3: Validate employee exists
+        if (!$employee) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Employee profile not found'
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'Employee profile not found');
+        }
+
+        // All checks passed - Create new attendance record
         $attendance = Attendance::create([
             'employee_id' => $employee->id,
             'clock_in' => now(),
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Clocked in successfully',
+                'attendance' => $attendance
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Clocked in successfully');
     }
@@ -152,19 +209,59 @@ class AttendanceController extends Controller
         $user = Auth::user();
         $employee = Employee::where('user_id', $user->id)->first();
 
-        // Find today's attendance without clock out
+        // Check 1: Validate employee exists
+        if (!$employee) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Employee profile not found'
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'Employee profile not found');
+        }
+
+        // Check 2: Find today's attendance without clock out
         $attendance = Attendance::where('employee_id', $employee->id)
             ->whereDate('clock_in', now()->toDateString())
             ->whereNull('clock_out')
             ->first();
 
         if (!$attendance) {
-            return redirect()->back()->with('error', 'No active clock-in found');
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active clock-in found for today'
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'No active clock-in found for today');
+        }
+
+        // Check 3: Verify clock-in already exists and hasn't been clocked out
+        if ($attendance->clock_out !== null) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have already clocked out today'
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'You have already clocked out today');
+        }
+
+        // Check 4: Ensure clock-out time is after clock-in time
+        $clockIn = Carbon::parse($attendance->clock_in);
+        $clockOut = now();
+
+        if ($clockOut->lessThanOrEqualTo($clockIn)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Clock-out time must be after clock-in time'
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'Clock-out time must be after clock-in time');
         }
 
         // Calculate total minutes worked
-        $clockIn = Carbon::parse($attendance->clock_in);
-        $clockOut = now();
         $totalMinutes = $clockOut->diffInMinutes($clockIn);
 
         // Update attendance record
@@ -172,6 +269,14 @@ class AttendanceController extends Controller
             'clock_out' => $clockOut,
             'total_minutes_worked' => $totalMinutes,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Clocked out successfully',
+                'attendance' => $attendance
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Clocked out successfully');
     }

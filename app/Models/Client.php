@@ -18,12 +18,13 @@ class Client extends Model
         'user_id',
         'client_type',
         'company_name',
+        'email', // For companies without user accounts
+        'phone_number', // For companies without user accounts
+        'business_id',
         'first_name',
         'last_name',
         'middle_initial', // Max 5 characters
         'birthdate',
-        'email',
-        'phone_number',
         'address',
         'street_address',
         'postal_code',

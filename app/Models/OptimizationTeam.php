@@ -48,4 +48,12 @@ class OptimizationTeam extends Model
     {
         return $this->hasMany(Task::class, 'assigned_team_id');
     }
+
+    /**
+     * Get the team name attribute (Team 1, Team 2, etc.)
+     */
+    public function getTeamNameAttribute()
+    {
+        return 'Team ' . $this->team_index;
+    }
 }

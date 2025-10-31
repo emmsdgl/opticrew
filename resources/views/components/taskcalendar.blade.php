@@ -5,6 +5,64 @@
     [x-cloak] {
         display: none !important;
     }
+
+    /* Toast Notification Styles */
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        min-width: 300px;
+        max-width: 500px;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        animation: slideInRight 0.3s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .toast-notification.success {
+        background: #10b981;
+        color: white;
+    }
+
+    .toast-notification.error {
+        background: #ef4444;
+        color: white;
+    }
+
+    .toast-notification.warning {
+        background: #f59e0b;
+        color: white;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+
+    .toast-notification.hiding {
+        animation: slideOutRight 0.3s ease-in;
+    }
 </style>
 
 <div x-data="calendarComponent(@js($clients), @js($events), @js($bookedLocationsByDate), @js($holidays))" x-init="init()"
@@ -281,15 +339,15 @@
                         </div>
 
                         <!-- Extra Tasks -->
-                        <div class="space-y-1 text-sm">
-                            <div class="flex flex-row w-full mb-6 justify-between">
+                        <div class="space-y-3 text-sm">
+                            <div class="flex flex-row w-full mb-4 justify-between">
                                 <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">Extra Tasks</p>
                                 <button type="button" @click="addExtraTask"
                                     class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
                                     <i class="fa-solid fa-plus text-lg"></i>
                                 </button>
                             </div>
-                            
+
                             <template x-if="formData.extraTasks.length === 0">
                                 <div class="flex justify-center bg-white dark:bg-gray-800 rounded-lg px-3 py-6 text-gray-400 dark:text-gray-500 text-sm italic">
                                     No extra tasks added
@@ -297,15 +355,49 @@
                             </template>
 
                             <template x-for="(task, index) in formData.extraTasks" :key="index">
-                                <div class="flex items-center justify-between gap-3 bg-white dark:bg-gray-800 rounded-lg px-3 py-2">
-                                    <input type="text" x-model="task.type" placeholder="Extra Task Type"
-                                        class="flex-1 px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-gray-500 dark:text-gray-400">€</span>
-                                        <input type="number" x-model="task.price" placeholder="Price" min="0" step="10"
-                                            class="w-24 px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
-                                        <button type="button" @click="removeExtraTask(index)" class="text-red-500 hover:text-red-700 text-sm">
-                                            <i class="fa-solid fa-times"></i>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg px-4 py-3 space-y-3 border border-gray-200 dark:border-gray-700">
+                                    <!-- Task Name -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Task Name</label>
+                                        <input type="text" x-model="task.type" placeholder="e.g., Extra beddings, Pool cleaning" required
+                                            class="w-full px-3 py-2 text-sm rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+                                    </div>
+
+                                    <!-- Base Price & Duration Row -->
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <!-- Base Price -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Base Price (€)</label>
+                                            <input type="number" x-model="task.basePrice" @input="calculateExtraTaskFinalPrice(task)" placeholder="Base price" min="0" step="0.01" required
+                                                class="w-full px-3 py-2 text-sm rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        </div>
+
+                                        <!-- Duration -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Duration</label>
+                                            <select x-model="task.duration" required
+                                                class="w-full px-3 py-2 text-sm rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+                                                <option value="">Select</option>
+                                                <option value="30">30 mins</option>
+                                                <option value="60">60 mins</option>
+                                                <option value="150">150 mins</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Final Price Display & Remove Button -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+                                        <div>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Final Price: </span>
+                                            <span class="text-sm font-bold" :class="task.isSpecialDay ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-white'">
+                                                €<span x-text="(task.finalPrice || 0).toFixed(2)"></span>
+                                            </span>
+                                            <span x-show="task.isSpecialDay" class="text-xs text-orange-600 dark:text-orange-400 ml-1">
+                                                (Doubled for <span x-text="task.specialDayType"></span>)
+                                            </span>
+                                        </div>
+                                        <button type="button" @click="removeExtraTask(index)" class="px-2 py-1 text-red-500 hover:text-red-700 text-sm">
+                                            <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -624,21 +716,40 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
 
         async checkForUnsavedSchedule() {
             try {
-                const response = await fetch('/admin/optimization/check-unsaved');
+                const response = await fetch('/admin/optimization/check-unsaved', {
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to check unsaved schedule:', response.status);
+                    return;
+                }
+
                 const data = await response.json();
+
+                console.log('Check unsaved schedule response:', data);
 
                 if (data.has_unsaved) {
                     this.currentOptimizationRunId = data.optimization_run_id;
                     this.currentServiceDate = data.service_date; // ✅ Store service date
                     this.hasUnsavedSchedule = true;
-                    console.log('Found unsaved schedule:', data);
+                    console.log('✅ Found unsaved schedule:', {
+                        run_id: data.optimization_run_id,
+                        service_date: data.service_date,
+                        created_at: data.created_at
+                    });
                 } else {
                     this.hasUnsavedSchedule = false;
                     this.currentOptimizationRunId = null;
                     this.currentServiceDate = null;
+                    console.log('No unsaved schedules found');
                 }
             } catch (error) {
                 console.error('Error checking for unsaved schedule:', error);
+                this.showToast('Failed to check for unsaved schedules', 'error');
             }
         },
 
@@ -869,15 +980,86 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
         },
 
         addExtraTask() {
-            this.formData.extraTasks.push({ type: '', price: 0 });
+            const newTask = {
+                type: '',
+                basePrice: 0,
+                finalPrice: 0,
+                duration: '',
+                isSpecialDay: false,
+                specialDayType: '',
+                price: 0 // Keep for backward compatibility
+            };
+
+            // Calculate price based on current service date
+            this.calculateExtraTaskFinalPrice(newTask);
+
+            this.formData.extraTasks.push(newTask);
         },
 
         removeExtraTask(index) {
             this.formData.extraTasks.splice(index, 1);
         },
 
+        calculateExtraTaskFinalPrice(task) {
+            // Check if service date is selected
+            if (!this.formData.serviceDate) {
+                task.isSpecialDay = false;
+                task.specialDayType = '';
+                task.finalPrice = parseFloat(task.basePrice) || 0;
+                task.price = task.finalPrice; // For backward compatibility
+                return;
+            }
+
+            const selectedDate = new Date(this.formData.serviceDate);
+            const dayOfWeek = selectedDate.getDay();
+
+            // Check if Sunday
+            const isSunday = dayOfWeek === 0;
+
+            // Check if Holiday
+            const isHoliday = this.holidays[this.formData.serviceDate] !== undefined;
+
+            // Determine if special day
+            task.isSpecialDay = isSunday || isHoliday;
+
+            if (isSunday) {
+                task.specialDayType = 'Sunday';
+            } else if (isHoliday) {
+                task.specialDayType = 'Holiday';
+            } else {
+                task.specialDayType = '';
+            }
+
+            // Calculate final price
+            const basePrice = parseFloat(task.basePrice) || 0;
+            task.finalPrice = task.isSpecialDay ? basePrice * 2 : basePrice;
+            task.price = task.finalPrice; // For backward compatibility
+        },
+
         calculateTotalCabins() {
             return this.formData.cabinsList.length;
+        },
+
+        // Toast Notification System
+        showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
+            toast.innerHTML = `
+                <span style="font-size: 20px;">${icon}</span>
+                <span style="flex: 1;">${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 4000);
         },
 
         async submitTask() {
@@ -889,25 +1071,26 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
             });
 
             if (!this.formData.client) {
-                alert('Please select a client');
+                this.showToast('Please select a client', 'error');
                 return;
             }
 
             if (!this.formData.serviceDate) {
-                alert('Please select a service date');
+                this.showToast('Please select a service date', 'error');
                 return;
             }
 
-            if (this.calculateTotalCabins() === 0) {
-                alert('Please select at least one cabin with service details');
+            // Validate that either cabins OR extra tasks are provided (not both required)
+            if (this.calculateTotalCabins() === 0 && this.formData.extraTasks.length === 0) {
+                this.showToast('Please select at least one cabin with service details OR add at least one extra task', 'error');
                 return;
             }
 
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ||
                             document.querySelector('input[name="_token"]')?.value || '';
-            
+
             if (!csrfToken) {
-                alert('CSRF token not found. Please refresh the page.');
+                this.showToast('CSRF token not found. Please refresh the page.', 'error');
                 return;
             }
 
@@ -1020,8 +1203,14 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
         },
 
         async saveSchedule() {
+            console.log('Save schedule clicked. State:', {
+                hasUnsavedSchedule: this.hasUnsavedSchedule,
+                currentServiceDate: this.currentServiceDate,
+                currentOptimizationRunId: this.currentOptimizationRunId
+            });
+
             if (!this.hasUnsavedSchedule || !this.currentServiceDate) {
-                alert('No unsaved schedule to save.');
+                this.showToast('No unsaved schedule to save. Please create and optimize tasks first.', 'warning');
                 return;
             }
 
@@ -1032,6 +1221,8 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
+                console.log('Sending save request for date:', this.currentServiceDate);
+
                 const response = await fetch('/admin/optimization/save-schedule', {
                     method: 'POST',
                     headers: {
@@ -1039,12 +1230,15 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                         'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         service_date: this.currentServiceDate // ✅ Send service_date instead of run_id
                     })
                 });
 
                 const data = await response.json();
+
+                console.log('Save schedule response:', { status: response.status, data });
 
                 if (response.ok) {
                     this.hasUnsavedSchedule = false;
@@ -1054,15 +1248,19 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                     // Show detailed success message
                     const runCount = data.runs_saved || 1;
                     const clientText = runCount > 1 ? `${runCount} clients` : '1 client';
-                    alert(`✅ All schedules saved successfully! (${clientText})\n\nTeams are now locked for real-time task addition on ${data.service_date}.`);
 
-                    window.location.reload();
+                    this.showToast(`All schedules saved successfully! (${clientText}) Teams are now locked for ${data.service_date}.`, 'success');
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
                 } else {
-                    alert('Error saving schedule: ' + (data.message || 'Unknown error'));
+                    this.showToast('Error: ' + (data.message || 'Unknown error'), 'error');
+                    console.error('Save failed:', data);
                 }
             } catch (error) {
                 console.error('Error saving schedule:', error);
-                alert('Error saving schedule. Please try again.');
+                this.showToast('Error saving schedule. Please try again.', 'error');
             }
         },
 

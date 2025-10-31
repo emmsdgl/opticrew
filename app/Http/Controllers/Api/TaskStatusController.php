@@ -283,12 +283,12 @@ class TaskStatusController extends Controller
             $teamMembers = [];
             if ($task->optimizationTeam) {
                 $teamMembers = $task->optimizationTeam->members()
-                    ->with('employee')
+                    ->with('employee.user')
                     ->get()
                     ->map(function($member) {
                         return [
                             'id' => $member->employee->id,
-                            'name' => $member->employee->full_name,
+                            'name' => $member->employee->user->name,
                             'has_driving_license' => $member->employee->has_driving_license
                         ];
                     })

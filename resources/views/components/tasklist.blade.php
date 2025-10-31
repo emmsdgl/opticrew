@@ -65,10 +65,37 @@
                     <span x-text="task.startTime"></span>
                 </div>
 
-                <!-- Avatar -->
+                <!-- Team Member Avatars -->
                 @if ($showAvatar)
-                <img :src="task.avatar"
-                     class="rounded-full w-7 h-7 border border-gray-300 dark:border-gray-600">
+                <div class="flex -space-x-2">
+                    <template x-for="(member, idx) in task.teamMembers" :key="idx">
+                        <div class="relative group/avatar flex-shrink-0">
+                            <!-- Show uploaded picture if available -->
+                            <img x-show="member.picture"
+                                 :src="member.picture ? '/storage/' + member.picture : ''"
+                                 class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm flex-shrink-0">
+
+                            <!-- Show initials placeholder if no picture -->
+                            <div x-show="!member.picture"
+                                 class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-sm relative overflow-hidden flex-shrink-0"
+                                 x-data="{
+                                     getInitials(name) {
+                                         if (!name) return '??';
+                                         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                                     }
+                                 }">
+                                <span class="text-white text-xs font-semibold relative z-10 select-none leading-none"
+                                      style="text-shadow: 0 1px 2px rgba(0,0,0,0.25);"
+                                      x-text="getInitials(member.name)"></span>
+                            </div>
+
+                            <!-- Tooltip on hover -->
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover/avatar:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                <span x-text="member.name"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
                 @endif
 
                 <!-- Custom Slot -->

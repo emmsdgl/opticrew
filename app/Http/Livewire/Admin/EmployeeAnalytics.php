@@ -294,7 +294,7 @@ class EmployeeAnalytics extends Component
             $teamBreakdown[] = [
                 'team_name' => 'Team ' . $team->team_index,
                 'client_name' => $clientName,
-                'members' => $team->members->pluck('employee.full_name')->toArray(),
+                'members' => $team->members->pluck('employee.user.name')->toArray(),
                 'efficiency' => round($avgEfficiency, 2),
                 'task_count' => $taskCount,
                 'arrival_task_count' => $arrivalTaskCount,
@@ -394,7 +394,7 @@ class EmployeeAnalytics extends Component
             // Add team to client
             $clientBreakdown[$clientId]['teams'][] = [
                 'team_index' => $team->team_index,
-                'members' => $team->members->pluck('employee.full_name')->toArray(),
+                'members' => $team->members->pluck('employee.user.name')->toArray(),
                 'task_count' => $tasks->count(),
             ];
 

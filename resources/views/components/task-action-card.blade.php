@@ -57,7 +57,7 @@
         <div class="flex flex-wrap gap-2">
             @foreach($task->optimizationTeam->members as $member)
                 <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs">
-                    {{ $member->employee->full_name }}
+                    {{ $member->employee->user->name ?? 'Unknown' }}
                 </span>
             @endforeach
         </div>
@@ -106,7 +106,7 @@
 
         <!-- Hold Button -->
         <button @click="openHoldModal"
-                :disabled="status === 'Completed' || loading"
+                :disabled="status === 'Completed' || loading || !isClockedIn"
                 class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <i class="fas fa-pause"></i>
             <span x-text="status === 'On Hold' ? 'Update Hold' : 'Hold'"></span>
@@ -220,8 +220,10 @@ function taskActionCard(taskId, initialStatus, initialHoldReason, isClockedIn) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
                 });
 
                 const data = await response.json();
@@ -229,8 +231,16 @@ function taskActionCard(taskId, initialStatus, initialHoldReason, isClockedIn) {
                 if (data.success) {
                     this.status = 'In Progress';
                     this.showMessage('Task started successfully!', 'success');
-                    // Reload page after 1.5 seconds to refresh data
-                    setTimeout(() => window.location.reload(), 1500);
+
+                    // Dispatch event for parent components to update
+                    window.dispatchEvent(new CustomEvent('task-updated', {
+                        detail: { taskId: this.taskId, status: this.status }
+                    }));
+
+                    // Haptic feedback if supported
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(50);
+                    }
                 } else {
                     this.showMessage(data.message || 'Failed to start task', 'error');
                 }
@@ -243,6 +253,11 @@ function taskActionCard(taskId, initialStatus, initialHoldReason, isClockedIn) {
         },
 
         openHoldModal() {
+            if (!this.isClockedIn) {
+                this.showMessage('You must clock in before managing tasks', 'error');
+                return;
+            }
+
             this.showHoldModal = true;
             // Pre-populate with existing reason if task is already on hold
             this.holdReasonInput = this.status === 'On Hold' ? this.holdReason : '';
@@ -271,8 +286,10 @@ function taskActionCard(taskId, initialStatus, initialHoldReason, isClockedIn) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         reason: this.holdReasonInput
                     })
@@ -293,8 +310,15 @@ function taskActionCard(taskId, initialStatus, initialHoldReason, isClockedIn) {
                         this.showMessage(message, 'success');
                     }
 
-                    // Reload page after 2 seconds
-                    setTimeout(() => window.location.reload(), 2000);
+                    // Dispatch event for parent components to update
+                    window.dispatchEvent(new CustomEvent('task-updated', {
+                        detail: { taskId: this.taskId, status: this.status }
+                    }));
+
+                    // Haptic feedback
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(50);
+                    }
                 } else {
                     this.showMessage(result.message || 'Failed to put task on hold', 'error');
                 }
@@ -316,8 +340,10 @@ function taskActionCard(taskId, initialStatus, initialHoldReason, isClockedIn) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
                 });
 
                 const result = await response.json();
@@ -331,8 +357,15 @@ function taskActionCard(taskId, initialStatus, initialHoldReason, isClockedIn) {
                         this.showMessage('Task completed successfully!', 'success');
                     }
 
-                    // Reload page after 1.5 seconds
-                    setTimeout(() => window.location.reload(), 1500);
+                    // Dispatch event for parent components to update
+                    window.dispatchEvent(new CustomEvent('task-updated', {
+                        detail: { taskId: this.taskId, status: this.status }
+                    }));
+
+                    // Success haptic pattern
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([50, 100, 50]);
+                    }
                 } else {
                     this.showMessage(result.message || 'Failed to complete task', 'error');
                 }

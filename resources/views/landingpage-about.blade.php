@@ -203,66 +203,66 @@
     <!-- Section 2: Development Team with Flip Card -->
     <section id="container-2" class="scroll-zoom relative w-full bg-gradient-to-b from-transparent via-white/60 to-white/80
                dark:via-slate-900/60 dark:to-slate-900/80
-               backdrop-blur-sm py-16 sm:py-20 lg:py-24 mt-20 sm:mt-32 min-h-screen transition-all duration-700 flex items-center">
+               backdrop-blur-sm py-8 sm:py-16 lg:py-20 xl:py-24 mt-10 sm:mt-20 lg:mt-32 min-h-screen transition-all duration-700 flex items-center">
 
         <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white/70 dark:from-slate-900/70 to-transparent pointer-events-none">
         </div>
 
-        <div class="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 w-full">
-            <div class="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 xl:gap-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 w-full">
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-6 sm:gap-8 lg:gap-12 xl:gap-16">
                 <!-- Text Content - Larger Width -->
                 <div class="w-full lg:w-3/5 text-center lg:text-left">
-                    <div class="space-y-6">
-                        <h2 class="scroll-zoom-child text-blue-500 dark:text-blue-400 font-[fam-bold] text-xs sm:text-sm md:text-base">
+                    <div class="space-y-3 sm:space-y-4 lg:space-y-6">
+                        <h2 class="scroll-zoom-child text-blue-500 dark:text-blue-400 font-[fam-bold] text-[10px] sm:text-xs md:text-sm lg:text-base">
                             Introducing the Development Team: Ela-vate
                         </h2>
                         
-                        <h1 class="scroll-zoom-child text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-[fam-bold] leading-tight text-gray-900 dark:text-white">
+                        <h1 class="scroll-zoom-child text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl font-[fam-bold] leading-tight text-gray-900 dark:text-white">
                             Cleaning is more than a task;
                             <span class="text-blue-500 dark:text-blue-400 font-[fam-bold]">
                                 it's a promise of comfort and care
                             </span>
                             <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="sparkle"
-                                class="inline-block h-6 sm:h-7 md:h-8 lg:h-9 align-middle ml-2">
+                                class="inline-block h-4 sm:h-5 md:h-6 lg:h-7 xl:h-9 align-middle ml-1 sm:ml-2">
                         </h1>
                         
-                        <p class="scroll-zoom-child font-[fam-bold] text-xs sm:text-sm md:text-base text-blue-500 dark:text-blue-400 italic">
+                        <p class="scroll-zoom-child font-[fam-bold] text-[10px] sm:text-xs md:text-sm lg:text-base text-blue-500 dark:text-blue-400 italic">
                             Behind Fin-noys: <span class="not-italic">Making Clean Spaces Possible</span>
                         </p>
                         
-                        <div class="scroll-zoom-child flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-8 lg:gap-10 justify-center lg:justify-start pt-4">
-                            <div class="flex flex-col items-center lg:items-start min-w-[140px]">
-                                <p class="font-[fam-bold] text-[#071957] dark:text-white text-sm sm:text-base mb-1">
-                                    Adam Jay M. Bolano
+                        <div class="scroll-zoom-child flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 lg:gap-8 xl:gap-10 justify-center lg:justify-start pt-2 sm:pt-4">
+                            <div class="flex flex-col items-center lg:items-start min-w-[100px] sm:min-w-[120px] lg:min-w-[140px]">
+                                <p class="font-[fam-bold] text-[#071957] dark:text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1">
+                                    Merlyn Guzman
                                 </p>
-                                <p class="font-[fam-regular] text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
+                                <p class="font-[fam-regular] text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
                                     CEO
                                 </p>
-                                <p class="font-[fam-regular] text-xs text-gray-400 dark:text-gray-500">
+                                <p class="font-[fam-regular] text-[9px] sm:text-xs text-gray-400 dark:text-gray-500">
                                     Founder of Fin-noys
                                 </p>
                             </div>
                             
-                            <div class="flex flex-col items-center lg:items-start min-w-[140px]">
-                                <p class="font-[fam-bold] text-[#071957] dark:text-white text-sm sm:text-base mb-1">
-                                    Emmaus L. Digol
+                            <div class="flex flex-col items-center lg:items-start min-w-[100px] sm:min-w-[120px] lg:min-w-[140px]">
+                                <p class="font-[fam-bold] text-[#071957] dark:text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1">
+                                    Earl Leonardo
                                 </p>
-                                <p class="font-[fam-regular] text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
+                                <p class="font-[fam-regular] text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
                                     CFO
                                 </p>
-                                <p class="font-[fam-regular] text-xs text-gray-400 dark:text-gray-500">
+                                <p class="font-[fam-regular] text-[9px] sm:text-xs text-gray-400 dark:text-gray-500">
                                     Co-Founder of Finnoys
                                 </p>
                             </div>
                             
-                            <div class="flex flex-col items-center lg:items-start min-w-[140px]">
-                                <p class="font-[fam-bold] text-[#071957] dark:text-white text-sm sm:text-base mb-1">
+                            <div class="flex flex-col items-center lg:items-start min-w-[100px] sm:min-w-[120px] lg:min-w-[140px]">
+                                <p class="font-[fam-bold] text-[#071957] dark:text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1">
                                     Fin-noys Employees
                                 </p>
-                                <p class="font-[fam-regular] text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
+                                <p class="font-[fam-regular] text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
                                     Employees
                                 </p>
-                                <p class="font-[fam-regular] text-xs text-gray-400 dark:text-gray-500">
+                                <p class="font-[fam-regular] text-[9px] sm:text-xs text-gray-400 dark:text-gray-500">
                                     Enablers of Finnoys
                                 </p>
                             </div>
@@ -271,25 +271,25 @@
                 </div>
 
                 <!-- Flip Card - Smaller Width -->
-                <div class="scroll-zoom-child w-full lg:w-2/5 flex justify-center items-center mt-8 lg:mt-0">
-                    <div class="flip-card w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] md:w-[340px] md:h-[340px] lg:w-[380px] lg:h-[380px] cursor-pointer transition-all duration-700">
+                <div class="scroll-zoom-child w-full lg:w-2/5 flex justify-center items-center mt-6 sm:mt-8 lg:mt-0">
+                    <div class="flip-card w-[200px] h-[200px] sm:w-[260px] sm:h-[260px] md:w-[300px] md:h-[300px] lg:w-[340px] lg:h-[340px] xl:w-[380px] xl:h-[380px] cursor-pointer transition-all duration-700">
                         <div class="flip-inner relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d]">
-                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden 
-                                        bg-[url('/public/images/people/team-member-bg.svg')] 
-                                        dark:bg-[url('/public/images/people/team-member-bg-dark.svg')] 
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden
+                                        bg-[url('/images/people/team-member-bg.svg')]
+                                        dark:bg-[url('/images/people/team-member-bg-dark.svg')]
                                         bg-center bg-[length:155%] bg-no-repeat [backface-visibility:hidden]">
                                 <img src="{{ asset('images/people/cleaner-avatar.svg') }}" alt="Team Member"
                                     class="absolute inset-0 w-full h-full object-cover rounded-full">
                             </div>
 
-                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 sm:p-8 rounded-full 
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-8 rounded-full 
                                         backdrop-blur-md bg-white/90 dark:bg-slate-800/90 
                                         rotate-y-180 [backface-visibility:hidden]
                                         border-2 border-blue-500/20 dark:border-blue-400/20">
-                                <h3 class="text-base sm:text-lg md:text-xl font-[fam-bold] text-[#071957] dark:text-white mb-2 drop-shadow-md">
+                                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-[fam-bold] text-[#071957] dark:text-white mb-1.5 sm:mb-2 drop-shadow-md">
                                     Merlyn Guzman
                                 </h3>
-                                <p class="text-xs sm:text-sm md:text-base text-[#071957] dark:text-gray-300 leading-relaxed px-3 sm:px-4">
+                                <p class="text-[10px] sm:text-xs md:text-sm lg:text-base text-[#071957] dark:text-gray-300 leading-relaxed px-2 sm:px-3 md:px-4">
                                     Founder of Fin-noys. Dedicated to maintaining comfort, care, and excellence in every clean space.
                                 </p>
                             </div>
@@ -343,10 +343,10 @@
         <!-- Contact Info Section - Scrollable Right Side -->
         <div class="w-full lg:w-1/2 py-16 sm:py-20 lg:py-24 px-6 sm:px-8 md:px-12 lg:px-16">
             <div class="max-w-2xl mx-auto">
-                <div class="text-center lg:text-left space-y-8">
+                <div class="space-y-8 sm:px-6">
                     
                     <!-- Header -->
-                    <div class="scroll-zoom-child mb-6">
+                    <div class="scroll-zoom-child mb-6 text-center lg:text-left">
                         <h3 class="text-3xl sm:text-4xl md:text-5xl font-[fam-bold] text-[#071957] dark:text-white mb-3 sm:mb-4">
                             Get In Touch
                         </h3>
@@ -356,14 +356,14 @@
                     </div>
 
                     <!-- Contact List -->
-                    <ul class="space-y-6 sm:space-y-8">
+                    <ul class="space-y-6 sm:space-y-8 flex flex-col items-center lg:items-start">
                         
                         <!-- Head Office -->
-                        <li class="scroll-zoom-child flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
+                        <li class="scroll-zoom-child flex flex-row items-start gap-3 sm:gap-4 group w-full max-w-md lg:max-w-none">
                             <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                 <i class="fa-solid fa-location-dot text-blue-500 dark:text-blue-400 text-xl sm:text-2xl"></i>
                             </div>
-                            <div class="text-center sm:text-left flex-1">
+                            <div class="text-left flex-1">
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
                                     Head Office
                                 </span>
@@ -374,11 +374,11 @@
                         </li>
 
                         <!-- Email -->
-                        <li class="scroll-zoom-child flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
+                        <li class="scroll-zoom-child flex flex-row items-start gap-3 sm:gap-4 group w-full max-w-md lg:max-w-none">
                             <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                 <i class="fa-solid fa-envelope text-blue-500 dark:text-blue-400 text-xl sm:text-2xl"></i>
                             </div>
-                            <div class="text-center sm:text-left flex-1">
+                            <div class="text-left flex-1">
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
                                     Email us at
                                 </span>
@@ -390,11 +390,11 @@
                         </li>
 
                         <!-- Phone -->
-                        <li class="scroll-zoom-child flex flex-col sm:flex-row items-start gap-3 sm:gap-4 group">
+                        <li class="scroll-zoom-child flex flex-row items-start gap-3 sm:gap-4 group w-full max-w-md lg:max-w-none">
                             <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                 <i class="fa-solid fa-phone text-blue-500 dark:text-blue-400 text-xl sm:text-2xl"></i>
                             </div>
-                            <div class="text-center sm:text-left flex-1">
+                            <div class="text-left flex-1">
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
                                     Contact us at
                                 </span>
@@ -406,8 +406,8 @@
                         </li>
 
                         <!-- Social Media -->
-                        <li class="scroll-zoom-child pt-4 sm:pt-6">
-                            <div class="flex flex-col items-center sm:items-start gap-4">
+                        <li class="scroll-zoom-child pt-4 sm:pt-6 w-full max-w-md lg:max-w-none">
+                            <div class="flex flex-col items-start gap-4">
                                 <span class="font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white">
                                     Follow us on
                                 </span>

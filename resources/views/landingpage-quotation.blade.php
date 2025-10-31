@@ -311,16 +311,116 @@
                                             'icon' => 'fa-solid fa-house-circle-check'
                                         ],
                                     ];
+
+                                    $companyServiceTypes = [
+                                        [
+                                            'value' => 'Hotel Rooms Cleaning',
+                                            'label' => 'Hotel Rooms Cleaning',
+                                            'icon' => 'fa-solid fa-bed'
+                                        ],
+                                        [
+                                            'value' => 'Light Daily Cleaning',
+                                            'label' => 'Light Daily Cleaning',
+                                            'icon' => 'fa-solid fa-broom'
+                                        ],
+                                        [
+                                            'value' => 'Full Daily Cleaning',
+                                            'label' => 'Full Daily Cleaning',
+                                            'icon' => 'fa-solid fa-house-circle-check'
+                                        ],
+                                        [
+                                            'value' => 'Deep Cleaning',
+                                            'label' => 'Deep Cleaning',
+                                            'icon' => 'fa-solid fa-spray-can-sparkles'
+                                        ],
+                                        [
+                                            'value' => 'Snowout',
+                                            'label' => 'Snowout',
+                                            'icon' => 'fa-solid fa-snowflake'
+                                        ],
+                                        [
+                                            'value' => 'Cabins',
+                                            'label' => 'Cabins',
+                                            'icon' => 'fa-solid fa-house'
+                                        ],
+                                        [
+                                            'value' => 'Cottages',
+                                            'label' => 'Cottages',
+                                            'icon' => 'fa-solid fa-home'
+                                        ],
+                                        [
+                                            'value' => 'Igloos',
+                                            'label' => 'Igloos',
+                                            'icon' => 'fa-solid fa-igloo'
+                                        ],
+                                        [
+                                            'value' => 'Restaurant',
+                                            'label' => 'Restaurant',
+                                            'icon' => 'fa-solid fa-utensils'
+                                        ],
+                                        [
+                                            'value' => 'Reception',
+                                            'label' => 'Reception',
+                                            'icon' => 'fa-solid fa-bell-concierge'
+                                        ],
+                                        [
+                                            'value' => 'Saunas',
+                                            'label' => 'Saunas',
+                                            'icon' => 'fa-solid fa-hot-tub-person'
+                                        ],
+                                        [
+                                            'value' => 'Hallway',
+                                            'label' => 'Hallway',
+                                            'icon' => 'fa-solid fa-door-open'
+                                        ]
+                                    ];
                                 @endphp
 
-                                <x-client-components.quotation-page.service-dropdown label="Type of Cleaning Service"
-                                    name="cleaning_service" :options="$cleaningServices" :required="true"
-                                    :placeholdericon="'fa-solid fa-broom'" />
+                                <!-- Single Selection (Personal) -->
+                                <div x-show="formData.bookingType === 'personal'">
+                                    <x-client-components.quotation-page.service-dropdown label="Type of Cleaning Service"
+                                        name="cleaning_service" :options="$cleaningServices" :required="true"
+                                        :placeholdericon="'fa-solid fa-broom'" />
+                                </div>
+
+                                <!-- Multiple Selection (Company) - Card Based -->
+                                <div x-show="formData.bookingType === 'company'" class="space-y-3">
+                                    <label class="block text-sm text-gray-700 dark:text-gray-300">
+                                        Service Type <span class="text-red-500">*</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Select all services you need</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        @foreach($companyServiceTypes as $service)
+                                            <label class="relative flex cursor-pointer">
+                                                <input type="checkbox"
+                                                    value="{{ $service['value'] }}"
+                                                    @change="toggleCleaningService('{{ $service['value'] }}')"
+                                                    class="peer sr-only">
+                                                <div class="w-full p-4 border-2 rounded-xl transition-all duration-300
+                                                            peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20
+                                                            border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800
+                                                            hover:border-blue-400 dark:hover:border-blue-500">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="flex-shrink-0">
+                                                            <i class="{{ $service['icon'] }} text-[#081032] dark:text-blue-400 text-lg"></i>
+                                                        </div>
+                                                        <div class="flex-1">
+                                                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $service['label'] }}</span>
+                                                        </div>
+                                                        <div class="flex-shrink-0">
+                                                            <i class="fa-solid fa-check text-blue-600 dark:text-blue-400 text-sm opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
 
 
-                            <!-- Date and Duration -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            <!-- Date and Duration (Personal Only) -->
+                            <div x-show="formData.bookingType === 'personal'" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <!-- Date of Service -->
                                 <div class="space-y-2">
                                     @php
@@ -328,7 +428,8 @@
                                     @endphp
 
                                     <x-client-components.quotation-page.service-datepicker label="Date of Service"
-                                        name="date_of_service" x-model="formData.dateOfService" :required="true"
+                                        name="date_of_service" x-model="formData.dateOfService"
+                                        ::required="formData.bookingType === 'personal'"
                                         :min-date="$today" placeholder="What is your preferred date?" />
 
                                 </div>
@@ -338,13 +439,13 @@
                                 <div class="space-y-2">
                                     <x-client-components.quotation-page.quantity-picker label="Duration of Service"
                                         name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-door-open"
-                                        :required="true" :showUnit="false" />
+                                        ::required="formData.bookingType === 'personal'" :showUnit="false" />
 
                                 </div>
                             </div>
 
-                            <!-- Type of urgency -->
-                            <div class="space-y-3">
+                            <!-- Type of urgency (Personal Only) -->
+                            <div x-show="formData.bookingType === 'personal'" class="space-y-3">
                                 <div class="relative">
                                     @php
                                         $urgencyType = [
@@ -387,7 +488,8 @@
                                         ];
                                     @endphp
                                     <x-client-components.quotation-page.service-dropdown label="Type of Urgency"
-                                        name="cleaning_service" :options="$urgencyType" :required="true"
+                                        name="cleaning_service" :options="$urgencyType"
+                                        ::required="formData.bookingType === 'personal'"
                                         :placeholdericon="'fa-solid fa-triangle-exclamation'" />
 
                                 </div>
@@ -643,14 +745,48 @@
                                 <p class="text-gray-600 dark:text-gray-400">Please provide your contact details</p>
                             </div>
 
-                            <!-- Client Name -->
+                            <!-- Company Name (Company Only) -->
+                            <div x-show="formData.bookingType === 'company'" class="space-y-2">
+                                <label class="block text-sm text-gray-700 dark:text-gray-300">
+                                    Company Name <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-building absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <input type="text" x-model="formData.companyName" placeholder="Enter company name"
+                                        :required="formData.bookingType === 'company'"
+                                        class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
+                                                    focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                                                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                                    placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300">
+                                </div>
+                            </div>
+
+                            <!-- Contact Person Name -->
                             <div class="space-y-2">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300">
-                                    Client Name <span class="text-red-500">*</span>
+                                    <span x-text="formData.bookingType === 'company' ? 'Contact Person Name' : 'Client Name'"></span>
+                                    <span class="text-red-500">*</span>
                                 </label>
                                 <div class="relative">
                                     <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                     <input type="text" x-model="formData.clientName" placeholder="Enter your name"
+                                        required
+                                        class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
+                                                    focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                                                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                                    placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300">
+                                </div>
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="space-y-2">
+                                <label class="block text-sm text-gray-700 dark:text-gray-300">
+                                    Phone Number <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <input type="tel" x-model="formData.phoneNumber" placeholder="+358 40 123 4567"
+                                        required
                                         class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                                                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
@@ -664,10 +800,10 @@
                                     Email Address <span class="text-red-500">*</span>
                                 </label>
                                 <div class="relative">
-                                    <i
-                                        class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                     <input type="email" x-model="formData.email"
                                         placeholder="Where should we send the quotation?"
+                                        required
                                         class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                                                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
@@ -721,8 +857,78 @@
                     longitude: null,
 
                     // Step 3
+                    companyName: '',
                     clientName: '',
+                    phoneNumber: '',
                     email: ''
+                },
+
+                init() {
+                    // Watch for booking type changes to clear conditional fields
+                    this.$watch('formData.bookingType', (newValue, oldValue) => {
+                        if (oldValue && newValue !== oldValue) {
+                            console.log('Booking type changed from', oldValue, 'to', newValue);
+
+                            // Clear personal-only fields when switching to company
+                            if (newValue === 'company') {
+                                this.formData.dateOfService = '';
+                                this.formData.durationOfService = '';
+                                this.formData.propertyType = '';
+
+                                // Clear the hidden inputs for personal-only fields
+                                const form = document.getElementById('quotation-form');
+                                const dateInput = form.querySelector('input[name="date_of_service"]');
+                                if (dateInput) dateInput.value = '';
+
+                                // Clear urgency dropdown hidden input
+                                const urgencyInputs = form.querySelectorAll('input[type="hidden"][name="cleaning_service"]');
+                                if (urgencyInputs.length > 1) urgencyInputs[1].value = '';
+
+                                console.log('Cleared personal-only fields');
+                            }
+
+                            // Clear company name when switching to personal
+                            if (newValue === 'personal') {
+                                this.formData.companyName = '';
+                                console.log('Cleared company-only fields');
+                            }
+
+                            // Always clear cleaning services when switching types
+                            this.formData.cleaningServices = [];
+
+                            // Uncheck all cleaning service checkboxes
+                            const checkboxes = document.querySelectorAll('input[type="checkbox"][value]');
+                            checkboxes.forEach(cb => cb.checked = false);
+                        }
+                    });
+                },
+
+                toggleCleaningService(serviceValue) {
+                    const index = this.formData.cleaningServices.indexOf(serviceValue);
+                    if (index > -1) {
+                        // Remove if already selected
+                        this.formData.cleaningServices.splice(index, 1);
+                    } else {
+                        // Add if not selected
+                        this.formData.cleaningServices.push(serviceValue);
+                    }
+                },
+
+                handleLocationSelected(detail) {
+                    console.log('Location selected:', detail);
+                    if (detail) {
+                        this.formData.propertyLocation = detail.address || detail.streetAddress || '';
+                        this.formData.postalCode = detail.postalCode || '';
+                        this.formData.municipality = detail.city || '';
+                        this.formData.region = detail.district || '';
+                        this.formData.latitude = detail.latitude || null;
+                        this.formData.longitude = detail.longitude || null;
+                    }
+                },
+
+                handleOptionChanged(detail) {
+                    console.log('Location option changed:', detail);
+                    // Handle when user switches between "Use Current Location" and "Select a Location"
                 },
 
                 openLocationPicker() {
@@ -845,9 +1051,240 @@
                     }
                 },
 
-                submitForm() {
-                    console.log('Form Data:', this.formData);
-                    alert('Quotation submitted successfully! We will contact you soon.');
+                async submitForm() {
+                    // Basic validation
+                    if (!this.formData.bookingType) {
+                        alert('Please select a booking type (Personal or Company)');
+                        scrollToSection('step-1');
+                        return;
+                    }
+
+                    if (!this.formData.clientName || !this.formData.phoneNumber || !this.formData.email) {
+                        alert('Please fill in all required contact information');
+                        scrollToSection('step-3');
+                        return;
+                    }
+
+                    // Get the submit button
+                    const submitButton = document.querySelector('button[type="submit"]');
+                    const originalButtonText = submitButton.innerHTML;
+
+                    // Show loading state
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Submitting...';
+
+                    try {
+                        // Collect data from form fields directly
+                        const form = document.getElementById('quotation-form');
+
+                        // Get cleaning service (from dropdown or checkboxes)
+                        let cleaningServices = this.formData.cleaningServices;
+                        if (cleaningServices.length === 0 && this.formData.bookingType === 'personal') {
+                            // Try to get from hidden input (service-dropdown component)
+                            const serviceInput = form.querySelector('input[type="hidden"][name="cleaning_service"]');
+                            if (serviceInput && serviceInput.value) {
+                                cleaningServices = [serviceInput.value];
+                            }
+                        }
+
+                        // Get property type from hidden input (service-dropdown component)
+                        const propertyTypeInput = form.querySelector('input[type="hidden"][name="property_type"]');
+                        const propertyType = propertyTypeInput ? propertyTypeInput.value : null;
+
+                        // Get area unit from hidden input (regular-dropdown component)
+                        const areaUnitInput = form.querySelector('input[type="hidden"][name="area_units"]');
+                        const areaUnit = areaUnitInput ? areaUnitInput.value : null;
+
+                        // Get date of service (only if it's a valid date string)
+                        const dateInput = form.querySelector('input[name="date_of_service"]');
+                        let dateOfService = null;
+                        if (dateInput && dateInput.value && dateInput.value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            dateOfService = dateInput.value;
+                        }
+
+                        // Get urgency type - need to find the SECOND hidden input named cleaning_service
+                        // (This is a form bug - two fields share the same name)
+                        const allCleaningInputs = form.querySelectorAll('input[type="hidden"][name="cleaning_service"]');
+                        const typeOfUrgency = allCleaningInputs.length > 1 ? allCleaningInputs[1].value : null;
+
+                        // Collect all number inputs for property details
+                        const numberInputs = form.querySelectorAll('input[type="number"]');
+                        let floors = 1, rooms = 1, peoplePerRoom = 1, floorArea = 0, durationOfService = null;
+
+                        // Get the values in order they appear in the form
+                        numberInputs.forEach((input, index) => {
+                            const value = parseInt(input.value) || 0;
+                            const label = input.closest('.space-y-2')?.querySelector('label')?.textContent?.trim() || '';
+
+                            console.log(`Number input ${index}: value=${value}, label=${label}`);
+
+                            // Try to identify by label text or position
+                            if (label.includes('Duration')) {
+                                durationOfService = value;
+                            } else if (label.includes('Floor') && label.includes('Number')) {
+                                floors = value || 1;
+                            } else if (label.includes('Room') && !label.includes('People')) {
+                                rooms = value || 1;
+                            } else if (label.includes('People')) {
+                                peoplePerRoom = value || 1;
+                            } else if (label.includes('Floor Area') || label.includes('Area')) {
+                                floorArea = value;
+                            } else {
+                                // Fallback to positional logic
+                                if (index === 0 && !durationOfService) durationOfService = value;
+                                else if (index === 1 || (!floors && floors === 1)) floors = value || 1;
+                                else if (index === 2 || (!rooms && rooms === 1)) rooms = value || 1;
+                                else if (index === 3) peoplePerRoom = value || 1;
+                                else if (index === 4) floorArea = value;
+                            }
+                        });
+
+                        // Get location data from the location component's hidden inputs
+                        const locationStreetInput = form.querySelector('input[name="property_location_street"]');
+                        const locationPostalInput = form.querySelector('input[name="property_location_postal"]');
+                        const locationCityInput = form.querySelector('input[name="property_location_city"]');
+                        const locationDistrictInput = form.querySelector('input[name="property_location_district"]');
+                        const locationLatInput = form.querySelector('input[name="property_location_latitude"]');
+                        const locationLngInput = form.querySelector('input[name="property_location_longitude"]');
+
+                        const streetAddress = locationStreetInput?.value || this.formData.propertyLocation || null;
+                        const postalCode = locationPostalInput?.value || this.formData.postalCode || null;
+                        const city = locationCityInput?.value || this.formData.municipality || null;
+                        const district = locationDistrictInput?.value || this.formData.region || null;
+                        const latitude = locationLatInput?.value ? parseFloat(locationLatInput.value) : (this.formData.latitude || null);
+                        const longitude = locationLngInput?.value ? parseFloat(locationLngInput.value) : (this.formData.longitude || null);
+
+                        // Prepare form data for submission
+                        const submitData = {
+                            // Step 1: Service Information
+                            bookingType: this.formData.bookingType,
+                            cleaningServices: cleaningServices,
+                            // Only include date/duration/urgency for personal bookings
+                            dateOfService: this.formData.bookingType === 'personal' ? (dateOfService || null) : null,
+                            durationOfService: this.formData.bookingType === 'personal' ? (durationOfService || null) : null,
+                            typeOfUrgency: this.formData.bookingType === 'personal' ? (typeOfUrgency || null) : null,
+
+                            // Step 2: Property Information
+                            propertyType: propertyType,
+                            floors: floors,
+                            rooms: rooms,
+                            peoplePerRoom: peoplePerRoom,
+                            floorArea: floorArea > 0 ? floorArea : null,
+                            areaUnit: areaUnit,
+
+                            // Property Location
+                            locationType: 'address',
+                            streetAddress: streetAddress,
+                            postalCode: postalCode,
+                            city: city,
+                            district: district,
+                            latitude: latitude,
+                            longitude: longitude,
+
+                            // Step 3: Contact Information
+                            companyName: this.formData.companyName || null,
+                            clientName: this.formData.clientName,
+                            phoneNumber: this.formData.phoneNumber,
+                            email: this.formData.email
+                        };
+
+                        // Log the form data before submission
+                        console.log('=== FORM DATA DEBUG ===');
+                        console.log('Raw formData object:', JSON.stringify(this.formData, null, 2));
+                        console.log('Submit data being sent:', JSON.stringify(submitData, null, 2));
+                        console.log('======================');
+
+                        // Send POST request
+                        const response = await fetch('{{ route('quotation.submit') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(submitData)
+                        });
+
+                        const result = await response.json();
+
+                        // Log full response for debugging
+                        console.log('Response status:', response.status);
+                        console.log('Response data:', result);
+
+                        if (response.ok) {
+                            // Success!
+                            alert('✅ ' + (result.message || 'Your quotation request has been submitted successfully! We will contact you soon.'));
+
+                            // Reset the HTML form to clear all inputs
+                            const form = document.getElementById('quotation-form');
+                            form.reset();
+
+                            // Reset Alpine.js formData
+                            this.formData = {
+                                bookingType: '',
+                                cleaningServices: [],
+                                dateOfService: '',
+                                durationOfService: '',
+                                propertyType: '',
+                                propertyType2: '',
+                                floors: 1,
+                                rooms: 1,
+                                peoplePerRoom: 1,
+                                floorArea: 0,
+                                areaUnit: '',
+                                propertyLocation: '',
+                                postalCode: '',
+                                municipality: '',
+                                region: '',
+                                latitude: null,
+                                longitude: null,
+                                companyName: '',
+                                clientName: '',
+                                phoneNumber: '',
+                                email: ''
+                            };
+
+                            // Clear all hidden inputs from components
+                            form.querySelectorAll('input[type="hidden"]').forEach(input => {
+                                input.value = '';
+                            });
+
+                            // Uncheck all radio buttons and checkboxes
+                            form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+                                input.checked = false;
+                            });
+
+                            // Reset all number inputs to their default values
+                            form.querySelectorAll('input[type="number"]').forEach(input => {
+                                input.value = input.min || 1;
+                            });
+
+                            // Clear all text and email inputs
+                            form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="date"]').forEach(input => {
+                                input.value = '';
+                            });
+
+                            console.log('Form completely reset');
+
+                            // Scroll to top
+                            scrollToSection('step-1');
+                        } else {
+                            // Handle validation errors
+                            if (result.errors) {
+                                const errorMessages = Object.values(result.errors).flat().join('\n');
+                                alert('❌ Please fix the following errors:\n\n' + errorMessages);
+                            } else {
+                                alert('❌ ' + (result.message || 'Failed to submit quotation. Please try again.'));
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Submission error:', error);
+                        alert('❌ An error occurred while submitting your request. Please check your internet connection and try again.');
+                    } finally {
+                        // Restore button state
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                    }
                 }
             }
         }
