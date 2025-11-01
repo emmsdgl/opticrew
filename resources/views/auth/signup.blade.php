@@ -8,7 +8,8 @@
     <title>Sign Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <link rel="stylesheet"
+        href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
 
@@ -50,35 +51,29 @@
         }
 
         /* Stepper styles */
-        .stepper-line {
-            position: absolute;
-            top: 40%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background-color: #E5E7EB;
-            transform: translateY(-50%);
-            z-index: 0;
-        }
-
-        .stepper-progress {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            background-color: #3B82F6;
-            transition: width 0.3s ease;
-        }
-
         .step-circle {
             position: relative;
             z-index: 1;
             transition: all 0.3s ease;
+            background-color: white;
         }
 
         .step-container {
             position: relative;
             z-index: 1;
+        }
+
+        /* Ensure step circles are on a higher z-index on mobile */
+        @media (max-width: 640px) {
+            .step-circle {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+
+            /* Adjust progress line for smaller circles on mobile */
+            #stepper-container .absolute.h-0 {
+                top: 1.25rem !important;
+            }
         }
 
         /* ----------------------------------------------- */
@@ -280,8 +275,13 @@
 
         /* Auto-fill detection */
         @keyframes onAutoFillStart {
-            from { opacity: 0.99; }
-            to { opacity: 1; }
+            from {
+                opacity: 0.99;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         input:-webkit-autofill {
@@ -297,41 +297,54 @@
         <div id="logo-container" class="absolute top-0 left-0 mt-3 ml-6">
             <a href="#" class="-m-1.5 p-1.5">
                 <span class="sr-only"></span>
-                <img src="{{asset('/images/opticrew-icon-light.svg')}}" alt="" class="h-20 w-full flex justify-start ml-8">
+                <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt=""
+                    class="h-20 w-full flex justify-start ml-8">
+
             </a>
         </div>
 
         <div id="stepper-container" class="w-full max-w-3xl px-8 py-8">
             <div class="relative max-w-4xl mx-auto px-4">
-                <!-- Progress Line -->
-                <div class="stepper-line">
-                    <div id="progress-line" class="stepper-progress"></div>
-                </div>
-
-                <!-- Steps -->
-                <div class="relative flex justify-between items-center">
+                <!-- Steps Container -->
+                <div class="relative flex justify-between items-start">
                     <!-- Step 1 -->
-                    <div id="step-1-indicator" class="flex flex-col items-center flex-1 step-container">
-                        <div class="step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-blue-500 text-white ring-4 ring-blue-100">
-                            <span id="step-1-content">1</span>
+                    <div id="step-1-indicator" class="flex flex-col items-center  flex-1 step-container relative z-10">
+                        <div
+                            class="step-circle w-10 h-auto sm:w-12 sm:h-auto rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-blue-500 text-white ring-4 ring-blue-100 relative">
+                            <span>1</span>
                         </div>
-                        <span class="mt-2 text-xs sm:text-sm font-medium text-center text-blue-600">Basic Details</span>
+                        <span
+                            class="mt-2 text-xs sm:text-sm font-medium text-center text-blue-600 max-w-[80px] sm:max-w-none">Basic
+                            Details</span>
                     </div>
 
                     <!-- Step 2 -->
-                    <div id="step-2-indicator" class="flex flex-col items-center flex-1 step-container">
-                        <div class="step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-white text-gray-400 border-2 border-gray-300">
-                            <span id="step-2-content">2</span>
+                    <div id="step-2-indicator" class="flex flex-col items-center flex-1 step-container relative z-10">
+                        <div
+                            class="step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-white text-gray-400 border-2 border-gray-300 relative">
+                            <span>2</span>
                         </div>
-                        <span class="mt-2 text-xs sm:text-sm font-medium text-center text-gray-400">Email Verification</span>
+                        <span
+                            class="mt-2 text-xs sm:text-sm font-medium text-center text-gray-400 max-w-[80px] sm:max-w-none">Email
+                            Verification</span>
                     </div>
 
                     <!-- Step 3 -->
-                    <div id="step-3-indicator" class="flex flex-col items-center flex-1 step-container">
-                        <div class="step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-white text-gray-400 border-2 border-gray-300">
-                            <span id="step-3-content">3</span>
+                    <div id="step-3-indicator" class="flex flex-col items-center flex-1 step-container relative z-10">
+                        <div
+                            class="step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-white text-gray-400 border-2 border-gray-300 relative">
+                            <span>3</span>
                         </div>
-                        <span id="step-3-label" class="mt-2 text-xs sm:text-sm font-medium text-center text-gray-400">Account Setup</span>
+                        <span id="step-3-label"
+                            class="mt-2 text-xs sm:text-sm font-medium text-center text-gray-400 max-w-[80px] sm:max-w-none">Account
+                            Setup</span>
+                    </div>
+
+                    <!-- Progress Line - positioned to connect circle centers -->
+                    <div class="absolute left-0 right-0 h-0.5 bg-gray-300"
+                        style="top: 1.25rem; left: 16.67%; right: 16.67%;">
+                        <div id="progress-line" class="h-full bg-blue-500 transition-all duration-300"
+                            style="width: 0%"></div>
                     </div>
                 </div>
             </div>
@@ -369,7 +382,8 @@
                 <!--                       STEP 1                           -->
                 <!-- ====================================================== -->
                 <div id="step-1" class="step-content w-full px-12">
-                    <h1 id="form-head" class="mb-4 w-full text-center font-sans font-medium italic">Tell Us About You</h1>
+                    <h1 id="form-head" class="mb-4 w-full text-center font-sans font-medium italic">Tell Us About You
+                    </h1>
 
                     <div class="space-y-4">
                         <!-- Account Type Selection -->
@@ -381,7 +395,7 @@
                                 <!-- Personal Option -->
                                 <label class="relative">
                                     <input type="radio" name="account_type" value="personal" id="account-type-personal"
-                                           class="peer sr-only" checked>
+                                        class="peer sr-only" checked>
                                     <div class="border-2 border-gray-300 rounded-lg p-4 cursor-pointer
                                                 peer-checked:border-blue-500 peer-checked:bg-blue-50
                                                 hover:border-gray-400 transition-all">
@@ -395,7 +409,7 @@
                                 <!-- Company Option -->
                                 <label class="relative">
                                     <input type="radio" name="account_type" value="company" id="account-type-company"
-                                           class="peer sr-only">
+                                        class="peer sr-only">
                                     <div class="border-2 border-gray-300 rounded-lg p-4 cursor-pointer
                                                 peer-checked:border-blue-500 peer-checked:bg-blue-50
                                                 hover:border-gray-400 transition-all">
@@ -411,127 +425,150 @@
                         <!-- Personal Account Fields -->
                         <div id="personal-fields" class="space-y-4">
                             <div id="name-layer" class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
-                            <div class="input-container flex-1">
-                                <input type="text" id="input-fname" placeholder=" "
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="first_name" value="{{ old('first_name') }}" required>
-                                <label for="input-fname">First Name</label>
-                            </div>
-                            @error('first_name')
-                                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                            @enderror
-                            <div class="input-container flex-1">
-                                <input type="text" id="input-lname" placeholder=" "
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="last_name" required>
-                                <label for="input-lname">Last Name</label>
-                            </div>
-                            <div class="input-container w-[7rem] max-sm:w-full">
-                                <input type="text" id="input-mname" placeholder=" " maxlength="5"
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="middle_initial">
-                                <label for="input-mname">M.I.</label>
-                            </div>
-                        </div>
-
-                        <!-- Birthdate -->
-                        <div class="input-container relative w-full">
-                            <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-                                <i class="fas fa-calendar-day absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            </div>
-                            <input datepicker id="datepicker" name="birthdate" datepicker-format="mm-dd-yyyy" type="text"
-                                class="input-field w-full text-sm pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                placeholder="mm - dd - yyyy" required>
-                            <label for="datepicker">Birthdate</label>
-                            <div id="age-error" class="text-red-500 text-sm mt-1 hidden">
-                                <i class="fas fa-exclamation-circle mr-1"></i>
-                                You must be at least 18 years old to create an account.
-                            </div>
-                        </div>
-
-                        <!-- Phone Number -->
-                        <div class="input-container w-full flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-3">
-                            <div class="custom-dropdown-container w-full sm:w-36">
-                                <button id="dropdown-btn" type="button" class="custom-dropdown-btn">
-                                    <img id="selected-flag" src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag" class="h-4 w-auto mr-2">
-                                    <span id="selected-code" class="text-sm">+358</span>
-                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                                    </span>
-                                </button>
-                                <div id="dropdown-list" class="custom-dropdown-list">
-                                    <div class="custom-dropdown-item" data-value="+358" data-flag="{{asset('/images/icons/finland-flag.svg')}}">
-                                        <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag" class="h-4 w-auto mr-2">
-                                        <span class="text-sm">+358 Finland</span>
-                                    </div>
-                                    <div class="custom-dropdown-item" data-value="+46" data-flag="{{asset('/images/icons/sweden-flag.svg')}}">
-                                        <img src="{{asset('/images/icons/sweden-flag.svg')}}" alt="Sweden Flag" class="h-4 w-auto mr-2">
-                                        <span class="text-sm">+46 Sweden</span>
-                                    </div>
-                                    <div class="custom-dropdown-item" data-value="+47" data-flag="{{asset('/images/icons/norway-flag.svg')}}">
-                                        <img src="{{asset('/images/icons/norway-flag.svg')}}" alt="Norway Flag" class="h-4 w-auto mr-2">
-                                        <span class="text-sm">+47 Norway</span>
-                                    </div>
-                                    <div class="custom-dropdown-item" data-value="+45" data-flag="{{asset('/images/icons/denmark-flag.svg')}}">
-                                        <img src="{{asset('/images/icons/denmark-flag.svg')}}" alt="Denmark Flag" class="h-4 w-auto mr-2">
-                                        <span class="text-sm">+45 Denmark</span>
-                                    </div>
+                                <div class="input-container flex-1">
+                                    <input type="text" id="input-fname" placeholder=" "
+                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                        name="first_name" value="{{ old('first_name') }}" required>
+                                    <label for="input-fname">First Name</label>
+                                </div>
+                                @error('first_name')
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                                @enderror
+                                <div class="input-container flex-1">
+                                    <input type="text" id="input-lname" placeholder=" "
+                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                        name="last_name" required>
+                                    <label for="input-lname">Last Name</label>
+                                </div>
+                                <div class="input-container w-[7rem] max-sm:w-full">
+                                    <input type="text" id="input-mname" placeholder=" " maxlength="5"
+                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                        name="middle_initial">
+                                    <label for="input-mname">M.I.</label>
                                 </div>
                             </div>
-                            <div class="flex-1 input-container w-full">
-                                <input type="tel" id="input-phone" placeholder="40 1234567"
+
+                            <!-- Birthdate -->
+                            <div class="input-container relative w-full">
+                                <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+                                    <i
+                                        class="fas fa-calendar-day absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                </div>
+                                <input datepicker id="datepicker" name="birthdate" datepicker-format="mm-dd-yyyy"
+                                    type="text"
+                                    class="input-field w-full text-sm pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                    placeholder="mm - dd - yyyy" required>
+                                <label for="datepicker">Birthdate</label>
+                                <div id="age-error" class="text-red-500 text-sm mt-1 hidden">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    You must be at least 18 years old to create an account.
+                                </div>
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div
+                                class="input-container w-full flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-3">
+                                <div class="custom-dropdown-container w-full sm:w-36">
+                                    <button id="dropdown-btn" type="button" class="custom-dropdown-btn">
+                                        <img id="selected-flag" src="{{asset('/images/icons/finland-flag.svg')}}"
+                                            alt="Finland Flag" class="h-4 w-auto mr-2">
+                                        <span id="selected-code" class="text-sm">+358</span>
+                                        <span
+                                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    <div id="dropdown-list" class="custom-dropdown-list">
+                                        <div class="custom-dropdown-item" data-value="+358"
+                                            data-flag="{{asset('/images/icons/finland-flag.svg')}}">
+                                            <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag"
+                                                class="h-4 w-auto mr-2">
+                                            <span class="text-sm">+358 Finland</span>
+                                        </div>
+                                        <div class="custom-dropdown-item" data-value="+46"
+                                            data-flag="{{asset('/images/icons/sweden-flag.svg')}}">
+                                            <img src="{{asset('/images/icons/sweden-flag.svg')}}" alt="Sweden Flag"
+                                                class="h-4 w-auto mr-2">
+                                            <span class="text-sm">+46 Sweden</span>
+                                        </div>
+                                        <div class="custom-dropdown-item" data-value="+47"
+                                            data-flag="{{asset('/images/icons/norway-flag.svg')}}">
+                                            <img src="{{asset('/images/icons/norway-flag.svg')}}" alt="Norway Flag"
+                                                class="h-4 w-auto mr-2">
+                                            <span class="text-sm">+47 Norway</span>
+                                        </div>
+                                        <div class="custom-dropdown-item" data-value="+45"
+                                            data-flag="{{asset('/images/icons/denmark-flag.svg')}}">
+                                            <img src="{{asset('/images/icons/denmark-flag.svg')}}" alt="Denmark Flag"
+                                                class="h-4 w-auto mr-2">
+                                            <span class="text-sm">+45 Denmark</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 input-container w-full">
+                                    <input type="tel" id="input-phone" placeholder="40 1234567"
+                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                        name="phone_number" required>
+                                    <label for="input-phone">Phone Number</label>
+                                </div>
+                            </div>
+
+                            <div class="input-container w-full relative">
+                                <i
+                                    class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <input type="email" id="input-email" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="phone_number" required>
-                                <label for="input-phone">Phone Number</label>
+                                    name="email" required>
+                                <label for="input-email">Email Address</label>
                             </div>
-                        </div>
 
-                        <div class="input-container w-full relative">
-                            <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <input type="email" id="input-email" placeholder=" "
-                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                name="email" required>
-                            <label for="input-email">Email Address</label>
-                        </div>
-
-                        <!-- Finnish Address Fields -->
-                        <div class="input-container w-full relative">
-                            <i class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <input type="text" id="input-street" placeholder=" "
-                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                name="street_address" required>
-                            <label for="input-street">Street Address</label>
-                        </div>
-
-                        <div class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
-                            <div class="input-container flex-1">
-                                <i class="fas fa-mail-bulk absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                                <input type="text" id="input-postal" placeholder=" " maxlength="5"
+                            <!-- Finnish Address Fields -->
+                            <div class="input-container w-full relative">
+                                <i
+                                    class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <input type="text" id="input-street" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="postal_code" required>
-                                <label for="input-postal">Postal Code</label>
+                                    name="street_address" required>
+                                <label for="input-street">Street Address</label>
                             </div>
-                            <div class="input-container flex-1">
-                                <i class="fas fa-city absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                                <input type="text" id="input-city" placeholder=" "
+
+                            <div class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
+                                <div class="input-container flex-1">
+                                    <i
+                                        class="fas fa-mail-bulk absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    <input type="text" id="input-postal" placeholder=" " maxlength="5"
+                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                        name="postal_code" required>
+                                    <label for="input-postal">Postal Code</label>
+                                </div>
+                                <div class="input-container flex-1">
+                                    <i
+                                        class="fas fa-city absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    <input type="text" id="input-city" placeholder=" "
+                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                        name="city" required>
+                                    <label for="input-city">City</label>
+                                </div>
+                            </div>
+
+                            <!-- District with Autocomplete -->
+                            <div class="input-container w-full relative" id="district-container">
+                                <i
+                                    class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 z-10"></i>
+                                <input type="text" id="input-district" placeholder=" " autocomplete="off"
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="city" required>
-                                <label for="input-city">City</label>
-                            </div>
-                        </div>
+                                    name="district" required>
+                                <label for="input-district">District (Kaupunginosa)</label>
 
-                        <!-- District with Autocomplete -->
-                        <div class="input-container w-full relative" id="district-container">
-                            <i class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 z-10"></i>
-                            <input type="text" id="input-district" placeholder=" " autocomplete="off"
-                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                name="district" required>
-                            <label for="input-district">District (Kaupunginosa)</label>
-
-                            <!-- District Suggestions Dropdown -->
-                            <div id="district-suggestions" class="hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                <!-- District Suggestions Dropdown -->
+                                <div id="district-suggestions"
+                                    class="hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                </div>
                             </div>
-                        </div>
                         </div>
                         <!-- End Personal Account Fields -->
 
@@ -539,7 +576,8 @@
                         <div id="company-fields" class="space-y-4 hidden">
                             <!-- Company Name -->
                             <div class="input-container w-full relative">
-                                <i class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <i
+                                    class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                                 <input type="text" id="input-company-name" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="company_name">
@@ -564,7 +602,8 @@
 
                             <!-- Business Registration Number -->
                             <div class="input-container w-full relative">
-                                <i class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <i
+                                    class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                                 <input type="text" id="input-business-id" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="business_id">
@@ -573,7 +612,8 @@
 
                             <!-- E-Invoice Number -->
                             <div class="input-container w-full relative">
-                                <i class="fas fa-receipt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <i
+                                    class="fas fa-receipt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                                 <input type="text" id="input-einvoice-number" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="einvoice_number">
@@ -581,30 +621,46 @@
                             </div>
 
                             <!-- Phone Number (Company) -->
-                            <div class="input-container w-full flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-3">
+                            <div
+                                class="input-container w-full flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-3">
                                 <div class="custom-dropdown-container w-full sm:w-36">
                                     <button id="dropdown-btn-company" type="button" class="custom-dropdown-btn">
-                                        <img id="selected-flag-company" src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag" class="h-4 w-auto mr-2">
+                                        <img id="selected-flag-company"
+                                            src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag"
+                                            class="h-4 w-auto mr-2">
                                         <span id="selected-code-company" class="text-sm">+358</span>
-                                        <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                        <span
+                                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
                                         </span>
                                     </button>
                                     <div id="dropdown-list-company" class="custom-dropdown-list">
-                                        <div class="custom-dropdown-item" data-value="+358" data-flag="{{asset('/images/icons/finland-flag.svg')}}">
-                                            <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag" class="h-4 w-auto mr-2">
+                                        <div class="custom-dropdown-item" data-value="+358"
+                                            data-flag="{{asset('/images/icons/finland-flag.svg')}}">
+                                            <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag"
+                                                class="h-4 w-auto mr-2">
                                             <span class="text-sm">+358 Finland</span>
                                         </div>
-                                        <div class="custom-dropdown-item" data-value="+46" data-flag="{{asset('/images/icons/sweden-flag.svg')}}">
-                                            <img src="{{asset('/images/icons/sweden-flag.svg')}}" alt="Sweden Flag" class="h-4 w-auto mr-2">
+                                        <div class="custom-dropdown-item" data-value="+46"
+                                            data-flag="{{asset('/images/icons/sweden-flag.svg')}}">
+                                            <img src="{{asset('/images/icons/sweden-flag.svg')}}" alt="Sweden Flag"
+                                                class="h-4 w-auto mr-2">
                                             <span class="text-sm">+46 Sweden</span>
                                         </div>
-                                        <div class="custom-dropdown-item" data-value="+47" data-flag="{{asset('/images/icons/norway-flag.svg')}}">
-                                            <img src="{{asset('/images/icons/norway-flag.svg')}}" alt="Norway Flag" class="h-4 w-auto mr-2">
+                                        <div class="custom-dropdown-item" data-value="+47"
+                                            data-flag="{{asset('/images/icons/norway-flag.svg')}}">
+                                            <img src="{{asset('/images/icons/norway-flag.svg')}}" alt="Norway Flag"
+                                                class="h-4 w-auto mr-2">
                                             <span class="text-sm">+47 Norway</span>
                                         </div>
-                                        <div class="custom-dropdown-item" data-value="+45" data-flag="{{asset('/images/icons/denmark-flag.svg')}}">
-                                            <img src="{{asset('/images/icons/denmark-flag.svg')}}" alt="Denmark Flag" class="h-4 w-auto mr-2">
+                                        <div class="custom-dropdown-item" data-value="+45"
+                                            data-flag="{{asset('/images/icons/denmark-flag.svg')}}">
+                                            <img src="{{asset('/images/icons/denmark-flag.svg')}}" alt="Denmark Flag"
+                                                class="h-4 w-auto mr-2">
                                             <span class="text-sm">+45 Denmark</span>
                                         </div>
                                     </div>
@@ -619,7 +675,8 @@
 
                             <!-- Email (Company) -->
                             <div class="input-container w-full relative">
-                                <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <i
+                                    class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                                 <input type="email" id="input-company-email" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="company_email">
@@ -628,7 +685,8 @@
 
                             <!-- Company Address Fields -->
                             <div class="input-container w-full relative">
-                                <i class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <i
+                                    class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                                 <input type="text" id="input-company-street" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="company_street_address">
@@ -637,14 +695,16 @@
 
                             <div class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
                                 <div class="input-container flex-1">
-                                    <i class="fas fa-mail-bulk absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    <i
+                                        class="fas fa-mail-bulk absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                                     <input type="text" id="input-company-postal" placeholder=" " maxlength="5"
                                         class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                         name="company_postal_code">
                                     <label for="input-company-postal">Postal Code</label>
                                 </div>
                                 <div class="input-container flex-1">
-                                    <i class="fas fa-city absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    <i
+                                        class="fas fa-city absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                                     <input type="text" id="input-company-city" placeholder=" "
                                         class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                         name="company_city">
@@ -653,7 +713,8 @@
                             </div>
 
                             <div class="input-container w-full relative">
-                                <i class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                <i
+                                    class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
                                 <input type="text" id="input-company-district" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="company_district">
@@ -663,8 +724,10 @@
                         <!-- End Company Account Fields -->
 
                         <div id="buttons-container" class="flex justify-center gap-4 mt-6">
-                            <button id="back1-btn" type="button" class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Cancel</button>
-                            <button type="button" id="next-1" class="w-full px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Confirm</button>
+                            <button id="back1-btn" type="button"
+                                class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Cancel</button>
+                            <button type="button" id="next-1"
+                                class="w-full px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Confirm</button>
                         </div>
                     </div>
                 </div>
@@ -676,7 +739,9 @@
                     <div class="space-y-4">
                         <h1 id="form-head" class="mb-4">OTP Verification</h1>
                         <div>
-                            <p class="text-sm text-center"> To verify your provided email address, please enter the one-time pin (OTP) that we sent to <span id="email_address" class="font-bold text-blue-600">your.email@example.com</span> </p>
+                            <p class="text-sm text-center"> To verify your provided email address, please enter the
+                                one-time pin (OTP) that we sent to <span id="email_address"
+                                    class="font-bold text-blue-600">your.email@example.com</span> </p>
                         </div>
 
                         <div>
@@ -689,11 +754,15 @@
                                 <input id="otp6" type="text" maxlength="1" pattern="\d" inputmode="numeric">
                             </div>
                             <div class="flex justify-center gap-4 mt-6">
-                                <button id="back2-btn" type="button" class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
-                                <button type="button" id="next-2" class="w-full px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Verify OTP</button>
+                                <button id="back2-btn" type="button"
+                                    class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
+                                <button type="button" id="next-2"
+                                    class="w-full px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Verify
+                                    OTP</button>
                             </div>
                             <p id="resend-label" class="text-sm text-center w-full mt-4">Didn't receive an OTP?
-                                <span><a href="#" class="text-blue-600 font-bold">Resend Code</a></span> <span id="timer"></span>
+                                <span><a href="#" class="text-blue-600 font-bold">Resend Code</a></span> <span
+                                    id="timer"></span>
                             </p>
                         </div>
                     </div>
@@ -707,20 +776,28 @@
                     <div id="step-3-personal" class="w-full space-y-4">
                         <h1 id="form-head" class="mb-4">Set up your security questions</h1>
                         <div class="input-container w-full max-w-md mx-auto relative">
-                            <i class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <button type="button" id="dropdown-secques1" class="security-question-btn1 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
+                            <i
+                                class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <button type="button" id="dropdown-secques1"
+                                class="security-question-btn1 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
                                 Select a security question
                             </button>
-                            <div class="security-question-dropdown z-10 absolute left-0 right-0 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-md w-full">
+                            <div
+                                class="security-question-dropdown z-10 absolute left-0 right-0 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-md w-full">
                                 <ul class="py-2 text-sm text-gray-700">
-                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200" data-value="pet_name">What is the name of your first pet?</a></li>
-                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200" data-value="birth_city">In what city were you born?</a></li>
+                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
+                                            data-value="pet_name">What is the name of your first pet?</a></li>
+                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
+                                            data-value="birth_city">In what city were you born?</a></li>
                                 </ul>
                             </div>
                         </div>
                         <div class="input-container w-full max-w-md mx-auto">
-                            <i class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <input type="text" id="input-secans-1" placeholder=" " class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="security_answer_1" required>
+                            <i
+                                class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="text" id="input-secans-1" placeholder=" "
+                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                name="security_answer_1" required>
                             <label for="input-secans-1">Security Question Answer</label>
                         </div>
                         @error('security_answer_1')
@@ -728,30 +805,41 @@
                         @enderror
 
                         <div class="input-container w-full max-w-md mx-auto relative">
-                            <i class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <button type="button" id="dropdown-secques2" class="security-question-btn2 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
+                            <i
+                                class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <button type="button" id="dropdown-secques2"
+                                class="security-question-btn2 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
                                 Select a security question
                             </button>
-                            <div class="security-question-dropdown z-10 absolute left-0 right-0 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-md w-full">
+                            <div
+                                class="security-question-dropdown z-10 absolute left-0 right-0 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-md w-full">
                                 <ul class="py-2 text-sm text-gray-700">
-                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200" data-value="best_friend">What is the name of your best friend?</a></li>
-                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200" data-value="teacher_name">Who was your favorite teacher?</a></li>
+                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
+                                            data-value="best_friend">What is the name of your best friend?</a></li>
+                                    <li><a href="#" class="text-left block px-4 py-2 hover:bg-blue-200"
+                                            data-value="teacher_name">Who was your favorite teacher?</a></li>
                                 </ul>
                             </div>
                         </div>
                         <div class="input-container w-full max-w-md mx-auto">
-                            <i class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <input type="text" id="input-secans-2" placeholder=" " class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="security_answer_2" required>
+                            <i
+                                class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="text" id="input-secans-2" placeholder=" "
+                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                name="security_answer_2" required>
                             <label for="input-secans-2">Security Question Answer</label>
                         </div>
                         @error('security_answer_2')
                             <p class="text-red-500 text-xs text-center max-w-md mx-auto">{{ $message }}</p>
                         @enderror
-                        
+
                         <h1 id="form-head" class="mb-4 p-6">Let's Get Your Account Ready</h1>
                         <div class="input-container w-full max-w-md mx-auto">
-                            <i class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <input type="text" id="input-username" placeholder=" " class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="username" value="{{ old('username') }}" required>
+                            <i
+                                class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="text" id="input-username" placeholder=" "
+                                class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                name="username" value="{{ old('username') }}" required>
                             <label for="input-username">Username</label>
                         </div>
                         @error('username')
@@ -760,27 +848,38 @@
 
                         <div class="input-container w-full max-w-md mx-auto relative">
                             <i class="fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <input type="password" id="input-new-password" placeholder=" " class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="password" autocomplete="new-password" required>
+                            <input type="password" id="input-new-password" placeholder=" "
+                                class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                name="password" autocomplete="new-password" required>
                             <label for="input-new-password">New Password</label>
-                            <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" id="togglePassword"></i>
+                            <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                                id="togglePassword"></i>
                         </div>
                         <div class="input-container w-full max-w-md mx-auto relative">
-                            <i class="fas fa-square-check absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                            <input type="password" id="input-confirm-password" placeholder=" " class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" name="password_confirmation" autocomplete="new-password" required>
+                            <i
+                                class="fas fa-square-check absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <input type="password" id="input-confirm-password" placeholder=" "
+                                class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                name="password_confirmation" autocomplete="new-password" required>
                             <label for="input-confirm-password">Confirm New Password</label>
-                            <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" id="toggleConfirmPassword"></i>
+                            <i class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                                id="toggleConfirmPassword"></i>
                         </div>
 
                         <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6 w-full pt-4">
-                            <button id="back3-btn" type="button" class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
-                            <button type="submit" id="next-3-personal" class="w-full sm:w-auto px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center">Create Account</button>
+                            <button id="back3-btn" type="button"
+                                class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
+                            <button type="submit" id="next-3-personal"
+                                class="w-full sm:w-auto px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center">Create
+                                Account</button>
                         </div>
                     </div>
 
                     <!-- Company Account Step 3 - Service Details -->
                     <div id="step-3-company" class="w-full space-y-4 hidden">
                         <p class="text-sm text-center text-gray-600">
-                            Please select the services you are inquiring about. Our team will review your requirements and send a detailed quotation to your email.
+                            Please select the services you are inquiring about. Our team will review your requirements
+                            and send a detailed quotation to your email.
                         </p>
 
                         <!-- Service Details Section -->
@@ -791,52 +890,76 @@
                                     Service Type <span class="text-red-500">*</span>
                                 </label>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Hotel Rooms Cleaning" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Hotel Rooms Cleaning"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Hotel Rooms Cleaning</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Light Daily Cleaning" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Light Daily Cleaning"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Light Daily Cleaning</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Full Daily Cleaning" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Full Daily Cleaning"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Full Daily Cleaning</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Deep Cleaning" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Deep Cleaning"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Deep Cleaning</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Snowout" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Snowout"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Snowout</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Cabins" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Cabins"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Cabins</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Cottages" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Cottages"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Cottages</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Igloos" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Igloos"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Igloos</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Restaurant" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Restaurant"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Restaurant</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Reception" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Reception"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Reception</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Saunas" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Saunas"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Saunas</span>
                                     </label>
-                                    <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Hallway" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                    <label
+                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="service_types[]" value="Hallway"
+                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
                                         <span class="text-sm text-gray-700">Hallway</span>
                                     </label>
                                 </div>
@@ -847,17 +970,22 @@
                                 <label for="input-other-concerns" class="block text-sm font-medium text-gray-700 mb-2">
                                     Additional Information or Other Concerns
                                 </label>
-                                <textarea id="input-other-concerns" rows="4" placeholder="Please provide any additional details about your service requirements..."
+                                <textarea id="input-other-concerns" rows="4"
+                                    placeholder="Please provide any additional details about your service requirements..."
                                     class="w-full px-4 py-3 bg-white rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 resize-none"
                                     name="other_concerns"></textarea>
-                                <p class="text-xs text-gray-500 mt-2">Our team will review your requirements and send a custom quotation to your email.</p>
+                                <p class="text-xs text-gray-500 mt-2">Our team will review your requirements and send a
+                                    custom quotation to your email.</p>
                             </div>
                         </div>
                         <!-- End Service Details Section -->
 
                         <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6 w-full pt-4">
-                            <button id="back3-company-btn" type="button" class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
-                            <button type="submit" id="next-3-company" class="w-full sm:w-auto px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center">Submit Inquiry</button>
+                            <button id="back3-company-btn" type="button"
+                                class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
+                            <button type="submit" id="next-3-company"
+                                class="w-full sm:w-auto px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center">Submit
+                                Inquiry</button>
                         </div>
                     </div>
                 </div>
@@ -1424,7 +1552,7 @@
             const back1Btn = document.getElementById('back1-btn');
             console.log('Cancel button element:', back1Btn);
             if (back1Btn) {
-                back1Btn.addEventListener('click', function(e) {
+                back1Btn.addEventListener('click', function (e) {
                     console.log('Cancel button clicked!');
                     e.preventDefault();
                     // Go back to previous page, or homepage if no referrer
@@ -1795,8 +1923,8 @@
                     }
 
                     isForm1PersonalComplete = isFNameComplete && isLNameComplete && isBDateComplete && isAgeValid &&
-                                             isEmailValid && isPhoneValid && isStreetComplete &&
-                                             isPostalComplete && isCityComplete && isDistrictComplete;
+                        isEmailValid && isPhoneValid && isStreetComplete &&
+                        isPostalComplete && isCityComplete && isDistrictComplete;
                 } else {
                     // Company Account Validation
                     const isCompanyNameComplete = companyName && companyName.value.trim() !== "";
@@ -1805,10 +1933,10 @@
                     const isBusinessIdComplete = businessId && businessId.value.trim() !== "";
                     const isEinvoiceNumberComplete = einvoiceNumber && einvoiceNumber.value.trim() !== "";
                     const isCompanyEmailValid = companyEmail && companyEmail.value.trim() !== "" &&
-                                                companyEmail.value.includes('@') && companyEmail.value.includes('.');
+                        companyEmail.value.includes('@') && companyEmail.value.includes('.');
                     const isCompanyStreetComplete = companyStreet && companyStreet.value.trim() !== "";
                     const isCompanyPostalComplete = companyPostal && companyPostal.value.trim() !== "" &&
-                                                   companyPostal.value.length === 5;
+                        companyPostal.value.length === 5;
                     const isCompanyCityComplete = companyCity && companyCity.value.trim() !== "";
                     const isCompanyDistrictComplete = companyDistrict && companyDistrict.value.trim() !== "";
 
@@ -1827,9 +1955,9 @@
                     }
 
                     isForm1CompanyComplete = isCompanyNameComplete && isContactFNameComplete && isContactLNameComplete &&
-                                            isBusinessIdComplete && isEinvoiceNumberComplete &&
-                                            isCompanyEmailValid && isCompanyPhoneValid && isCompanyStreetComplete &&
-                                            isCompanyPostalComplete && isCompanyCityComplete && isCompanyDistrictComplete;
+                        isBusinessIdComplete && isEinvoiceNumberComplete &&
+                        isCompanyEmailValid && isCompanyPhoneValid && isCompanyStreetComplete &&
+                        isCompanyPostalComplete && isCompanyCityComplete && isCompanyDistrictComplete;
                 }
 
                 // --- 2. INDIVIDUAL FORM 2 CHECKS (OTP) ---
@@ -2072,7 +2200,7 @@
             function handleResendOtp() {
                 // This function will be called when the user clicks "Resend Code"
                 // It's very similar to the next-1 button's logic
-                
+
                 // Optional: show a sending state
                 alert('Sending a new OTP...');
 
@@ -2086,17 +2214,17 @@
                     },
                     body: JSON.stringify({ email: email })
                 })
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to send new OTP.');
-                    return response.json();
-                })
-                .then(data => {
-                    alert('A new OTP has been sent to your email.');
-                    startResendTimer(); // Restart the timer
-                })
-                .catch(error => {
-                    alert(error.message);
-                });
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to send new OTP.');
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert('A new OTP has been sent to your email.');
+                        startResendTimer(); // Restart the timer
+                    })
+                    .catch(error => {
+                        alert(error.message);
+                    });
             }
 
             // Stepper Navigation with AJAX
@@ -2122,49 +2250,49 @@
                         },
                         body: JSON.stringify({ email: email })
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => { throw err; });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        isStep1Completed = true;
-                        currentStep = 2;
-                        updateEmailDisplay(); // Update the email on the OTP screen
-                        updateStepper();
-                        startResendTimer();
-                    })
-                    .catch(error => {
-                        // Handle errors, like if the email is already taken
-                        let errorMessage = "An error occurred. Please try again.";
-                        if (error.errors && error.errors.email) {
-                            errorMessage = error.errors.email[0];
-                        } else if (error.message) {
-                            errorMessage = error.message;
-                        }
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => { throw err; });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            isStep1Completed = true;
+                            currentStep = 2;
+                            updateEmailDisplay(); // Update the email on the OTP screen
+                            updateStepper();
+                            startResendTimer();
+                        })
+                        .catch(error => {
+                            // Handle errors, like if the email is already taken
+                            let errorMessage = "An error occurred. Please try again.";
+                            if (error.errors && error.errors.email) {
+                                errorMessage = error.errors.email[0];
+                            } else if (error.message) {
+                                errorMessage = error.message;
+                            }
 
-                        // Display error in a more visible way
-                        alert('❌ ' + errorMessage + '\n\nPlease use a different email address or log in if you already have an account.');
+                            // Display error in a more visible way
+                            alert('❌ ' + errorMessage + '\n\nPlease use a different email address or log in if you already have an account.');
 
-                        // Also log to console for debugging
-                        console.error('OTP sending failed:', error);
-                    })
-                    .finally(() => {
-                        // Restore button state
-                        e.target.textContent = 'Confirm';
-                        e.target.disabled = false;
-                    });
+                            // Also log to console for debugging
+                            console.error('OTP sending failed:', error);
+                        })
+                        .finally(() => {
+                            // Restore button state
+                            e.target.textContent = 'Confirm';
+                            e.target.disabled = false;
+                        });
 
                 } else {
                     alert("Please complete all required fields for Basic Details correctly.");
                 }
             });
-            
+
             document.getElementById('next-2').addEventListener('click', (e) => {
                 e.preventDefault();
                 const { isOTPComplete } = checkFormCompletion();
-                
+
                 if (isOTPComplete) {
                     e.target.textContent = 'Verifying...';
                     e.target.disabled = true;
@@ -2186,24 +2314,24 @@
                         },
                         body: JSON.stringify({ otp: otpDigits })
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => { throw err; });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        isStep2Completed = true;
-                        currentStep = 3;
-                        updateStepper();
-                    })
-                    .catch(error => {
-                        alert(error.message || "Invalid OTP. Please try again.");
-                    })
-                    .finally(() => {
-                        e.target.textContent = 'Verify OTP';
-                        e.target.disabled = false;
-                    });
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => { throw err; });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            isStep2Completed = true;
+                            currentStep = 3;
+                            updateStepper();
+                        })
+                        .catch(error => {
+                            alert(error.message || "Invalid OTP. Please try again.");
+                        })
+                        .finally(() => {
+                            e.target.textContent = 'Verify OTP';
+                            e.target.disabled = false;
+                        });
 
                 } else {
                     alert("Please enter the complete 6-digit OTP.");
