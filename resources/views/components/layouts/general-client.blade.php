@@ -18,5 +18,6 @@
             {{ $slot }}
     </section>
     @stack('scripts')
+    @include('components.footer')
 
 </x-layouts.general-dashboard>

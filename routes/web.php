@@ -26,10 +26,13 @@ use App\Http\Controllers\FeedbackController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
+Route::get('/client-dash', function () {
+    return view('client.dashboard');
+})->name('client-dash');
 
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
-// --- LANDING PAGE ROUTES (Public) ---
+// --- LANDING PAGE ROUTES (Public) UNCOMMENT THIS ONCE DONE---
 Route::get('/', function () {
     // If user is already authenticated, redirect to their dashboard
     if (Auth::check()) {
@@ -48,6 +51,10 @@ Route::get('/', function () {
     return view('landingpage-home');
 })->name('home');
 
+// Home Page
+Route::get('/home', function () {
+    return view('landingpage-home');
+})->name('home');
 // About Page
 Route::get('/about', function () {
     return view('landingpage-about');
