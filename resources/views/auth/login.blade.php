@@ -147,10 +147,10 @@
             <form action="{{ route('login') }}" method="POST" class="space-y-4 w-1/2 h-fit">
                 @csrf
 
-                <div id="container-2-1" class="flex flex-col items-start mb-8 w-full">
-                    <img src="{{asset('/images/opticrew-icon-light.svg')}}" alt="" class="h-20 w-auto mb-4">
-                    <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 text-[#081032]">Log In</h1>
-                    <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm mb-3">Welcome to OptiCrew</p>
+                <div id="container-2-1" class="flex flex-col items-start mb-12 w-full">
+                    <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt="" class="absolute h-20 w-auto top-20 right-[29rem]">
+                    <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 mt-6 text-[#081032]">Log In</h1>
+                    <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm mb-3">Welcome to Fin-noys</p>
                 </div>
 
                 <!-- Display Validation Errors -->
