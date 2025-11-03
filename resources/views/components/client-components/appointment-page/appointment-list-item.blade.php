@@ -66,7 +66,7 @@
                                 @elseif(isset($item['action_onclick']))
                                 @click="{{ $item['action_onclick'] }}"
                                 @endif
-                                class="px-6 py-3 text-xs font-medium text-blue-500 bg-white dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                                class="px-6 py-3 text-xs font-medium text-gray-700 dark:text-white hover:text-blue-500 hover:bg-blue-500/10 dark:hover:text-blue-500 rounded-full transition-colors duration-200">
                                 {{ $item['action_label'] ?? $item['action_text'] ?? 'View Details' }}
                             </button>
                         @endif
