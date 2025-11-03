@@ -112,7 +112,7 @@
     }
 </style>
 
-<body class="bg-[#F3F3F3] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
+<body class="bg-white text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
     {{$sidebar}}
 
     <!-- MAIN CONTENT -->
