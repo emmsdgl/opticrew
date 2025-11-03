@@ -366,18 +366,6 @@
             <form method="POST" action="{{ route('register.client') }}">
                 @csrf
 
-                <!-- Display All Validation Errors -->
-                @if ($errors->any())
-                    <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        <strong class="font-bold">Oops! There were some problems with your submission:</strong>
-                        <ul class="mt-2 ml-4 list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <!-- ====================================================== -->
                 <!--                       STEP 1                           -->
                 <!-- ====================================================== -->
@@ -772,6 +760,18 @@
                 <!--                       STEP 3                           -->
                 <!-- ====================================================== -->
                 <div id="step-3" class="step-content hidden">
+                    <!-- Display Validation Errors for Step 3 -->
+                    @if ($errors->any())
+                        <div id="step3-errors" class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md mx-auto" role="alert">
+                            <strong class="font-bold">Oops! There were some problems:</strong>
+                            <ul class="mt-2 ml-4 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <!-- Personal Account Step 3 -->
                     <div id="step-3-personal" class="w-full space-y-4">
                         <h1 id="form-head" class="mb-4">Set up your security questions</h1>
@@ -1003,6 +1003,37 @@
             let isStep1Completed = false;
             let isStep2Completed = false;
             let isStep3Completed = false;
+
+            // ===== AUTO-NAVIGATE TO STEP 3 IF ERRORS EXIST =====
+            const hasStep3Errors = {{ ($errors->has('username') || $errors->has('password') || $errors->has('security_question') || $errors->has('security_answer_1') || $errors->has('security_answer_2')) ? 'true' : 'false' }};
+
+            if (hasStep3Errors) {
+                // Mark steps 1 and 2 as completed to allow navigation to step 3
+                isStep1Completed = true;
+                isStep2Completed = true;
+                // Set current step to 3 after a brief delay to ensure DOM is ready
+                setTimeout(() => {
+                    currentStep = 3;
+                    updateStepper();
+                    // Scroll to error message
+                    const errorDiv = document.getElementById('step3-errors');
+                    if (errorDiv) {
+                        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+
+            // ===== CLEAR ERROR MESSAGES WHEN STARTING FRESH =====
+            // Clear errors when user makes changes to the username field
+            const usernameField = document.getElementById('input-username');
+            if (usernameField) {
+                usernameField.addEventListener('input', () => {
+                    const errorDiv = document.getElementById('step3-errors');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'none';
+                    }
+                });
+            }
 
             // ===== ACCOUNT TYPE TOGGLE =====
             const accountTypePersonal = document.getElementById('account-type-personal');
