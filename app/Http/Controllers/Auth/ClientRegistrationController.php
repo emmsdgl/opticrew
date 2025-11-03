@@ -80,12 +80,22 @@ class ClientRegistrationController extends Controller
 
             // Use a transaction to ensure everything saves or nothing does
             DB::transaction(function () use ($request) {
+                // Apply Title Case formatting to name fields
+                $firstName = $this->formatTitleCase($request->first_name);
+                $lastName = $this->formatTitleCase($request->last_name);
+                $middleInitial = $request->middle_initial ? strtoupper($request->middle_initial) : null;
+
+                // Apply Title Case to address fields
+                $streetAddress = $this->formatTitleCase($request->street_address);
+                $city = $this->formatTitleCase($request->city);
+                $district = $this->formatTitleCase($request->district);
+
                 // Create User record (always personal account)
                 // Email is already verified via OTP in Step 2, so always set email_verified_at
                 $user = User::create([
-                    'name' => $request->first_name . ' ' . $request->last_name,
+                    'name' => $firstName . ' ' . $lastName,
                     'username' => $request->username,
-                    'email' => $request->email,
+                    'email' => strtolower($request->email), // Always lowercase for emails
                     'phone' => $request->phone_number,
                     'email_verified_at' => now(), // Always set - OTP verification confirms email ownership
                     'password' => Hash::make($request->password),
@@ -93,21 +103,21 @@ class ClientRegistrationController extends Controller
                 ]);
 
                 // Create the associated Client profile record
-                $fullAddress = $request->street_address . ', ' .
+                $fullAddress = $streetAddress . ', ' .
                               $request->postal_code . ' ' .
-                              $request->city . ', ' .
-                              $request->district;
+                              $city . ', ' .
+                              $district;
 
                 $user->client()->create([
                     'client_type' => 'personal',
-                    'first_name' => $request->first_name,
-                    'last_name' => $request->last_name,
-                    'middle_initial' => $request->middle_initial,
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'middle_initial' => $middleInitial,
                     'birthdate' => Carbon::createFromFormat('m-d-Y', $request->birthdate)->format('Y-m-d'),
-                    'street_address' => $request->street_address,
+                    'street_address' => $streetAddress,
                     'postal_code' => $request->postal_code,
-                    'city' => $request->city,
-                    'district' => $request->district,
+                    'city' => $city,
+                    'district' => $district,
                     'address' => $fullAddress,
                     'billing_address' => $fullAddress,
                     'is_active' => true,
@@ -201,6 +211,24 @@ class ClientRegistrationController extends Controller
         }
     
         return response()->json(['message' => 'The provided OTP is invalid.'], 422);
+    }
+
+    /**
+     * Format a string to Title Case (first letter of each word capitalized)
+     * Handles multi-word strings properly
+     *
+     * @param string $text
+     * @return string
+     */
+    private function formatTitleCase($text)
+    {
+        if (!$text) {
+            return $text;
+        }
+
+        // Convert to lowercase first, then capitalize first letter of each word
+        // mb_convert_case handles UTF-8 properly for international characters
+        return mb_convert_case(trim($text), MB_CASE_TITLE, 'UTF-8');
     }
 
 }
