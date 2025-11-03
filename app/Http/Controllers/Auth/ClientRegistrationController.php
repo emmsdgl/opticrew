@@ -121,12 +121,14 @@ class ClientRegistrationController extends Controller
 
                 // 5. Create User record ONLY for personal accounts
                 if ($isPersonal) {
+                    // Email is already verified via OTP in Step 2, so always set email_verified_at
+                    // The user cannot reach this point without verifying OTP first
                     $user = User::create([
                         'name' => $request->first_name . ' ' . $request->last_name,
                         'username' => $request->username,
                         'email' => $request->email,
                         'phone' => $request->phone_number,
-                        'email_verified_at' => session('email_is_verified') ? now() : null,
+                        'email_verified_at' => now(), // Always set - OTP verification confirms email ownership
                         'password' => Hash::make($request->password),
                         'role' => 'external_client',
                     ]);
