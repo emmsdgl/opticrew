@@ -94,7 +94,7 @@ class EmployeePerformanceController extends Controller
 
         // Get days off for current month
         $daysOff = DayOff::where('employee_id', $employee->id)
-            ->whereBetween('day_off_date', [$startOfMonth, $endOfMonth])
+            ->whereBetween('date', [$startOfMonth, $endOfMonth])
             ->count();
 
         // Calculate absent days (working days - present days - days off)

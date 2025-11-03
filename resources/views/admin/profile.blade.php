@@ -42,33 +42,7 @@
 
                 <!-- Inner Up - Recommendation Service List -->
                 <div class="w-full overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
-                        <x-profilesummary title="Daily Overview" :cards="[
-            [
-                'label' => 'Total Tasks Completed',
-                'amount' => '30',
-                'description' => 'Boost your productivity today',
-                'icon' => '<i class=&quot;fas fa-check-circle&quot;></i>',
-                'percentage' => '+12%',
-                'percentageColor' => '#10b981',
-                'bgColor' => '#fef3c7',
-            ],
-            [
-                'label' => 'Incomplete Tasks',
-                'amount' => '1,240',
-                'description' => 'Check out your list',
-                'icon' => '<i class=&quot;fas fa-times-circle&quot;></i>',
-                'percentage' => '+8%',
-                'percentageColor' => '#3b82f6',
-            ],
-            [
-                'label' => 'Pending Tasks',
-                'amount' => '1,240',
-                'description' => 'Your tasks await',
-                'icon' => '<i class=&quot;fas fa-hourglass-half&quot;></i>',
-                'percentage' => '+8%',
-                'percentageColor' => '#3b82f6',
-            ],
-        ]" />
+                        <x-profilesummary title="Daily Overview" :cards="$cards" />
                 </div>
         </section>
 </x-layouts.general-employer>

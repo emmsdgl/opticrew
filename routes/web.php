@@ -251,9 +251,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
 
-    Route::get('/admin/profile', function () {
-        return view('admin.profile');
-    })->name('admin.profile');
+    Route::get('/admin/profile', [ProfileController::class, 'show'])->name('admin.profile');
 
     Route::get('/admin/profile/edit', [ProfileController::class, 'edit'])->name('admin.profile.edit');
     Route::post('/admin/profile/update', [ProfileController::class, 'update'])->name('admin.profile.update');
@@ -302,9 +300,7 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/performance', [App\Http\Controllers\EmployeePerformanceController::class, 'index'])
     ->name('employee.performance');
 
-    Route::get('/employee/profile', function () {
-        return view('employee.profile');
-    })->name('employee.profile');
+    Route::get('/employee/profile', [ProfileController::class, 'show'])->name('employee.profile');
 
     Route::get('/employee/profile/edit', [ProfileController::class, 'edit'])->name('employee.profile.edit');
     Route::post('/employee/profile/update', [ProfileController::class, 'update'])->name('employee.profile.update');
@@ -337,9 +333,7 @@ Route::middleware(['auth', 'client'])->group(function () {
     })->name('client.feedback');
     Route::post('/client/feedback', [FeedbackController::class, 'store'])->name('client.feedback.store');
 
-    Route::get('/client/profile', function () {
-        return view('client.profile');
-    })->name('client.profile');
+    Route::get('/client/profile', [ProfileController::class, 'show'])->name('client.profile');
 
     Route::get('/client/profile/edit', [ProfileController::class, 'edit'])->name('client.profile.edit');
     Route::post('/client/profile/update', [ProfileController::class, 'update'])->name('client.profile.update');
