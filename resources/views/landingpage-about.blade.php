@@ -276,7 +276,7 @@
                         <div class="flip-inner relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d]">
                             <div class="absolute inset-0 flex flex-col items-center justify-center text-center rounded-full overflow-hidden
                                         bg-[url('/images/people/team-member-bg.svg')]
-                                        dark:bg-[url('/images/people/team-member-bg-dark.svg')]
+                                        dark:bg-[url('/images/people/team-member-bg.svg')]
                                         bg-center bg-[length:155%] bg-no-repeat [backface-visibility:hidden]">
                                 <img src="{{ asset('images/people/cleaner-avatar.svg') }}" alt="Team Member"
                                     class="absolute inset-0 w-full h-full object-cover rounded-full">

@@ -71,15 +71,18 @@ class ReportController extends Controller
                 DB::raw('SUM(CASE WHEN t.status = "Pending" THEN 1 ELSE 0 END) as pending_appointments'),
                 DB::raw('SUM(CASE WHEN t.status = "Scheduled" THEN 1 ELSE 0 END) as approved_appointments'),
                 DB::raw('SUM(CASE WHEN t.status = "Completed" THEN 1 ELSE 0 END) as completed_appointments'),
-                // Calculate revenue using rate type (Normal or Student) and day type
+                // Calculate revenue using rate type (Normal or Student) and day type - ONLY for Completed tasks
                 DB::raw('ROUND(SUM(
                     CASE
+                        -- Skip if no task or task not completed
+                        WHEN t.id IS NULL OR t.status != "Completed" THEN 0
                         -- Student Rate on Weekdays
                         WHEN t.rate_type = "Student" AND DAYOFWEEK(t.scheduled_date) != 1 AND t.scheduled_date NOT IN (' .
                             (count($holidays) > 0 ? "'" . implode("','", $holidays) . "'" : "''") . ')
                         THEN l.student_rate
                         -- Student Rate on Sunday/Holiday
-                        WHEN t.rate_type = "Student"
+                        WHEN t.rate_type = "Student" AND (DAYOFWEEK(t.scheduled_date) = 1 OR t.scheduled_date IN (' .
+                            (count($holidays) > 0 ? "'" . implode("','", $holidays) . "'" : "''") . '))
                         THEN l.student_sunday_holiday_rate
                         -- Normal Rate on Weekdays
                         WHEN DAYOFWEEK(t.scheduled_date) != 1 AND t.scheduled_date NOT IN (' .
@@ -131,7 +134,8 @@ class ReportController extends Controller
                             (count($holidays) > 0 ? "'" . implode("','", $holidays) . "'" : "''") . ')
                         THEN l.student_rate
                         -- Student Rate on Sunday/Holiday
-                        WHEN t.rate_type = "Student"
+                        WHEN t.rate_type = "Student" AND (DAYOFWEEK(t.scheduled_date) = 1 OR t.scheduled_date IN (' .
+                            (count($holidays) > 0 ? "'" . implode("','", $holidays) . "'" : "''") . '))
                         THEN l.student_sunday_holiday_rate
                         -- Normal Rate on Weekdays
                         WHEN DAYOFWEEK(t.scheduled_date) != 1 AND t.scheduled_date NOT IN (' .
@@ -399,11 +403,15 @@ class ReportController extends Controller
         $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
 
-        $filename = "client_report_detailed_{$startDate}_to_{$endDate}.csv";
+        $timestamp = now()->format('Ymd_His');
+        $filename = "client_report_detailed_{$startDate}_to_{$endDate}_{$timestamp}.csv";
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
         ];
 
         $callback = function() use ($startDate, $endDate) {
@@ -431,26 +439,39 @@ class ReportController extends Controller
                 ->get();
 
             foreach ($contractedClients as $contractedClient) {
-                // Get tasks grouped by cabin type with pricing
+                // Get tasks grouped by cabin type with pricing (including student rates)
                 $cabinTallies = DB::table('tasks as t')
                     ->select([
                         'l.location_type as cabin_type',
                         'l.base_cleaning_duration_minutes',
                         'l.normal_rate_per_hour',
                         'l.sunday_holiday_rate',
-                        DB::raw('COUNT(CASE WHEN DAYOFWEEK(t.scheduled_date) != 1 AND t.scheduled_date NOT IN (' .
+                        'l.student_rate',
+                        'l.student_sunday_holiday_rate',
+                        // Normal rate - Regular days
+                        DB::raw('COUNT(CASE WHEN t.rate_type = "Normal" AND DAYOFWEEK(t.scheduled_date) != 1 AND t.scheduled_date NOT IN (' .
                             (count($holidays) > 0 ? "'" . implode("','", $holidays) . "'" : "''") .
-                            ') THEN 1 END) as regular_count'),
-                        DB::raw('COUNT(CASE WHEN DAYOFWEEK(t.scheduled_date) = 1 OR t.scheduled_date IN (' .
+                            ') THEN 1 END) as normal_regular_count'),
+                        // Normal rate - Sunday/Holiday
+                        DB::raw('COUNT(CASE WHEN t.rate_type = "Normal" AND (DAYOFWEEK(t.scheduled_date) = 1 OR t.scheduled_date IN (' .
                             (count($holidays) > 0 ? "'" . implode("','", $holidays) . "'" : "''") .
-                            ') THEN 1 END) as sunday_holiday_count')
+                            ')) THEN 1 END) as normal_sunday_holiday_count'),
+                        // Student rate - Regular days
+                        DB::raw('COUNT(CASE WHEN t.rate_type = "Student" AND DAYOFWEEK(t.scheduled_date) != 1 AND t.scheduled_date NOT IN (' .
+                            (count($holidays) > 0 ? "'" . implode("','", $holidays) . "'" : "''") .
+                            ') THEN 1 END) as student_regular_count'),
+                        // Student rate - Sunday/Holiday
+                        DB::raw('COUNT(CASE WHEN t.rate_type = "Student" AND (DAYOFWEEK(t.scheduled_date) = 1 OR t.scheduled_date IN (' .
+                            (count($holidays) > 0 ? "'" . implode("','", $holidays) . "'" : "''") .
+                            ')) THEN 1 END) as student_sunday_holiday_count')
                     ])
                     ->join('locations as l', 't.location_id', '=', 'l.id')
                     ->join('contracted_clients as cc', 'l.contracted_client_id', '=', 'cc.id')
                     ->where('cc.id', $contractedClient->id)
                     ->whereBetween('t.scheduled_date', [$startDate, $endDate])
                     ->whereNull('t.deleted_at')
-                    ->groupBy('l.location_type', 'l.base_cleaning_duration_minutes', 'l.normal_rate_per_hour', 'l.sunday_holiday_rate')
+                    ->groupBy('l.location_type', 'l.base_cleaning_duration_minutes', 'l.normal_rate_per_hour',
+                              'l.sunday_holiday_rate', 'l.student_rate', 'l.student_sunday_holiday_rate')
                     ->get();
 
                 if ($cabinTallies->count() > 0) {
@@ -458,43 +479,55 @@ class ReportController extends Controller
                     fputcsv($file, ['=== ' . strtoupper($contractedClient->name) . ' ===']);
                     fputcsv($file, []); // Empty line
 
-                    // Tally table headers
+                    // Tally table headers with student rate breakdown
                     fputcsv($file, [
                         'Cabin Type',
-                        'Regular Days Count',
-                        'Regular Days Revenue (€)',
-                        'Sunday/Holiday Count',
-                        'Sunday/Holiday Revenue (€)',
+                        'Normal Regular Count',
+                        'Normal Regular Revenue (€)',
+                        'Normal Sunday/Holiday Count',
+                        'Normal Sunday/Holiday Revenue (€)',
+                        'Student Regular Count',
+                        'Student Regular Revenue (€)',
+                        'Student Sunday/Holiday Count',
+                        'Student Sunday/Holiday Revenue (€)',
                         'Total Tasks',
                         'Total Revenue (€)'
                     ]);
 
                     $grandTotal = 0;
-                    $totalRegularCount = 0;
-                    $totalSundayCount = 0;
+                    $totalNormalRegularCount = 0;
+                    $totalNormalSundayCount = 0;
+                    $totalStudentRegularCount = 0;
+                    $totalStudentSundayCount = 0;
 
                     // Cabin type tallies
                     foreach ($cabinTallies as $tally) {
-                        // Use fixed rate per cabin (duration doesn't matter)
-                        $pricePerTask = $tally->normal_rate_per_hour;
-                        $pricePerSundayTask = $tally->sunday_holiday_rate;
+                        // Calculate revenue for each rate type
+                        $normalRegularRevenue = $tally->normal_regular_count * $tally->normal_rate_per_hour;
+                        $normalSundayRevenue = $tally->normal_sunday_holiday_count * $tally->sunday_holiday_rate;
+                        $studentRegularRevenue = $tally->student_regular_count * $tally->student_rate;
+                        $studentSundayRevenue = $tally->student_sunday_holiday_count * $tally->student_sunday_holiday_rate;
 
-                        // Calculate revenue: count × fixed rate
-                        $regularRevenue = $tally->regular_count * $pricePerTask;
-                        $sundayRevenue = $tally->sunday_holiday_count * $pricePerSundayTask;
-                        $totalRevenue = $regularRevenue + $sundayRevenue;
-                        $totalTasks = $tally->regular_count + $tally->sunday_holiday_count;
+                        $totalRevenue = $normalRegularRevenue + $normalSundayRevenue + $studentRegularRevenue + $studentSundayRevenue;
+                        $totalTasks = $tally->normal_regular_count + $tally->normal_sunday_holiday_count +
+                                     $tally->student_regular_count + $tally->student_sunday_holiday_count;
 
                         $grandTotal += $totalRevenue;
-                        $totalRegularCount += $tally->regular_count;
-                        $totalSundayCount += $tally->sunday_holiday_count;
+                        $totalNormalRegularCount += $tally->normal_regular_count;
+                        $totalNormalSundayCount += $tally->normal_sunday_holiday_count;
+                        $totalStudentRegularCount += $tally->student_regular_count;
+                        $totalStudentSundayCount += $tally->student_sunday_holiday_count;
 
                         fputcsv($file, [
                             $tally->cabin_type . ' - ' . $totalTasks,
-                            $tally->regular_count,
-                            number_format($regularRevenue, 2),
-                            $tally->sunday_holiday_count,
-                            number_format($sundayRevenue, 2),
+                            $tally->normal_regular_count,
+                            number_format($normalRegularRevenue, 2),
+                            $tally->normal_sunday_holiday_count,
+                            number_format($normalSundayRevenue, 2),
+                            $tally->student_regular_count,
+                            number_format($studentRegularRevenue, 2),
+                            $tally->student_sunday_holiday_count,
+                            number_format($studentSundayRevenue, 2),
                             $totalTasks,
                             number_format($totalRevenue, 2)
                         ]);
@@ -504,11 +537,15 @@ class ReportController extends Controller
                     fputcsv($file, []); // Empty line
                     fputcsv($file, [
                         'TOTAL',
-                        $totalRegularCount,
+                        $totalNormalRegularCount,
                         '',
-                        $totalSundayCount,
+                        $totalNormalSundayCount,
                         '',
-                        $totalRegularCount + $totalSundayCount,
+                        $totalStudentRegularCount,
+                        '',
+                        $totalStudentSundayCount,
+                        '',
+                        $totalNormalRegularCount + $totalNormalSundayCount + $totalStudentRegularCount + $totalStudentSundayCount,
                         '€' . number_format($grandTotal, 2)
                     ]);
                     fputcsv($file, []); // Empty line
@@ -518,8 +555,10 @@ class ReportController extends Controller
                     foreach ($cabinTallies as $tally) {
                         fputcsv($file, [
                             $tally->cabin_type,
-                            'Regular Price: €' . number_format($tally->normal_rate_per_hour, 2) . ' per cleaning',
-                            'Sunday/Holiday Price: €' . number_format($tally->sunday_holiday_rate, 2) . ' per cleaning'
+                            'Normal Regular Price: €' . number_format($tally->normal_rate_per_hour, 2) . ' per cleaning',
+                            'Normal Sunday/Holiday Price: €' . number_format($tally->sunday_holiday_rate, 2) . ' per cleaning',
+                            'Student Regular Price: €' . number_format($tally->student_rate, 2) . ' per cleaning',
+                            'Student Sunday/Holiday Price: €' . number_format($tally->student_sunday_holiday_rate, 2) . ' per cleaning'
                         ]);
                     }
 
@@ -631,11 +670,15 @@ class ReportController extends Controller
                 return $employee;
             });
 
-        $filename = "payroll_report_{$startDate}_to_{$endDate}.csv";
+        $timestamp = now()->format('Ymd_His');
+        $filename = "payroll_report_{$startDate}_to_{$endDate}_{$timestamp}.csv";
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
         ];
 
         $callback = function() use ($employees, $startDate, $endDate) {
