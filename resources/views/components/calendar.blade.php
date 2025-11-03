@@ -4,7 +4,7 @@
 ])
 
   <!-- Calendar Container -->
-<div class="w-full max-w-parent p-6 px-12 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-transparent">
+<div class="w-full max-w-parent py-6 px-8 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-transparent">
 
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
@@ -43,32 +43,32 @@
 
   <!-- Holiday Modal -->
   <div id="holiday-modal-{{ $calendarId }}" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title-{{ $calendarId }}" role="dialog" aria-modal="true">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
       <!-- Background overlay -->
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeHolidayModal()"></div>
+      <div class="fixed inset-0 bg-black/60 dark:bg-black/80 transition-opacity" aria-hidden="true" onclick="closeHolidayModal()"></div>
 
       <!-- Modal panel -->
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-          <div class="sm:flex sm:items-start">
-            <div id="modal-icon-container-{{ $calendarId }}" class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10">
-              <i id="modal-icon-{{ $calendarId }}" class="text-xl"></i>
+      <div class="relative inline-block align-bottom bg-slate-800 dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full mx-4 border border-slate-700 dark:border-slate-800">
+        <!-- Close button -->
+        <button type="button" onclick="closeHolidayModal()" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-slate-800 rounded-lg p-1 z-10">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div class="px-6 pt-6 pb-6 sm:px-8 sm:pt-8 sm:pb-8">
+          <div class="flex items-start gap-8 pr-3">
+            <div id="modal-icon-container-{{ $calendarId }}" class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full">
+              <i id="modal-icon-{{ $calendarId }}" class="text-2xl"></i>
             </div>
-            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
-              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title-{{ $calendarId }}">
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm text-white mb-2" id="modal-title-{{ $calendarId }}">
                 Date Information
               </h3>
-              <div class="mt-2">
-                <p id="modal-date-{{ $calendarId }}" class="text-sm text-gray-500 dark:text-gray-400 font-semibold mb-2"></p>
-                <p id="modal-message-{{ $calendarId }}" class="text-sm text-gray-600 dark:text-gray-300"></p>
-              </div>
+              <p id="modal-date-{{ $calendarId }}" class="text-lg font-bold text-gray-300 mb-3"></p>
+              <p id="modal-message-{{ $calendarId }}" class="text-sm text-gray-400 leading-relaxed"></p>
             </div>
           </div>
-        </div>
-        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-          <button type="button" onclick="closeHolidayModal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-            Close
-          </button>
         </div>
       </div>
     </div>
@@ -189,6 +189,7 @@
   // Holiday Modal Functions
   function showHolidayModal(dateString, holidayName) {
     const modal = document.getElementById('holiday-modal-' + calendarId);
+    const modalTitle = document.getElementById('modal-title-' + calendarId);
     const modalDate = document.getElementById('modal-date-' + calendarId);
     const modalMessage = document.getElementById('modal-message-' + calendarId);
     const modalIcon = document.getElementById('modal-icon-' + calendarId);
@@ -208,14 +209,16 @@
 
     if (holidayName) {
       // It's a holiday
-      modalMessage.textContent = `🎉 ${holidayName}`;
-      modalIcon.className = 'fa-solid fa-calendar-check text-xl text-red-500';
-      modalIconContainer.className = 'mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10';
+      modalTitle.textContent = 'Holiday Date';
+      modalMessage.textContent = `This is a special holiday: ${holidayName}. Enjoy your day off!`;
+      modalIcon.className = 'fa-solid fa-calendar-check text-lg text-blue-600';
+      modalIconContainer.className = 'flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600/20';
     } else {
       // Not a holiday
-      modalMessage.textContent = 'No holiday for this date';
-      modalIcon.className = 'fa-solid fa-calendar text-xl text-gray-500';
-      modalIconContainer.className = 'mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-700 sm:mx-0 sm:h-10 sm:w-10';
+      modalTitle.textContent = 'Regular Date';
+      modalMessage.textContent = 'This is a regular working day. No holiday scheduled for this date.';
+      modalIcon.className = 'fa-solid fa-calendar-day text-lg text-blue-600';
+      modalIconContainer.className = 'flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600/20';
     }
 
     modal.classList.remove('hidden');
