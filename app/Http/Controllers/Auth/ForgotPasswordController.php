@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\EmailVerificationOtp; // <-- UPDATED TO USE YOUR MAILABLE
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rules\Password;
 
 class ForgotPasswordController extends Controller
 {
@@ -105,7 +106,28 @@ class ForgotPasswordController extends Controller
         if (!Session::get('password_reset_allowed')) {
             return response()->json(['message' => 'Unauthorized. Please complete the verification process first.'], 403);
         }
-        $validator = Validator::make($request->all(), ['password' => 'required|string|min:8|confirmed']);
+
+        // Use the same password validation as signup for consistency
+        $validator = Validator::make($request->all(), [
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+            ]
+        ], [
+            'password.confirmed' => 'Password confirmation does not match.',
+            // Laravel will automatically use these default messages from Password rule:
+            // - Must be at least 8 characters
+            // - Must contain at least one letter
+            // - Must contain both uppercase and lowercase letters
+            // - Must contain at least one number
+            // - Must contain at least one symbol
+        ]);
+
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()->first()], 422);
         }
