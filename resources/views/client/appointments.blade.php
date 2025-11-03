@@ -1,17 +1,4 @@
-<x-layouts.general-dashboard :title="'Appointments'">
-    @slot('sidebar')
-    @php
-        $navOptions = [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('client.dashboard')],
-            ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => route('client.appointments')],
-            ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => route('client.pricing')],
-            ['label' => 'Feedbacks', 'icon' => 'fa-chart-line', 'href' => route('client.feedback')]
-        ];
-
-        $teams = []; // No teams for client sidebar
-    @endphp
-    <x-sidebar :navOptions="$navOptions" :teams="$teams" />
-    @endslot
+<x-layouts.general-client :title="'Appointments'">
 
     <style>
         /* Prevent horizontal scroll on body/main */
@@ -168,4 +155,4 @@
             </div>
         </div>
     </section>
-</x-layouts.general-dashboard>
+</x-layouts.general-client>
