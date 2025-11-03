@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(php artisan:*)",
+      "Bash(grep:*)",
+      "Read(//c//**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
