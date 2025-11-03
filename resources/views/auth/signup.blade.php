@@ -1711,28 +1711,30 @@
                 for (let i = 1; i <= totalSteps; i++) {
                     const indicator = stepIndicators[i];
                     const circle = indicator.querySelector('.step-circle');
-                    const content = indicator.querySelector(`#step-${i}-content`);
+                    const content = circle ? circle.querySelector('span') : null; // Fixed: select span inside circle
                     const label = indicator.querySelector('span:last-child');
                     const isCompleted = (i === 1 && isStep1Completed) || (i === 2 && isStep2Completed) || (i === 3 && isStep3Completed);
 
                     // Reset all classes
-                    circle.className = 'step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base';
+                    if (circle) {
+                        circle.className = 'step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base';
 
-                    if (isCompleted) {
-                        // Completed step - green with check mark
-                        circle.classList.add('bg-blue-500', 'text-white');
-                        content.innerHTML = checkIconHTML;
-                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-700';
-                    } else if (i === currentStep) {
-                        // Current/Active step - blue with ring
-                        circle.classList.add('bg-blue-500', 'text-white', 'ring-4', 'ring-blue-100');
-                        content.textContent = i;
-                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-blue-600';
-                    } else {
-                        // Pending step - gray
-                        circle.classList.add('bg-white', 'text-gray-400', 'border-2', 'border-gray-300');
-                        content.textContent = i;
-                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-400';
+                        if (isCompleted) {
+                            // Completed step - green with check mark
+                            circle.classList.add('bg-blue-500', 'text-white');
+                            if (content) content.innerHTML = checkIconHTML;
+                            if (label) label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-700';
+                        } else if (i === currentStep) {
+                            // Current/Active step - blue with ring
+                            circle.classList.add('bg-blue-500', 'text-white', 'ring-4', 'ring-blue-100');
+                            if (content) content.textContent = i;
+                            if (label) label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-blue-600';
+                        } else {
+                            // Pending step - gray
+                            circle.classList.add('bg-white', 'text-gray-400', 'border-2', 'border-gray-300');
+                            if (content) content.textContent = i;
+                            if (label) label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-400';
+                        }
                     }
                 }
 
