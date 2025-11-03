@@ -62,7 +62,19 @@
 
             <!-- Inner Bottom - Appointments List -->
             <div class="flex flex-col">
-                <x-labelwithvalue label="Ongoing Appointments" :count="'(' . $stats['ongoing'] . ')'" />
+                <div class="flex flex-row justify-between">
+                    <x-labelwithvalue label="Ongoing Appointments" :count="'(' . $stats['ongoing'] . ')'" />
+                    <div class="flex flex-row gap-3">
+                        <x-dropdown label="Filter by:" default="All" :options="['All', 'Active', 'Inactive', 'Pending']"
+                            id="status-filter" />
+                        <x-dropdown label="Sort by:" default="Latest" :options="[
+                            'latest' => 'Latest',
+                            'oldest' => 'Oldest',
+                            'name_asc' => 'Name (A-Z)',
+                            'name_desc' => 'Name (Z-A)'
+                        ]" />
+                    </div>
+                </div>
                 <!-- Remove overflow-y-auto from here and add a wrapper inside the component -->
                 <div class="h-20 overflow-y-auto">
                     <x-client-components.appointment-page.appointment-list-item :items="$appointments->map(function ($appointment) {
@@ -76,7 +88,7 @@
             'action_onclick' => 'viewDetails(' . $appointment->id . ')',
             'menu_items' => [
                 ['label' => 'Reschedule', 'action' => 'reschedAppointment(' . $appointment->id . ')'],
-                ['label' => 'Cancel', 'action' => 'cancelAppointment(' . $appointment->id . ')'],
+                ['label' => 'Cancel Appointment', 'action' => 'cancelAppointment(' . $appointment->id . ')'],
             ]
         ];
     })->toArray()" :maxHeight="'30rem'" />
