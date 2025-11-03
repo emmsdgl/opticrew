@@ -1878,6 +1878,41 @@
                     progressLine.style.width = `${progressPercentage}%`;
                 }
 
+                // ===== FIX: Manage required attributes based on current step =====
+                // This prevents HTML5 validation errors on hidden fields
+
+                // Step 1 fields - only required when on Step 1
+                const step1Personal = document.querySelectorAll('#personal-fields input, #personal-fields select');
+                const step1Company = document.querySelectorAll('#company-fields input, #company-fields select');
+
+                if (currentStep === 1) {
+                    if (accountTypePersonal.checked) {
+                        step1Personal.forEach(field => {
+                            if (field.name !== 'middle_initial') {
+                                field.setAttribute('required', 'required');
+                            }
+                        });
+                        step1Company.forEach(field => field.removeAttribute('required'));
+                    } else {
+                        step1Company.forEach(field => field.setAttribute('required', 'required'));
+                        step1Personal.forEach(field => field.removeAttribute('required'));
+                    }
+                } else {
+                    // Remove required from all Step 1 fields when not on Step 1
+                    step1Personal.forEach(field => field.removeAttribute('required'));
+                    step1Company.forEach(field => field.removeAttribute('required'));
+                }
+
+                // Step 2 fields (OTP) - only required when on Step 2
+                const step2Fields = document.querySelectorAll('#step-2 input');
+                step2Fields.forEach(field => {
+                    if (currentStep === 2) {
+                        field.setAttribute('required', 'required');
+                    } else {
+                        field.removeAttribute('required');
+                    }
+                });
+
                 // Update steps' appearance
                 for (let i = 1; i <= totalSteps; i++) {
                     const indicator = stepIndicators[i];
