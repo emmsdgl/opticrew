@@ -40,8 +40,16 @@ class ClientRegistrationController extends Controller
             // Personal accounts need security questions + username/password
             if ($isPersonal) {
                 $rules = array_merge($rules, [
-                    'username' => ['required', 'string', 'max:255', 'unique:users,username'],
-                    'password' => ['required', 'confirmed', Password::min(8)],
+                    'username' => ['required', 'string', 'min:6', 'max:8', 'unique:users,username'],
+                    'password' => [
+                        'required',
+                        'confirmed',
+                        Password::min(8)
+                            ->letters()
+                            ->mixedCase()
+                            ->numbers()
+                            ->symbols()
+                    ],
                     'security_question' => ['required', 'array', 'size:2'],
                     'security_answer_1' => ['required', 'string', 'min:3'],
                     'security_answer_2' => ['required', 'string', 'min:3'],
@@ -93,7 +101,14 @@ class ClientRegistrationController extends Controller
             $request->validate($rules, [
                 'email.unique' => 'This email is already registered. Please use a different email or log in to your existing account.',
                 'username.unique' => 'This username is already taken. Please choose a different username.',
+                'username.min' => 'Username must be at least 6 characters.',
+                'username.max' => 'Username must not exceed 8 characters.',
                 'password.confirmed' => 'Password confirmation does not match.',
+                'password.min' => 'Password must be at least 8 characters.',
+                'password.letters' => 'Password must contain at least one letter.',
+                'password.mixed_case' => 'Password must contain at least one uppercase and one lowercase letter.',
+                'password.numbers' => 'Password must contain at least one number.',
+                'password.symbols' => 'Password must contain at least one special character (!@#$%^&*).',
                 'postal_code.size' => 'Postal code must be exactly 5 digits.',
                 'company_postal_code.size' => 'Postal code must be exactly 5 digits.',
                 'middle_initial.max' => 'Middle initial must not exceed 5 characters.',
