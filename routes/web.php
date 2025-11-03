@@ -50,10 +50,6 @@ Route::get('/', function () {
     return view('landingpage-home');
 })->name('home');
 
-// Home Page
-Route::get('/home', function () {
-    return view('landingpage-home');
-})->name('home');
 // About Page
 Route::get('/about', function () {
     return view('landingpage-about');
@@ -95,38 +91,6 @@ Route::get('/register', function () {
 // --- LANGUAGE SWITCHING ROUTES ---
 Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 Route::post('/api/language/switch', [LanguageController::class, 'switchApi'])->name('language.switch.api');
-
-// --- LANDING PAGE ROUTES (Public) ---
-// Route::get('/', function () {
-//     // If user is already authenticated, redirect to their dashboard
-//     if (Auth::check()) {
-//         $role = Auth::user()->role;
-
-//         if ($role === 'admin') {
-//             return redirect()->route('admin.dashboard');
-//         } elseif ($role === 'employee') {
-//             return redirect()->route('employee.dashboard');
-//         } elseif ($role === 'external_client') {
-//             return redirect()->route('client.dashboard');
-//         }
-//     }
-
-//     // Show landing page for guests
-//     return view('landing.home');
-// })->name('home');
-
-// Route::get('/about', function () {
-//     return response()->file(resource_path('views/landing/about.blade.php'));
-// })->name('about');
-
-// Route::get('/services', function () {
-//     return response()->file(resource_path('views/landing/service.blade.php'));
-// })->name('services');
-
-// Route::get('/pricing', function () {
-//     return response()->file(resource_path('views/landing/guest-pricing.blade.php'));
-// })->name('pricing');
-
 
 // --- AUTHENTICATED ROUTES ---
 
