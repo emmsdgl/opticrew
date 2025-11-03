@@ -866,6 +866,37 @@
                                 id="toggleConfirmPassword"></i>
                         </div>
 
+                        <!-- Password Validation Indicators -->
+                        <div class="w-full max-w-md mx-auto mt-3 space-y-2">
+                            <!-- Username Length -->
+                            <div id="username-length-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Username: 6-8 characters</span>
+                            </div>
+
+                            <!-- Password Requirements -->
+                            <div id="password-length-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Password: At least 8 characters</span>
+                            </div>
+                            <div id="password-capital-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Contains 1 capital letter</span>
+                            </div>
+                            <div id="password-number-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Contains 1 number</span>
+                            </div>
+                            <div id="password-special-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Contains 1 special character (!@#$%^&*)</span>
+                            </div>
+                            <div id="password-match-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Passwords match</span>
+                            </div>
+                        </div>
+
                         <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6 w-full pt-4">
                             <button id="back3-btn" type="button"
                                 class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
@@ -1033,6 +1064,115 @@
                         errorDiv.style.display = 'none';
                     }
                 });
+            }
+
+            // ===== REAL-TIME PASSWORD & USERNAME VALIDATION =====
+            const passwordField = document.getElementById('input-new-password');
+            const confirmPasswordField = document.getElementById('input-confirm-password');
+
+            // Validation indicators
+            const usernameIndicator = document.getElementById('username-length-indicator');
+            const passwordLengthIndicator = document.getElementById('password-length-indicator');
+            const passwordCapitalIndicator = document.getElementById('password-capital-indicator');
+            const passwordNumberIndicator = document.getElementById('password-number-indicator');
+            const passwordSpecialIndicator = document.getElementById('password-special-indicator');
+            const passwordMatchIndicator = document.getElementById('password-match-indicator');
+
+            // Helper function to update indicator status
+            function updateIndicator(indicator, isValid) {
+                const icon = indicator.querySelector('i');
+                const text = indicator.querySelector('span');
+
+                if (isValid) {
+                    icon.classList.remove('fa-circle', 'text-gray-300');
+                    icon.classList.add('fa-check-circle', 'text-green-500');
+                    text.classList.remove('text-gray-500');
+                    text.classList.add('text-green-600', 'font-medium');
+                } else {
+                    icon.classList.remove('fa-check-circle', 'text-green-500');
+                    icon.classList.add('fa-circle', 'text-gray-300');
+                    text.classList.remove('text-green-600', 'font-medium');
+                    text.classList.add('text-gray-500');
+                }
+            }
+
+            // Username validation (6-8 characters)
+            if (usernameField) {
+                usernameField.addEventListener('input', () => {
+                    const username = usernameField.value.trim();
+                    const isValid = username.length >= 6 && username.length <= 8;
+                    updateIndicator(usernameIndicator, isValid);
+
+                    // Show error message if exceeds max length
+                    if (username.length > 8) {
+                        usernameField.value = username.substring(0, 8);
+                    }
+                });
+            }
+
+            // Password strength validation
+            function validatePassword() {
+                if (!passwordField) return;
+
+                const password = passwordField.value;
+
+                // Check length (at least 8 characters)
+                const hasMinLength = password.length >= 8;
+                updateIndicator(passwordLengthIndicator, hasMinLength);
+
+                // Check for capital letter
+                const hasCapital = /[A-Z]/.test(password);
+                updateIndicator(passwordCapitalIndicator, hasCapital);
+
+                // Check for number
+                const hasNumber = /[0-9]/.test(password);
+                updateIndicator(passwordNumberIndicator, hasNumber);
+
+                // Check for special character
+                const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+                updateIndicator(passwordSpecialIndicator, hasSpecial);
+
+                // Check password match
+                checkPasswordMatch();
+
+                // Return overall validity
+                return hasMinLength && hasCapital && hasNumber && hasSpecial;
+            }
+
+            // Password match validation
+            function checkPasswordMatch() {
+                if (!passwordField || !confirmPasswordField) return;
+
+                const password = passwordField.value;
+                const confirmPassword = confirmPasswordField.value;
+
+                // Only show match indicator if both fields have values
+                if (password && confirmPassword) {
+                    const isMatch = password === confirmPassword;
+                    updateIndicator(passwordMatchIndicator, isMatch);
+
+                    // Update confirm password field border
+                    if (isMatch) {
+                        confirmPasswordField.classList.remove('ring-red-500');
+                        confirmPasswordField.classList.add('ring-green-500');
+                    } else {
+                        confirmPasswordField.classList.remove('ring-green-500');
+                        confirmPasswordField.classList.add('ring-red-500');
+                    }
+                } else {
+                    // Reset indicator if either field is empty
+                    updateIndicator(passwordMatchIndicator, false);
+                    confirmPasswordField.classList.remove('ring-red-500', 'ring-green-500');
+                }
+            }
+
+            // Add event listeners
+            if (passwordField) {
+                passwordField.addEventListener('input', validatePassword);
+            }
+
+            if (confirmPasswordField) {
+                confirmPasswordField.addEventListener('input', checkPasswordMatch);
             }
 
             // ===== ACCOUNT TYPE TOGGLE =====
