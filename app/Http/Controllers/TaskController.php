@@ -39,7 +39,11 @@ class TaskController extends Controller
 
         // --- 2. COMBINE CONTRACTED + EXTERNAL CLIENTS FOR DROPDOWN ---
         $contractedClients = ContractedClient::with('locations')->get();
-        $externalClients = Client::all(['id', 'first_name', 'last_name']);
+        // Only get non-deleted external clients (soft deletes are automatically excluded)
+        $externalClients = Client::select('id', 'first_name', 'last_name')
+            ->whereNotNull('first_name')
+            ->whereNotNull('last_name')
+            ->get();
 
         $allClients = $contractedClients->map(function ($client) {
             $locations = $client->locations->map(function ($location) {
@@ -48,7 +52,7 @@ class TaskController extends Controller
                     'name' => $location->location_name
                 ];
             })->values()->toArray();
-            
+
             return [
                 'label' => $client->name,
                 'value' => 'contracted_' . $client->id,
