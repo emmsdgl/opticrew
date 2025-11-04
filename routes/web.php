@@ -26,12 +26,9 @@ use App\Http\Controllers\FeedbackController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
-Route::get('/', function () {
-    return view('client.appointments');
-});
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
-// --- LANDING PAGE ROUTES (Public) UNCOMMENT THIS ONCE DONE---
+// --- LANDING PAGE ROUTES (Public) ---
 Route::get('/', function () {
     // If user is already authenticated, redirect to their dashboard
     if (Auth::check()) {
