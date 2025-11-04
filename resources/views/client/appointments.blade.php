@@ -148,7 +148,7 @@
                     style="scrollbar-width: thin;">
                     @foreach($services as $service)
                         <div class="flex-none snap-start" style="width: calc((100% - 2rem) / 3); min-width: 280px;">
-                            <x-servicecard :service="$service" />
+                            <x-client-components.dashboard-page.servicecard :service="$service" />
                         </div>
                     @endforeach
                 </div>
