@@ -13,7 +13,7 @@
                             'full_name' => $user->name,
                             'work_email' => $user->email,
                             'work_phone' => $user->phone ?? '+358 40 123 4567',
-                            'profile_photo' => $user->profile_picture ? asset('storage/' . $user->profile_picture) : null,
+                            'profile_photo' => $user->profile_picture ? asset('storage/' . $user->profile_picture) . '?v=' . time() : null,
                             'office_status' => 'Administrator',
                             'username' => $user->username,
                             'work_location' => $user->location ?? 'Inari, Finland'
