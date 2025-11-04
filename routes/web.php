@@ -26,9 +26,6 @@ use App\Http\Controllers\FeedbackController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
-Route::get('/', function () {
-    return view('client.appointments');
-});
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
 // --- LANDING PAGE ROUTES (Public) UNCOMMENT THIS ONCE DONE---

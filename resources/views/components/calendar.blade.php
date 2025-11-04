@@ -48,7 +48,7 @@
       <div class="fixed inset-0 bg-black/60 dark:bg-black/80 transition-opacity" aria-hidden="true" onclick="closeHolidayModal()"></div>
 
       <!-- Modal panel -->
-      <div class="relative inline-block align-bottom bg-slate-800 dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full mx-4 border border-slate-700 dark:border-slate-800">
+      <div class="relative inline-block align-bottom bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full mx-4 border border-slate-700 dark:border-slate-800">
         <!-- Close button -->
         <button type="button" onclick="closeHolidayModal()" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-slate-800 rounded-lg p-1 z-10">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
@@ -62,11 +62,11 @@
               <i id="modal-icon-{{ $calendarId }}" class="text-2xl"></i>
             </div>
             <div class="flex-1 min-w-0">
-              <h3 class="text-sm text-white mb-2" id="modal-title-{{ $calendarId }}">
+              <h3 class="text-sm text-[#081032] dark:text-white mb-2" id="modal-title-{{ $calendarId }}">
                 Date Information
               </h3>
-              <p id="modal-date-{{ $calendarId }}" class="text-lg font-bold text-gray-300 mb-3"></p>
-              <p id="modal-message-{{ $calendarId }}" class="text-sm text-gray-400 leading-relaxed"></p>
+              <p id="modal-date-{{ $calendarId }}" class="text-lg font-bold text-[#081032] dark:text-gray-300 mb-3 "></p>
+              <p id="modal-message-{{ $calendarId }}" class="text-sm text-[#081032] dark:text-gray-400 leading-relaxed"></p>
             </div>
           </div>
         </div>
@@ -131,7 +131,7 @@
       const isClicked = clickedDate && current.toDateString() === clickedDate.toDateString();
 
       const container = document.createElement("div");
-      container.className = "relative mx-auto w-8 h-8";
+      container.className = "relative mx-auto w-8 h-12";
 
       const button = document.createElement("button");
       button.textContent = current.getDate();

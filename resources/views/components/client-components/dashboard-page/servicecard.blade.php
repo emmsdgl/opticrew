@@ -58,7 +58,7 @@
         <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
             {{ $service['title'] ?? 'Service Title' }}
         </h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2 my-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2 my-2">
             {{ $service['description'] ?? '' }}
         </p>
     </div>

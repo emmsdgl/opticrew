@@ -28,7 +28,7 @@
 
                     <x-profilecard :name="$client['full_name']" greeting="Welcome Back,"
                         subtitle="You have a productive day ahead!" :avatar="$client['profile_photo']"
-                        :status="$client['office_status']" statusIcon="🏢" :email="$client['work_email']"
+                        :status="$client['office_status']" statusIcon="🏠" :email="$client['work_email']"
                         :phone="$client['work_phone']" :username="$client['username']"
                         :location="$client['work_location']" />
 
