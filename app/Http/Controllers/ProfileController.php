@@ -149,12 +149,28 @@ class ProfileController extends Controller
         $user = $request->user();
 
         // Delete old profile picture if exists
-        if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
-            Storage::disk('public')->delete($user->profile_picture);
+        if ($user->profile_picture) {
+            $oldPath = public_path($user->profile_picture);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
         }
 
-        // Store new profile picture
-        $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+        // Create uploads directory if it doesn't exist
+        $uploadDir = public_path('uploads/profile_pictures');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        // Generate unique filename
+        $file = $request->file('profile_picture');
+        $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+        // Move file to public/uploads/profile_pictures
+        $file->move($uploadDir, $filename);
+
+        // Store relative path in database
+        $path = 'uploads/profile_pictures/' . $filename;
 
         // Update user record
         $user->profile_picture = $path;
