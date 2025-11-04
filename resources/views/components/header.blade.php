@@ -102,7 +102,14 @@
                 <div class="flex-shrink-0">
                     @auth
                         @if(auth()->user()->profile_picture)
-                            <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" alt="User" class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;">
+                            @php
+                                // Handle both old and new profile picture paths
+                                $profilePic = auth()->user()->profile_picture;
+                                $profileUrl = str_starts_with($profilePic, 'profile_pictures/')
+                                    ? asset('storage/' . $profilePic)
+                                    : asset($profilePic);
+                            @endphp
+                            <img src="{{ $profileUrl }}?v={{ time() }}" alt="User" class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;">
                         @else
                             <img src="https://i.pravatar.cc/40" alt="User" class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;">
                         @endif
