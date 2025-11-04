@@ -122,11 +122,11 @@
                 <a href="{{ route('client.appointment.create') }}"
                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                     <i class="fi fi-rr-plus mr-2"></i>
-                    Book New Appointment
+                    Book New Appointment    
                 </a>
             </div>
 
-            <x-clientappointmentlist :appointments="$appointments" :show-header="true" />
+            <x-client-components.appointment-page.clientappointmentlist :appointments="$appointments" :show-header="true" />
         </div>
 
         <!-- Inner Panel - Services Container with Horizontal Scroll -->
@@ -161,7 +161,7 @@
                     style="scrollbar-width: thin;">
                     @foreach($services as $service)
                         <div class="flex-none snap-start" style="width: calc((100% - 2rem) / 3); min-width: 280px;">
-                            <x-servicecard :service="$service" />
+                            <x-client-components.dashboard-page.servicecard :service="$service" />
                         </div>
                     @endforeach
                 </div>

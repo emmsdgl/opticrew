@@ -45,10 +45,7 @@
         }
 
         /* Override font for the stepper for a modern look */
-        #stepper-container * {
-            font-family: 'Inter', sans-serif !important;
-            color: #071957;
-        }
+        #stepper-container * {}
 
         /* Stepper styles */
         .step-circle {
@@ -96,26 +93,16 @@
             flex-direction: column;
         }
 
-        #step-label {
-            font-size: small;
-            font-family: 'fam-bold';
-        }
-
         #step-head {
-            font-size: 2.7rem;
             font-family: 'fam-bold';
             padding-top: 0.5rem;
             padding-bottom: 0.5rem;
         }
 
-        #step-desc {
-            color: #0718577c;
-            width: 100%;
-        }
-
         #form-head {
-            font-size: 1.8rem;
             text-align: center;
+            font-family: 'fam-bold-italic';
+
         }
 
         .input-container {
@@ -308,9 +295,10 @@
                 <!-- Steps Container -->
                 <div class="relative flex justify-between items-start">
                     <!-- Step 1 -->
-                    <div id="step-1-indicator" class="flex flex-col items-center  flex-1 step-container relative z-10">
+                    <div id="step-1-indicator"
+                        class="flex flex-col items-center text-sm flex-1 step-container relative z-10">
                         <div
-                            class="step-circle w-10 h-auto sm:w-12 sm:h-auto rounded-full flex items-center justify-center font-semibold text-sm sm:text-base bg-blue-500 text-white ring-4 ring-blue-100 relative">
+                            class="step-circle text-white w-8 h-auto sm:w-12 sm:h-auto rounded-full flex items-center justify-center font-bold text-sm sm:text-sm bg-blue-500  ring-4 ring-blue-100 relative">
                             <span>1</span>
                         </div>
                         <span
@@ -355,9 +343,10 @@
             <div id="inner-container-1" class="w-full pl-14">
                 <span id="form-status"
                     class="text-xs font-medium me-2 px-2.5 py-0.5 rounded-2xl bg-red-100 text-red-500">Incomplete</span>
-                <p id="step-label" class="font-bold text-base mt-7">Step 1</p>
-                <h1 id="step-head">Basic Details</h1>
-                <p id="step-desc">First things first, let us know your the following information for identification and
+                <p id="step-label" class="text-base mt-7 text-blue-950 font-semibold">Step 1</p>
+                <h1 id="step-head" class="text-5xl my-3 text-[#081032]">Basic Details</h1>
+                <p id="step-desc" class="text-blue-950/40"><span class="font-bold">First things first</span>, let us
+                    know your the following information for identification and
                     account verification purposes.</p>
             </div>
         </div>
@@ -382,7 +371,8 @@
                 <!--                       STEP 1                           -->
                 <!-- ====================================================== -->
                 <div id="step-1" class="step-content w-full px-12">
-                    <h1 id="form-head" class="mb-4 w-full text-center font-sans font-medium italic">Tell Us About You
+                    <h1 id="form-head" class="mb-4 w-full text-center text-2xl font-semibold text-[#081032]">Tell Us
+                        About You
                     </h1>
 
                     <div class="space-y-4">
@@ -425,26 +415,40 @@
                         <!-- Personal Account Fields -->
                         <div id="personal-fields" class="space-y-4">
                             <div id="name-layer" class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
-                                <div class="input-container flex-1">
-                                    <input type="text" id="input-fname" placeholder=" "
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        name="first_name" value="{{ old('first_name') }}" required>
-                                    <label for="input-fname">First Name</label>
+                                <div class="flex-1">
+                                    <div class="input-container relative">
+                                        <span
+                                            class="absolute left-4 top-5 transform -translate-y-1/2 text-xs xl:text-sm pointer-events-none z-10">🇫🇮</span>
+                                        <input type="text" id="input-fname" placeholder=" "
+                                            class="input-field w-full pl-12 pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                            name="first_name" value="{{ old('first_name') }}" required>
+                                        <label for="input-fname">First Name</label>
+                                    </div>
+                                    @error('first_name')
+                                        <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
-                                @error('first_name')
-                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                                @enderror
-                                <div class="input-container flex-1">
-                                    <input type="text" id="input-lname" placeholder=" "
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        name="last_name" required>
-                                    <label for="input-lname">Last Name</label>
+
+                                <div class="flex-1">
+                                    <div class="input-container relative">
+                                        <span
+                                            class="absolute left-4 top-5 transform -translate-y-1/2 text-xs xl:text-sm pointer-events-none z-10">🇱🇸</span>
+                                        <input type="text" id="input-lname" placeholder=" "
+                                            class="input-field w-full pl-12 pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                            name="last_name" required>
+                                        <label for="input-lname">Last Name</label>
+                                    </div>
                                 </div>
-                                <div class="input-container w-[7rem] max-sm:w-full">
-                                    <input type="text" id="input-mname" placeholder=" " maxlength="5"
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        name="middle_initial">
-                                    <label for="input-mname">M.I.</label>
+
+                                <div class="w-[7rem] max-sm:w-full">
+                                    <div class="input-container relative">
+                                        <span
+                                            class="absolute left-4 top-5 transform -translate-y-1/2 text-xs xl:text-sm pointer-events-none z-10">🇲🇮</span>
+                                        <input type="text" id="input-mname" placeholder=" " maxlength="5"
+                                            class="input-field w-full pl-12 pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                            name="middle_initial">
+                                        <label for="input-mname">M.I.</label>
+                                    </div>
                                 </div>
                             </div>
 
@@ -452,7 +456,7 @@
                             <div class="input-container relative w-full">
                                 <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
                                     <i
-                                        class="fas fa-calendar-day absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                        class="fas fa-calendar-day absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                 </div>
                                 <input datepicker id="datepicker" name="birthdate" datepicker-format="mm-dd-yyyy"
                                     type="text"
@@ -519,7 +523,7 @@
 
                             <div class="input-container w-full relative">
                                 <i
-                                    class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                 <input type="email" id="input-email" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="email" required>
@@ -529,7 +533,7 @@
                             <!-- Finnish Address Fields -->
                             <div class="input-container w-full relative">
                                 <i
-                                    class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                 <input type="text" id="input-street" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="street_address" required>
@@ -539,7 +543,7 @@
                             <div class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
                                 <div class="input-container flex-1">
                                     <i
-                                        class="fas fa-mail-bulk absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                        class="fas fa-mail-bulk absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                     <input type="text" id="input-postal" placeholder=" " maxlength="5"
                                         class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                         name="postal_code" required>
@@ -547,7 +551,7 @@
                                 </div>
                                 <div class="input-container flex-1">
                                     <i
-                                        class="fas fa-city absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                        class="fas fa-city absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                     <input type="text" id="input-city" placeholder=" "
                                         class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                         name="city" required>
@@ -558,7 +562,7 @@
                             <!-- District with Autocomplete -->
                             <div class="input-container w-full relative" id="district-container">
                                 <i
-                                    class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 z-10"></i>
+                                    class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                 <input type="text" id="input-district" placeholder=" " autocomplete="off"
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="district" required>
@@ -603,7 +607,7 @@
                             <!-- Business Registration Number -->
                             <div class="input-container w-full relative">
                                 <i
-                                    class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                 <input type="text" id="input-business-id" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="business_id">
@@ -613,7 +617,7 @@
                             <!-- E-Invoice Number -->
                             <div class="input-container w-full relative">
                                 <i
-                                    class="fas fa-receipt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    class="fas fa-receipt absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                 <input type="text" id="input-einvoice-number" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="einvoice_number">
@@ -676,7 +680,7 @@
                             <!-- Email (Company) -->
                             <div class="input-container w-full relative">
                                 <i
-                                    class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                 <input type="email" id="input-company-email" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="company_email">
@@ -686,7 +690,7 @@
                             <!-- Company Address Fields -->
                             <div class="input-container w-full relative">
                                 <i
-                                    class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                    class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                 <input type="text" id="input-company-street" placeholder=" "
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="company_street_address">
@@ -777,7 +781,7 @@
                         <h1 id="form-head" class="mb-4">Set up your security questions</h1>
                         <div class="input-container w-full max-w-md mx-auto relative">
                             <i
-                                class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                             <button type="button" id="dropdown-secques1"
                                 class="security-question-btn1 select-field w-full pl-12 pr-4 py-4 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-400 text-left font-normal">
                                 Select a security question
@@ -794,7 +798,7 @@
                         </div>
                         <div class="input-container w-full max-w-md mx-auto">
                             <i
-                                class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                class="fas fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                             <input type="text" id="input-secans-1" placeholder=" "
                                 class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                 name="security_answer_1" required>
@@ -836,7 +840,7 @@
                         <h1 id="form-head" class="mb-4 p-6">Let's Get Your Account Ready</h1>
                         <div class="input-container w-full max-w-md mx-auto">
                             <i
-                                class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                             <input type="text" id="input-username" placeholder=" "
                                 class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                 name="username" value="{{ old('username') }}" required>
@@ -847,7 +851,7 @@
                         @enderror
 
                         <div class="input-container w-full max-w-md mx-auto relative">
-                            <i class="fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                            <i class="fas fa-key absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                             <input type="password" id="input-new-password" placeholder=" "
                                 class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                 name="password" autocomplete="new-password" required>
@@ -857,7 +861,7 @@
                         </div>
                         <div class="input-container w-full max-w-md mx-auto relative">
                             <i
-                                class="fas fa-square-check absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
+                                class="fas fa-square-check absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                             <input type="password" id="input-confirm-password" placeholder=" "
                                 class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                 name="password_confirmation" autocomplete="new-password" required>
@@ -1722,17 +1726,16 @@
                         // Completed step - green with check mark
                         circle.classList.add('bg-blue-500', 'text-white');
                         content.innerHTML = checkIconHTML;
-                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-700';
+                        label.className = 'mt-2 text-sm sm:text-sm text-center text-blue-700';
                     } else if (i === currentStep) {
-                        // Current/Active step - blue with ring
-                        circle.classList.add('bg-blue-500', 'text-white', 'ring-4', 'ring-blue-100');
+                        circle.classList.add('bg-blue-500', 'dark:bg-blue-600', 'text-white', 'shadow-lg', 'scale-110');
                         content.textContent = i;
-                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-blue-600';
+                        label.className = 'mt-3 text-sm sm:text-sm font-bold text-center text-blue-600 dark:text-blue-400 max-w-[100px] sm:max-w-none transition-colors duration-300';
                     } else {
                         // Pending step - gray
-                        circle.classList.add('bg-white', 'text-gray-400', 'border-2', 'border-gray-300');
+                        circle.classList.add('bg-white', 'text-blue-400', 'border-2', 'border-blue-300');
                         content.textContent = i;
-                        label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-400';
+                        label.className = 'mt-2 text-sm sm:text-sm text-center text-gray-400';
                     }
                 }
 

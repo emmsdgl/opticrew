@@ -186,9 +186,9 @@
                 <div id="container-2-layer" class="text-sm">
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" class="border border-gray-300" name="remember">
-                        <span class="text-gray-500 font-sans text-xs">Remember Me</span>
+                        <span class="text-gray-500 font-sans text-sm">Remember Me</span>
                     </label>
-                    <a href="{{ route('forgot.password') }}" class="text-blue-600 hover:underline text-xs">Forgot
+                    <a href="{{ route('forgot.password') }}" class="text-blue-600 hover:underline text-sm">Forgot
                         Password?</a>
                 </div>
 

@@ -68,15 +68,15 @@
                         <x-dropdown label="Filter by:" default="All" :options="['All', 'Active', 'Inactive', 'Pending']"
                             id="status-filter" />
                         <x-dropdown label="Sort by:" default="Latest" :options="[
-                            'latest' => 'Latest',
-                            'oldest' => 'Oldest',
-                            'name_asc' => 'Name (A-Z)',
-                            'name_desc' => 'Name (Z-A)'
-                        ]" />
+        'latest' => 'Latest',
+        'oldest' => 'Oldest',
+        'name_asc' => 'Name (A-Z)',
+        'name_desc' => 'Name (Z-A)'
+    ]" />
                     </div>
                 </div>
                 <!-- Remove overflow-y-auto from here and add a wrapper inside the component -->
-                <div class="h-20 overflow-y-auto">
+                <div class="h-45 overflow-y-auto">
                     <x-client-components.appointment-page.appointment-list-item :items="$appointments->map(function ($appointment) {
         return [
             'id' => $appointment->id,
@@ -262,13 +262,48 @@
         </div>
 
         <!-- Right Panel - Attendance Overview -->
-        <div
-            class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto p-6 mt-3">
+        <div class="flex flex-col gap-3 w-full lg:w-1/3 rounded-lg h-auto">
+            <!-- Ready To Book Card - NEW -->
+            <div id="ready-card" class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <!-- Background Image for Light Mode -->
+                <div class="absolute inset-0 bg-cover bg-center block dark:hidden"
+                    style="background-image: url('{{ asset('images/backgrounds/ready-to-book-bg.svg') }}');">
+                </div>
+
+                <!-- Background Image for Dark Mode -->
+                <div class="absolute inset-0 bg-cover bg-center hidden dark:block"
+                    style="background-image: url('{{ asset('images/backgrounds/ready-to-book-bg-dark.svg') }}');">
+                </div>
+
+                <!-- Content -->
+                <div class="relative p-6 h-full">
+                    <div class="flex flex-col lg:flex-col items-center lg:items-start">
+                        <!-- Text Content -->
+                        <div class="flex flex-row w-full">
+                            <h3 class="text-xl lg:text-xl font-bold text-gray-900 dark:text-white mb-2 mt-3">
+                                Ready To Book <br>Your Cleaning?
+                            </h3>
+                        </div>
+
+                        <div class="mb-2">
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                Currently
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">2 Cleaning<br>
+                                    Services</span>
+                            </p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                                Choose your preferred date, select your unit size, and we'll take care of the
+                                rest.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Inner Up - Recommendation Service List -->
-            <x-labelwithvalue label="Recommended Services For You" count="(2)" />
             <div class="mt-3 w-full flex flex-col overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
                 <div
                     class="flex flex-col gap-6 overflow-y-auto snap-x snap-mandatory scroll-smooth scrollbar-custom w-full">
+
                     @php
                         $finalCleaningRating = \App\Models\Feedback::averageRatingForService('Final Cleaning');
                         $deepCleaningRating = \App\Models\Feedback::averageRatingForService('Deep Cleaning');
