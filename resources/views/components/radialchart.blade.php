@@ -23,27 +23,27 @@
     <!-- Chart Container with Gradient Background -->
     <div class="relative flex-1 min-h-0">
         <!-- Subtle gradient background circle -->
-        <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-full h-full max-w-xs max-h-xs rounded-full bg-gradient-to-br from-indigo-50 via-pink-50 to-orange-50 
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-full bg-gradient-to-br from-indigo-50 via-pink-50 to-orange-50 
                         dark:from-indigo-950/20 dark:via-pink-950/20 dark:to-orange-950/20 opacity-40"></div>
         </div>
 
         <!-- ApexCharts Radial Chart -->
-        <div class="relative w-full h-full" id="{{ $chartId }}"></div>
+        <div class="relative w-full h-full flex items-center justify-center" id="{{ $chartId }}"></div>
 
         <!-- Custom Center Label (overlays the chart) -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="text-center">
-                <div class="text-3xl font-bold text-gray-900 dark:text-gray-100" 
+        <div class="absolute top-1/3 right-1/3 flex items-center justify-center pointer-events-none">
+            <div class="text-center justify-center w-full px-4">
+                <div class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100" 
                      id="{{ $chartId }}-total">0</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total Tasks</div>
+                <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Total Tasks</div>
             </div>
         </div>
     </div>
 
     <!-- Floating Info Card with a unique ID -->
-    <div class="absolute top-4 left-4 bg-gray-900 dark:bg-gray-800 text-white rounded-lg px-3 py-2 
-                shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-95 z-5 flex items-center gap-2"
+    <div class="absolute top-2 left-1 sm:top-4 bg-gray-900 dark:bg-gray-800 text-white rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 
+                shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-95 z-10 flex items-center gap-2"
          id="{{ $chartId }}-info-card">
         <div class="flex items-center gap-1.5">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
@@ -57,8 +57,8 @@
     </div>
 
     <!-- Legend -->
-    <div class="flex flex-row justify-center gap-4 items-center border-gray-200
-                dark:border-gray-700 mb-4 w-full flex-shrink-0">
+    <div class="flex flex-row justify-center gap-3 sm:gap-4 items-center border-gray-200
+                dark:border-gray-700 mb-4 w-full flex-shrink-0 flex-wrap">
         <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full flex-shrink-0" style="background: {{ $colors['done'] }}"></span>
             <span class="text-xs text-gray-700 dark:text-gray-300">{{ $labels['done'] }}</span>
@@ -90,12 +90,23 @@
                 chartEl.__apexchart__.destroy();
             }
 
-            const series = [
-                chartData.done || 0, 
-                chartData.inProgress || 0, 
-                chartData.toDo || 0
+            // Convert data to numbers, default to 0 if empty
+            const rawSeries = [
+                parseFloat(chartData.done) || 0, 
+                parseFloat(chartData.inProgress) || 0, 
+                parseFloat(chartData.toDo) || 0
             ];
-            const total = series.reduce((a, b) => a + b, 0);
+            
+            const total = rawSeries.reduce((a, b) => a + b, 0);
+            
+            // Create series with full circles (100) for empty data
+            const series = rawSeries.map(value => value > 0 ? value : 100);
+            
+            // Determine colors - gray for empty, original color for data
+            const dynamicColors = rawSeries.map((value, index) => {
+                const colorKeys = ['done', 'inProgress', 'toDo'];
+                return value > 0 ? colors[colorKeys[index]] : '#E5E7EB'; // gray-200 for light mode
+            });
 
             const options = {
                 series: series,
@@ -107,7 +118,7 @@
                     events: {
                         dataPointMouseEnter: function(event, chartContext, config) {
                             const seriesIndex = config.seriesIndex;
-                            const value = series[seriesIndex];
+                            const value = rawSeries[seriesIndex];
                             const percent = total > 0 ? Math.round((value / total) * 100) : 0;
                             const labelNames = ['done', 'inProgress', 'toDo'];
                             const labelKey = labelNames[seriesIndex];
@@ -126,7 +137,7 @@
                             const card = document.getElementById(`${chartId}-info-card`);
                             if (!card) return;
 
-                            const doneValue = series[0];
+                            const doneValue = rawSeries[0];
                             const donePercent = total > 0 ? Math.round((doneValue / total) * 100) : 0;
                             
                             card.querySelector('.text-xs.font-medium').textContent = 'Goal Sessions';
@@ -141,27 +152,94 @@
                         offsetY: 0,
                         startAngle: 0,
                         endAngle: 270,
-                        hollow: { margin: 5, size: '40%', background: 'transparent' },
-                        track: { background: '#f3f4f6', strokeWidth: '97%', margin: 5 },
+                        hollow: { 
+                            margin: 5, 
+                            size: '40%', 
+                            background: 'transparent' 
+                        },
+                        track: { 
+                            background: document.documentElement.classList.contains('dark') ? '#374151' : '#f3f4f6', // gray-700 for dark, gray-100 for light
+                            strokeWidth: '97%', 
+                            margin: 5 
+                        },
                         dataLabels: { show: false }
                     }
                 },
-                colors: [colors.done, colors.inProgress, colors.toDo],
+                colors: dynamicColors,
                 labels: [labels.done, labels.inProgress, labels.toDo],
                 legend: { show: false },
-                stroke: { lineCap: 'round' }
+                stroke: { lineCap: 'round' },
+                responsive: [{
+                    breakpoint: 640,
+                    options: {
+                        chart: {
+                            height: 280
+                        }
+                    }
+                }, {
+                    breakpoint: 768,
+                    options: {
+                        chart: {
+                            height: 320
+                        }
+                    }
+                }, {
+                    breakpoint: 1024,
+                    options: {
+                        chart: {
+                            height: 360
+                        }
+                    }
+                }]
             };
 
             const chart = new ApexCharts(chartEl, options);
             chart.render();
 
+            // Update center total and info card
             document.getElementById(chartId + '-total').textContent = total;
-            document.getElementById(chartId + '-done-value').textContent = Math.round(series[0]);
+            document.getElementById(chartId + '-done-value').textContent = Math.round(rawSeries[0]);
             
-            const donePercent = total > 0 ? Math.round((series[0] / total) * 100) : 0;
+            const donePercent = total > 0 ? Math.round((rawSeries[0] / total) * 100) : 0;
             document.getElementById(chartId + '-done-percent').textContent = donePercent + '%';
 
             chartEl.__apexchart__ = chart;
+
+            // Handle dark mode changes
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class') {
+                        const isDark = document.documentElement.classList.contains('dark');
+                        chart.updateOptions({
+                            plotOptions: {
+                                radialBar: {
+                                    track: {
+                                        background: isDark ? '#374151' : '#f3f4f6'
+                                    }
+                                }
+                            }
+                        });
+                        
+                        // Update colors for empty rings based on theme
+                        const updatedColors = rawSeries.map((value, index) => {
+                            const colorKeys = ['done', 'inProgress', 'toDo'];
+                            if (value > 0) {
+                                return colors[colorKeys[index]];
+                            } else {
+                                return isDark ? '#4B5563' : '#E5E7EB'; // gray-600 for dark, gray-200 for light
+                            }
+                        });
+                        
+                        chart.updateOptions({
+                            colors: updatedColors
+                        });
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true
+            });
         } else {
             console.error('ApexCharts is not loaded');
         }

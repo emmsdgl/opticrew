@@ -66,37 +66,17 @@
                                     <span class="font-semibold">{{ $user->created_at->format('F j, Y') }}</span>
                                 </span>
                             </div>
+                            <div
+                                class="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-800">
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">Email Address</span>
+                                <span
+                                    class="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                                    <span class="font-semibold">{{ $user->email }}</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="py-6">
-                        <!-- Email Address -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                Email Address
-                            </label>
-                            <input type="email" value="{{ $user->email }}" readonly
-                                class="w-full text-sm px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed">
-                        </div>
-                        <!-- Mobile Number and Billing Address -->
-                        <div
-                            class="flex flex-col md:flex-row w-full gap-4 my-6 border-b border-gray-200 dark:border-gray-800 pb-6">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                    Mobile Number
-                                </label>
-                                <input type="text" value="{{ $user->email }}" readonly
-                                    class="w-full text-sm px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed">
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                    Billing Address
-                                </label>
-                                <input type="text" value="{{ $user->email }}" readonly
-                                    class="w-full text-sm px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed">
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Toggle Settings -->
                     <div class="space-y-6">
@@ -114,7 +94,7 @@
                             <div class="ml-4 flex-shrink-0">
                                 <!-- Toggle Switch -->
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer">
+                                    <input type="checkbox" class="sr-only peer" data-toggle-id="profile-visibility">
                                     <div
                                         class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                     </div>
@@ -136,7 +116,7 @@
                             <div class="ml-4 flex-shrink-0">
                                 <!-- Toggle Switch -->
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer">
+                                    <input type="checkbox" class="sr-only peer" data-toggle-id="two-factor">
                                     <div
                                         class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                     </div>
@@ -148,6 +128,7 @@
             </div>
             <!--Section 2: Change Password-->
             <div class="w-full p-4 flex flex-col md:flex-row pb-12 md:pb-24">
+                
                 <!--Description Panel-->
                 <div class="section-description w-full md:flex-1 flex-col justify-start text-justify mb-6 md:mb-0">
                     <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Change Password</h2>
@@ -156,10 +137,78 @@
                         account.</p>
                 </div>
                 <!--Form Details-->
-                <div class="form-description w-full md:flex-1" action="{{ route('client.settings.update-password') }}"
-                    method="POST">
-                    <form class="space-y-6 mt-0 md:mt-6">
+                <div class="form-description w-full md:flex-1">
+                    <form class="space-y-6 mt-0 md:mt-6" action="{{ route('client.settings.update-password') }}"
+                        method="POST">
                         @csrf
+
+                        <!-- Security Question Dropdown -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                                Security Question
+                            </label>
+                            <div x-data="{ open: false, selected: 'Select a security question' }" class="relative w-full">
+                                <!-- Dropdown Button -->
+                                <button @click="open = !open" type="button"
+                                    class="w-full bg-white hover:bg-gray-50 focus:ring-2 focus:outline-none focus:ring-blue-500
+                               border border-gray-300 dark:border-gray-600 rounded-lg text-sm px-4 py-3 flex justify-between items-center
+                               dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-blue-800 transition-all duration-300">
+                                    <span class="text-sm font-normal flex-1 text-left"
+                                        :class="selected === 'Select a security question' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'"
+                                        x-text="selected"></span>
+                                    <svg class="w-3 h-3 ml-2 flex-shrink-0 transition-transform duration-300 text-gray-500 dark:text-gray-400"
+                                        :class="{ 'rotate-180': open }" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m1 1 4 4 4-4" />
+                                    </svg>
+                                </button>
+
+                                <!-- Dropdown Menu -->
+                                <div x-show="open" @click.away="open = false"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95" class="absolute left-0 right-0 top-full mt-2 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-lg max-h-60 overflow-y-auto
+                               dark:bg-gray-700 origin-top" style="display: none;">
+                                    <ul class="py-2 text-sm text-gray-700 dark:text-white">
+                                        <li>
+                                            <button
+                                                @click="selected = 'What is the name of your first pet?'; open = false"
+                                                type="button"
+                                                class="w-full text-left px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100
+                                                                   dark:hover:bg-gray-600 transition-colors"
+                                                :class="{ 'bg-gray-100 dark:bg-gray-600': selected === 'What is the name of your first pet?' }">
+                                                What is the name of your first pet?
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button @click="selected = 'In what city were you born?'; open = false"
+                                                type="button"
+                                                class="w-full text-left px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100
+                                                                   dark:hover:bg-gray-600 transition-colors"
+                                                :class="{ 'bg-gray-100 dark:bg-gray-600': selected === 'In what city were you born?' }">
+                                                In what city were you born?
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <input type="hidden" name="security_question" x-model="selected">
+                            </div>
+                        </div>
+
+                        <!-- Security Question Answer -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                                Security Question Answer
+                            </label>
+                            <input type="text" name="security_answer_1" placeholder="Enter your answer"
+                                class="w-full text-sm px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                required>
+                        </div>
+
                         <!-- Current Password -->
                         <div>
                             <label for="current_password"
@@ -169,7 +218,8 @@
                             <div class="relative">
                                 <input type="password" id="current-password" name="current_password"
                                     placeholder="Provide your currently set password"
-                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required>
                                 <button type="button" onclick="togglePassword('current-password', this)"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,7 +241,8 @@
                             <div class="relative">
                                 <input type="password" id="password" name="password"
                                     placeholder="Should be alphanumeric with atleast 8 characters"
-                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required>
                                 <button type="button" onclick="togglePassword('password', this)"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,7 +265,8 @@
                             <div class="relative">
                                 <input type="password" name="password_confirmation" id="password_confirmation"
                                     placeholder="Retype your new password"
-                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required>
                                 <button type="button" onclick="togglePassword('password_confirmation', this)"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,7 +316,7 @@
                             <div class="ml-4 flex-shrink-0">
                                 <!-- Toggle Switch -->
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer">
+                                    <input type="checkbox" class="sr-only peer" data-toggle-id="account-security">
                                     <div
                                         class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                     </div>
@@ -286,7 +338,7 @@
                             <div class="ml-4 flex-shrink-0">
                                 <!-- Toggle Switch -->
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer">
+                                    <input type="checkbox" class="sr-only peer" data-toggle-id="email-notifications">
                                     <div
                                         class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                     </div>
@@ -308,7 +360,7 @@
                             <div class="ml-4 flex-shrink-0">
                                 <!-- Toggle Switch -->
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer">
+                                    <input type="checkbox" class="sr-only peer" data-toggle-id="appointment-updates">
                                     <div
                                         class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                     </div>
@@ -330,7 +382,7 @@
                             <div class="ml-4 flex-shrink-0">
                                 <!-- Toggle Switch -->
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer">
+                                    <input type="checkbox" class="sr-only peer" data-toggle-id="service-updates">
                                     <div
                                         class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                     </div>
@@ -563,7 +615,7 @@
 
         // Load toggle states from localStorage on page load
         function loadToggleStates() {
-            const toggles = document.querySelectorAll('.toggle-input');
+            const toggles = document.querySelectorAll('input[type="checkbox"][data-toggle-id]');
             toggles.forEach(toggle => {
                 const toggleId = toggle.dataset.toggleId;
                 const savedState = localStorage.getItem('toggle_' + toggleId);
@@ -575,10 +627,15 @@
                     // Default: unchecked
                     toggle.checked = false;
                 }
+
+                // Add event listener to save state on change
+                toggle.addEventListener('change', function() {
+                    saveToggleState(this);
+                });
             });
         }
 
         // Load states when page loads
         document.addEventListener('DOMContentLoaded', loadToggleStates);
     </script>
-    </x-layouts.general-client>
+</x-layouts.general-client>

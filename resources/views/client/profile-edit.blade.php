@@ -134,7 +134,7 @@
                     <!-- Action Buttons -->
                     <div class="flex items-center space-x-4 pt-4">
                         <button type="submit"
-                                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                                class="px-12 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
                             Save Changes
                         </button>
                         <a href="{{ route('client.profile') }}"
