@@ -15,7 +15,7 @@
 
 @php
     $sizes = [
-        'sm' => ['card' => 'max-w-sm', 'avatar' => 'w-32h-24', 'greeting' => 'text-xl'],
+        'sm' => ['card' => 'max-w-sm', 'avatar' => 'w-24 h-24', 'greeting' => 'text-xl'],
         'default' => ['card' => 'max-w-lg', 'avatar' => 'w-32 h-32', 'greeting' => 'text-2xl'],
         'lg' => ['card' => 'max-w-2xl', 'avatar' => 'w-40 h-40', 'greeting' => 'text-3xl'],
     ];
@@ -37,6 +37,7 @@
          email: '{{ $email }}',
          phone: '{{ $phone }}',
          location: '{{ $location }}',
+         uploadFormId: 'upload-form-' + Date.now(),
          toggleEdit() {
              if (this.editing) {
                  // Save changes
@@ -65,7 +66,7 @@
             </svg>
             
             <!-- Avatar -->
-            <div class="{{ $currentSize['avatar'] }} rounded-full bg-purple-100 dark:bg-purple-900/30 overflow-hidden shadow-xl relative">
+            <div id="profile-avatar" class="{{ $currentSize['avatar'] }} rounded-full bg-purple-100 dark:bg-purple-900/30 overflow-hidden shadow-xl relative">
                 @if($avatar)
                     <img src="{{ $avatar }}" alt="{{ $name }}" class="w-full h-full object-cover">
                 @else
@@ -92,36 +93,78 @@
         </p>
         
         <!-- Status Badge -->
-
-            <div class="inline-flex grid-cols-2 items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2">
-                <span class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $status }}</span>
-            </div>
+        <div class="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2">
+            <span class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $status }}</span>
+        </div>
     </div>
 
     <!-- Profile Picture Upload (Shown in Edit Mode) -->
-    <div x-show="editing" x-cloak class="mb-6 bg-purple-50 dark:bg-purple-900/20 rounded-2xl p-4">
+    <div x-show="editing" x-cloak class="mb-6 rounded-2xl p-4">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Update Profile Picture</h3>
-        <form method="POST" action="{{ $uploadRoute }}" enctype="multipart/form-data" class="space-y-3">
+        
+        <form method="POST" action="{{ $uploadRoute }}" enctype="multipart/form-data" :id="uploadFormId">
             @csrf
-            <input type="file"
-                   name="profile_picture"
-                   accept="image/*"
-                   class="block w-full text-sm text-gray-500 dark:text-gray-400
-                          file:mr-4 file:py-2 file:px-4
-                          file:rounded-lg file:border-0
-                          file:text-sm file:font-semibold
-                          file:bg-blue-50 file:text-blue-700
-                          hover:file:bg-blue-100
-                          dark:file:bg-blue-900 dark:file:text-blue-200
-                          dark:hover:file:bg-blue-800"
-                   required>
-            <button type="submit"
-                    class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm">
-                Upload Picture
-            </button>
+            
+            <!-- Drag and Drop Area -->
+            <div :id="'drop-zone-' + uploadFormId" 
+                 class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-gray-50 dark:bg-gray-900">
+                
+                <!-- Upload Icon -->
+                <div class="mb-3 flex justify-center">
+                    <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+
+                <!-- Upload Text -->
+                <div :id="'upload-text-' + uploadFormId">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-1">
+                        Drag & drop <span class="text-blue-600 dark:text-blue-400 font-semibold">images</span>, or 
+                        <span class="text-blue-600 dark:text-blue-400 font-semibold">videos</span>
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        or <button type="button" @click="$refs.fileInput.click()" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">browse files</button> on your computer
+                    </p>
+                </div>
+
+                <!-- File Preview (Hidden by default) -->
+                <div :id="'file-preview-' + uploadFormId" class="hidden">
+                    <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center space-x-3">
+                            <img :id="'preview-image-' + uploadFormId" src="" alt="Preview" class="w-10 h-10 rounded object-cover">
+                            <div class="text-left">
+                                <p :id="'file-name-' + uploadFormId" class="text-xs font-medium text-gray-900 dark:text-white"></p>
+                                <p :id="'file-size-' + uploadFormId" class="text-xs text-gray-500 dark:text-gray-400"></p>
+                            </div>
+                        </div>
+                        <button type="button" @click="window.removeUploadFile(uploadFormId)" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hidden File Input -->
+                <input type="file"
+                       x-ref="fileInput"
+                       name="profile_picture"
+                       accept="image/*"
+                       class="hidden"
+                       @change="window.handleUploadFileSelect(uploadFormId, $event.target)">
+            </div>
+
+            <!-- Upload Button -->
+            <div class="mt-3 flex justify-center">
+                <button type="submit" :id="'upload-button-' + uploadFormId" disabled
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm">
+                    Upload Picture
+                </button>
+            </div>
+
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">JPG, PNG or GIF. Max size 2MB.</p>
         </form>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">JPG, PNG or GIF. Max size 2MB.</p>
     </div>
 
     <!-- Profile Update Form -->
@@ -142,12 +185,12 @@
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Email</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Email</div>
                         <input x-show="editing"
                                type="email"
                                name="email"
                                x-model="email"
-                               class="w-full text-sm font-medium px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                               class="w-full text-sm font-medium px-3 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 transition-colors">
                         <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate" x-text="email"></div>
                     </div>
                 </div>
@@ -162,13 +205,13 @@
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Phone</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Phone</div>
                         <input x-show="editing"
                                type="text"
                                name="phone"
                                x-model="phone"
                                placeholder="+358 XX XXX XXXX"
-                               class="w-full text-sm font-medium px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                               class="w-full text-sm font-medium px-3 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 transition-colors">
                         <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="phone || '+358 XX XXX XXXX'"></div>
                     </div>
                 </div>
@@ -177,17 +220,19 @@
             <!-- Username (Editable) -->
             <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200">
                 <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition-colors">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                            <path d="M240 192C240 147.8 275.8 112 320 112C364.2 112 400 147.8 400 192C400 236.2 364.2 272 320 272C275.8 272 240 236.2 240 192zM448 192C448 121.3 390.7 64 320 64C249.3 64 192 121.3 192 192C192 262.7 249.3 320 320 320C390.7 320 448 262.7 448 192zM144 544C144 473.3 201.3 416 272 416L368 416C438.7 416 496 473.3 496 544L496 552C496 565.3 506.7 576 520 576C533.3 576 544 565.3 544 552L544 544C544 446.8 465.2 368 368 368L272 368C174.8 368 96 446.8 96 544L96 552C96 565.3 106.7 576 120 576C133.3 576 144 565.3 144 552L144 544z"/></svg>                    </div>
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Username</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Username</div>
                         <input x-show="editing"
                                type="text"
                                name="username"
                                x-model="username"
                                placeholder="Enter username"
-                               class="w-full text-sm font-medium px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                               class="w-full text-sm font-medium px-3 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 transition-colors">
                         <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="username || 'Add a Username'"></div>
                     </div>
                 </div>
@@ -196,37 +241,39 @@
             <!-- Location -->
             <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 w-full">
                 <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition-colors">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
                         <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Location</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Location</div>
                         <input x-show="editing"
                                type="text"
                                name="location"
                                x-model="location"
-                               class="w-full text-sm font-medium px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                               placeholder="Enter location"
+                               class="w-full text-sm font-medium px-3 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 transition-colors">
                         <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="location || 'Add a location'"></div>
                     </div>
                 </div>
             </div>
         </div>
     </form>
-<div class="w-full flex justify-center items-center">
-    <div class="w-1/3 flex justify-center items-center py-4 rounded-lg">
-        <x-button 
-            label="Edit Profile" 
-            color="blue" 
-            size="md"
-            icon='<i class="fa-solid fa-pen"></i>'
-            x-on:click="toggleEdit"
-            x-text="editing ? 'Save Changes' : 'Edit Profile'"
-        />
+
+    <div class="w-full flex justify-center items-center">
+        <div class="flex justify-center items-center w-full rounded-lg my-4">
+            <x-button 
+                label="Edit Profile" 
+                color="blue" 
+                size="save-edit-profile"
+                icon='<i class="fa-solid fa-pen"></i>'
+                x-on:click="toggleEdit"
+                x-text="editing ? 'Save Changes' : 'Edit Profile'"
+            />
+        </div>
     </div>
-</div>
 </div>
 
 <style>
@@ -249,6 +296,83 @@
 </style>
 
 <script>
+// Global functions for file upload handling
+window.handleUploadFileSelect = function(formId, input) {
+    const file = input.files[0];
+    
+    if (file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File size must be less than 2MB');
+            return;
+        }
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewImage = document.getElementById('preview-image-' + formId);
+            const profileAvatar = document.getElementById('profile-avatar');
+            
+            if (previewImage) {
+                previewImage.src = e.target.result;
+            }
+            
+            // Update the main avatar preview
+            if (profileAvatar) {
+                profileAvatar.innerHTML = `<img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover">`;
+            }
+        };
+        reader.readAsDataURL(file);
+
+        // Update file info
+        const fileName = document.getElementById('file-name-' + formId);
+        const fileSize = document.getElementById('file-size-' + formId);
+        
+        if (fileName) fileName.textContent = file.name;
+        if (fileSize) fileSize.textContent = window.formatFileSize(file.size) + ' • ' + file.type.split('/')[1].toUpperCase();
+
+        // Show preview, hide upload text
+        const uploadText = document.getElementById('upload-text-' + formId);
+        const filePreview = document.getElementById('file-preview-' + formId);
+        
+        if (uploadText) uploadText.classList.add('hidden');
+        if (filePreview) filePreview.classList.remove('hidden');
+
+        // Enable upload button
+        const uploadButton = document.getElementById('upload-button-' + formId);
+        if (uploadButton) uploadButton.disabled = false;
+    }
+};
+
+window.removeUploadFile = function(formId) {
+    const form = document.getElementById(formId);
+    const fileInput = form ? form.querySelector('input[type="file"]') : null;
+    
+    if (fileInput) fileInput.value = '';
+    
+    const uploadText = document.getElementById('upload-text-' + formId);
+    const filePreview = document.getElementById('file-preview-' + formId);
+    const uploadButton = document.getElementById('upload-button-' + formId);
+    
+    if (uploadText) uploadText.classList.remove('hidden');
+    if (filePreview) filePreview.classList.add('hidden');
+    if (uploadButton) uploadButton.disabled = true;
+};
+
+window.formatFileSize = function(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Animate the progress ring on load
     const progressRings = document.querySelectorAll('.profile-progress-ring');
@@ -258,6 +382,47 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             ring.style.strokeDashoffset = offset;
         }, 100);
+    });
+
+    // Setup drag and drop for all upload zones
+    document.querySelectorAll('[id^="drop-zone-"]').forEach(dropZone => {
+        const formId = dropZone.id.replace('drop-zone-', '');
+        const form = document.getElementById(formId);
+        const fileInput = form ? form.querySelector('input[type="file"]') : null;
+
+        if (!fileInput) return;
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        // Highlight drop zone when dragging over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function() {
+                dropZone.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function() {
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
+            }, false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                fileInput.files = files;
+                window.handleUploadFileSelect(formId, fileInput);
+            }
+        }, false);
     });
 });
 </script>

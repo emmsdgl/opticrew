@@ -26,6 +26,10 @@ use App\Http\Controllers\FeedbackController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
+Route::get('/coming', function () {
+    return view('coming-soon');
+})->name('coming');
+
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
 // --- LANDING PAGE ROUTES (Public) UNCOMMENT THIS ONCE DONE---

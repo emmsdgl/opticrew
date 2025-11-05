@@ -68,30 +68,30 @@
                         <x-dropdown label="Filter by:" default="All" :options="['All', 'Active', 'Inactive', 'Pending']"
                             id="status-filter" />
                         <x-dropdown label="Sort by:" default="Latest" :options="[
-        'latest' => 'Latest',
-        'oldest' => 'Oldest',
-        'name_asc' => 'Name (A-Z)',
-        'name_desc' => 'Name (Z-A)'
-    ]" />
+                            'latest' => 'Latest',
+                            'oldest' => 'Oldest',
+                            'name_asc' => 'Name (A-Z)',
+                            'name_desc' => 'Name (Z-A)'
+                        ]" />
                     </div>
                 </div>
                 <!-- Remove overflow-y-auto from here and add a wrapper inside the component -->
-                <div class="h-45 overflow-y-auto">
-                    <x-client-components.appointment-page.appointment-list-item :items="$appointments->map(function ($appointment) {
-        return [
-            'id' => $appointment->id,
-            'service' => $appointment->service_type ?? 'N/A',
-            'status' => ucfirst($appointment->status),
-            'service_date' => $appointment->service_date ? \Carbon\Carbon::parse($appointment->service_date)->format('F j, Y') : 'N/A',
-            'service_time' => $appointment->service_time ? \Carbon\Carbon::parse($appointment->service_time)->format('g:i A') : 'N/A',
-            'action_label' => 'View Details',
-            'action_onclick' => 'viewDetails(' . $appointment->id . ')',
-            'menu_items' => [
-                ['label' => 'Reschedule', 'action' => 'reschedAppointment(' . $appointment->id . ')'],
-                ['label' => 'Cancel Appointment', 'action' => 'cancelAppointment(' . $appointment->id . ')'],
-            ]
-        ];
-    })->toArray()" :maxHeight="'30rem'" />
+                <div class="h-48 overflow-y-auto">
+                    <x-client-components.appointment-page.appointment-overview-list :items="$appointments->map(function ($appointment) {
+                        return [
+                            'id' => $appointment->id,
+                            'service' => $appointment->service_type ?? 'N/A',
+                            'status' => ucfirst($appointment->status),
+                            'service_date' => $appointment->service_date ? \Carbon\Carbon::parse($appointment->service_date)->format('F j, Y') : 'N/A',
+                            'service_time' => $appointment->service_time ? \Carbon\Carbon::parse($appointment->service_time)->format('g:i A') : 'N/A',
+                            'action_label' => 'View Details',
+                            'action_onclick' => 'viewDetails(' . $appointment->id . ')',
+                            'menu_items' => [
+                                ['label' => 'Reschedule', 'action' => 'reschedAppointment(' . $appointment->id . ')'],
+                                ['label' => 'Cancel Appointment', 'action' => 'cancelAppointment(' . $appointment->id . ')'],
+                            ]
+                        ];
+                    })->toArray()" :maxHeight="'30rem'" />
                 </div>
             </div>
             <!-- Appointment Details Modal -->
@@ -280,7 +280,7 @@
                     <div class="flex flex-col lg:flex-col items-center lg:items-start">
                         <!-- Text Content -->
                         <div class="flex flex-row w-full">
-                            <h3 class="text-xl lg:text-xl font-bold text-gray-900 dark:text-white mb-2 mt-3">
+                            <h3 class="text-xl lg:text-xl font-black text-gray-900 dark:text-white mb-2 mt-3">
                                 Ready To Book <br>Your Cleaning?
                             </h3>
                         </div>

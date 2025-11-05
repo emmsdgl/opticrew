@@ -47,7 +47,7 @@
 
             <!-- Inner Up - Tasks Summary -->
             <div
-                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-64 sm:h-1/2 md:h-1/2">
+                class="w-full rounded-lg h-64 sm:h-1/2 md:h-1/2">
 
                 <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
                     'done' => 'Done',
@@ -64,7 +64,7 @@
 
             <!-- Inner Down - Tasks Particulars -->
             <div
-                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-auto sm:h-56 md:h-auto overflow-y-auto">
+                class="w-full rounded-lg h-full sm:h-56 md:h-auto overflow-y-auto">
 
                 <div class="w-full flex flex-col">
                     <div class="space-y-4 p-4">
