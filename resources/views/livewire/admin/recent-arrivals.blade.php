@@ -1,6 +1,4 @@
-<div wire:poll.5s class="w-full flex flex-col gap-4 p-4 rounded-lg bg-white dark:bg-gray-800">
-    <x-labelwithvalue label="Recent Arrivals" :count="'(' . $recentArrivals->count() . ')'" />
-    
+<div wire:poll.5s class="w-full flex flex-col gap-4 p-4 rounded-lg">    
     <div class="overflow-y-auto h-52 pr-2">
         @if($recentArrivals->isEmpty())
             <div class="flex items-center justify-center h-full">
@@ -23,7 +21,7 @@
     </div>
     
     {{-- Optional: Show last updated time --}}
-    <div class="text-xs text-gray-400 text-right">
+    <div class="text-xs text-gray-400 dark:text-gray-600 text-right">
         Last updated: {{ now()->format('h:i:s A') }}
     </div>
 </div>

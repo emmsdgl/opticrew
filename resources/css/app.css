@@ -16,7 +16,13 @@
   font-style: italic;
   font-display: swap;
 }
- 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans;
+  }
+}

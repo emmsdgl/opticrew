@@ -31,32 +31,64 @@ class DashboardController extends Controller
             ->get();
             
         // === TASK DATA ===
-        $tasksFromDb = Task::with(['location.contractedClient', 'client.user'])
+        $tasksFromDb = Task::with(['location.contractedClient', 'client.user', 'optimizationTeam.members.employee.user'])
+            ->whereBetween('scheduled_date', [
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth()
+            ])
             ->orderBy('scheduled_date', 'desc')
-            ->take(10)
             ->get();
 
-        $tasks = $tasksFromDb->map(function ($task) {
-            $title = 'Task without Client';
+        $tasks = $tasksFromDb->map(function ($task, $index) {
+            $clientName = 'N/A';
 
             if ($task->location && $task->location->contractedClient) {
-                $title = $task->location->contractedClient->name;
+                $clientName = $task->location->contractedClient->name;
             } elseif ($task->client) {
-                $title = $task->client->first_name . ' ' . $task->client->last_name;
+                $clientName = $task->client->first_name . ' ' . $task->client->last_name;
+            }
+
+            // Get team members
+            $teamMembers = [];
+            if ($task->optimizationTeam) {
+                $teamMembers = $task->optimizationTeam->members()
+                    ->with('employee.user')
+                    ->get()
+                    ->map(function($member) {
+                        return [
+                            'name' => $member->employee && $member->employee->user ? $member->employee->user->name : 'Unknown',
+                            'picture' => $member->employee && $member->employee->user ? $member->employee->user->profile_picture : null
+                        ];
+                    })
+                    ->toArray();
             }
 
             return [
-                'id' => $task->id,
-                'title' => $title,
-                'category' => $task->task_description,
-                'date' => Carbon::parse($task->scheduled_date)->format('M d'),
-                'startTime' => $task->started_at ? Carbon::parse($task->started_at)->format('g:i a') : 'TBD',
-                'avatar' => 'https://i.pravatar.cc/30?u=' . $task->id,
-                'done' => $task->status === 'Completed',
+                'id' => $index,
+                'service' => $task->task_description,
+                'status' => $task->status,
+                'description' => $clientName,
+                'service_date' => $task->scheduled_date ? Carbon::parse($task->scheduled_date)->format('M d, Y') : null,
+                'service_time' => $task->scheduled_time ?? null,
+                'action_onclick' => "openTaskModal({$index})",
+                'action_label' => 'View Details',
+                // Store full task details for modal
+                'modal_data' => [
+                    'task_id' => $task->id,
+                    'client' => $clientName,
+                    'service_type' => $task->task_description,
+                    'service_date' => $task->scheduled_date ? Carbon::parse($task->scheduled_date)->format('M d, Y') : 'N/A',
+                    'service_time' => $task->scheduled_time ?? 'N/A',
+                    'start_date' => $task->started_at ? Carbon::parse($task->started_at)->format('M d, Y') : 'N/A',
+                    'end_date' => $task->completed_at ? Carbon::parse($task->completed_at)->format('M d, Y') : 'N/A',
+                    'team_name' => $task->optimizationTeam ? $task->optimizationTeam->team_name : 'N/A',
+                    'team_members' => $teamMembers,
+                    'status' => $task->status
+                ]
             ];
-        });
-        
-        $taskCount = Task::count();
+        })->values()->toArray();
+
+        $taskCount = count($tasks);
     
         // === ADMIN DATA ===
         $admin = Auth::user()->employee;
