@@ -111,6 +111,16 @@
             box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.2);
         }
     </style>
+        <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    'sans': ['Familjen Grotesk', 'system-ui', 'sans-serif'],
+                }
+            }
+        }
+    </script>
+
 </head>
 
 <body class="flex flex-col justify-start items-center min-h-screen bg-[url('/images/backgrounds/login_bg.svg')] bg-cover bg-center bg-no-repeat bg-fixed gap-3">

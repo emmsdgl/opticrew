@@ -26,6 +26,15 @@
           document.documentElement.classList.remove('dark');
         }
     </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    'sans': ['Familjen Grotesk', 'system-ui', 'sans-serif'],
+                }
+            }
+        }
+    </script>
 
     @livewireStyles 
 </head>
