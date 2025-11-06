@@ -167,7 +167,7 @@
     @stack('styles')
 </head>
 
-<body class="h-full dark:bg-gray-900">
+<body class="h-full dark:bg-gray-900 font-sans antialiased">
     <div id="main-container">
         <!-- Navigation Header -->
         <header class="inset-x-0 top-0 z-50">

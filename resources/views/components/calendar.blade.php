@@ -4,10 +4,10 @@
 ])
 
   <!-- Calendar Container -->
-<div class="w-full max-w-parent py-6 px-8 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-transparent">
+<div class="w-full max-w-parent px-8 pt-1 pb-9 rounded-lg bg-white dark:bg-transparent">
 
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center my-3 pb-6">
       <div>
         <p class="text-sm text-gray-600 dark:text-gray-400">Today is</p>
         <h2 id="today-{{ $calendarId }}" class="text-sm font-semibold"></h2>

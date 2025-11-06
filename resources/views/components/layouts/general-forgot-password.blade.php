@@ -123,7 +123,7 @@
 
 </head>
 
-<body class="flex flex-col justify-start items-center min-h-screen bg-[url('/images/backgrounds/login_bg.svg')] bg-cover bg-center bg-no-repeat bg-fixed gap-3">
+<body class="flex flex-col justify-start items-center min-h-screen bg-[url('/images/backgrounds/login_bg.svg')] bg-cover bg-center bg-no-repeat bg-fixed gap-3 font-sans antialiased">
       <!-- 🔹 Header with logo + back button -->
     <header class="absolute top-0 left-0 w-full flex justify-between items-center px-12 py-8">
         <div class="flex items-center gap-2">

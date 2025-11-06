@@ -1,4 +1,4 @@
-<div class="w-full flex flex-col p-4 rounded-lg bg-white dark:bg-gray-800">
+<div class="w-full flex flex-col p-4 rounded-lg">
     <div class="flex items-center justify-between mb-2">
         <p class="text-sm font-sans font-bold w-full text-left dark:text-gray-200">
             Attendance Chart
@@ -21,7 +21,7 @@
         <span wire:loading wire:target="loadAttendanceData" class="text-blue-500">
             <i class="fa-solid fa-circle-notch fa-spin"></i> Updating...
         </span>
-        <span wire:loading.remove wire:target="loadAttendanceData" class="text-gray-400">
+        <span wire:loading.remove wire:target="loadAttendanceData" class="text-gray-400 dark:text-gray-600">
             Last updated: {{ now()->format('h:i:s A') }}
         </span>
     </div>
