@@ -56,7 +56,7 @@
         }
     </style>
 
-    <section role="status" class="flex flex-col lg:flex-col gap-1 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
+    <section role="status" class="w-full flex flex-col lg:flex-col gap-1 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <!-- Inner Panel - Summary Cards Container -->
         <div
             class="flex flex-col gap-6 w-full rounded-lg px-8">
@@ -104,68 +104,42 @@
             <x-labelwithvalue label="Appointments Calendar" count="" />
             <div class="flex flex-row justify-between w-full items-center">
                 @php
-                    $events = [
-                        [
-                            'id' => 1,
-                            'title' => 'Check Health',
-                            'date' => '2025-11-07',  // Changed from 2024-08-07
-                            'startTime' => '09:00',
-                            'endTime' => '10:00',
-                            'time' => '09 AM - 10 AM',
-                            'description' => 'Annual checkup',
-                            'color' => '#EC4899',
+                    // Transform appointments to calendar events format
+                    $events = $appointments->map(function($appointment) {
+                        // Color based on status
+                        $statusColors = [
+                            'pending' => '#FFA500',    // Orange
+                            'confirmed' => '#2FBC00',  // Green
+                            'completed' => '#00BFFF',  // Blue
+                            'cancelled' => '#FE1E28',  // Red
+                        ];
+
+                        $color = $statusColors[$appointment->status] ?? '#6B7280'; // Default gray
+
+                        // Parse service time
+                        $serviceTime = \Carbon\Carbon::parse($appointment->service_time);
+                        $startTime = $serviceTime->format('H:i');
+
+                        // Estimate end time (assuming 2 hours for cleaning)
+                        $endTime = $serviceTime->addHours(2)->format('H:i');
+
+                        // Format time display
+                        $timeDisplay = \Carbon\Carbon::parse($appointment->service_time)->format('h:i A') . ' - ' .
+                                       \Carbon\Carbon::parse($appointment->service_time)->addHours(2)->format('h:i A');
+
+                        return [
+                            'id' => $appointment->id,
+                            'title' => $appointment->service_type,
+                            'date' => $appointment->service_date->format('Y-m-d'),
+                            'startTime' => $startTime,
+                            'endTime' => $endTime,
+                            'time' => $timeDisplay,
+                            'description' => $appointment->cabin_name . ' - ' . $appointment->number_of_units . ' unit(s)',
+                            'color' => $color,
                             'position' => 0,
                             'height' => 60
-                        ],
-                        [
-                            'id' => 2,
-                            'title' => 'Check Health',
-                            'date' => '2025-11-05',  // Changed from 2024-08-05
-                            'startTime' => '09:00',
-                            'endTime' => '10:00',
-                            'time' => '09 AM - 10 AM',
-                            'description' => 'Annual checkup',
-                            'color' => '#EC4899',
-                            'position' => 0,
-                            'height' => 60
-                        ],
-                        [
-                            'id' => 3,
-                            'title' => 'Lunch Meeting',
-                            'date' => '2025-11-05',  // Changed from 2024-08-05
-                            'startTime' => '12:00',
-                            'endTime' => '13:00',  // Changed from '1:00' to '13:00'
-                            'time' => '12 PM - 1 PM',
-                            'description' => 'Lunch meeting',
-                            'color' => '#EC4899',
-                            'position' => 0,
-                            'height' => 60
-                        ],
-                        [
-                            'id' => 4,
-                            'title' => 'Team Meeting',
-                            'date' => '2025-11-07',  // Changed from 2024-08-07
-                            'startTime' => '14:00',
-                            'endTime' => '15:30',
-                            'time' => '02 PM - 03:30 PM',
-                            'description' => 'Weekly sync',
-                            'color' => '#3B82F6',
-                            'position' => 0,
-                            'height' => 90
-                        ],
-                        [
-                            'id' => 5,
-                            'title' => 'Lunch Break',
-                            'date' => '2025-11-07',  // Changed from 2024-08-07
-                            'startTime' => '12:00',
-                            'endTime' => '13:00',
-                            'time' => '12 PM - 01 PM',
-                            'description' => 'Lunch time',
-                            'color' => '#10B981',
-                            'position' => 0,
-                            'height' => 60
-                        ],
-                    ];
+                        ];
+                    })->toArray();
                 @endphp
 
                 <x-client-components.appointment-page.appointment-calendar :events="$events" initial-view="month" />
@@ -181,11 +155,11 @@
                     <x-dropdown label="Filter by:" default="All" :options="['All', 'Active', 'Inactive', 'Pending']"
                         id="status-filter" />
                     <x-dropdown label="Sort by:" default="Latest" :options="[
-        'latest' => 'Latest',
-        'oldest' => 'Oldest',
-        'name_asc' => 'Name (A-Z)',
-        'name_desc' => 'Name (Z-A)'
-    ]" />
+                        'latest' => 'Latest',
+                        'oldest' => 'Oldest',
+                        'name_asc' => 'Name (A-Z)',
+                        'name_desc' => 'Name (Z-A)'
+                    ]" />
                     <a href="{{ route('client.appointment.create') }}"
                         class="px-4 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm">
                         <i class="fi fi-rr-plus mr-2"></i>
@@ -194,49 +168,41 @@
                 </div>
             </div>
 
-            <x-client-components.appointment-page.client-appointment-list :appointments="$appointments"
-                :show-header="true" />
+            <div class="h-64 overflow-y-auto">
+                <x-client-components.appointment-page.client-appointment-list :appointments="$appointments"
+                    :show-header="true" />
+            </div>
         </div>
 
         <!-- Inner Panel - Appointments to Rate -->
-        <div class="flex flex-col gap-6 rounded-lg overflow-hidden p-8 my-8">
-            <x-labelwithvalue label="Appointments To Rate" count="(2)" />
-            <div class="h-48">
+        <div class="flex flex-col gap-6 rounded-lg p-8 my-8">
+            <x-labelwithvalue label="Appointments To Rate" count="({{ $completedAppointments->count() ?? 0 }})" />
 
+            <div class="h-64 overflow-y-auto">
                 @php
-                    $services = [
-                        [
-                            'service' => 'Deep Cleaning',
-                            'status' => 'Complete',
-                            'service_date' => 'Nov 15, 2024',
-                            'service_time' => '2:00 PM',
-                            'description' => 'Full house deep cleaning including kitchen, bathrooms, and living areas.',
-                        ],
-                        [
-                            'service' => 'Window Cleaning',
-                            'status' => 'In progress',
-                            'service_date' => 'Nov 20, 2024',
-                            'service_time' => '10:00 AM',
-                            'description' => 'Professional window cleaning for all windows.',
-                        ],
-                        [
-                            'service' => 'Carpet Cleaning',
+                    // Transform completed appointments to the format expected by the component
+                    $services = $completedAppointments->map(function($appointment) {
+                        return [
+                            'id' => $appointment->id,
+                            'service' => $appointment->service_type,
                             'status' => 'Completed',
-                            'service_date' => 'Nov 10, 2024',
-                            'service_time' => '1:00 PM',
-                            'description' => 'Steam cleaning for living room and bedroom carpets.',
-                        ],
-                        [
-                            'service' => 'Kitchen Deep Clean',
-                            'status' => 'Archived',
-                            'service_date' => 'Oct 28, 2024',
-                            'service_time' => '3:30 PM',
-                            'description' => 'Detailed kitchen cleaning including appliances and cabinets.',
-                        ],
-                    ];
+                            'service_date' => $appointment->service_date->format('M d, Y'),
+                            'service_time' => \Carbon\Carbon::parse($appointment->service_time)->format('g:i A'),
+                            'description' => $appointment->special_requests
+                                ? $appointment->special_requests
+                                : 'Cleaning service for ' . $appointment->number_of_units . ' unit(s) at ' . $appointment->cabin_name . ' (' . $appointment->unit_size . ' m²)',
+                            'cabin_name' => $appointment->cabin_name,
+                            'unit_size' => $appointment->unit_size,
+                            'number_of_units' => $appointment->number_of_units,
+                        ];
+                    })->toArray();
                 @endphp
 
-                <x-client-components.appointment-page.appointment-rate-list :items="$services" maxHeight="30rem" />
+                <x-client-components.appointment-page.appointment-rate-list
+                    :items="$services"
+                    maxHeight="30rem"
+                    emptyTitle="No completed appointments yet"
+                    emptyMessage="Once you complete appointments, they will appear here for you to rate and provide feedback." />
             </div>
         </div>
     </section>

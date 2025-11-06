@@ -243,7 +243,7 @@
                 <!-- Detailed Pricing Tables -->
                 <div class="flex flex-col gap-6 lg:gap-8 my-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                     <!-- Final Cleaning Pricing Table -->
-                    <div class="pricing-table bg-white dark:bg-gray-800 rounded-2xl overflow-hidden transform transition-all duration-300">
+                    <div class="pricing-table rounded-2xl overflow-hidden transform transition-all duration-300">
                         <div class="p-4 sm:p-6 lg:p-8 border-b border-gray-200 dark:border-gray-700">
                             <div class="flex items-center gap-3 sm:gap-4">
                                 <div>
@@ -309,7 +309,7 @@
                     </div>
 
                     <!-- Deep Cleaning Pricing Table -->
-                    <div class="pricing-table bg-white dark:bg-gray-800 rounded-2xl overflow-hidden transform transition-all duration-300">
+                    <div class="pricing-table rounded-2xl overflow-hidden transform transition-all duration-300">
                         <div class="p-4 sm:p-6 lg:p-8 border-b border-gray-200 dark:border-gray-700">
                             <div class="flex items-center gap-3 sm:gap-4">
                                 <div>
