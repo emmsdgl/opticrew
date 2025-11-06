@@ -107,7 +107,14 @@ class ClientAppointmentController extends Controller
             'cancelled' => $appointments->where('status', 'cancelled')->count(),
         ];
 
-        return view('client.appointments', compact('appointments', 'stats'));
+        // Fetch completed appointments for rating
+        $completedAppointments = ClientAppointment::where('client_id', $client->id)
+            ->where('status', 'completed')
+            ->orderBy('service_date', 'desc')
+            ->orderBy('service_time', 'desc')
+            ->get();
+
+        return view('client.appointments', compact('appointments', 'stats', 'completedAppointments'));
     }
 
     /**

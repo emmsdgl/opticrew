@@ -48,7 +48,7 @@
 }">
     <!-- Table Header -->
     @if($showHeader)
-    <div class="hidden md:grid md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_0.6fr] gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-800
+    <div class="hidden md:grid md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_0.6fr] gap-4 px-6 py-4
                 border-b border-gray-200 dark:border-gray-700 rounded-t-lg w-full">
         <div class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
             Status
@@ -68,8 +68,8 @@
     <!-- Table Body -->
     <div class="w-full divide-y divide-gray-200 dark:divide-gray-700">
         @foreach($appointments as $appointment)
-        <div class="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_0.6fr] gap-4 px-6 py-4 bg-white dark:bg-gray-900
-                    hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors w-full">
+        <div class="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_0.6fr] gap-4 px-6 py-4
+                    hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors w-full">
 
             <!-- Status Badge -->
             <div class="flex items-center gap-2">
