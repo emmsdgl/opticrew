@@ -3,7 +3,7 @@
 ])
 
 <!-- Topbar -->
-<header class="flex items-center justify-between px-3 sm:px-6 h-20 border-b border-gray-50 dark:border-gray-700">
+<header class="flex items-center justify-between px-3 sm:px-6 h-24 border-b border-gray-50 dark:border-gray-700">
     <div class="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
         <!-- Mobile Menu Button (Hamburger) -->
         <button id="mobile-menu-toggle" class="lg:hidden text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors p-2 flex-shrink-0">

@@ -6,27 +6,31 @@
 <!-- Mobile Overlay Backdrop -->
 <div id="sidebar-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden transition-opacity duration-300"></div>
 
+<!-- Desktop Toggle Button (beside sidebar) -->
+<button id="sidebar-toggle" class="hidden lg:block fixed top-6 z-50 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md p-2 shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700" style="left: 272px;">
+    <i class="fa-solid fa-bars text-lg"></i>
+</button>
+
 <!-- SIDEBAR -->
 <aside id="sidebar" class="fixed left-0 top-0 h-screen w-64 bg-[#FFFFFF] border-r border-[#D1D1D1] dark:bg-[#1E293B] dark:border-[#334155]
-              flex flex-col justify-between transition-all duration-300 p-5 overflow-y-auto z-40
+              flex flex-col justify-between transition-all duration-300 overflow-y-auto z-40
               -translate-x-full lg:translate-x-0">
 
     <div>
-        <!-- Logo + toggle -->
-        <div id="sidebar-header" class="flex items-center justify-between h-20 px-4 border-b border-[#D1D1D1] dark:border-[#334155] transition-all duration-300">
-            <div class="flex items-center justify-center flex-1">
+        <!-- Logo -->
+        <div id="sidebar-header" class="flex items-center h-28 px-6 transition-all duration-300">
+            <div class="flex-1 flex items-center justify-center">
                 <a href="{{ Auth::check() && Auth::user()->role === 'admin' ? route('admin.dashboard') : route('employee.dashboard') }}"
                     class="flex items-center justify-center">
                     <!-- Light Mode Logo (visible by default, hidden in dark mode) -->
-
-                    <img src="{{ asset('images/opticrew-logo-dark.svg') }}"
-                        class="block dark:hidden h-8 w-auto sidebar-logo"
-                        alt="OptiCrew Light Logo">
+                    <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
+                        class="block dark:hidden h-24 w-auto sidebar-logo"
+                        alt="Finnoys Light Logo">
 
                     <!-- Dark Mode Logo (hidden by default, visible in dark mode) -->
-                    <img src="{{ asset('images/opticrew-logo-light.svg') }}"
-                        class="hidden dark:block h-8 w-auto sidebar-logo"
-                        alt="OptiCrew Dark Logo">
+                    <img src="{{ asset('images/finnoys-text-logo.svg') }}"
+                        class="hidden dark:block h-24 w-auto sidebar-logo"
+                        alt="Finnoys Dark Logo">
                 </a>
             </div>
 
@@ -36,15 +40,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
-
-            <!-- Desktop Collapse Toggle -->
-            <button id="sidebar-toggle" class="hidden lg:block text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1 transition-all duration-300 flex-shrink-0">
-                <i class="fi fi-rr-angle-small-left text-lg"></i>
-            </button>
         </div>
 
         <!-- Nav -->
-        <nav class="mt-6 space-y-1" x-data="{ openDropdowns: {} }">
+        <nav class="mt-6 space-y-1 px-5" x-data="{ openDropdowns: {} }">
                 @foreach($navOptions as $index => $nav)
                     @if(isset($nav['children']) && count($nav['children']) > 0)
                         {{-- Dropdown Menu Item --}}
