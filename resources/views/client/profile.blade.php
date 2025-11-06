@@ -8,11 +8,25 @@
                     class="w-full h-full rounded-lg">
                     @php
                         $user = Auth::user();
+
+                        // Handle both old and new profile picture paths
+                        $profilePhotoUrl = null;
+                        if ($user->profile_picture) {
+                            // Check if it's old format (starts with 'profile_pictures/')
+                            if (str_starts_with($user->profile_picture, 'profile_pictures/')) {
+                                $profilePhotoUrl = asset('storage/' . $user->profile_picture);
+                            } else {
+                                // New format (starts with 'uploads/')
+                                $profilePhotoUrl = asset($user->profile_picture);
+                            }
+                            $profilePhotoUrl .= '?v=' . time();
+                        }
+
                         $client = [
                             'full_name' => $user->name,
                             'work_email' => $user->email,
                             'work_phone' => $user->phone ?? '+358 40 123 4567',
-                            'profile_photo' => $user->profile_picture ? asset('storage/' . $user->profile_picture) : null,
+                            'profile_photo' => $profilePhotoUrl,
                             'office_status' => 'Client',
                             'username' => $user->username,
                             'work_location' => $user->location ?? 'Inari, Finland'

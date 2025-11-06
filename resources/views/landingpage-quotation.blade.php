@@ -837,10 +837,10 @@
                 formData: {
                     // Step 1
                     bookingType: '',
-                    cleaningServices: [],
+                    cleaningServices: ['deep_cleaning'], // Default: Deep Cleaning
                     dateOfService: '',
                     durationOfService: '',
-                    propertyType: '',
+                    propertyType: 'apartment', // Default: Apartment/Flat
 
                     // Step 2
                     propertyType2: '',
@@ -848,7 +848,7 @@
                     rooms: 1,
                     peoplePerRoom: 1,
                     floorArea: 0,
-                    areaUnit: '',
+                    areaUnit: 'sqm', // Default: Square Meter
                     propertyLocation: '',
                     postalCode: '',
                     municipality: '',
@@ -873,7 +873,7 @@
                             if (newValue === 'company') {
                                 this.formData.dateOfService = '';
                                 this.formData.durationOfService = '';
-                                this.formData.propertyType = '';
+                                this.formData.propertyType = 'apartment'; // Keep default
 
                                 // Clear the hidden inputs for personal-only fields
                                 const form = document.getElementById('quotation-form');
@@ -890,11 +890,15 @@
                             // Clear company name when switching to personal
                             if (newValue === 'personal') {
                                 this.formData.companyName = '';
-                                console.log('Cleared company-only fields');
+                                // Set default cleaning service for personal bookings
+                                this.formData.cleaningServices = ['deep_cleaning'];
+                                console.log('Cleared company-only fields and set default service');
                             }
 
-                            // Always clear cleaning services when switching types
-                            this.formData.cleaningServices = [];
+                            // Clear cleaning services when switching to company
+                            if (newValue === 'company') {
+                                this.formData.cleaningServices = [];
+                            }
 
                             // Uncheck all cleaning service checkboxes
                             const checkboxes = document.querySelectorAll('input[type="checkbox"][value]');
@@ -1084,16 +1088,21 @@
                             const serviceInput = form.querySelector('input[type="hidden"][name="cleaning_service"]');
                             if (serviceInput && serviceInput.value) {
                                 cleaningServices = [serviceInput.value];
+                            } else {
+                                // Fallback to default if still empty
+                                cleaningServices = ['deep_cleaning'];
                             }
                         }
 
                         // Get property type from hidden input (service-dropdown component)
+                        // Fallback to formData default if not selected
                         const propertyTypeInput = form.querySelector('input[type="hidden"][name="property_type"]');
-                        const propertyType = propertyTypeInput ? propertyTypeInput.value : null;
+                        const propertyType = (propertyTypeInput && propertyTypeInput.value) ? propertyTypeInput.value : this.formData.propertyType;
 
                         // Get area unit from hidden input (regular-dropdown component)
+                        // Fallback to formData default if not selected
                         const areaUnitInput = form.querySelector('input[type="hidden"][name="area_units"]');
-                        const areaUnit = areaUnitInput ? areaUnitInput.value : null;
+                        const areaUnit = (areaUnitInput && areaUnitInput.value) ? areaUnitInput.value : this.formData.areaUnit;
 
                         // Get date of service (only if it's a valid date string)
                         const dateInput = form.querySelector('input[name="date_of_service"]');
@@ -1222,16 +1231,16 @@
                             // Reset Alpine.js formData
                             this.formData = {
                                 bookingType: '',
-                                cleaningServices: [],
+                                cleaningServices: ['deep_cleaning'], // Default: Deep Cleaning
                                 dateOfService: '',
                                 durationOfService: '',
-                                propertyType: '',
+                                propertyType: 'apartment', // Default: Apartment/Flat
                                 propertyType2: '',
                                 floors: 1,
                                 rooms: 1,
                                 peoplePerRoom: 1,
                                 floorArea: 0,
-                                areaUnit: '',
+                                areaUnit: 'sqm', // Default: Square Meter
                                 propertyLocation: '',
                                 postalCode: '',
                                 municipality: '',

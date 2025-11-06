@@ -355,18 +355,6 @@
             <form method="POST" action="{{ route('register.client') }}">
                 @csrf
 
-                <!-- Display All Validation Errors -->
-                @if ($errors->any())
-                    <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        <strong class="font-bold">Oops! There were some problems with your submission:</strong>
-                        <ul class="mt-2 ml-4 list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <!-- ====================================================== -->
                 <!--                       STEP 1                           -->
                 <!-- ====================================================== -->
@@ -376,41 +364,8 @@
                     </h1>
 
                     <div class="space-y-4">
-                        <!-- Account Type Selection -->
-                        <div class="w-full mb-8">
-                            <label class="block text-sm font-semibold mb-3 text-gray-700">
-                                Account Type
-                            </label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Personal Option -->
-                                <label class="relative">
-                                    <input type="radio" name="account_type" value="personal" id="account-type-personal"
-                                        class="peer sr-only" checked>
-                                    <div class="border-2 border-gray-300 rounded-lg p-4 cursor-pointer
-                                                peer-checked:border-blue-500 peer-checked:bg-blue-50
-                                                hover:border-gray-400 transition-all">
-                                        <div class="font-semibold text-gray-900 mb-1">Personal</div>
-                                        <div class="text-sm text-gray-600">
-                                            Individual account with immediate access upon registration
-                                        </div>
-                                    </div>
-                                </label>
-
-                                <!-- Company Option -->
-                                <label class="relative">
-                                    <input type="radio" name="account_type" value="company" id="account-type-company"
-                                        class="peer sr-only">
-                                    <div class="border-2 border-gray-300 rounded-lg p-4 cursor-pointer
-                                                peer-checked:border-blue-500 peer-checked:bg-blue-50
-                                                hover:border-gray-400 transition-all">
-                                        <div class="font-semibold text-gray-900 mb-1">Company</div>
-                                        <div class="text-sm text-gray-600">
-                                            Business account requiring admin approval before activation
-                                        </div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
+                        <!-- Hidden Account Type - Always Personal -->
+                        <input type="hidden" name="account_type" value="personal" id="account-type-personal">
 
                         <!-- Personal Account Fields -->
                         <div id="personal-fields" class="space-y-4">
@@ -576,157 +531,6 @@
                         </div>
                         <!-- End Personal Account Fields -->
 
-                        <!-- Company Account Fields -->
-                        <div id="company-fields" class="space-y-4 hidden">
-                            <!-- Company Name -->
-                            <div class="input-container w-full relative">
-                                <i
-                                    class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                                <input type="text" id="input-company-name" placeholder=" "
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="company_name">
-                                <label for="input-company-name">Company Name</label>
-                            </div>
-
-                            <!-- Contact Person Name -->
-                            <div class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
-                                <div class="input-container flex-1">
-                                    <input type="text" id="input-contact-fname" placeholder=" "
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        name="contact_first_name">
-                                    <label for="input-contact-fname">Contact Person First Name</label>
-                                </div>
-                                <div class="input-container flex-1">
-                                    <input type="text" id="input-contact-lname" placeholder=" "
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        name="contact_last_name">
-                                    <label for="input-contact-lname">Contact Person Last Name</label>
-                                </div>
-                            </div>
-
-                            <!-- Business Registration Number -->
-                            <div class="input-container w-full relative">
-                                <i
-                                    class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
-                                <input type="text" id="input-business-id" placeholder=" "
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="business_id">
-                                <label for="input-business-id">Business ID (Y-tunnus)</label>
-                            </div>
-
-                            <!-- E-Invoice Number -->
-                            <div class="input-container w-full relative">
-                                <i
-                                    class="fas fa-receipt absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
-                                <input type="text" id="input-einvoice-number" placeholder=" "
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="einvoice_number">
-                                <label for="input-einvoice-number">E-Invoice Number</label>
-                            </div>
-
-                            <!-- Phone Number (Company) -->
-                            <div
-                                class="input-container w-full flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-3">
-                                <div class="custom-dropdown-container w-full sm:w-36">
-                                    <button id="dropdown-btn-company" type="button" class="custom-dropdown-btn">
-                                        <img id="selected-flag-company"
-                                            src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag"
-                                            class="h-4 w-auto mr-2">
-                                        <span id="selected-code-company" class="text-sm">+358</span>
-                                        <span
-                                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </span>
-                                    </button>
-                                    <div id="dropdown-list-company" class="custom-dropdown-list">
-                                        <div class="custom-dropdown-item" data-value="+358"
-                                            data-flag="{{asset('/images/icons/finland-flag.svg')}}">
-                                            <img src="{{asset('/images/icons/finland-flag.svg')}}" alt="Finland Flag"
-                                                class="h-4 w-auto mr-2">
-                                            <span class="text-sm">+358 Finland</span>
-                                        </div>
-                                        <div class="custom-dropdown-item" data-value="+46"
-                                            data-flag="{{asset('/images/icons/sweden-flag.svg')}}">
-                                            <img src="{{asset('/images/icons/sweden-flag.svg')}}" alt="Sweden Flag"
-                                                class="h-4 w-auto mr-2">
-                                            <span class="text-sm">+46 Sweden</span>
-                                        </div>
-                                        <div class="custom-dropdown-item" data-value="+47"
-                                            data-flag="{{asset('/images/icons/norway-flag.svg')}}">
-                                            <img src="{{asset('/images/icons/norway-flag.svg')}}" alt="Norway Flag"
-                                                class="h-4 w-auto mr-2">
-                                            <span class="text-sm">+47 Norway</span>
-                                        </div>
-                                        <div class="custom-dropdown-item" data-value="+45"
-                                            data-flag="{{asset('/images/icons/denmark-flag.svg')}}">
-                                            <img src="{{asset('/images/icons/denmark-flag.svg')}}" alt="Denmark Flag"
-                                                class="h-4 w-auto mr-2">
-                                            <span class="text-sm">+45 Denmark</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex-1 input-container w-full">
-                                    <input type="tel" id="input-company-phone" placeholder="40 1234567"
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        name="company_phone_number">
-                                    <label for="input-company-phone">Company Phone Number</label>
-                                </div>
-                            </div>
-
-                            <!-- Email (Company) -->
-                            <div class="input-container w-full relative">
-                                <i
-                                    class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
-                                <input type="email" id="input-company-email" placeholder=" "
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="company_email">
-                                <label for="input-company-email">Company Email Address</label>
-                            </div>
-
-                            <!-- Company Address Fields -->
-                            <div class="input-container w-full relative">
-                                <i
-                                    class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
-                                <input type="text" id="input-company-street" placeholder=" "
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="company_street_address">
-                                <label for="input-company-street">Company Street Address</label>
-                            </div>
-
-                            <div class="w-full flex flex-col sm:flex-row justify-between sm:space-x-3">
-                                <div class="input-container flex-1">
-                                    <i
-                                        class="fas fa-mail-bulk absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                                    <input type="text" id="input-company-postal" placeholder=" " maxlength="5"
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        name="company_postal_code">
-                                    <label for="input-company-postal">Postal Code</label>
-                                </div>
-                                <div class="input-container flex-1">
-                                    <i
-                                        class="fas fa-city absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                                    <input type="text" id="input-company-city" placeholder=" "
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        name="company_city">
-                                    <label for="input-company-city">City</label>
-                                </div>
-                            </div>
-
-                            <div class="input-container w-full relative">
-                                <i
-                                    class="fas fa-building absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500"></i>
-                                <input type="text" id="input-company-district" placeholder=" "
-                                    class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                    name="company_district">
-                                <label for="input-company-district">District (Kaupunginosa)</label>
-                            </div>
-                        </div>
-                        <!-- End Company Account Fields -->
-
                         <div id="buttons-container" class="flex justify-center gap-4 mt-6">
                             <button id="back1-btn" type="button"
                                 class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Cancel</button>
@@ -776,6 +580,18 @@
                 <!--                       STEP 3                           -->
                 <!-- ====================================================== -->
                 <div id="step-3" class="step-content hidden">
+                    <!-- Display Validation Errors for Step 3 -->
+                    @if ($errors->any())
+                        <div id="step3-errors" class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md mx-auto" role="alert">
+                            <strong class="font-bold">Oops! There were some problems:</strong>
+                            <ul class="mt-2 ml-4 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <!-- Personal Account Step 3 -->
                     <div id="step-3-personal" class="w-full space-y-4">
                         <h1 id="form-head" class="mb-4">Set up your security questions</h1>
@@ -870,126 +686,43 @@
                                 id="toggleConfirmPassword"></i>
                         </div>
 
+                        <!-- Password Validation Indicators -->
+                        <div class="w-full max-w-md mx-auto mt-3 space-y-2">
+                            <!-- Username Length -->
+                            <div id="username-length-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Username: 6-8 characters</span>
+                            </div>
+
+                            <!-- Password Requirements -->
+                            <div id="password-length-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Password: At least 8 characters</span>
+                            </div>
+                            <div id="password-capital-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Contains 1 capital letter</span>
+                            </div>
+                            <div id="password-number-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Contains 1 number</span>
+                            </div>
+                            <div id="password-special-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Contains 1 special character (!@#$%^&*)</span>
+                            </div>
+                            <div id="password-match-indicator" class="flex items-center text-xs">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                <span class="text-gray-500">Passwords match</span>
+                            </div>
+                        </div>
+
                         <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6 w-full pt-4">
                             <button id="back3-btn" type="button"
                                 class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
                             <button type="submit" id="next-3-personal"
                                 class="w-full sm:w-auto px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center">Create
                                 Account</button>
-                        </div>
-                    </div>
-
-                    <!-- Company Account Step 3 - Service Details -->
-                    <div id="step-3-company" class="w-full space-y-4 hidden">
-                        <p class="text-sm text-center text-gray-600">
-                            Please select the services you are inquiring about. Our team will review your requirements
-                            and send a detailed quotation to your email.
-                        </p>
-
-                        <!-- Service Details Section -->
-                        <div class="mt-6 p-6 bg-blue-50 rounded-xl border border-blue-200 max-w-3xl mx-auto">
-                            <!-- Service Type Checkboxes -->
-                            <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-3">
-                                    Service Type <span class="text-red-500">*</span>
-                                </label>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Hotel Rooms Cleaning"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Hotel Rooms Cleaning</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Light Daily Cleaning"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Light Daily Cleaning</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Full Daily Cleaning"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Full Daily Cleaning</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Deep Cleaning"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Deep Cleaning</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Snowout"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Snowout</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Cabins"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Cabins</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Cottages"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Cottages</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Igloos"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Igloos</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Restaurant"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Restaurant</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Reception"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Reception</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Saunas"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Saunas</span>
-                                    </label>
-                                    <label
-                                        class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" name="service_types[]" value="Hallway"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                                        <span class="text-sm text-gray-700">Hallway</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Other Concerns -->
-                            <div class="w-full">
-                                <label for="input-other-concerns" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Additional Information or Other Concerns
-                                </label>
-                                <textarea id="input-other-concerns" rows="4"
-                                    placeholder="Please provide any additional details about your service requirements..."
-                                    class="w-full px-4 py-3 bg-white rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 resize-none"
-                                    name="other_concerns"></textarea>
-                                <p class="text-xs text-gray-500 mt-2">Our team will review your requirements and send a
-                                    custom quotation to your email.</p>
-                            </div>
-                        </div>
-                        <!-- End Service Details Section -->
-
-                        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6 w-full pt-4">
-                            <button id="back3-company-btn" type="button"
-                                class="w-full sm:w-auto px-10 py-4 text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm">Back</button>
-                            <button type="submit" id="next-3-company"
-                                class="w-full sm:w-auto px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center">Submit
-                                Inquiry</button>
                         </div>
                     </div>
                 </div>
@@ -1008,94 +741,167 @@
             let isStep2Completed = false;
             let isStep3Completed = false;
 
-            // ===== ACCOUNT TYPE TOGGLE =====
-            const accountTypePersonal = document.getElementById('account-type-personal');
-            const accountTypeCompany = document.getElementById('account-type-company');
-            const personalFields = document.getElementById('personal-fields');
-            const companyFields = document.getElementById('company-fields');
+            // ===== AUTO-NAVIGATE TO STEP 3 IF ERRORS EXIST =====
+            const hasStep3Errors = {{ ($errors->has('username') || $errors->has('password') || $errors->has('security_question') || $errors->has('security_answer_1') || $errors->has('security_answer_2')) ? 'true' : 'false' }};
 
-            function toggleAccountFields() {
-                const step3Label = document.getElementById('step-3-label');
-
-                if (accountTypePersonal.checked) {
-                    // Show personal fields, hide company fields
-                    personalFields.classList.remove('hidden');
-                    companyFields.classList.add('hidden');
-
-                    // Update Step 3 label to "Account Setup" for personal accounts
-                    if (step3Label) {
-                        step3Label.textContent = 'Account Setup';
+            if (hasStep3Errors) {
+                // Mark steps 1 and 2 as completed to allow navigation to step 3
+                isStep1Completed = true;
+                isStep2Completed = true;
+                // Set current step to 3 after a brief delay to ensure DOM is ready
+                setTimeout(() => {
+                    currentStep = 3;
+                    updateStepper();
+                    // Scroll to error message
+                    const errorDiv = document.getElementById('step3-errors');
+                    if (errorDiv) {
+                        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-
-                    // Enable personal field requirements, disable company field requirements
-                    personalFields.querySelectorAll('input[required], input').forEach(input => {
-                        if (input.name !== 'middle_initial') { // M.I. is optional
-                            input.setAttribute('required', 'required');
-                        }
-                    });
-                    companyFields.querySelectorAll('input').forEach(input => {
-                        input.removeAttribute('required');
-                        input.value = ''; // Clear company field values
-                    });
-
-                    // Enable Step 3 personal account field requirements
-                    const step3Personal = document.getElementById('step-3-personal');
-                    if (step3Personal) {
-                        step3Personal.querySelectorAll('input, textarea').forEach(input => {
-                            input.setAttribute('required', 'required');
-                        });
-                    }
-
-                    // Disable Step 3 company field requirements
-                    const step3Company = document.getElementById('step-3-company');
-                    if (step3Company) {
-                        step3Company.querySelectorAll('input, textarea').forEach(input => {
-                            input.removeAttribute('required');
-                        });
-                    }
-                } else {
-                    // Show company fields, hide personal fields
-                    personalFields.classList.add('hidden');
-                    companyFields.classList.remove('hidden');
-
-                    // Update Step 3 label to "Service Details" for company accounts
-                    if (step3Label) {
-                        step3Label.textContent = 'Service Details';
-                    }
-
-                    // Enable company field requirements, disable personal field requirements
-                    companyFields.querySelectorAll('input').forEach(input => {
-                        input.setAttribute('required', 'required'); // All company fields are required
-                    });
-                    personalFields.querySelectorAll('input').forEach(input => {
-                        input.removeAttribute('required');
-                        input.value = ''; // Clear personal field values
-                    });
-
-                    // Disable Step 3 personal account field requirements
-                    const step3Personal = document.getElementById('step-3-personal');
-                    if (step3Personal) {
-                        step3Personal.querySelectorAll('input, textarea').forEach(input => {
-                            input.removeAttribute('required');
-                        });
-                    }
-
-                    // Enable Step 3 company field requirements (at least one service type checkbox)
-                    const step3Company = document.getElementById('step-3-company');
-                    if (step3Company) {
-                        // Note: Checkboxes validation is handled separately in the submit handler
-                        // Textarea (other concerns) is optional so no required attribute needed
-                    }
-                }
-                checkFormCompletion(); // Re-check form completion
+                }, 100);
             }
 
-            // Add event listeners for account type radio buttons
-            accountTypePersonal.addEventListener('change', toggleAccountFields);
-            accountTypeCompany.addEventListener('change', toggleAccountFields);
+            // ===== CLEAR ERROR MESSAGES WHEN STARTING FRESH =====
+            // Clear errors when user makes changes to the username field
+            const usernameField = document.getElementById('input-username');
+            if (usernameField) {
+                usernameField.addEventListener('input', () => {
+                    const errorDiv = document.getElementById('step3-errors');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'none';
+                    }
+                });
+            }
 
-            // Initialize with personal fields shown
-            toggleAccountFields();
+            // ===== REAL-TIME PASSWORD & USERNAME VALIDATION =====
+            const passwordField = document.getElementById('input-new-password');
+            const confirmPasswordField = document.getElementById('input-confirm-password');
+
+            // Validation indicators
+            const usernameIndicator = document.getElementById('username-length-indicator');
+            const passwordLengthIndicator = document.getElementById('password-length-indicator');
+            const passwordCapitalIndicator = document.getElementById('password-capital-indicator');
+            const passwordNumberIndicator = document.getElementById('password-number-indicator');
+            const passwordSpecialIndicator = document.getElementById('password-special-indicator');
+            const passwordMatchIndicator = document.getElementById('password-match-indicator');
+
+            // Helper function to update indicator status
+            function updateIndicator(indicator, isValid) {
+                const icon = indicator.querySelector('i');
+                const text = indicator.querySelector('span');
+
+                if (isValid) {
+                    icon.classList.remove('fa-circle', 'text-gray-300');
+                    icon.classList.add('fa-check-circle', 'text-green-500');
+                    text.classList.remove('text-gray-500');
+                    text.classList.add('text-green-600', 'font-medium');
+                } else {
+                    icon.classList.remove('fa-check-circle', 'text-green-500');
+                    icon.classList.add('fa-circle', 'text-gray-300');
+                    text.classList.remove('text-green-600', 'font-medium');
+                    text.classList.add('text-gray-500');
+                }
+            }
+
+            // Username validation (6-8 characters)
+            if (usernameField) {
+                usernameField.addEventListener('input', () => {
+                    const username = usernameField.value.trim();
+                    const isValid = username.length >= 6 && username.length <= 8;
+                    updateIndicator(usernameIndicator, isValid);
+
+                    // Show error message if exceeds max length
+                    if (username.length > 8) {
+                        usernameField.value = username.substring(0, 8);
+                    }
+                });
+            }
+
+            // Password strength validation
+            function validatePassword() {
+                if (!passwordField) return;
+
+                const password = passwordField.value;
+
+                // Check length (at least 8 characters)
+                const hasMinLength = password.length >= 8;
+                updateIndicator(passwordLengthIndicator, hasMinLength);
+
+                // Check for capital letter
+                const hasCapital = /[A-Z]/.test(password);
+                updateIndicator(passwordCapitalIndicator, hasCapital);
+
+                // Check for number
+                const hasNumber = /[0-9]/.test(password);
+                updateIndicator(passwordNumberIndicator, hasNumber);
+
+                // Check for special character
+                const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+                updateIndicator(passwordSpecialIndicator, hasSpecial);
+
+                // Check password match
+                checkPasswordMatch();
+
+                // Return overall validity
+                return hasMinLength && hasCapital && hasNumber && hasSpecial;
+            }
+
+            // Password match validation
+            function checkPasswordMatch() {
+                if (!passwordField || !confirmPasswordField) return;
+
+                const password = passwordField.value;
+                const confirmPassword = confirmPasswordField.value;
+
+                // Only show match indicator if both fields have values
+                if (password && confirmPassword) {
+                    const isMatch = password === confirmPassword;
+                    updateIndicator(passwordMatchIndicator, isMatch);
+
+                    // Update confirm password field border
+                    if (isMatch) {
+                        confirmPasswordField.classList.remove('ring-red-500');
+                        confirmPasswordField.classList.add('ring-green-500');
+                    } else {
+                        confirmPasswordField.classList.remove('ring-green-500');
+                        confirmPasswordField.classList.add('ring-red-500');
+                    }
+                } else {
+                    // Reset indicator if either field is empty
+                    updateIndicator(passwordMatchIndicator, false);
+                    confirmPasswordField.classList.remove('ring-red-500', 'ring-green-500');
+                }
+            }
+
+            // Add event listeners
+            if (passwordField) {
+                passwordField.addEventListener('input', validatePassword);
+            }
+
+            if (confirmPasswordField) {
+                confirmPasswordField.addEventListener('input', checkPasswordMatch);
+            }
+
+            // ===== PERSONAL ACCOUNT ONLY - NO ACCOUNT TYPE TOGGLE =====
+            const accountTypePersonal = document.getElementById('account-type-personal');
+            const personalFields = document.getElementById('personal-fields');
+
+            // Ensure personal fields are visible and required
+            if (personalFields) {
+                personalFields.classList.remove('hidden');
+                personalFields.querySelectorAll('input').forEach(input => {
+                    if (input.name !== 'middle_initial') { // M.I. is optional
+                        input.setAttribute('required', 'required');
+                    }
+                });
+            }
+
+            // Ensure Step 3 personal account fields are required
+            const step3Personal = document.getElementById('step-3-personal');
+            if (step3Personal) {
+                step3Personal.querySelectorAll('input, textarea').forEach(input => {
+                    input.setAttribute('required', 'required');
+                });
+            }
 
             // ===== CLOUD-BASED ADDRESS VALIDATION =====
             let addressTimeout, postalTimeout;
@@ -1432,86 +1238,6 @@
                 });
             }
 
-            // ===== COMPANY ADDRESS AUTOCOMPLETE =====
-            const companyStreetInput = document.getElementById('input-company-street');
-            const companyPostalInput = document.getElementById('input-company-postal');
-            const companyCityInput = document.getElementById('input-company-city');
-            const companyDistrictInput = document.getElementById('input-company-district');
-            const companyDistrictSuggestions = document.getElementById('company-district-suggestions');
-
-            // Create company street address suggestions dropdown
-            if (companyStreetInput) {
-                const companyStreetSuggestionsDiv = document.createElement('div');
-                companyStreetSuggestionsDiv.id = 'company-street-suggestions';
-                companyStreetSuggestionsDiv.className = 'hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto';
-                companyStreetInput.parentElement.appendChild(companyStreetSuggestionsDiv);
-
-                companyStreetInput.addEventListener('input', (e) => {
-                    clearTimeout(addressTimeout);
-                    addressTimeout = setTimeout(async () => {
-                        const query = e.target.value;
-                        if (query.length >= 3) {
-                            const suggestions = await fetchStreetSuggestions(query);
-                            showCompanyStreetSuggestions(suggestions, companyStreetSuggestionsDiv);
-                        } else {
-                            companyStreetSuggestionsDiv.classList.add('hidden');
-                        }
-                    }, 500);
-                });
-
-                companyStreetInput.addEventListener('focus', () => {
-                    if (companyStreetInput.value.length >= 3) {
-                        fetchStreetSuggestions(companyStreetInput.value).then(suggestions =>
-                            showCompanyStreetSuggestions(suggestions, companyStreetSuggestionsDiv)
-                        );
-                    }
-                });
-
-                // Close company street suggestions when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!companyStreetInput.contains(e.target) && !companyStreetSuggestionsDiv.contains(e.target)) {
-                        companyStreetSuggestionsDiv.classList.add('hidden');
-                    }
-                });
-            }
-
-            function showCompanyStreetSuggestions(suggestions, suggestionsDiv) {
-                if (!Array.isArray(suggestions) || suggestions.length === 0) {
-                    suggestionsDiv.classList.add('hidden');
-                    return;
-                }
-
-                suggestionsDiv.innerHTML = suggestions.map(place => {
-                    const streetName = place.address?.road || place.display_name.split(',')[0];
-                    const postalCode = place.address?.postcode || '';
-                    const city = place.address?.city || place.address?.town || place.address?.village || '';
-                    const district = place.address?.suburb || place.address?.neighbourhood || '';
-
-                    return `
-                        <div class="street-item px-4 py-2 hover:bg-blue-100 cursor-pointer border-b border-gray-200"
-                             data-street="${streetName}"
-                             data-postal="${postalCode}"
-                             data-city="${city}"
-                             data-district="${district}">
-                            <div class="font-semibold text-gray-900">${streetName}</div>
-                            <div class="text-sm text-gray-600">${postalCode} ${city}${district ? ', ' + district : ''}</div>
-                        </div>
-                    `;
-                }).join('');
-
-                suggestionsDiv.classList.remove('hidden');
-
-                document.querySelectorAll('#company-street-suggestions .street-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        companyStreetInput.value = item.getAttribute('data-street');
-                        if (companyPostalInput) companyPostalInput.value = item.getAttribute('data-postal');
-                        if (companyCityInput) companyCityInput.value = item.getAttribute('data-city');
-                        if (companyDistrictInput) companyDistrictInput.value = item.getAttribute('data-district');
-                        suggestionsDiv.classList.add('hidden');
-                        checkFormCompletion();
-                    });
-                });
-            }
 
             // STEP 1 SCRIPT
             const dropdownBtn = document.getElementById('dropdown-btn');
@@ -1676,14 +1402,8 @@
                     desc: 'Please authenticate your email to protect your account and confirm your identity. Verifying your email ensures secure access and uninterrupted service.'
                 },
                 3: {
-                    personal: {
-                        name: 'Account Setup',
-                        desc: 'Just a few quick steps to personalize your experience and make sure everything runs smoothly.'
-                    },
-                    company: {
-                        name: 'Service Details',
-                        desc: 'Please select the services you are inquiring about and provide any additional information.'
-                    }
+                    name: 'Account Setup',
+                    desc: 'Just a few quick steps to personalize your experience and make sure everything runs smoothly.'
                 }
             };
 
@@ -1692,15 +1412,9 @@
             function updateStepper() {
                 stepLabel.textContent = `Step ${currentStep}`;
 
-                // Handle Step 3 dynamically based on account type
-                if (currentStep === 3) {
-                    const accountType = accountTypePersonal.checked ? 'personal' : 'company';
-                    stepHeader.textContent = stepNames[3][accountType].name;
-                    stepDesc.textContent = stepNames[3][accountType].desc;
-                } else {
-                    stepHeader.textContent = stepNames[currentStep].name;
-                    stepDesc.textContent = stepNames[currentStep].desc;
-                }
+                // Set header and description for current step (personal account only)
+                stepHeader.textContent = stepNames[currentStep].name;
+                stepDesc.textContent = stepNames[currentStep].desc;
 
                 // Calculate progress line width
                 const totalStepsCount = 3;
@@ -1711,31 +1425,61 @@
                     progressLine.style.width = `${progressPercentage}%`;
                 }
 
+                // ===== FIX: Manage required attributes based on current step =====
+                // This prevents HTML5 validation errors on hidden fields
+
+                // Step 1 fields - only required when on Step 1 (personal account only)
+                const step1Personal = document.querySelectorAll('#personal-fields input, #personal-fields select');
+
+                if (currentStep === 1) {
+                    step1Personal.forEach(field => {
+                        if (field.name !== 'middle_initial') {
+                            field.setAttribute('required', 'required');
+                        }
+                    });
+                } else {
+                    // Remove required from all Step 1 fields when not on Step 1
+                    step1Personal.forEach(field => field.removeAttribute('required'));
+                }
+
+                // Step 2 fields (OTP) - only required when on Step 2
+                const step2Fields = document.querySelectorAll('#step-2 input');
+                step2Fields.forEach(field => {
+                    if (currentStep === 2) {
+                        field.setAttribute('required', 'required');
+                    } else {
+                        field.removeAttribute('required');
+                    }
+                });
+
                 // Update steps' appearance
                 for (let i = 1; i <= totalSteps; i++) {
                     const indicator = stepIndicators[i];
                     const circle = indicator.querySelector('.step-circle');
-                    const content = indicator.querySelector(`#step-${i}-content`);
+                    const content = circle ? circle.querySelector('span') : null; // Fixed: select span inside circle
                     const label = indicator.querySelector('span:last-child');
                     const isCompleted = (i === 1 && isStep1Completed) || (i === 2 && isStep2Completed) || (i === 3 && isStep3Completed);
 
                     // Reset all classes
-                    circle.className = 'step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base';
+                    if (circle) {
+                        circle.className = 'step-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base';
 
-                    if (isCompleted) {
-                        // Completed step - green with check mark
-                        circle.classList.add('bg-blue-500', 'text-white');
-                        content.innerHTML = checkIconHTML;
-                        label.className = 'mt-2 text-sm sm:text-sm text-center text-blue-700';
-                    } else if (i === currentStep) {
-                        circle.classList.add('bg-blue-500', 'dark:bg-blue-600', 'text-white', 'shadow-lg', 'scale-110');
-                        content.textContent = i;
-                        label.className = 'mt-3 text-sm sm:text-sm font-bold text-center text-blue-600 dark:text-blue-400 max-w-[100px] sm:max-w-none transition-colors duration-300';
-                    } else {
-                        // Pending step - gray
-                        circle.classList.add('bg-white', 'text-blue-400', 'border-2', 'border-blue-300');
-                        content.textContent = i;
-                        label.className = 'mt-2 text-sm sm:text-sm text-center text-gray-400';
+                        if (isCompleted) {
+                            // Completed step - green with check mark
+                            circle.classList.add('bg-blue-500', 'text-white');
+                            if (content) content.innerHTML = checkIconHTML;
+                            if (label) label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-700';
+                        } else if (i === currentStep) {
+                            // Current/Active step - blue with ring
+                            circle.classList.add('bg-blue-500', 'text-white', 'ring-4', 'ring-blue-100');
+                            if (content) content.textContent = i;
+                            if (label) label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-blue-600';
+                        } else {
+                            // Pending step - gray
+                            circle.classList.add('bg-white', 'text-gray-400', 'border-2', 'border-gray-300');
+                            if (content) content.textContent = i;
+                            if (label) label.className = 'mt-2 text-xs sm:text-sm font-medium text-center text-gray-400';
+                        }
                     }
                 }
 
@@ -1748,37 +1492,18 @@
                     }
                 });
 
-                // Handle Step 3 content based on account type
+                // Handle Step 3 content (personal account only)
                 if (currentStep === 3) {
                     const step3Personal = document.getElementById('step-3-personal');
-                    const step3Company = document.getElementById('step-3-company');
 
-                    if (accountTypePersonal.checked) {
+                    if (step3Personal) {
                         // Show personal account step 3 (security questions)
                         step3Personal.classList.remove('hidden');
-                        step3Company.classList.add('hidden');
 
                         // Enable required attributes for personal fields
                         step3Personal.querySelectorAll('input, textarea').forEach(input => {
                             input.setAttribute('required', 'required');
                         });
-
-                        // Disable required attributes for company fields
-                        step3Company.querySelectorAll('input, textarea').forEach(input => {
-                            input.removeAttribute('required');
-                        });
-                    } else {
-                        // Show company account step 3 (service details)
-                        step3Personal.classList.add('hidden');
-                        step3Company.classList.remove('hidden');
-
-                        // Disable required attributes for personal fields
-                        step3Personal.querySelectorAll('input, textarea').forEach(input => {
-                            input.removeAttribute('required');
-                        });
-
-                        // Company fields: checkboxes validation handled in submit handler
-                        // Textarea is optional, so no required attribute needed
                     }
                 }
 
@@ -1797,11 +1522,7 @@
                 const selectedCodeElement = document.getElementById('selected-code');
                 const selectedCountryCode = selectedCodeElement ? selectedCodeElement.textContent.replace('+', '') : '358';
 
-                // Check which account type is selected
-                const isPersonalAccount = accountTypePersonal.checked;
-                const isCompanyAccount = accountTypeCompany.checked;
-
-                // --- Form 1 Inputs (Personal Account) ---
+                // --- Form 1 Inputs (Personal Account Only) ---
                 const fName = document.getElementById('input-fname');
                 const lName = document.getElementById('input-lname');
                 const bDate = document.getElementById('datepicker');
@@ -1811,19 +1532,6 @@
                 const postal = document.getElementById('input-postal');
                 const city = document.getElementById('input-city');
                 const district = document.getElementById('input-district');
-
-                // --- Form 1 Inputs (Company Account) ---
-                const companyName = document.getElementById('input-company-name');
-                const contactFName = document.getElementById('input-contact-fname');
-                const contactLName = document.getElementById('input-contact-lname');
-                const businessId = document.getElementById('input-business-id');
-                const einvoiceNumber = document.getElementById('input-einvoice-number');
-                const companyPhone = document.getElementById('input-company-phone');
-                const companyEmail = document.getElementById('input-company-email');
-                const companyStreet = document.getElementById('input-company-street');
-                const companyPostal = document.getElementById('input-company-postal');
-                const companyCity = document.getElementById('input-company-city');
-                const companyDistrict = document.getElementById('input-company-district');
 
                 // --- Form 2 Inputs ---
                 const otp1 = document.getElementById('otp1');
@@ -1846,122 +1554,84 @@
 
                 const USERNAME_LENGTH = 8;
 
-                // --- 1. INDIVIDUAL FORM 1 CHECKS ---
-                let isForm1PersonalComplete = false;
-                let isForm1CompanyComplete = false;
+                // --- 1. INDIVIDUAL FORM 1 CHECKS (Personal Account Only) ---
+                // Personal Account Validation
+                const isFNameComplete = fName && fName.value.trim() !== "";
+                const isLNameComplete = lName && lName.value.trim() !== "";
 
-                if (isPersonalAccount) {
-                    // Personal Account Validation
-                    const isFNameComplete = fName && fName.value.trim() !== "";
-                    const isLNameComplete = lName && lName.value.trim() !== "";
+                // Birthdate validation - must be 18 years or older
+                let isBDateComplete = false;
+                let isAgeValid = false;
+                const ageErrorElement = document.getElementById('age-error');
 
-                    // Birthdate validation - must be 18 years or older
-                    let isBDateComplete = false;
-                    let isAgeValid = false;
-                    const ageErrorElement = document.getElementById('age-error');
+                if (bDate && bDate.value.trim() !== "") {
+                    isBDateComplete = true;
 
-                    if (bDate && bDate.value.trim() !== "") {
-                        isBDateComplete = true;
+                    // Parse date in mm-dd-yyyy format
+                    const dateParts = bDate.value.trim().split(/[-/]/);
+                    if (dateParts.length === 3) {
+                        const month = parseInt(dateParts[0], 10);
+                        const day = parseInt(dateParts[1], 10);
+                        const year = parseInt(dateParts[2], 10);
 
-                        // Parse date in mm-dd-yyyy format
-                        const dateParts = bDate.value.trim().split(/[-/]/);
-                        if (dateParts.length === 3) {
-                            const month = parseInt(dateParts[0], 10);
-                            const day = parseInt(dateParts[1], 10);
-                            const year = parseInt(dateParts[2], 10);
+                        // Create date object (month is 0-indexed in JavaScript)
+                        const birthDate = new Date(year, month - 1, day);
+                        const today = new Date();
 
-                            // Create date object (month is 0-indexed in JavaScript)
-                            const birthDate = new Date(year, month - 1, day);
-                            const today = new Date();
+                        // Calculate age
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
 
-                            // Calculate age
-                            let age = today.getFullYear() - birthDate.getFullYear();
-                            const monthDiff = today.getMonth() - birthDate.getMonth();
+                        // Adjust age if birthday hasn't occurred this year
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
+                        }
 
-                            // Adjust age if birthday hasn't occurred this year
-                            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                                age--;
-                            }
+                        isAgeValid = age >= 18;
 
-                            isAgeValid = age >= 18;
-
-                            // Show/hide age error message
-                            if (ageErrorElement) {
-                                if (isAgeValid) {
-                                    ageErrorElement.classList.add('hidden');
-                                } else {
-                                    ageErrorElement.classList.remove('hidden');
-                                }
-                            }
-                        } else {
-                            // Invalid date format
-                            isAgeValid = false;
-                            if (ageErrorElement) {
+                        // Show/hide age error message
+                        if (ageErrorElement) {
+                            if (isAgeValid) {
+                                ageErrorElement.classList.add('hidden');
+                            } else {
                                 ageErrorElement.classList.remove('hidden');
                             }
                         }
                     } else {
-                        // Hide error if birthdate is empty
+                        // Invalid date format
+                        isAgeValid = false;
                         if (ageErrorElement) {
-                            ageErrorElement.classList.add('hidden');
+                            ageErrorElement.classList.remove('hidden');
                         }
                     }
-
-                    const isEmailValid = email && email.value.trim() !== "" && email.value.includes('@') && email.value.includes('.');
-                    const isStreetComplete = street && street.value.trim() !== "";
-                    const isPostalComplete = postal && postal.value.trim() !== "" && postal.value.length === 5;
-                    const isCityComplete = city && city.value.trim() !== "";
-                    const isDistrictComplete = district && district.value.trim() !== "";
-
-                    let isPhoneValid = false;
-                    if (phone && phone.value.trim() !== "") {
-                        const cleanNumber = phone.value.replace(/\D/g, '');
-                        if (selectedCountryCode === '63') {
-                            isPhoneValid = cleanNumber.length === 10;
-                        } else if (selectedCountryCode === '358') {
-                            isPhoneValid = cleanNumber.length >= 7 && cleanNumber.length <= 10;
-                        } else {
-                            isPhoneValid = cleanNumber.length >= 7;
-                        }
-                    }
-
-                    isForm1PersonalComplete = isFNameComplete && isLNameComplete && isBDateComplete && isAgeValid &&
-                        isEmailValid && isPhoneValid && isStreetComplete &&
-                        isPostalComplete && isCityComplete && isDistrictComplete;
                 } else {
-                    // Company Account Validation
-                    const isCompanyNameComplete = companyName && companyName.value.trim() !== "";
-                    const isContactFNameComplete = contactFName && contactFName.value.trim() !== "";
-                    const isContactLNameComplete = contactLName && contactLName.value.trim() !== "";
-                    const isBusinessIdComplete = businessId && businessId.value.trim() !== "";
-                    const isEinvoiceNumberComplete = einvoiceNumber && einvoiceNumber.value.trim() !== "";
-                    const isCompanyEmailValid = companyEmail && companyEmail.value.trim() !== "" &&
-                        companyEmail.value.includes('@') && companyEmail.value.includes('.');
-                    const isCompanyStreetComplete = companyStreet && companyStreet.value.trim() !== "";
-                    const isCompanyPostalComplete = companyPostal && companyPostal.value.trim() !== "" &&
-                        companyPostal.value.length === 5;
-                    const isCompanyCityComplete = companyCity && companyCity.value.trim() !== "";
-                    const isCompanyDistrictComplete = companyDistrict && companyDistrict.value.trim() !== "";
-
-                    let isCompanyPhoneValid = false;
-                    if (companyPhone && companyPhone.value.trim() !== "") {
-                        const cleanNumber = companyPhone.value.replace(/\D/g, '');
-                        const selectedCodeCompanyElement = document.getElementById('selected-code-company');
-                        const selectedCompanyCode = selectedCodeCompanyElement ? selectedCodeCompanyElement.textContent.replace('+', '') : '358';
-                        if (selectedCompanyCode === '63') {
-                            isCompanyPhoneValid = cleanNumber.length === 10;
-                        } else if (selectedCompanyCode === '358') {
-                            isCompanyPhoneValid = cleanNumber.length >= 7 && cleanNumber.length <= 10;
-                        } else {
-                            isCompanyPhoneValid = cleanNumber.length >= 7;
-                        }
+                    // Hide error if birthdate is empty
+                    if (ageErrorElement) {
+                        ageErrorElement.classList.add('hidden');
                     }
-
-                    isForm1CompanyComplete = isCompanyNameComplete && isContactFNameComplete && isContactLNameComplete &&
-                        isBusinessIdComplete && isEinvoiceNumberComplete &&
-                        isCompanyEmailValid && isCompanyPhoneValid && isCompanyStreetComplete &&
-                        isCompanyPostalComplete && isCompanyCityComplete && isCompanyDistrictComplete;
                 }
+
+                const isEmailValid = email && email.value.trim() !== "" && email.value.includes('@') && email.value.includes('.');
+                const isStreetComplete = street && street.value.trim() !== "";
+                const isPostalComplete = postal && postal.value.trim() !== "" && postal.value.length === 5;
+                const isCityComplete = city && city.value.trim() !== "";
+                const isDistrictComplete = district && district.value.trim() !== "";
+
+                let isPhoneValid = false;
+                if (phone && phone.value.trim() !== "") {
+                    const cleanNumber = phone.value.replace(/\D/g, '');
+                    if (selectedCountryCode === '63') {
+                        isPhoneValid = cleanNumber.length === 10;
+                    } else if (selectedCountryCode === '358') {
+                        isPhoneValid = cleanNumber.length >= 7 && cleanNumber.length <= 10;
+                    } else {
+                        isPhoneValid = cleanNumber.length >= 7;
+                    }
+                }
+
+                const isForm1Complete = isFNameComplete && isLNameComplete && isBDateComplete && isAgeValid &&
+                    isEmailValid && isPhoneValid && isStreetComplete &&
+                    isPostalComplete && isCityComplete && isDistrictComplete;
 
                 // --- 2. INDIVIDUAL FORM 2 CHECKS (OTP) ---
                 const isOTPComplete =
@@ -1984,8 +1654,6 @@
                 const isSecAns2Complete = secans2 && secans2.value.trim() !== "";
 
                 // --- 4. AGGREGATE CHECKS (Used in the event listeners) ---
-                const isForm1Complete = isPersonalAccount ? isForm1PersonalComplete : isForm1CompanyComplete;
-
                 const isForm3Complete = isPasswordValid &&
                     isConfirmed &&
                     isUsernameComplete &&
@@ -2002,35 +1670,17 @@
                     'bg-red-100', 'text-red-500'
                 );
 
-                // Check if ANY Step 1 field has data (based on current account type)
-                let isAnyStep1FieldPopulated = false;
-                if (isPersonalAccount) {
-                    // Check personal account fields
-                    isAnyStep1FieldPopulated =
-                        (fName && fName.value.trim().length > 0) ||
-                        (lName && lName.value.trim().length > 0) ||
-                        (bDate && bDate.value.trim().length > 0) ||
-                        (phone && phone.value.trim().length > 0) ||
-                        (email && email.value.trim().length > 0) ||
-                        (street && street.value.trim().length > 0) ||
-                        (postal && postal.value.trim().length > 0) ||
-                        (city && city.value.trim().length > 0) ||
-                        (district && district.value.trim().length > 0);
-                } else {
-                    // Check company account fields
-                    isAnyStep1FieldPopulated =
-                        (companyName && companyName.value.trim().length > 0) ||
-                        (contactFName && contactFName.value.trim().length > 0) ||
-                        (contactLName && contactLName.value.trim().length > 0) ||
-                        (businessId && businessId.value.trim().length > 0) ||
-                        (einvoiceNumber && einvoiceNumber.value.trim().length > 0) ||
-                        (companyPhone && companyPhone.value.trim().length > 0) ||
-                        (companyEmail && companyEmail.value.trim().length > 0) ||
-                        (companyStreet && companyStreet.value.trim().length > 0) ||
-                        (companyPostal && companyPostal.value.trim().length > 0) ||
-                        (companyCity && companyCity.value.trim().length > 0) ||
-                        (companyDistrict && companyDistrict.value.trim().length > 0);
-                }
+                // Check if ANY Step 1 field has data (personal account only)
+                const isAnyStep1FieldPopulated =
+                    (fName && fName.value.trim().length > 0) ||
+                    (lName && lName.value.trim().length > 0) ||
+                    (bDate && bDate.value.trim().length > 0) ||
+                    (phone && phone.value.trim().length > 0) ||
+                    (email && email.value.trim().length > 0) ||
+                    (street && street.value.trim().length > 0) ||
+                    (postal && postal.value.trim().length > 0) ||
+                    (city && city.value.trim().length > 0) ||
+                    (district && district.value.trim().length > 0);
 
                 // Check if any Step 2 or Step 3 fields have data
                 const isAnyStep2FieldPopulated =
@@ -2168,9 +1818,7 @@
 
             // Function to display the entered email on Step 2
             function updateEmailDisplay() {
-                const emailInput = accountTypePersonal.checked
-                    ? document.getElementById('input-email').value
-                    : document.getElementById('input-company-email').value;
+                const emailInput = document.getElementById('input-email').value;
                 document.getElementById('email_address').textContent = emailInput;
             }
 
@@ -2240,10 +1888,8 @@
                     e.target.textContent = 'Sending...';
                     e.target.disabled = true;
 
-                    // Get the correct email based on account type
-                    const email = accountTypePersonal.checked
-                        ? document.getElementById('input-email').value
-                        : document.getElementById('input-company-email').value;
+                    // Get the email (personal account only)
+                    const email = document.getElementById('input-email').value;
 
                     fetch('/signup/send-otp', {
                         method: 'POST',
@@ -2341,18 +1987,13 @@
                 }
             });
 
-            // Back button for Step 3 (both personal and company use this)
+            // Back button for Step 3 (personal account only)
             document.getElementById('back3-btn').addEventListener('click', () => {
                 currentStep = 2;
                 updateStepper();
             });
 
-            document.getElementById('back3-company-btn').addEventListener('click', () => {
-                currentStep = 2;
-                updateStepper();
-            });
-
-            // Submit buttons - different handlers for personal vs company
+            // Submit button for personal account
             const next3PersonalBtn = document.getElementById('next-3-personal');
             if (next3PersonalBtn) {
                 next3PersonalBtn.addEventListener('click', (e) => {
@@ -2363,20 +2004,6 @@
                         e.preventDefault();
                         alert("Please complete all required fields for Account Setup correctly.");
                     }
-                });
-            }
-
-            const next3CompanyBtn = document.getElementById('next-3-company');
-            if (next3CompanyBtn) {
-                next3CompanyBtn.addEventListener('click', (e) => {
-                    // Check if at least one service type is selected
-                    const serviceTypes = document.querySelectorAll('input[name="service_types[]"]:checked');
-                    if (serviceTypes.length === 0) {
-                        e.preventDefault();
-                        alert("Please select at least one service type.");
-                        return;
-                    }
-                    // Form will submit normally if validation passes
                 });
             }
 
@@ -2434,30 +2061,6 @@
 
             // Set up the phone number dropdown (ONLY THIS CALL REMAINS)
             setupDropdown('dropdown-btn', 'dropdown-list', 'phone_code', true);
-
-            // Set up the company phone number dropdown
-            const dropdownBtnCompany = document.getElementById('dropdown-btn-company');
-            const dropdownListCompany = document.getElementById('dropdown-list-company');
-            const selectedFlagCompany = document.getElementById('selected-flag-company');
-            const selectedCodeCompany = document.getElementById('selected-code-company');
-
-            if (dropdownBtnCompany) {
-                dropdownBtnCompany.addEventListener('click', () => {
-                    dropdownListCompany.classList.toggle('active');
-                });
-
-                dropdownListCompany.querySelectorAll('.custom-dropdown-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const value = item.getAttribute('data-value');
-                        const flagSrc = item.getAttribute('data-flag');
-
-                        selectedFlagCompany.src = flagSrc;
-                        selectedCodeCompany.textContent = value;
-                        dropdownListCompany.classList.remove('active');
-                        checkFormCompletion();
-                    });
-                });
-            }
 
             // REMOVED calls for setupDropdown('dropdown-secques1', ...) and setupDropdown('dropdown-secques2', ...)
 

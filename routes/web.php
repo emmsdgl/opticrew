@@ -26,13 +26,9 @@ use App\Http\Controllers\FeedbackController;
 
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
-Route::get('/coming', function () {
-    return view('coming-soon');
-})->name('coming');
-
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
-// --- LANDING PAGE ROUTES (Public) UNCOMMENT THIS ONCE DONE---
+// --- LANDING PAGE ROUTES (Public) ---
 Route::get('/', function () {
     // If user is already authenticated, redirect to their dashboard
     if (Auth::check()) {
@@ -51,10 +47,6 @@ Route::get('/', function () {
     return view('landingpage-home');
 })->name('home');
 
-// Home Page
-Route::get('/home', function () {
-    return view('landingpage-home');
-})->name('home');
 // About Page
 Route::get('/about', function () {
     return view('landingpage-about');
@@ -96,38 +88,6 @@ Route::get('/register', function () {
 // --- LANGUAGE SWITCHING ROUTES ---
 Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 Route::post('/api/language/switch', [LanguageController::class, 'switchApi'])->name('language.switch.api');
-
-// --- LANDING PAGE ROUTES (Public) ---
-// Route::get('/', function () {
-//     // If user is already authenticated, redirect to their dashboard
-//     if (Auth::check()) {
-//         $role = Auth::user()->role;
-
-//         if ($role === 'admin') {
-//             return redirect()->route('admin.dashboard');
-//         } elseif ($role === 'employee') {
-//             return redirect()->route('employee.dashboard');
-//         } elseif ($role === 'external_client') {
-//             return redirect()->route('client.dashboard');
-//         }
-//     }
-
-//     // Show landing page for guests
-//     return view('landing.home');
-// })->name('home');
-
-// Route::get('/about', function () {
-//     return response()->file(resource_path('views/landing/about.blade.php'));
-// })->name('about');
-
-// Route::get('/services', function () {
-//     return response()->file(resource_path('views/landing/service.blade.php'));
-// })->name('services');
-
-// Route::get('/pricing', function () {
-//     return response()->file(resource_path('views/landing/guest-pricing.blade.php'));
-// })->name('pricing');
-
 
 // --- AUTHENTICATED ROUTES ---
 
@@ -252,9 +212,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
 
-    Route::get('/admin/profile', function () {
-        return view('admin.profile');
-    })->name('admin.profile');
+    Route::get('/admin/profile', [ProfileController::class, 'show'])->name('admin.profile');
 
     Route::get('/admin/profile/edit', [ProfileController::class, 'edit'])->name('admin.profile.edit');
     Route::post('/admin/profile/update', [ProfileController::class, 'update'])->name('admin.profile.update');
@@ -303,9 +261,7 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/performance', [App\Http\Controllers\EmployeePerformanceController::class, 'index'])
     ->name('employee.performance');
 
-    Route::get('/employee/profile', function () {
-        return view('employee.profile');
-    })->name('employee.profile');
+    Route::get('/employee/profile', [ProfileController::class, 'show'])->name('employee.profile');
 
     Route::get('/employee/profile/edit', [ProfileController::class, 'edit'])->name('employee.profile.edit');
     Route::post('/employee/profile/update', [ProfileController::class, 'update'])->name('employee.profile.update');
@@ -338,9 +294,7 @@ Route::middleware(['auth', 'client'])->group(function () {
     })->name('client.feedback');
     Route::post('/client/feedback', [FeedbackController::class, 'store'])->name('client.feedback.store');
 
-    Route::get('/client/profile', function () {
-        return view('client.profile');
-    })->name('client.profile');
+    Route::get('/client/profile', [ProfileController::class, 'show'])->name('client.profile');
 
     Route::get('/client/profile/edit', [ProfileController::class, 'edit'])->name('client.profile.edit');
     Route::post('/client/profile/update', [ProfileController::class, 'update'])->name('client.profile.update');
