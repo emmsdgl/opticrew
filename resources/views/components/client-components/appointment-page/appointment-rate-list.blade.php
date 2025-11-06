@@ -266,7 +266,7 @@
                     @click="submitFeedback()"
                     :disabled="selectedRating === 0"
                     :class="selectedRating === 0 
-                        ? 'opacity-50 cursor-not-allowed bg-blue-900 dark:bg-blue-800' 
+                        ? 'opacity-50 cursor-not-allowed bg-blue-600 dark:bg-blue-800' 
                         : 'bg-blue-900 dark:bg-blue-700 hover:bg-blue-800 dark:hover:bg-blue-600'"
                     type="button"
                     class="w-full px-6 py-3.5 sm:py-4 text-sm font-bold text-white rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 dark:focus:ring-blue-700 disabled:hover:bg-blue-900 dark:disabled:hover:bg-blue-800">

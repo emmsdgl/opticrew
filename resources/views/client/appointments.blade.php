@@ -90,7 +90,7 @@
                         'subtitle' => 'Pending or confirmed services',
                         'icon' => 'fa-solid fa-broom',
                         'iconBg' => '',
-                        'iconColor' => 'text-orange-600',
+                        'iconColor' => 'text-blue-600',
                     ],
                     [
                         'title' => 'Completed Services',
@@ -98,7 +98,7 @@
                         'subtitle' => 'Successfully finished services',
                         'icon' => 'fa-solid fa-check-circle',
                         'iconBg' => '',
-                        'iconColor' => 'text-green-600',
+                        'iconColor' => 'text-blue-600',
                     ],
                 ];
             @endphp
