@@ -74,8 +74,8 @@ class EmployeePerformanceController extends Controller
                     'start' => $task->scheduled_date ? Carbon::parse($task->scheduled_date)->format('Y-m-d') : null,
                     'end' => $task->completed_at ? Carbon::parse($task->completed_at)->format('Y-m-d') : null,
                     'percentage' => $percentage,
-                    'due_date' => $task->completed_at ? Carbon::parse($task->completed_at)->format('Y-m-d') : null,
-                    'due_time' => $task->completed_at ? Carbon::parse($task->completed_at)->format('g:i a') : null,
+                    'due_date' => $task->scheduled_date,
+                    'due_time' => $task->scheduled_time,
                     'team_name' => $task->optimizationTeam ? $task->optimizationTeam->team_name : 'Team',
                     'team_members' => $teamMembers
                 ];

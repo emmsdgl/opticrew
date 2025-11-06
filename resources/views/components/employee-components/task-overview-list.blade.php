@@ -2,7 +2,7 @@
     'items' => [],
     'maxHeight' => '20rem', // Default max height
     'fixedHeight' => '12rem', // h-48 = 12rem
-    'emptyTitle' => 'Nothing on the list yet',
+    'emptyTitle' => 'No appointments yet',
     'emptyMessage' => 'You don\'t have any appointments at the moment.',
 ])
 
@@ -10,7 +10,7 @@
     @if(empty($items))
         <!-- Empty State - Auto Height -->
         <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
-            <div class="w-52 h-52 mb-6 flex items-center justify-center">
+            <div class="w-64 h-64 mb-6 flex items-center justify-center">
                 <img src="{{ asset('images/icons/no-items-found.svg') }}"
                      alt="No appointments"
                      class="w-full h-full object-contain opacity-80 dark:opacity-60">
@@ -63,14 +63,20 @@
                                 Due On <span class="font-bold">{{ $item['service_date'] }}</span>
                             </span>
                             @endif
-                            
-                            @if(isset($item['service_date']) && isset($item['service_time']))
-                            <span>·</span>
-                            @endif
-                            
+
                             @if(isset($item['service_time']))
                             <span class="flex items-center gap-1">
-                                At <span class="font-bold">{{ $item['service_time'] }}</span>
+                                at <span class="font-bold">{{ $item['service_time'] }}</span>
+                            </span>
+                            @endif
+
+                            @if((isset($item['service_date']) || isset($item['service_time'])) && isset($item['description']))
+                            <span>·</span>
+                            @endif
+
+                            @if(isset($item['description']))
+                            <span class="flex items-center gap-1">
+                                Appointment for <span class="font-bold">{{ $item['description'] }}</span>
                             </span>
                             @endif
                         </div>
@@ -183,14 +189,7 @@
                         @endif
                     </div>
                 </div>
-                
-                <!-- Description -->
-                @if(isset($item['description']))
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-3">
-                    {{ $item['description'] }}
-                </p>
-                @endif
-                
+
                 <!-- Custom Slot for Extra Content -->
                 @if(isset($item['extra_content']))
                 <div class="mt-4">

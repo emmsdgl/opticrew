@@ -27,10 +27,10 @@
         <!-- Compact Clock In/Out Status Indicator -->
         @if($isClockedIn)
             {{-- Compact status indicator when clocked in --}}
-            <div class="flex items-center gap-2 p-3 mb-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
+            <div class="flex items-center gap-2 p-6 mb-4 mx-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
                 <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 <span class="text-sm font-medium text-green-800 dark:text-green-300">
-                    <i class="fas fa-check-circle"></i> Clocked in at {{ $clockInTime }}
+                    <i class="fas fa-check-circle"></i> You're Present Today, Clocked in at {{ $clockInTime }}
                 </span>
             </div>
         @else

@@ -6,7 +6,6 @@
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('employee.dashboard')],
             ['label' => 'Tasks', 'icon' => 'fa-file-lines', 'href' => route('employee.tasks')],
             ['label' => 'Attendance', 'icon' => 'fa-calendar', 'href' => route('employee.attendance')],
-            ['label' => 'Schedule', 'icon' => 'fa-calendar', 'href' => '/calendar'],
             ['label' => 'Performance', 'icon' => 'fa-chart-line', 'href' => route('employee.performance')]
         ];
 

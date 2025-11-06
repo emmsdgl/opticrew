@@ -6,7 +6,7 @@
     </div>
 
     {{-- DESKTOP LAYOUT (≥ 1024px) - Hidden on small screens --}}
-    <section role="status" class="hidden lg:flex flex-col lg:flex-col gap-1 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
+    <section role="status" class="w-full hidden lg:flex flex-col lg:flex-col gap-1 p-4 md:p-6">
 
         <!-- Success/Error Messages -->
         @if(session('success'))

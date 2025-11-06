@@ -1,9 +1,25 @@
 @props([
     'records' => [],
     'showHeader' => true,
+    'isClockedIn' => false,
+    'hasAttendanceToday' => false,
 ])
 
-<div class="w-full overflow-x-auto">
+<div class="w-full overflow-x-auto" x-data="{
+    showAttendanceModal: false,
+    selectedRecord: null,
+
+    openAttendanceModal(record) {
+        this.selectedRecord = record;
+        this.showAttendanceModal = true;
+        document.body.style.overflow = 'hidden';
+    },
+
+    closeAttendanceModal() {
+        this.showAttendanceModal = false;
+        document.body.style.overflow = 'auto';
+    }
+}">
     <!-- Table Header -->
     @if($showHeader)
     <div class="hidden md:grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-800 
@@ -28,7 +44,7 @@
         </div>
         <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Time Out</div>
         <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Hours Worked</div>
-        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Action</div>
+        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center">Action</div>
     </div>
     @endif
 
@@ -91,16 +107,16 @@
             </div>
 
             <!-- Action Button -->
-            <div class="flex items-start">
-                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Action:</span>
+            <div class="flex items-center justify-center">
+                <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 mr-2">Action:</span>
                 <button
-                    @click="handleAction()"
+                    @click="$dispatch('open-modal', { date: date, timedIn: timedIn, isTimedOut: isTimedOut })"
                     :disabled="isTimedOut"
-                    class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-                    :class="isTimedOut 
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600' 
-                        : (timedIn 
-                            ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600' 
+                    class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                    :class="isTimedOut
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
+                        : (timedIn
+                            ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                             : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600')"
                     x-text="buttonText">
                 </button>
@@ -116,6 +132,126 @@
         <p>No attendance records found</p>
     </div>
     @endif
+
+    <!-- Attendance Details Modal -->
+    <div x-show="showAttendanceModal" x-cloak @click="closeAttendanceModal()"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 sm:p-8"
+        style="display: none;"
+        @open-modal.window="openAttendanceModal($event.detail)">
+        <div @click.stop
+            class="relative bg-white w-1/3 dark:bg-slate-800 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700"
+            x-show="showAttendanceModal" x-transition>
+
+            <!-- Close button -->
+            <button type="button" @click="closeAttendanceModal()"
+                class="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 rounded-lg p-1 z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <!-- Modal Content -->
+            <div class="py-6 sm:p-8">
+                <!-- Header -->
+                <div class="my-6 text-center w-full">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Attendance Details</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <template x-if="selectedRecord">
+                            <span>Manage your attendance for <span class="font-semibold" x-text="selectedRecord?.date"></span></span>
+                        </template>
+                    </p>
+                </div>
+
+                <!-- Attendance Info Card -->
+                <template x-if="selectedRecord">
+                    <div class="rounded-xl mb-6">
+
+                        <!-- Status Badge - Centered -->
+                        <div class="flex items-center justify-center gap-2">
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Status:</span>
+                            <template x-if="selectedRecord.timedIn">
+                                <span class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Clocked In</span>
+                            </template>
+                            <template x-if="!selectedRecord.timedIn && !selectedRecord.isTimedOut">
+                                <span class="px-3 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold">Not Clocked In</span>
+                            </template>
+                            <template x-if="selectedRecord.isTimedOut">
+                                <span class="px-3 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold">Clocked Out</span>
+                            </template>
+                        </div>
+
+                        <!-- Attendance Details Grid -->
+                        <div class="space-y-3 mt-6 border-t border-gray-200 dark:border-slate-600 pt-6 p-8">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Date</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-right" x-text="selectedRecord?.date"></span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Clock In Time</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-right">
+                                    <template x-if="selectedRecord.timedIn">
+                                        <span x-text="selectedRecord?.timeIn || 'N/A'"></span>
+                                    </template>
+                                    <template x-if="!selectedRecord.timedIn">
+                                        <span class="text-gray-400 dark:text-gray-500">Not clocked in</span>
+                                    </template>
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Clock Out Time</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-right">
+                                    <template x-if="selectedRecord.timedIn && !selectedRecord.isTimedOut">
+                                        <span class="text-blue-500 dark:text-blue-400">Still working...</span>
+                                    </template>
+                                    <template x-if="selectedRecord.isTimedOut">
+                                        <span x-text="selectedRecord?.timeOut || 'N/A'"></span>
+                                    </template>
+                                    <template x-if="!selectedRecord.timedIn">
+                                        <span class="text-gray-400 dark:text-gray-500">N/A</span>
+                                    </template>
+                                </span>
+                            </div>
+
+                            <template x-if="selectedRecord.isTimedOut && selectedRecord.hoursWorked">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-500 dark:text-gray-400">Total Hours</span>
+                                    <span class="font-medium text-gray-900 dark:text-white text-right" x-text="selectedRecord?.hoursWorked"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Action Buttons -->
+                <div class="mt-3 flex flex-col sm:flex-row gap-3">
+                    <template x-if="selectedRecord && !selectedRecord.timedIn">
+                        <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1">
+                            @csrf
+                            <button type="submit"
+                                class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full transition-colors duration-200 flex items-center justify-center gap-2">
+                                <i class="fi fi-rr-play text-sm"></i>
+                                Clock In
+                            </button>
+                        </form>
+                    </template>
+                    <template x-if="selectedRecord && selectedRecord.timedIn && !selectedRecord.isTimedOut">
+                        <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1 flex justify-center">
+                            @csrf
+                            <button type="submit"
+                                class="w-1/2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                                <i class="fi fi-rr-stop text-sm"></i>
+                                Clock Out
+                            </button>
+                        </form>
+                    </template>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @push('scripts')
 <script>
@@ -135,7 +271,7 @@ function attendanceRow(index, record) {
         
         get buttonText() {
             if (this.isTimedOut) return 'Timed Out';
-            return this.timedIn ? 'Time Out' : 'Time In';
+            return this.timedIn ? 'View Details' : 'Time In';
         },
         
         handleAction() {
