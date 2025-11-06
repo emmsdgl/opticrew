@@ -405,6 +405,7 @@
     </div>
 </div>
 
+
 @push('scripts')
 <script>
 function cancelAppointment(appointmentId) {
