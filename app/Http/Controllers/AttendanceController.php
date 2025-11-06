@@ -113,7 +113,7 @@ class AttendanceController extends Controller
                 'subtitle' => 'Total attendance days this month',
                 'icon' => 'fa-solid fa-calendar-check',
                 'iconBg' => '',
-                'iconColor' => 'text-green-600',
+                'iconColor' => 'text-blue-600',
             ],
             [
                 'title' => 'Worked Hours',
@@ -131,7 +131,7 @@ class AttendanceController extends Controller
                 'subtitle' => 'Average daily work duration',
                 'icon' => 'fa-solid fa-clock',
                 'iconBg' => '',
-                'iconColor' => 'text-purple-600',
+                'iconColor' => 'text-blue-600',
             ],
         ];
 
