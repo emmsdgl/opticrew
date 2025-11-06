@@ -37,7 +37,7 @@
                 <!-- Inner Down - Tasks Particulars -->
                 <div class="w-full rounded-lg h-48 sm:h-56 md:h-auto">
                     <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
-                    <div class="h-48 overflow-y-auto">
+                    <div class="h-48 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg my-6">
 
                         @php
                             // Transform tasks to the format expected by task-overview-list component
@@ -73,7 +73,7 @@
                 </div>
 
                 <!-- Inner Up - Tasks Summary -->
-                <div class="w-full rounded-lg h-64 sm:h-1/2 md:h-1/2">
+                <div class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 h-64 sm:h-1/2 md:h-1/2">
 
                     <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
                         'done' => 'Done',

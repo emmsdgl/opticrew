@@ -1,6 +1,6 @@
 @props([
-    'events' => [],
-    'initialView' => 'week'
+    'events' => [], // Expected format: [{ id, title, date, startTime, endTime, time, description, color, status, position, height }]
+    'initialView' => 'month'
 ])
 
 <div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -8,12 +8,30 @@
     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 gap-4">
         <!-- Month/Year Display with Picker -->
         <div class="flex items-center gap-4">
-            <div class="relative">
+            <div class="relative" x-data="{ showTooltip: false }">
                 <button @click="showMonthPicker = !showMonthPicker"
-                        class="text-lg lg:text-xl font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        @mouseenter="showTooltip = true"
+                        @mouseleave="showTooltip = false"
+                        class="text-base lg:text-base font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <span x-text="currentMonthYear"></span>
-                    <i class="fas fa-chevron-down text-sm transition-transform" :class="showMonthPicker ? 'rotate-180' : ''"></i>
                 </button>
+
+                <!-- Tooltip -->
+                <div x-show="showTooltip && !showMonthPicker"
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-1"
+                     class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 z-50">
+                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                        Click to select a date
+                        <!-- Tooltip Arrow -->
+                        <div class="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45"></div>
+                    </div>
+                </div>
 
                 <!-- Month/Year Picker Dropdown -->
                 <div x-show="showMonthPicker"
@@ -121,7 +139,7 @@
                 <template x-for="day in visibleDays" :key="day.date">
                     <div class="text-center p-2 rounded-lg" :class="day.isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
                         <div class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide" x-text="day.dayName"></div>
-                        <div class="text-2xl font-black mt-1.5"
+                        <div class="text-2xl font-bold mt-1.5"
                              :class="day.isToday ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'"
                              x-text="day.dayNumber"></div>
                     </div>
@@ -213,7 +231,11 @@
              x-transition:leave-end="opacity-0 scale-95">
             <!-- Modal Header -->
             <div class="flex justify-between items-start mb-5">
-                <div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-tasks text-blue-600 dark:text-blue-400"></i>
+                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Task Details</span>
+                    </div>
                     <h3 class="text-xl font-black text-gray-900 dark:text-white" x-text="selectedEvent?.title"></h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium flex items-center gap-2">
                         <i class="fas fa-clock text-xs"></i>
@@ -226,37 +248,47 @@
                 </button>
             </div>
 
-            <!-- Event Color Indicator -->
+            <!-- Task Status Indicator -->
             <div class="h-1.5 rounded-full mb-6" :style="`background-color: ${selectedEvent?.color}`"></div>
 
-            <!-- Event Details -->
+            <!-- Task Details -->
             <div class="space-y-4">
                 <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
                     <i class="fas fa-calendar text-blue-600 dark:text-blue-400 mt-1"></i>
                     <div class="flex-1">
-                        <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Date</p>
+                        <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Scheduled Date</p>
                         <p class="text-sm font-semibold text-gray-900 dark:text-white" x-text="formatDate(selectedEvent?.date)"></p>
                     </div>
                 </div>
 
                 <div x-show="selectedEvent?.description" class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                    <i class="fas fa-align-left text-blue-600 dark:text-blue-400 mt-1"></i>
+                    <i class="fas fa-map-marker-alt text-blue-600 dark:text-blue-400 mt-1"></i>
                     <div class="flex-1">
-                        <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Details</p>
+                        <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Location & Duration</p>
                         <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="selectedEvent?.description"></p>
+                    </div>
+                </div>
+
+                <div x-show="selectedEvent?.status" class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-1"></i>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Status</p>
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full"
+                              :style="`background-color: ${selectedEvent?.color}20; color: ${selectedEvent?.color}`"
+                              x-text="selectedEvent?.status || 'Scheduled'"></span>
                     </div>
                 </div>
             </div>
 
             <!-- Modal Actions -->
             <div class="flex gap-3 mt-8">
-                <button @click="editEvent(selectedEvent)"
+                <button @click="viewTaskDetails(selectedEvent)"
                         class="flex-1 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold shadow-sm hover:shadow-md">
-                    <i class="fas fa-edit mr-2 text-sm"></i>Edit
+                    <i class="fas fa-eye mr-2 text-sm"></i>View Details
                 </button>
-                <button @click="deleteEvent(selectedEvent)"
-                        class="flex-1 px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-semibold shadow-sm hover:shadow-md">
-                    <i class="fas fa-trash mr-2 text-sm"></i>Delete
+                <button @click="showEventModal = false"
+                        class="flex-1 px-5 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors font-semibold shadow-sm hover:shadow-md">
+                    <i class="fas fa-times mr-2 text-sm"></i>Close
                 </button>
             </div>
         </div>
@@ -437,17 +469,13 @@ function calendarScheduler(initialEvents, initialView) {
             return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         },
 
-        editEvent(event) {
-            console.log('Edit event:', event);
-            // Implement edit functionality
-            this.showEventModal = false;
-        },
-
-        deleteEvent(event) {
-            if (confirm('Are you sure you want to delete this event?')) {
-                this.events = this.events.filter(e => e.id !== event.id);
-                this.showEventModal = false;
+        viewTaskDetails(task) {
+            // Redirect to task details page or open detailed task view
+            if (task && task.id) {
+                // You can redirect to a task details page
+                window.location.href = `/employee/tasks/${task.id}`;
             }
+            this.showEventModal = false;
         }
     }
 }
