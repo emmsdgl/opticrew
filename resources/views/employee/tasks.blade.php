@@ -7,7 +7,7 @@
     </div>
 
     {{-- DESKTOP LAYOUT (≥ 1024px) - Hidden on small screens --}}
-    <section role="status" class="hidden lg:flex flex-col gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
+    <section role="status" class="w-full hidden lg:flex flex-col gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
 
         <!-- Flash Messages (session based) -->
         @if(session()->has('success'))
@@ -53,126 +53,171 @@
             </div>
         @endif
 
+        <!-- Tasks Calendar Section -->
+        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
+            <x-labelwithvalue label="Task Calendar" count="" />
+
+            @php
+                // Transform tasks to calendar events format
+                $allTasks = $todayTasks->concat($upcomingTasks);
+                $events = $allTasks->map(function($task) {
+                    // Color based on status
+                    $statusColors = [
+                        'Scheduled' => '#3B82F6',      // Blue
+                        'In Progress' => '#10B981',    // Green
+                        'On Hold' => '#F59E0B',        // Yellow
+                        'Completed' => '#6B7280',      // Gray
+                        'Pending' => '#FFA500',        // Orange
+                    ];
+
+                    $color = $statusColors[$task->status] ?? '#6B7280'; // Default gray
+
+                    // Parse scheduled time
+                    $scheduledTime = $task->scheduled_time ? \Carbon\Carbon::parse($task->scheduled_time) : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                    $startTime = $scheduledTime->format('H:i');
+
+                    // Calculate end time based on estimated duration
+                    $duration = $task->estimated_duration_minutes ?? 60;
+                    $endTime = $scheduledTime->copy()->addMinutes($duration)->format('H:i');
+
+                    // Format time display
+                    $timeDisplay = $scheduledTime->format('h:i A') . ' - ' . $scheduledTime->copy()->addMinutes($duration)->format('h:i A');
+
+                    return [
+                        'id' => $task->id,
+                        'title' => $task->task_description,
+                        'date' => \Carbon\Carbon::parse($task->scheduled_date)->format('Y-m-d'),
+                        'startTime' => $startTime,
+                        'endTime' => $endTime,
+                        'time' => $timeDisplay,
+                        'description' => ($task->location ? $task->location->location_name : 'External Client') . ' - ' . $duration . ' min',
+                        'color' => $color,
+                        'status' => $task->status,
+                        'position' => 0,
+                        'height' => 60
+                    ];
+                })->toArray();
+            @endphp
+
+            <x-employee-components.task-calendar :events="$events" initial-view="month" />
+        </div>
+
+        <!-- Divider -->
+        <hr class="my-6 border-gray-300 dark:border-gray-700">
+
         <!-- Today's Tasks Section -->
-        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4" x-data="{ filter: 'all' }">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <x-labelwithvalue label="My Tasks for Today" :count="'(' . $todayTasks->count() . ')'" />
+        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
+            <x-labelwithvalue label="My Tasks for Today" :count="'(' . $todayTasks->count() . ')'" />
 
-                {{-- Filter Buttons --}}
-                <div class="flex items-center gap-2 flex-wrap">
-                    <button @click="filter = 'all'"
-                            :class="filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-                            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:shadow-md">
-                        All ({{ $todayTasks->count() }})
-                    </button>
-                    <button @click="filter = 'scheduled'"
-                            :class="filter === 'scheduled' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-                            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:shadow-md">
-                        Scheduled ({{ $todayTasks->where('status', 'Scheduled')->count() }})
-                    </button>
-                    <button @click="filter = 'in-progress'"
-                            :class="filter === 'in-progress' ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-                            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:shadow-md">
-                        In Progress ({{ $todayTasks->where('status', 'In Progress')->count() }})
-                    </button>
-                    <button @click="filter = 'on-hold'"
-                            :class="filter === 'on-hold' ? 'bg-yellow-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-                            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:shadow-md">
-                        On Hold ({{ $todayTasks->where('status', 'On Hold')->count() }})
-                    </button>
-                    <button @click="filter = 'completed'"
-                            :class="filter === 'completed' ? 'bg-gray-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-                            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:shadow-md">
-                        Completed ({{ $todayTasks->where('status', 'Completed')->count() }})
-                    </button>
-                </div>
-            </div>
+            @php
+                // Transform today's tasks to the format expected by task-overview-list component
+                $todayTasksFormatted = $todayTasks->map(function($task) use ($isClockedIn) {
+                    $scheduledTime = $task->scheduled_time
+                        ? \Carbon\Carbon::parse($task->scheduled_time)
+                        : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @forelse($todayTasks as $task)
-                    <div x-show="filter === 'all' ||
-                                (filter === 'scheduled' && '{{ $task->status }}' === 'Scheduled') ||
-                                (filter === 'in-progress' && '{{ $task->status }}' === 'In Progress') ||
-                                (filter === 'on-hold' && '{{ $task->status }}' === 'On Hold') ||
-                                (filter === 'completed' && '{{ $task->status }}' === 'Completed')"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 transform scale-95"
-                         x-transition:enter-end="opacity-100 transform scale-100"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100"
-                         x-transition:leave-end="opacity-0">
-                        <x-task-action-card :task="$task" :isClockedIn="$isClockedIn" />
-                    </div>
-                @empty
-                    <div class="flex flex-col w-full rounded-xl p-12 text-center">
-                        <i class="fa-solid fa-magnifying-glass text-3xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No tasks assigned for today</p>
-                        <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Check back later or contact your supervisor</p>
-                    </div>
-                @endforelse
+                    $duration = $task->estimated_duration_minutes ?? 60;
+
+                    return [
+                        'service' => $task->task_description,
+                        'status' => $task->status,
+                        'service_date' => \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y'),
+                        'service_time' => $scheduledTime->format('g:i A') . ' (' . $duration . ' min)',
+                        'description' => ($task->location ? $task->location->location_name : 'External Client')
+                                       . ($task->assigned_by ? ' • Assigned by: ' . $task->assigned_by->name : ''),
+                        'action_url' => route('employee.tasks.show', $task->id),
+                        'action_label' => 'View Details',
+                        'menu_items' => $isClockedIn ? [
+                            [
+                                'label' => 'Start Task',
+                                'action' => "window.location.href='" . route('employee.tasks.start', $task->id) . "'"
+                            ],
+                            [
+                                'label' => 'Mark as Complete',
+                                'action' => "window.location.href='" . route('employee.tasks.complete', $task->id) . "'"
+                            ]
+                        ] : []
+                    ];
+                })->toArray();
+            @endphp
+
+            <div class="h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+                <x-employee-components.task-overview-list
+                    :items="$todayTasksFormatted"
+                    fixedHeight="24rem"
+                    maxHeight="30rem"
+                    emptyTitle="No tasks assigned for today"
+                    emptyMessage="Check back later or contact your supervisor for task assignments." />
             </div>
         </div>
 
         <!-- Divider -->
         <hr class="my-6 border-gray-300 dark:border-gray-700">
 
-        <!-- Upcoming Tasks Section -->
+        <!-- Tasks History Section -->
         <div class="flex flex-col gap-6 w-full rounded-lg p-4">
-            <x-labelwithvalue label="Upcoming Tasks" :count="'(' . $upcomingTasks->count() . ')'" />
+            @php
+                // Combine all tasks for history view (today's and upcoming)
+                $allTasksHistory = $todayTasks->concat($upcomingTasks);
+            @endphp
 
-            {{-- Simple list view for upcoming tasks (no action buttons needed) --}}
-            <div class="space-y-4">
-                @forelse($upcomingTasks as $task)
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border-l-4 border-gray-400">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-semibold rounded-full">
-                                {{ $task->status }}
-                            </span>
-                            <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                                {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
-                                @if($task->scheduled_time)
-                                    · {{ \Carbon\Carbon::parse($task->scheduled_time)->format('g:i A') }}
-                                @endif
-                            </span>
-                        </div>
-                        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">{{ $task->task_description }}</h4>
-                        <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
-                            <span class="flex items-center">
-                                <i class="fas fa-map-marker-alt mr-2 text-red-500"></i>
-                                {{ $task->location->location_name ?? 'External Client Task' }}
-                            </span>
-                            @if($task->estimated_duration_minutes)
-                                <span class="flex items-center">
-                                    <i class="fas fa-clock mr-2 text-orange-500"></i>
-                                    {{ $task->estimated_duration_minutes }} min
-                                </span>
-                            @endif
-                            @if($task->optimizationTeam && $task->optimizationTeam->car)
-                                <span class="flex items-center">
-                                    <i class="fas fa-car mr-2 text-purple-500"></i>
-                                    {{ $task->optimizationTeam->car->car_name }}
-                                </span>
-                            @endif
-                        </div>
-                        @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
-                        <div class="mt-3">
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Team:</p>
-                            <div class="flex flex-wrap gap-1">
-                                @foreach($task->optimizationTeam->members as $member)
-                                    <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs">
-                                        {{ $member->employee->user->name ?? 'Unknown' }}
-                                    </span>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-                    </div>
-                @empty
-                    <div class="rounded-xl p-8 text-center">
-                        <i class="fa-solid fa-calendar-week text-3xl text-gray-300 dark:text-gray-600 mb-3"></i>
-                        <p class="text-gray-500 dark:text-gray-400 text-sm">No upcoming tasks scheduled</p>
-                    </div>
-                @endforelse
+            <x-labelwithvalue label="Tasks History" :count="'(' . $allTasksHistory->count() . ')'" />
+
+            @php
+                // Transform all tasks to the format expected by task-overview-list component
+                $allTasksFormatted = $allTasksHistory->map(function($task) use ($isClockedIn) {
+                    $scheduledTime = $task->scheduled_time
+                        ? \Carbon\Carbon::parse($task->scheduled_time)
+                        : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+
+                    $duration = $task->estimated_duration_minutes ?? 60;
+
+                    // Build team information if available
+                    $teamInfo = '';
+                    if ($task->optimizationTeam) {
+                        if ($task->optimizationTeam->car) {
+                            $teamInfo .= ' • Vehicle: ' . $task->optimizationTeam->car->car_name;
+                        }
+                        if ($task->optimizationTeam->members->isNotEmpty()) {
+                            $teamMembers = $task->optimizationTeam->members->pluck('employee.user.name')->filter()->take(3)->join(', ');
+                            if ($task->optimizationTeam->members->count() > 3) {
+                                $teamMembers .= ' +' . ($task->optimizationTeam->members->count() - 3) . ' more';
+                            }
+                            $teamInfo .= ' • Team: ' . $teamMembers;
+                        }
+                    }
+
+                    return [
+                        'service' => $task->task_description,
+                        'status' => $task->status,
+                        'service_date' => \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y'),
+                        'service_time' => $scheduledTime->format('g:i A') . ' (' . $duration . ' min)',
+                        'description' => ($task->location ? $task->location->location_name : 'External Client')
+                                       . ($task->assigned_by ? ' • Assigned by: ' . $task->assigned_by->name : '')
+                                       . $teamInfo,
+                        'action_url' => route('employee.tasks.show', $task->id),
+                        'action_label' => 'View Details',
+                        'menu_items' => $isClockedIn && $task->status !== 'Completed' ? [
+                            [
+                                'label' => 'Start Task',
+                                'action' => "window.location.href='" . route('employee.tasks.start', $task->id) . "'"
+                            ],
+                            [
+                                'label' => 'Mark as Complete',
+                                'action' => "window.location.href='" . route('employee.tasks.complete', $task->id) . "'"
+                            ]
+                        ] : []
+                    ];
+                })->toArray();
+            @endphp
+
+            <div class="h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+                <x-employee-components.task-overview-list
+                    :items="$allTasksFormatted"
+                    fixedHeight="24rem"
+                    maxHeight="30rem"
+                    emptyTitle="No tasks in history"
+                    emptyMessage="Your completed and upcoming tasks will appear here once assigned." />
             </div>
         </div>
 

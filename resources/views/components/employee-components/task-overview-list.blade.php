@@ -2,7 +2,7 @@
     'items' => [],
     'maxHeight' => '20rem', // Default max height
     'fixedHeight' => '12rem', // h-48 = 12rem
-    'emptyTitle' => 'No appointments yet',
+    'emptyTitle' => 'Nothing on the list yet',
     'emptyMessage' => 'You don\'t have any appointments at the moment.',
 ])
 
@@ -10,7 +10,7 @@
     @if(empty($items))
         <!-- Empty State - Auto Height -->
         <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
-            <div class="w-64 h-64 mb-6 flex items-center justify-center">
+            <div class="w-52 h-52 mb-6 flex items-center justify-center">
                 <img src="{{ asset('images/icons/no-items-found.svg') }}"
                      alt="No appointments"
                      class="w-full h-full object-contain opacity-80 dark:opacity-60">
@@ -60,7 +60,7 @@
                         <div class="flex flex-wrap items-center gap-x-3 text-xs text-gray-500 dark:text-gray-400">
                             @if(isset($item['service_date']))
                             <span class="flex items-center gap-1">
-                                Scheduled on <span class="font-bold">{{ $item['service_date'] }}</span>
+                                Due On <span class="font-bold">{{ $item['service_date'] }}</span>
                             </span>
                             @endif
                             
