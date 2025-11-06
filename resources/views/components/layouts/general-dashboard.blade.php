@@ -61,6 +61,11 @@
         flex: 0;
     }
 
+    /* Toggle button positioning - beside sidebar */
+    #sidebar-toggle {
+        transition: left 0.3s ease;
+    }
+
     @keyframes rotate-flip {
         0% {
             transform: rotateY(0deg);
@@ -209,21 +214,25 @@
                 const collapsed = sidebar.classList.contains('w-20');
 
                 if (collapsed) {
+                    // Expanding sidebar
                     sidebar.classList.replace('w-20', 'w-64');
                     if (window.innerWidth >= 1024) { // Only adjust margin on desktop
                         mainContent.classList.replace('lg:ml-20', 'lg:ml-64');
                     }
                     document.querySelectorAll('.nav-label, .sidebar-logo-text, .sidebar-logo')
                         .forEach(el => el.classList.remove('hidden'));
-                    sidebarToggle.querySelector('i').className = 'fi fi-rr-angle-small-left';
+                    // Move toggle button beside expanded sidebar (256px width + 16px gap = 272px)
+                    sidebarToggle.style.left = '272px';
                 } else {
+                    // Collapsing sidebar
                     sidebar.classList.replace('w-64', 'w-20');
                     if (window.innerWidth >= 1024) { // Only adjust margin on desktop
                         mainContent.classList.replace('lg:ml-64', 'lg:ml-20');
                     }
                     document.querySelectorAll('.nav-label, .sidebar-logo-text, .sidebar-logo')
                         .forEach(el => el.classList.add('hidden'));
-                    sidebarToggle.querySelector('i').className = 'fi fi-rr-angle-small-right';
+                    // Move toggle button beside collapsed sidebar (80px width + 16px gap = 96px)
+                    sidebarToggle.style.left = '96px';
                 }
             });
 
