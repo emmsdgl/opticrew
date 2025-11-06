@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
@@ -14,6 +14,11 @@
 
     <title>@yield('title', 'Fin-noys Cleaning Service')</title>
     <script>
+        // Suppress Tailwind CDN production warning
+        if (typeof tailwindCSS !== 'undefined') {
+            tailwindCSS.disableWarnings = true;
+        }
+
         tailwind.config = {
             darkMode: 'class',
         }
@@ -172,10 +177,10 @@
                         <span class="sr-only">Fin-noys</span>
                         <!-- Light mode logo -->
                         <img src="{{ asset('images/finnoys-text-logo.svg') }}" alt="Fin-noys Logo"
-                            class="h-12 sm:h-16 lg:h-20 w-auto hidden dark:block">
+                            class="h-12 sm:h-20 lg:h-24 w-auto hidden dark:block">
                         <!-- Dark mode logo -->
                         <img src="{{ asset('images/finnoys-text-logo-light.svg') }}" alt="Fin-noys Logo"
-                            class="h-12 sm:h-16 lg:h-20 w-auto block dark:hidden">
+                            class="h-12 sm:h-20 lg:h-24 w-auto block dark:hidden">
                     </a>
                 </div>
 

@@ -43,11 +43,13 @@
         </button>
 
         <!-- Hidden Input -->
-        <input 
-            type="hidden" 
-            :name="name" 
+        <input
+            type="hidden"
+            :name="name"
             :value="selectedDate"
-            {{ $xModel ? "x-model=\"$xModel\"" : '' }}
+            @if($xModel)
+                x-model="{{ $xModel }}"
+            @endif
         >
 
         <!-- Calendar Dropdown -->
@@ -89,7 +91,7 @@
 
                 <!-- Days of Week -->
                 <div class="grid grid-cols-7 gap-1 mb-2">
-                    <template x-for="day in ['M', 'T', 'W', 'T', 'F', 'S', 'S']" :key="day">
+                    <template x-for="(day, index) in ['M', 'T', 'W', 'T', 'F', 'S', 'S']" :key="'day-' + index">
                         <div class="text-center text-xs font-medium text-gray-500 dark:text-gray-400 py-2" x-text="day"></div>
                     </template>
                 </div>

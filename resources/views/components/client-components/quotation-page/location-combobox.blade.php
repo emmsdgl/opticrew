@@ -250,6 +250,8 @@ function locationPicker() {
         postalCode: '',
         city: '',
         district: '',
+        latitude: null,
+        longitude: null,
         displayText: 'Select location option',
 
         // Autocomplete
@@ -302,6 +304,10 @@ function locationPicker() {
                 async (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
+
+                    // Store coordinates
+                    this.latitude = lat;
+                    this.longitude = lng;
 
                     try {
                         const response = await fetch(
@@ -393,7 +399,9 @@ function locationPicker() {
                                 details: [suburb, city, postcode].filter(x => x).join(', '),
                                 postalCode: postcode,
                                 city: city,
-                                district: suburb
+                                district: suburb,
+                                latitude: item.lat ? parseFloat(item.lat) : null,
+                                longitude: item.lon ? parseFloat(item.lon) : null
                             };
                         }).filter(item => item.street);
                     }
@@ -409,6 +417,8 @@ function locationPicker() {
             this.postalCode = suggestion.postalCode || this.postalCode;
             this.city = suggestion.city || this.city;
             this.district = suggestion.district || this.district;
+            this.latitude = suggestion.latitude || this.latitude;
+            this.longitude = suggestion.longitude || this.longitude;
             this.streetSuggestions = [];
 
             if (this.city) {

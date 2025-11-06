@@ -26,9 +26,8 @@ class ChatbotController extends Controller
                 'history_count' => count($chatHistory)
             ]);
 
-            // TODO: Replace with your actual AI API call
-            // For now, returning a mock response
-            $botResponse = $this->getMockResponse($userMessage);
+            // Get AI response using Gemini
+            $botResponse = $this->getGeminiResponse($userMessage, $chatHistory);
 
             // Update chat history
             $chatHistory[] = [
@@ -49,7 +48,7 @@ class ChatbotController extends Controller
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Validation error in chatbot', ['error' => $e->getMessage()]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid request: ' . $e->getMessage()
@@ -63,70 +62,104 @@ class ChatbotController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while processing your request.'
+                'message' => 'Sorry, I encountered an error. Please try again.'
             ], 500);
         }
     }
 
     /**
-     * Mock response generator - Replace this with your actual AI API call
+     * Get response from Google Gemini API
      */
-    private function getMockResponse($message)
-    {
-        $message = strtolower($message);
-
-        // Simple mock responses based on keywords
-        if (str_contains($message, 'hello') || str_contains($message, 'hi')) {
-            return "Hello! How can I help you with cleaning services today?";
-        }
-
-        if (str_contains($message, 'service') || str_contains($message, 'clean')) {
-            return "We offer various cleaning services including:\n- Regular house cleaning\n- Deep cleaning\n- Office cleaning\n- Move-in/move-out cleaning\n\nWhich service are you interested in?";
-        }
-
-        if (str_contains($message, 'price') || str_contains($message, 'cost')) {
-            return "Our pricing varies based on the size of your space and type of service. For a detailed quote, please visit our Price Quotation page or tell me more about your needs!";
-        }
-
-        if (str_contains($message, 'book') || str_contains($message, 'schedule')) {
-            return "Great! I'd love to help you schedule a cleaning. What date works best for you?";
-        }
-
-        // Default response
-        return "Thanks for your message! I'm here to help with any questions about our cleaning services. Could you tell me more about what you need?";
-    }
-
-    /**
-     * Example: Integration with Google Gemini API
-     * Uncomment and configure when ready to use
-     */
-    /*
     private function getGeminiResponse($message, $chatHistory)
     {
         $apiKey = env('GEMINI_API_KEY');
-        $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-        ])->post("{$apiUrl}?key={$apiKey}", [
-            'contents' => array_merge($chatHistory, [
-                [
-                    'role' => 'user',
-                    'parts' => [['text' => $message]]
-                ]
-            ]),
-            'generationConfig' => [
-                'temperature' => 0.7,
-                'maxOutputTokens' => 256,
-            ]
-        ]);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Sorry, I could not generate a response.';
+        if (!$apiKey) {
+            Log::error('GEMINI_API_KEY not configured');
+            return 'Sorry, the chatbot is not properly configured. Please contact support.';
         }
 
-        throw new \Exception('API request failed: ' . $response->status());
+        $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+        // System instruction for Fin-noys chatbot
+        $systemInstruction = "You are the Fin-noys Cleaning Service Assistant. Your primary goal is to answer questions about the company's services and help users navigate the website.\n\n" .
+            "IMPORTANT RULES:\n" .
+            "1. **About Fin-noys**: Fin-noys is a professional cleaning services provider with extensive experience in the hospitality industry. We serve homes and businesses across Finland, particularly in Lapland, Inari, and Saariselkä regions.\n\n" .
+            "2. **Services Offered**:\n" .
+            "   - Deep Cleaning: Thorough, top-to-bottom cleaning\n" .
+            "   - Daily Room Cleaning: Complete room refresh for accommodations\n" .
+            "   - Snowout Cleaning: Seasonal snow and ice clearing\n" .
+            "   - Light Daily Cleaning: Routine upkeep\n" .
+            "   - Full Daily Cleaning: Comprehensive cleaning service\n\n" .
+            "3. **Price Quotations**: When users ask about pricing, rates, or cost estimates, direct them to visit the Price Quotation page for accurate pricing.\n\n" .
+            "4. **Booking**: You CANNOT create actual bookings. Direct users to log in or contact directly.\n\n" .
+            "5. **Service Areas**: Lapland Region, Municipality of Inari, Saariselkä, and surrounding areas in Finland.\n\n" .
+            "6. **Contact Information**:\n" .
+            "   - Email: finnoys0823@gmail.com\n" .
+            "   - Phone: 09288515619\n" .
+            "   - Address: Saariselantie 6 C10, Saariselka 99830 Finland\n\n" .
+            "7. **Languages**: Fin-noys supports both English and Finnish (Suomi). Users can switch languages using the language selector.\n\n" .
+            "Keep responses friendly, professional, and concise. Stay focused on cleaning services and Fin-noys information.";
+
+        // Prepare contents with system instruction
+        $contents = [];
+
+        // Add chat history
+        foreach ($chatHistory as $item) {
+            $contents[] = [
+                'role' => $item['role'] === 'model' ? 'model' : 'user',
+                'parts' => $item['parts']
+            ];
+        }
+
+        // Add current user message
+        $contents[] = [
+            'role' => 'user',
+            'parts' => [['text' => $message]]
+        ];
+
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'X-goog-api-key' => $apiKey
+                ])
+                ->post($apiUrl, [
+                    'contents' => $contents,
+                    'systemInstruction' => [
+                        'parts' => [['text' => $systemInstruction]]
+                    ],
+                    'generationConfig' => [
+                        'temperature' => 0.7,
+                        'maxOutputTokens' => 500,
+                        'topP' => 0.9,
+                        'topK' => 40,
+                    ]
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                Log::info('Gemini API response received', [
+                    'status' => $response->status()
+                ]);
+
+                return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Sorry, I could not generate a response.';
+            }
+
+            Log::error('Gemini API request failed', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            return 'Sorry, I am having trouble connecting to my services. Please try again in a moment.';
+
+        } catch (\Exception $e) {
+            Log::error('Gemini API exception', [
+                'message' => $e->getMessage()
+            ]);
+
+            return 'Sorry, I encountered an error. Please try again.';
+        }
     }
-    */
 }

@@ -9,9 +9,83 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use App\Models\Task;
 
 class ProfileController extends Controller
 {
+    /**
+     * Show the profile page with task statistics
+     */
+    public function show(Request $request): View
+    {
+        $user = $request->user();
+        $role = $user->role;
+
+        // Initialize task stats
+        $totalTasksCompleted = 0;
+        $incompleteTasks = 0;
+        $pendingTasks = 0;
+
+        // Only fetch task data for employees
+        if ($role === 'employee' && $user->employee) {
+            $employee = $user->employee;
+
+            // Build base query for tasks assigned to this employee
+            $tasksQuery = Task::join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
+                ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
+                ->where('optimization_team_members.employee_id', $employee->id);
+
+            // Get task counts by status
+            $totalTasksCompleted = (clone $tasksQuery)->where('tasks.status', 'Completed')->count();
+            $incompleteTasks = (clone $tasksQuery)->whereIn('tasks.status', ['In Progress', 'On Hold'])->count();
+            $pendingTasks = (clone $tasksQuery)->whereIn('tasks.status', ['Pending', 'Scheduled'])->count();
+        }
+
+        // Create cards data array
+        $cards = [
+            [
+                'label' => 'Total Tasks Completed',
+                'amount' => (string)$totalTasksCompleted,
+                'description' => 'Boost your productivity today',
+                'icon' => '<i class="fas fa-check-circle"></i>',
+                'iconColor' => '#10b981',
+                'labelColor' => '#059669',
+                'percentage' => '',
+                'percentageColor' => '#10b981',
+                'bgColor' => '#fef3c7',
+            ],
+            [
+                'label' => 'Incomplete Tasks',
+                'amount' => (string)$incompleteTasks,
+                'description' => 'Check out your list',
+                'icon' => '<i class="fas fa-times-circle"></i>',
+                'iconColor' => '#ef4444',
+                'labelColor' => '#dc2626',
+                'percentage' => '',
+                'percentageColor' => '#ef4444',
+            ],
+            [
+                'label' => 'Pending Tasks',
+                'amount' => (string)$pendingTasks,
+                'description' => 'Your tasks await',
+                'icon' => '<i class="fas fa-hourglass-half"></i>',
+                'iconColor' => '#f59e0b',
+                'labelColor' => '#d97706',
+                'percentage' => '',
+                'percentageColor' => '#f59e0b',
+            ],
+        ];
+
+        // Return appropriate view based on role
+        if ($role === 'admin') {
+            return view('admin.profile', compact('cards'));
+        } elseif ($role === 'employee') {
+            return view('employee.profile', compact('cards'));
+        } else {
+            return view('client.profile', compact('cards'));
+        }
+    }
+
     /**
      * Show the edit profile page based on user role
      */
@@ -75,12 +149,28 @@ class ProfileController extends Controller
         $user = $request->user();
 
         // Delete old profile picture if exists
-        if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
-            Storage::disk('public')->delete($user->profile_picture);
+        if ($user->profile_picture) {
+            $oldPath = public_path($user->profile_picture);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
         }
 
-        // Store new profile picture
-        $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+        // Create uploads directory if it doesn't exist
+        $uploadDir = public_path('uploads/profile_pictures');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        // Generate unique filename
+        $file = $request->file('profile_picture');
+        $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+        // Move file to public/uploads/profile_pictures
+        $file->move($uploadDir, $filename);
+
+        // Store relative path in database
+        $path = 'uploads/profile_pictures/' . $filename;
 
         // Update user record
         $user->profile_picture = $path;

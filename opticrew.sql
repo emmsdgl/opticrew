@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 29, 2025 at 09:10 PM
+-- Generation Time: Nov 03, 2025 at 07:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -997,54 +997,8 @@ CREATE TABLE `employee_performance` (
 --
 -- Table structure for table `employee_schedules`
 --
-
-CREATE TABLE `employee_schedules` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `employee_id` bigint(20) UNSIGNED NOT NULL,
-  `work_date` date NOT NULL,
-  `is_day_off` tinyint(1) NOT NULL DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `employee_schedules`
---
-
-INSERT INTO `employee_schedules` (`id`, `employee_id`, `work_date`, `is_day_off`, `created_at`, `updated_at`) VALUES
-(1, 2, '2025-10-03', 1, '2025-10-02 18:52:06', '2025-10-02 18:52:06'),
-(2, 3, '2025-10-03', 1, '2025-10-02 18:52:07', '2025-10-02 18:52:07'),
-(3, 4, '2025-10-03', 1, '2025-10-02 18:52:07', '2025-10-02 18:52:07'),
-(4, 5, '2025-10-03', 1, '2025-10-02 18:52:08', '2025-10-02 18:52:08'),
-(5, 6, '2025-10-03', 1, '2025-10-02 18:52:08', '2025-10-02 18:52:08'),
-(6, 7, '2025-10-03', 1, '2025-10-02 18:52:08', '2025-10-02 18:52:08'),
-(7, 9, '2025-10-03', 1, '2025-10-02 18:52:09', '2025-10-02 18:52:09'),
-(8, 10, '2025-10-03', 1, '2025-10-02 18:52:10', '2025-10-02 18:52:10'),
-(9, 11, '2025-10-03', 1, '2025-10-02 18:52:10', '2025-10-02 18:52:10'),
-(10, 2, '2025-10-04', 1, '2025-10-04 03:16:52', '2025-10-04 03:16:52'),
-(12, 6, '2025-10-04', 1, '2025-10-04 03:16:55', '2025-10-04 03:16:55'),
-(13, 8, '2025-10-04', 1, '2025-10-04 03:16:57', '2025-10-04 03:16:57'),
-(14, 10, '2025-10-04', 1, '2025-10-04 03:16:58', '2025-10-04 03:16:58'),
-(15, 1, '2025-11-04', 1, '2025-10-04 06:05:30', '2025-10-04 06:05:30'),
-(16, 1, '2025-11-03', 1, '2025-10-04 06:05:31', '2025-10-04 06:05:31'),
-(27, 1, '2025-10-04', 1, '2025-10-04 06:55:44', '2025-10-04 06:55:44'),
-(28, 5, '2025-10-04', 1, '2025-10-04 06:55:48', '2025-10-04 06:55:48'),
-(29, 7, '2025-10-04', 1, '2025-10-04 06:55:49', '2025-10-04 06:55:49'),
-(30, 9, '2025-10-04', 1, '2025-10-04 06:55:49', '2025-10-04 06:55:49'),
-(31, 11, '2025-10-04', 1, '2025-10-04 06:55:49', '2025-10-04 06:55:49'),
-(47, 1, '2025-10-07', 1, '2025-10-07 03:41:42', '2025-10-07 03:41:42'),
-(48, 3, '2025-10-07', 1, '2025-10-07 03:41:44', '2025-10-07 03:41:44'),
-(49, 4, '2025-10-07', 1, '2025-10-07 03:41:44', '2025-10-07 03:41:44'),
-(50, 8, '2025-10-07', 1, '2025-10-07 03:41:45', '2025-10-07 03:41:45'),
-(51, 2, '2025-10-08', 1, '2025-10-07 03:52:44', '2025-10-07 03:52:44'),
-(52, 3, '2025-10-08', 1, '2025-10-07 03:52:45', '2025-10-07 03:52:45'),
-(54, 8, '2025-10-08', 1, '2025-10-07 03:52:51', '2025-10-07 03:52:51'),
-(57, 4, '2025-10-10', 1, '2025-10-07 08:47:02', '2025-10-07 08:47:02'),
-(58, 11, '2025-10-10', 1, '2025-10-07 08:47:13', '2025-10-07 08:47:13'),
-(59, 9, '2025-10-09', 1, '2025-10-07 20:09:18', '2025-10-07 20:09:18'),
-(60, 10, '2025-10-09', 1, '2025-10-07 20:09:19', '2025-10-07 20:09:19'),
-(61, 2, '2025-10-10', 1, '2025-10-09 22:13:32', '2025-10-09 22:13:32'),
-(62, 3, '2025-10-10', 1, '2025-10-09 22:13:33', '2025-10-09 22:13:33');
+-- Error reading structure for table opticrew.employee_schedules: #1146 - Table &#039;opticrew.employee_schedules&#039; doesn&#039;t exist
+-- Error reading data for table opticrew.employee_schedules: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near &#039;FROM `opticrew`.`employee_schedules`&#039; at line 1
 
 -- --------------------------------------------------------
 
@@ -1152,18 +1106,18 @@ CREATE TABLE `locations` (
 --
 
 INSERT INTO `locations` (`id`, `contracted_client_id`, `location_name`, `location_type`, `base_cleaning_duration_minutes`, `normal_rate_per_hour`, `sunday_holiday_rate`, `deep_cleaning_rate`, `light_deep_cleaning_rate`, `student_rate`, `student_sunday_holiday_rate`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 'Small Cabin #1', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(2, 1, 'Small Cabin #2', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(3, 1, 'Small Cabin #3', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(4, 1, 'Small Cabin #4', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(5, 1, 'Small Cabin #5', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(6, 1, 'Small Cabin #6', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(7, 1, 'Small Cabin #7', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(8, 1, 'Small Cabin #8', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(9, 1, 'Small Cabin #9', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(10, 1, 'Small Cabin #10', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(11, 1, 'Small Cabin #11', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(12, 1, 'Small Cabin #12', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
+(1, 1, 'Small Cabin #1', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(2, 1, 'Small Cabin #2', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(3, 1, 'Small Cabin #3', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(4, 1, 'Small Cabin #4', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(5, 1, 'Small Cabin #5', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(6, 1, 'Small Cabin #6', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(7, 1, 'Small Cabin #7', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(8, 1, 'Small Cabin #8', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(9, 1, 'Small Cabin #9', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(10, 1, 'Small Cabin #10', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(11, 1, 'Small Cabin #11', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
+(12, 1, 'Small Cabin #12', 'Small Cabin', 60, 42.00, 84.00, NULL, NULL, 2.00, NULL, '2025-10-02 18:51:46', '2025-10-29 22:34:30', NULL),
 (13, 1, 'Medium Cabin #1', 'Medium Cabin', 60, 51.00, 102.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
 (14, 1, 'Medium Cabin #2', 'Medium Cabin', 60, 51.00, 102.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
 (15, 1, 'Medium Cabin #3', 'Medium Cabin', 60, 51.00, 102.00, NULL, NULL, NULL, NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
@@ -1298,7 +1252,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (44, '2025_10_29_135821_add_company_role_and_link_to_contracted_clients', 36),
 (45, '2025_10_29_150832_add_contact_fields_to_contracted_clients_table', 37),
 (46, '2025_10_29_152501_add_company_role_to_users_table', 38),
-(47, '2025_10_29_202422_create_quotations_table', 39);
+(47, '2025_10_29_202422_create_quotations_table', 39),
+(48, '2025_11_03_201005_drop_unused_tables', 40);
 
 -- --------------------------------------------------------
 
@@ -1484,7 +1439,10 @@ INSERT INTO `optimization_runs` (`id`, `service_date`, `triggered_by_task_id`, `
 (253, '2025-10-29', NULL, 'completed', 0, NULL, 6, 5, 10, '\"[]\"', '\"[]\"', 0.0400, 16, NULL, '2025-10-28 23:24:53', '2025-10-28 23:26:05', '2025-10-28 23:26:05'),
 (254, '2025-10-29', NULL, 'completed', 0, NULL, 6, 3, 6, '\"[]\"', '\"[]\"', 1.0000, 16, NULL, '2025-10-28 23:26:05', '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
 (255, '2025-10-29', NULL, 'completed', 0, NULL, 4, 2, 5, '\"[]\"', '\"[]\"', 1.0000, 16, NULL, '2025-10-28 23:26:05', '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
-(256, '2025-10-29', NULL, 'completed', 0, NULL, 7, 5, 10, '\"[]\"', '\"[]\"', 0.0786, 20, NULL, '2025-10-29 04:04:03', '2025-10-29 04:04:03', NULL);
+(256, '2025-10-29', NULL, 'completed', 0, NULL, 7, 5, 10, '\"[]\"', '\"[]\"', 0.0010, 20, NULL, '2025-10-29 04:04:03', '2025-10-29 23:18:35', NULL),
+(257, '2025-10-30', NULL, 'completed', 0, NULL, 9, 5, 10, '\"[]\"', '\"[]\"', 1.0000, 20, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:44', '2025-10-29 21:36:44'),
+(258, '2025-10-30', NULL, 'completed', 0, NULL, 15, 5, 10, '\"[]\"', '\"[]\"', 1.0000, 16, NULL, '2025-10-29 21:36:45', '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(259, '2025-10-30', NULL, 'completed', 0, NULL, 6, 5, 10, '\"[]\"', '\"[]\"', 0.0400, 16, NULL, '2025-10-29 21:49:20', '2025-10-29 23:18:35', NULL);
 
 -- --------------------------------------------------------
 
@@ -2014,7 +1972,22 @@ INSERT INTO `optimization_teams` (`id`, `optimization_run_id`, `team_index`, `se
 (1125, 256, 2, '2025-10-29', NULL, '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
 (1126, 256, 3, '2025-10-29', NULL, '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
 (1127, 256, 4, '2025-10-29', NULL, '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
-(1128, 256, 5, '2025-10-29', NULL, '2025-10-29 04:04:03', '2025-10-29 04:04:03');
+(1128, 256, 5, '2025-10-29', NULL, '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
+(1129, 257, 1, '2025-10-30', NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(1130, 257, 2, '2025-10-30', NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(1131, 257, 3, '2025-10-30', NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(1132, 257, 4, '2025-10-30', NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(1133, 257, 5, '2025-10-30', NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(1134, 258, 1, '2025-10-30', NULL, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(1135, 258, 2, '2025-10-30', NULL, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(1136, 258, 3, '2025-10-30', NULL, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(1137, 258, 4, '2025-10-30', NULL, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(1138, 258, 5, '2025-10-30', NULL, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(1139, 259, 1, '2025-10-30', NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(1140, 259, 2, '2025-10-30', NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(1141, 259, 3, '2025-10-30', NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(1142, 259, 4, '2025-10-30', NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(1143, 259, 5, '2025-10-30', NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20');
 
 -- --------------------------------------------------------
 
@@ -3124,24 +3097,45 @@ INSERT INTO `optimization_team_members` (`id`, `optimization_team_id`, `employee
 (2188, 1127, 4, '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
 (2189, 1127, 5, '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
 (2190, 1128, 9, '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
-(2191, 1128, 10, '2025-10-29 04:04:03', '2025-10-29 04:04:03');
+(2191, 1128, 10, '2025-10-29 04:04:03', '2025-10-29 04:04:03'),
+(2192, 1129, 1, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2193, 1129, 6, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2194, 1130, 2, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2195, 1130, 7, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2196, 1131, 3, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2197, 1131, 8, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2198, 1132, 4, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2199, 1132, 5, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2200, 1133, 9, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2201, 1133, 10, '2025-10-29 21:36:18', '2025-10-29 21:36:18'),
+(2202, 1134, 1, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2203, 1134, 6, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2204, 1135, 2, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2205, 1135, 7, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2206, 1136, 3, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2207, 1136, 8, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2208, 1137, 4, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2209, 1137, 5, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2210, 1138, 9, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2211, 1138, 10, '2025-10-29 21:36:45', '2025-10-29 21:36:45'),
+(2212, 1139, 1, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2213, 1139, 6, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2214, 1140, 2, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2215, 1140, 7, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2216, 1141, 3, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2217, 1141, 8, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2218, 1142, 4, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2219, 1142, 5, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2220, 1143, 9, '2025-10-29 21:49:20', '2025-10-29 21:49:20'),
+(2221, 1143, 10, '2025-10-29 21:49:20', '2025-10-29 21:49:20');
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `payroll_reports`
 --
-
-CREATE TABLE `payroll_reports` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `employee_id` bigint(20) UNSIGNED NOT NULL,
-  `pay_period_start` date NOT NULL,
-  `pay_period_end` date NOT NULL,
-  `total_hours` decimal(8,2) NOT NULL,
-  `total_pay` decimal(10,2) NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Error reading structure for table opticrew.payroll_reports: #1146 - Table &#039;opticrew.payroll_reports&#039; doesn&#039;t exist
+-- Error reading data for table opticrew.payroll_reports: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near &#039;FROM `opticrew`.`payroll_reports`&#039; at line 1
 
 -- --------------------------------------------------------
 
@@ -3244,7 +3238,9 @@ CREATE TABLE `quotations` (
 INSERT INTO `quotations` (`id`, `booking_type`, `cleaning_services`, `date_of_service`, `duration_of_service`, `type_of_urgency`, `property_type`, `floors`, `rooms`, `people_per_room`, `floor_area`, `area_unit`, `location_type`, `street_address`, `postal_code`, `city`, `district`, `latitude`, `longitude`, `company_name`, `client_name`, `phone_number`, `email`, `estimated_price`, `vat_amount`, `total_price`, `pricing_notes`, `status`, `reviewed_by`, `reviewed_at`, `quoted_by`, `quoted_at`, `admin_notes`, `rejection_reason`, `appointment_id`, `converted_by`, `converted_at`, `client_responded_at`, `client_message`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (4, 'company', '[\"Hotel Rooms Cleaning\",\"Cabins\",\"Igloos\",\"Restaurant\",\"Saunas\"]', NULL, NULL, NULL, 'hotel', 1, 1, 2, 12.00, 'sqyd', 'address', 'Rotstigen', '22150', 'Mariehamn', 'Österbacka', NULL, NULL, 'EFG Company', 'Mary Roberts', '+358 40 123 4578', 'mary@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-29 14:03:20', '2025-10-29 14:03:20', NULL),
 (5, 'personal', '[\"snowout_cleaning\"]', '2025-10-31', 2, 'this_week', 'summer_cottage', 1, 1, 2, 20.00, 'sqm', 'address', 'Pellervonkatu 9', '33540', 'Tampere', 'Kaleva', NULL, NULL, NULL, 'Emma Digol', '+358 40 123 4567', 'emma@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-29 14:04:34', '2025-10-29 14:04:34', NULL),
-(6, 'company', '[\"Light Daily Cleaning\",\"Cabins\",\"Igloos\",\"Cottages\"]', NULL, NULL, NULL, 'studio', 1, 1, 3, 5.00, 'are', 'address', 'Dinopath', '50180', 'Mikkeli', 'Visulahti', NULL, NULL, 'HIJ Company', 'Juan Dela Cruz', '+358 40 258 7963', 'juan@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-29 14:06:23', '2025-10-29 14:06:23', NULL);
+(6, 'company', '[\"Light Daily Cleaning\",\"Cabins\",\"Igloos\",\"Cottages\"]', NULL, NULL, NULL, 'studio', 1, 1, 3, 5.00, 'are', 'address', 'Dinopath', '50180', 'Mikkeli', 'Visulahti', NULL, NULL, 'HIJ Company', 'Juan Dela Cruz', '+358 40 258 7963', 'juan@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-29 14:06:23', '2025-10-29 14:06:23', NULL),
+(7, 'personal', '[]', '2025-10-30', 1, NULL, 'apartment', 1, 1, 1, 1.00, 'sqm', 'address', '8th Street', '1309', 'Pasay', 'Zone 20', 14.5260544, 121.0155008, NULL, 'emma', '123456', 'email@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-30 04:31:03', '2025-10-30 04:31:03', NULL),
+(8, 'personal', '[\"deep_cleaning\"]', '2025-11-02', 1, NULL, 'apartment', 1, 1, 1, 1.00, 'are', 'address', '8th Street', '1309', 'Pasay', 'Zone 20', 14.5260544, 121.0155008, NULL, 'emma', '1234', 'email@gmail.com', NULL, NULL, NULL, NULL, 'pending_review', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-30 04:45:45', '2025-10-30 04:45:45', NULL);
 
 -- --------------------------------------------------------
 
@@ -3269,23 +3265,8 @@ CREATE TABLE `scenario_analyses` (
 --
 -- Table structure for table `scheduling_logs`
 --
-
-CREATE TABLE `scheduling_logs` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `schedule_date` date NOT NULL,
-  `log_data` longtext NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `scheduling_logs`
---
-
-INSERT INTO `scheduling_logs` (`id`, `schedule_date`, `log_data`, `created_at`, `updated_at`) VALUES
-(33, '2025-10-08', '{\"service_date\":\"2025-10-08\",\"inputs\":{\"location_ids\":[79]},\"steps\":[{\"title\":\"Available Employees\",\"count\":8,\"data\":[\"Vincent Rey Digol\",\"Merlyn Guzman\",\"Aries Guzman\",\"Bella Ostan\",\"Jennylyn Saballero\",\"Cherrylyn Morales \",\"John Carl Morales\",\"John Kevin Morales\"]},{\"title\":\"Employee Allocation for Kakslauttanen\",\"count\":4,\"data\":[\"Merlyn Guzman\",\"John Carl Morales\",\"Bella Ostan\",\"Jennylyn Saballero\"]},{\"title\":\"Employee Allocation for Aikamatkat\",\"count\":4,\"data\":[\"Vincent Rey Digol\",\"Aries Guzman\",\"John Kevin Morales\",\"Cherrylyn Morales \"]},{\"title\":\"Team Formation for Kakslauttanen\",\"count\":2,\"data\":[[\"Merlyn Guzman\",\"Bella Ostan\"],[\"John Carl Morales\",\"Jennylyn Saballero\"]]},{\"title\":\"Greedy Algorithm Result for Kakslauttanen\",\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Small Cabin #1\",\"Small Cabin #3\",\"Small Cabin #5\",\"Small Cabin #7\",\"Small Cabin #9\",\"Small Cabin #10\",\"Small Cabin #12\",\"Big Cabin #6\",\"Igloo #1\",\"Igloo #2\"],\"total_tasks\":10,\"estimated_duration\":570,\"team_efficiency\":\"121%\",\"predicted_workload\":470},{\"team_members\":[{\"name\":\"John Carl Morales\",\"efficiency\":1.0096148636851658},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Small Cabin #2\",\"Small Cabin #4\",\"Small Cabin #6\",\"Small Cabin #8\",\"Small Cabin #11\",\"Medium Cabin #4\",\"Turf Chamber\",\"Igloo #20\"],\"total_tasks\":8,\"estimated_duration\":465,\"team_efficiency\":\"94%\",\"predicted_workload\":494}]},{\"title\":\"Genetic Algorithm Result for Kakslauttanen\",\"fitness_score\":0.3082,\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Igloo #2\",\"Small Cabin #6\",\"Small Cabin #1\",\"Small Cabin #10\",\"Small Cabin #11\",\"Medium Cabin #4\",\"Small Cabin #3\",\"Small Cabin #12\",\"Turf Chamber\",\"Small Cabin #2\"],\"total_tasks\":10,\"estimated_duration\":585,\"team_efficiency\":\"121%\",\"predicted_workload\":483},{\"team_members\":[{\"name\":\"John Carl Morales\",\"efficiency\":1.0096148636851658},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Small Cabin #4\",\"Small Cabin #7\",\"Small Cabin #5\",\"Small Cabin #8\",\"Small Cabin #9\",\"Big Cabin #6\",\"Igloo #20\",\"Igloo #1\"],\"total_tasks\":8,\"estimated_duration\":450,\"team_efficiency\":\"94%\",\"predicted_workload\":478}]},{\"title\":\"Team Formation for Aikamatkat\",\"count\":2,\"data\":[[\"Vincent Rey Digol\",\"Cherrylyn Morales \"],[\"Aries Guzman\",\"John Kevin Morales\"]]},{\"title\":\"Greedy Algorithm Result for Aikamatkat\",\"data\":[{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Cherrylyn Morales \",\"efficiency\":0.9871810509994557}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #6\",\"Panimo Cabins #8\",\"Voursa 3A and 3B\",\"Raahenmaja\"],\"total_tasks\":5,\"estimated_duration\":300,\"team_efficiency\":\"105%\",\"predicted_workload\":286},{\"team_members\":[{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658},{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #7\",\"Metsakoti A\",\"Moitakuru C31 and C32\"],\"total_tasks\":4,\"estimated_duration\":240,\"team_efficiency\":\"100%\",\"predicted_workload\":240}]},{\"title\":\"Genetic Algorithm Result for Aikamatkat\",\"fitness_score\":0.042,\"data\":[{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Cherrylyn Morales \",\"efficiency\":0.9871810509994557}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #6\",\"Panimo Cabins #8\",\"Voursa 3A and 3B\",\"Raahenmaja\"],\"total_tasks\":5,\"estimated_duration\":300,\"team_efficiency\":\"105%\",\"predicted_workload\":286},{\"team_members\":[{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658},{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #7\",\"Metsakoti A\",\"Moitakuru C31 and C32\"],\"total_tasks\":4,\"estimated_duration\":240,\"team_efficiency\":\"100%\",\"predicted_workload\":240}]}]}', '2025-10-07 19:39:41', '2025-10-07 19:39:41'),
-(34, '2025-10-09', '{\"service_date\":\"2025-10-09\",\"inputs\":{\"location_ids\":[1,7,13,19,25,31,37,43,49,55,59,60,61,62,63]},\"steps\":[{\"title\":\"Available Employees\",\"count\":9,\"data\":[\"Vincent Rey Digol\",\"Martin Yvann Leonardo\",\"Earl Leonardo\",\"Merlyn Guzman\",\"Aries Guzman\",\"Bella Ostan\",\"Jennylyn Saballero\",\"Rizza Estrella \",\"John Kevin Morales\"]},{\"title\":\"Employee Allocation for Kakslauttanen\",\"count\":4,\"data\":[\"Merlyn Guzman\",\"Vincent Rey Digol\",\"Aries Guzman\",\"Bella Ostan\"]},{\"title\":\"Employee Allocation for Aikamatkat\",\"count\":5,\"data\":[\"Earl Leonardo\",\"Rizza Estrella \",\"John Kevin Morales\",\"Martin Yvann Leonardo\",\"Jennylyn Saballero\"]},{\"title\":\"Team Formation for Kakslauttanen\",\"count\":2,\"data\":[[\"Merlyn Guzman\",\"Bella Ostan\"],[\"Vincent Rey Digol\",\"Aries Guzman\"]]},{\"title\":\"Greedy Algorithm Result for Kakslauttanen\",\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Small Cabin #1\",\"Medium Cabin #1\",\"Big Cabin #7\",\"Igloo #1\",\"Igloo #13\"],\"total_tasks\":5,\"estimated_duration\":270,\"team_efficiency\":\"121%\",\"predicted_workload\":223},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Small Cabin #7\",\"Big Cabin #1\",\"Big Cabin #13\",\"Igloo #7\",\"Igloo #19\"],\"total_tasks\":5,\"estimated_duration\":270,\"team_efficiency\":\"106%\",\"predicted_workload\":255}]},{\"title\":\"Genetic Algorithm Result for Kakslauttanen\",\"fitness_score\":0.2763,\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Medium Cabin #1\",\"Big Cabin #13\",\"Big Cabin #1\",\"Igloo #1\",\"Small Cabin #1\"],\"total_tasks\":5,\"estimated_duration\":285,\"team_efficiency\":\"121%\",\"predicted_workload\":235},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Big Cabin #7\",\"Igloo #19\",\"Small Cabin #7\",\"Igloo #7\",\"Igloo #13\"],\"total_tasks\":5,\"estimated_duration\":255,\"team_efficiency\":\"106%\",\"predicted_workload\":240}]},{\"title\":\"Team Formation for Aikamatkat\",\"count\":2,\"data\":[[\"Earl Leonardo\",\"Rizza Estrella \",\"Jennylyn Saballero\"],[\"John Kevin Morales\",\"Martin Yvann Leonardo\"]]},{\"title\":\"Greedy Algorithm Result for Aikamatkat\",\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #3\",\"Panimo Cabins #5\"],\"total_tasks\":3,\"estimated_duration\":180,\"team_efficiency\":\"117%\",\"predicted_workload\":154},{\"team_members\":[{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049},{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #4\"],\"total_tasks\":2,\"estimated_duration\":120,\"team_efficiency\":\"93%\",\"predicted_workload\":129}]},{\"title\":\"Genetic Algorithm Result for Aikamatkat\",\"fitness_score\":0.0734,\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #1\",\"Panimo Cabins #3\",\"Panimo Cabins #5\"],\"total_tasks\":3,\"estimated_duration\":180,\"team_efficiency\":\"117%\",\"predicted_workload\":154},{\"team_members\":[{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049},{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Panimo Cabins #2\",\"Panimo Cabins #4\"],\"total_tasks\":2,\"estimated_duration\":120,\"team_efficiency\":\"93%\",\"predicted_workload\":129}]}]}', '2025-10-07 20:10:03', '2025-10-07 20:10:03'),
-(35, '2025-10-11', '{\"service_date\":\"2025-10-11\",\"inputs\":{\"location_ids\":[49,55,1,7,13,19,25,31,37,43,2,8,14,20,26,32,38,44,50,56,59,65,71]},\"steps\":[{\"title\":\"Available Employees\",\"count\":11,\"data\":[\"Vincent Rey Digol\",\"Martin Yvann Leonardo\",\"Earl Leonardo\",\"Merlyn Guzman\",\"Aries Guzman\",\"Bella Ostan\",\"Jennylyn Saballero\",\"Rizza Estrella \",\"Cherrylyn Morales \",\"John Carl Morales\",\"John Kevin Morales\"]},{\"title\":\"Employee Allocation for Kakslauttanen\",\"count\":5,\"data\":[\"Merlyn Guzman\",\"Vincent Rey Digol\",\"Aries Guzman\",\"John Kevin Morales\",\"Cherrylyn Morales \"]},{\"title\":\"Employee Allocation for Aikamatkat\",\"count\":6,\"data\":[\"Earl Leonardo\",\"Rizza Estrella \",\"John Carl Morales\",\"Bella Ostan\",\"Martin Yvann Leonardo\",\"Jennylyn Saballero\"]},{\"title\":\"Team Formation for Kakslauttanen\",\"count\":2,\"data\":[[\"Merlyn Guzman\",\"Cherrylyn Morales \",\"John Kevin Morales\"],[\"Vincent Rey Digol\",\"Aries Guzman\"]]},{\"title\":\"Greedy Algorithm Result for Kakslauttanen\",\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Cherrylyn Morales \",\"efficiency\":0.9871810509994557},{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Small Cabin #1\",\"Small Cabin #7\",\"Medium Cabin #1\",\"Big Cabin #1\",\"Big Cabin #7\",\"Big Cabin #13\",\"Igloo #1\",\"Igloo #7\",\"Igloo #13\",\"Igloo #19\"],\"total_tasks\":10,\"estimated_duration\":540,\"team_efficiency\":\"114%\",\"predicted_workload\":475},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Small Cabin #2\",\"Small Cabin #8\",\"Medium Cabin #2\",\"Big Cabin #2\",\"Big Cabin #8\",\"Queen Suite #1\",\"Igloo #2\",\"Igloo #8\",\"Igloo #14\",\"Igloo #20\"],\"total_tasks\":10,\"estimated_duration\":540,\"team_efficiency\":\"106%\",\"predicted_workload\":509}]},{\"title\":\"Genetic Algorithm Result for Kakslauttanen\",\"fitness_score\":0.2256,\"data\":[{\"team_members\":[{\"name\":\"Merlyn Guzman\",\"efficiency\":1.4357783595485927},{\"name\":\"Cherrylyn Morales \",\"efficiency\":0.9871810509994557},{\"name\":\"John Kevin Morales\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Medium Cabin #2\",\"Big Cabin #2\",\"Queen Suite #1\",\"Igloo #2\",\"Igloo #1\",\"Igloo #14\",\"Big Cabin #13\",\"Small Cabin #8\",\"Big Cabin #7\",\"Small Cabin #7\"],\"total_tasks\":10,\"estimated_duration\":555,\"team_efficiency\":\"114%\",\"predicted_workload\":488},{\"team_members\":[{\"name\":\"Vincent Rey Digol\",\"efficiency\":1.1111666239545372},{\"name\":\"Aries Guzman\",\"efficiency\":1.0096148636851658}],\"assigned_tasks\":[\"Igloo #20\",\"Big Cabin #8\",\"Igloo #13\",\"Igloo #19\",\"Igloo #7\",\"Igloo #8\",\"Small Cabin #1\",\"Medium Cabin #1\",\"Small Cabin #2\",\"Big Cabin #1\"],\"total_tasks\":10,\"estimated_duration\":525,\"team_efficiency\":\"106%\",\"predicted_workload\":495}]},{\"title\":\"Team Formation for Aikamatkat\",\"count\":3,\"data\":[[\"Earl Leonardo\",\"Rizza Estrella \"],[\"John Carl Morales\",\"Bella Ostan\"],[\"Martin Yvann Leonardo\",\"Jennylyn Saballero\"]]},{\"title\":\"Greedy Algorithm Result for Aikamatkat\",\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35}],\"assigned_tasks\":[\"Panimo Cabins #1\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"131%\",\"predicted_workload\":46},{\"team_members\":[{\"name\":\"John Carl Morales\",\"efficiency\":1.0096148636851658},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Panimo Cabins #7\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"100%\",\"predicted_workload\":60},{\"team_members\":[{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Metsakoti A\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"87%\",\"predicted_workload\":69}]},{\"title\":\"Genetic Algorithm Result for Aikamatkat\",\"fitness_score\":0.0948,\"data\":[{\"team_members\":[{\"name\":\"Earl Leonardo\",\"efficiency\":1.277049202224446},{\"name\":\"Rizza Estrella \",\"efficiency\":1.35}],\"assigned_tasks\":[\"Panimo Cabins #1\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"131%\",\"predicted_workload\":46},{\"team_members\":[{\"name\":\"John Carl Morales\",\"efficiency\":1.0096148636851658},{\"name\":\"Bella Ostan\",\"efficiency\":0.9872840277989049}],\"assigned_tasks\":[\"Panimo Cabins #7\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"100%\",\"predicted_workload\":60},{\"team_members\":[{\"name\":\"Martin Yvann Leonardo\",\"efficiency\":0.871767647019525},{\"name\":\"Jennylyn Saballero\",\"efficiency\":0.871767647019525}],\"assigned_tasks\":[\"Metsakoti A\"],\"total_tasks\":1,\"estimated_duration\":60,\"team_efficiency\":\"87%\",\"predicted_workload\":69}]}]}', '2025-10-09 22:14:41', '2025-10-09 22:14:41');
+-- Error reading structure for table opticrew.scheduling_logs: #1146 - Table &#039;opticrew.scheduling_logs&#039; doesn&#039;t exist
+-- Error reading data for table opticrew.scheduling_logs: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near &#039;FROM `opticrew`.`scheduling_logs`&#039; at line 1
 
 -- --------------------------------------------------------
 
@@ -3963,663 +3944,36 @@ INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `rate
 INSERT INTO `tasks` (`id`, `location_id`, `client_id`, `task_description`, `rate_type`, `estimated_duration_minutes`, `actual_duration`, `scheduled_date`, `scheduled_time`, `duration`, `travel_time`, `required_equipment`, `required_skills`, `status`, `on_hold_reason`, `on_hold_timestamp`, `arrival_status`, `assigned_team_id`, `reassigned_at`, `reassignment_reason`, `optimization_run_id`, `assigned_by_generation`, `started_at`, `completed_at`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (2070, 7, NULL, 'Daily Room Cleaning', 'Normal', 60, NULL, '2025-10-04', NULL, 60, 30, NULL, NULL, 'Completed', NULL, NULL, 0, 730, NULL, NULL, 113, NULL, '2025-10-04 06:56:18', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36', NULL),
 (2071, 8, NULL, 'Daily Room Cleaning', 'Normal', 60, NULL, '2025-10-04', NULL, 60, 30, NULL, NULL, 'Completed', NULL, NULL, 0, 731, NULL, NULL, 113, NULL, '2025-10-04 06:56:20', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36', NULL),
-(2072, 9, NULL, 'Daily Room Cleaning', 'Normal', 60, NULL, '2025-10-04', NULL, 60, 30, NULL, NULL, 'Completed', NULL, NULL, 0, 727, NULL, NULL, 113, NULL, '2025-10-04 06:56:21', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36', NULL);
+(2072, 9, NULL, 'Daily Room Cleaning', 'Normal', 60, NULL, '2025-10-04', NULL, 60, 30, NULL, NULL, 'Completed', NULL, NULL, 0, 727, NULL, NULL, 113, NULL, '2025-10-04 06:56:21', NULL, '2025-10-04 06:56:08', '2025-10-17 03:40:36', NULL),
+(4200, 59, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1134, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4201, 60, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1135, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4202, 61, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1136, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4203, 62, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1137, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4204, 63, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1138, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4205, 64, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1134, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4206, 71, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1135, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4207, 72, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1136, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4208, 73, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1137, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:18', '2025-10-29 21:36:45', NULL),
+(4209, 65, NULL, 'Daily Room Cleaning (Daily Clean)', 'Normal', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1138, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:44', '2025-10-29 21:36:45', NULL),
+(4210, 66, NULL, 'Daily Room Cleaning (Daily Clean)', 'Normal', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1134, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:44', '2025-10-29 21:36:45', NULL),
+(4211, 67, NULL, 'Daily Room Cleaning (Daily Clean)', 'Normal', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1135, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:44', '2025-10-29 21:36:45', NULL),
+(4212, 68, NULL, 'Daily Room Cleaning (Daily Clean)', 'Normal', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1136, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:44', '2025-10-29 21:36:45', NULL),
+(4213, 69, NULL, 'Daily Room Cleaning (Daily Clean)', 'Normal', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1137, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:44', '2025-10-29 21:36:45', NULL),
+(4214, 70, NULL, 'Daily Room Cleaning (Daily Clean)', 'Normal', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1138, NULL, NULL, 258, NULL, NULL, NULL, '2025-10-29 21:36:44', '2025-10-29 21:36:45', NULL),
+(4215, 1, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1139, NULL, NULL, 259, NULL, NULL, NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20', NULL),
+(4216, 2, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1140, NULL, NULL, 259, NULL, NULL, NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20', NULL),
+(4217, 3, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1141, NULL, NULL, 259, NULL, NULL, NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20', NULL),
+(4218, 4, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1142, NULL, NULL, 259, NULL, NULL, NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20', NULL),
+(4219, 5, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1143, NULL, NULL, 259, NULL, NULL, NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20', NULL),
+(4220, 6, NULL, 'Daily Room Cleaning (Daily Clean)', 'Student', 60, NULL, '2025-10-30', '08:00:00', 60, 0, NULL, NULL, 'Completed', NULL, NULL, 0, 1139, NULL, NULL, 259, NULL, NULL, NULL, '2025-10-29 21:49:20', '2025-10-29 21:49:20', NULL);
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `task_performance_histories`
 --
-
-CREATE TABLE `task_performance_histories` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `task_id` bigint(20) UNSIGNED NOT NULL,
-  `estimated_duration_minutes` int(11) NOT NULL,
-  `actual_duration_minutes` int(11) NOT NULL,
-  `completed_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `task_performance_histories`
---
-
-INSERT INTO `task_performance_histories` (`id`, `task_id`, `estimated_duration_minutes`, `actual_duration_minutes`, `completed_at`, `created_at`, `updated_at`) VALUES
-(2, 1003, 60, 52, '2025-07-31 06:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(3, 1004, 45, 55, '2025-08-19 06:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(4, 1005, 60, 62, '2025-09-25 06:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(5, 1006, 45, 52, '2025-08-12 05:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(6, 1007, 60, 63, '2025-07-02 04:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(7, 1008, 60, 68, '2025-09-01 04:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(8, 1009, 60, 60, '2025-07-29 07:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(9, 1010, 60, 69, '2025-09-03 06:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(10, 1011, 45, 43, '2025-08-18 04:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(11, 1012, 60, 67, '2025-09-02 03:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(12, 1013, 60, 49, '2025-08-14 02:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(13, 1014, 45, 51, '2025-07-13 07:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(14, 1015, 60, 68, '2025-09-11 02:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(15, 1016, 60, 64, '2025-07-25 05:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(16, 1017, 60, 49, '2025-07-04 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(17, 1018, 45, 52, '2025-07-18 05:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(18, 1019, 60, 64, '2025-09-11 02:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(19, 1020, 45, 50, '2025-08-03 02:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(20, 1021, 60, 57, '2025-07-16 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(21, 1022, 60, 64, '2025-09-09 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(22, 1023, 60, 58, '2025-07-06 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(23, 1024, 60, 50, '2025-09-05 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(24, 1025, 45, 42, '2025-08-02 01:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(25, 1026, 60, 58, '2025-09-30 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(26, 1027, 60, 55, '2025-08-30 06:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(27, 1028, 45, 53, '2025-07-21 03:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(28, 1029, 45, 57, '2025-07-01 02:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(29, 1030, 60, 56, '2025-07-16 02:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(30, 1031, 60, 59, '2025-07-12 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(31, 1032, 45, 53, '2025-08-05 02:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(32, 1033, 60, 54, '2025-09-24 03:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(33, 1034, 60, 53, '2025-07-06 01:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(34, 1035, 60, 59, '2025-08-15 05:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(35, 1036, 45, 37, '2025-07-17 04:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(36, 1037, 45, 42, '2025-09-16 01:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(37, 1038, 45, 44, '2025-07-09 05:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(38, 1039, 60, 53, '2025-08-25 04:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(39, 1040, 60, 57, '2025-09-29 02:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(40, 1041, 45, 51, '2025-09-07 06:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(41, 1042, 60, 64, '2025-08-09 07:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(42, 1043, 45, 45, '2025-07-15 07:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(43, 1044, 45, 47, '2025-07-27 05:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(44, 1045, 45, 46, '2025-08-14 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(45, 1046, 45, 53, '2025-09-07 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(46, 1047, 45, 50, '2025-08-29 03:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(47, 1048, 45, 53, '2025-09-13 03:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(48, 1049, 45, 44, '2025-07-28 05:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(49, 1050, 60, 47, '2025-07-16 05:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(50, 1051, 60, 53, '2025-07-28 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(51, 1052, 60, 53, '2025-08-30 05:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(52, 1053, 60, 57, '2025-08-24 02:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(53, 1054, 60, 59, '2025-09-18 07:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(54, 1055, 45, 41, '2025-09-21 03:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(55, 1056, 60, 61, '2025-08-20 02:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(56, 1057, 45, 54, '2025-08-04 06:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(57, 1058, 60, 70, '2025-08-07 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(58, 1059, 60, 73, '2025-07-26 06:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(59, 1060, 45, 40, '2025-09-11 04:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(60, 1061, 60, 52, '2025-09-26 05:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(61, 1062, 60, 62, '2025-08-14 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(62, 1063, 60, 72, '2025-07-01 04:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(63, 1064, 60, 70, '2025-07-10 07:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(64, 1065, 45, 52, '2025-09-25 07:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(65, 1066, 45, 45, '2025-09-29 07:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(66, 1067, 45, 51, '2025-09-05 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(67, 1068, 45, 43, '2025-08-31 04:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(68, 1069, 45, 46, '2025-07-09 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(69, 1070, 45, 43, '2025-07-25 06:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(70, 1071, 45, 48, '2025-09-04 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(71, 1072, 60, 64, '2025-09-29 03:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(72, 1073, 60, 60, '2025-08-20 06:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(73, 1074, 45, 40, '2025-07-25 06:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(74, 1075, 45, 51, '2025-09-15 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(75, 1076, 45, 44, '2025-07-18 01:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(76, 1077, 45, 55, '2025-07-19 05:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(77, 1078, 45, 41, '2025-09-09 04:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(78, 1079, 45, 37, '2025-08-22 03:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(79, 1080, 45, 49, '2025-09-25 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(80, 1081, 60, 64, '2025-07-29 02:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(81, 1082, 60, 74, '2025-09-23 07:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(82, 1083, 60, 62, '2025-08-25 03:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(83, 1084, 60, 58, '2025-09-24 02:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(84, 1085, 60, 72, '2025-09-13 07:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(85, 1086, 45, 44, '2025-07-11 04:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(86, 1087, 60, 51, '2025-09-29 07:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(87, 1088, 45, 52, '2025-08-06 06:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(88, 1089, 45, 49, '2025-09-03 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(89, 1090, 60, 57, '2025-09-19 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(90, 1091, 60, 57, '2025-09-20 07:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(91, 1092, 60, 51, '2025-09-27 03:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(92, 1093, 45, 57, '2025-07-09 05:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(93, 1094, 60, 64, '2025-08-02 03:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(94, 1095, 60, 58, '2025-08-13 05:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(95, 1096, 60, 58, '2025-07-14 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(96, 1097, 60, 77, '2025-08-23 03:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(97, 1098, 45, 49, '2025-08-09 06:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(98, 1099, 60, 66, '2025-09-26 06:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(99, 1100, 60, 55, '2025-09-29 07:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(100, 1101, 60, 64, '2025-09-05 06:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(101, 1102, 60, 55, '2025-07-28 02:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(102, 1103, 45, 52, '2025-09-10 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(103, 1104, 60, 52, '2025-08-24 07:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(104, 1105, 60, 51, '2025-09-20 03:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(105, 1106, 45, 44, '2025-08-19 06:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(106, 1107, 45, 42, '2025-08-28 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(107, 1108, 45, 41, '2025-09-04 04:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(108, 1109, 60, 61, '2025-07-27 02:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(109, 1110, 60, 63, '2025-07-07 06:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(110, 1111, 60, 56, '2025-07-14 07:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(111, 1112, 45, 40, '2025-09-07 07:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(112, 1113, 60, 65, '2025-09-04 07:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(113, 1114, 45, 48, '2025-07-24 06:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(114, 1115, 45, 48, '2025-08-27 07:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(115, 1116, 60, 67, '2025-07-28 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(116, 1117, 60, 69, '2025-09-16 04:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(117, 1118, 60, 62, '2025-08-21 06:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(118, 1119, 45, 47, '2025-08-16 01:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(119, 1120, 45, 44, '2025-09-03 07:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(120, 1121, 60, 63, '2025-09-09 03:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(121, 1122, 60, 57, '2025-09-27 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(122, 1123, 45, 37, '2025-08-24 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(123, 1124, 45, 52, '2025-07-11 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(124, 1125, 45, 47, '2025-08-05 06:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(125, 1126, 60, 64, '2025-09-22 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(126, 1127, 45, 45, '2025-08-24 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(127, 1128, 45, 40, '2025-09-16 06:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(128, 1129, 60, 59, '2025-08-06 03:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(129, 1130, 60, 56, '2025-08-20 01:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(130, 1131, 45, 46, '2025-07-25 06:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(131, 1132, 60, 71, '2025-07-17 07:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(132, 1133, 45, 40, '2025-07-02 02:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(133, 1134, 45, 40, '2025-07-30 06:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(134, 1135, 45, 38, '2025-07-16 04:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(135, 1136, 45, 56, '2025-09-27 02:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(136, 1137, 60, 70, '2025-09-18 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(137, 1138, 45, 49, '2025-08-03 04:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(138, 1139, 45, 56, '2025-07-15 04:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(139, 1140, 60, 78, '2025-07-06 05:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(140, 1141, 45, 41, '2025-07-01 04:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(141, 1142, 45, 51, '2025-08-12 04:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(142, 1143, 45, 45, '2025-07-08 03:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(143, 1144, 45, 50, '2025-09-19 06:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(144, 1145, 45, 43, '2025-09-11 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(145, 1146, 60, 48, '2025-09-14 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(146, 1147, 60, 76, '2025-09-03 07:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(147, 1148, 60, 60, '2025-07-21 03:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(148, 1149, 60, 58, '2025-09-01 03:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(149, 1150, 60, 71, '2025-08-29 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(150, 1151, 60, 61, '2025-08-29 07:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(151, 1152, 60, 58, '2025-09-14 07:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(152, 1153, 45, 49, '2025-07-15 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(153, 1154, 60, 57, '2025-09-13 02:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(154, 1155, 45, 54, '2025-09-18 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(155, 1156, 45, 55, '2025-08-30 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(156, 1157, 60, 58, '2025-07-22 07:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(157, 1158, 60, 64, '2025-09-15 06:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(158, 1159, 45, 45, '2025-07-14 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(159, 1160, 60, 67, '2025-09-14 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(160, 1161, 60, 68, '2025-09-01 03:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(161, 1162, 60, 52, '2025-07-25 02:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(162, 1163, 45, 41, '2025-09-19 03:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(163, 1164, 45, 47, '2025-07-15 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(164, 1165, 60, 70, '2025-07-15 08:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(165, 1166, 60, 61, '2025-08-24 06:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(166, 1167, 60, 56, '2025-07-07 06:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(167, 1168, 60, 58, '2025-08-11 07:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(168, 1169, 60, 56, '2025-09-04 06:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(169, 1170, 45, 44, '2025-08-31 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(170, 1171, 60, 65, '2025-07-21 03:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(171, 1172, 60, 66, '2025-08-14 04:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(172, 1173, 45, 44, '2025-08-30 06:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(173, 1174, 60, 57, '2025-09-28 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(174, 1175, 45, 53, '2025-07-17 01:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(175, 1176, 45, 48, '2025-08-10 03:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(176, 1177, 60, 65, '2025-07-26 07:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(177, 1178, 60, 63, '2025-08-15 07:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(178, 1179, 60, 61, '2025-07-05 06:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(179, 1180, 45, 39, '2025-09-27 05:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(180, 1181, 60, 55, '2025-07-17 03:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(181, 1182, 45, 53, '2025-09-03 04:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(182, 1183, 45, 53, '2025-08-17 02:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(183, 1184, 60, 66, '2025-08-31 03:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(184, 1185, 45, 41, '2025-08-28 01:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(185, 1186, 60, 57, '2025-07-15 05:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(186, 1187, 45, 53, '2025-07-20 04:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(187, 1188, 45, 38, '2025-07-25 07:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(188, 1189, 45, 40, '2025-07-02 01:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(189, 1190, 60, 63, '2025-07-06 03:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(190, 1191, 60, 59, '2025-08-21 07:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(191, 1192, 45, 47, '2025-09-09 04:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(192, 1193, 45, 43, '2025-09-10 02:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(193, 1194, 45, 51, '2025-07-04 06:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(194, 1195, 45, 45, '2025-09-06 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(195, 1196, 45, 50, '2025-07-01 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(196, 1197, 60, 51, '2025-07-13 04:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(197, 1198, 60, 55, '2025-07-29 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(198, 1199, 60, 66, '2025-07-12 06:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(199, 1200, 60, 62, '2025-07-16 02:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(200, 1201, 45, 47, '2025-09-12 06:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(201, 1202, 60, 54, '2025-09-11 06:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(202, 1203, 45, 42, '2025-07-03 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(203, 1204, 45, 38, '2025-07-26 04:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(204, 1205, 60, 60, '2025-09-30 06:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(205, 1206, 45, 56, '2025-07-27 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(206, 1207, 45, 34, '2025-09-11 04:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(207, 1208, 60, 67, '2025-08-05 03:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(208, 1209, 60, 65, '2025-07-22 06:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(209, 1210, 60, 56, '2025-07-19 03:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(210, 1211, 60, 63, '2025-07-12 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(211, 1212, 45, 48, '2025-07-03 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(212, 1213, 60, 61, '2025-08-12 05:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(213, 1214, 60, 55, '2025-09-26 04:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(214, 1215, 45, 49, '2025-08-27 05:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(215, 1216, 60, 62, '2025-07-28 07:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(216, 1217, 45, 48, '2025-09-19 07:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(217, 1218, 60, 56, '2025-07-04 07:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(218, 1219, 60, 59, '2025-07-15 07:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(219, 1220, 60, 66, '2025-09-08 02:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(220, 1221, 60, 59, '2025-07-24 05:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(221, 1222, 45, 52, '2025-09-27 02:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(222, 1223, 45, 51, '2025-07-28 04:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(223, 1224, 45, 44, '2025-09-29 03:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(224, 1225, 60, 62, '2025-07-01 03:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(225, 1226, 45, 46, '2025-08-20 07:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(226, 1227, 60, 68, '2025-07-02 03:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(227, 1228, 60, 58, '2025-07-24 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(228, 1229, 45, 36, '2025-08-05 06:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(229, 1230, 60, 61, '2025-08-26 05:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(230, 1231, 60, 54, '2025-09-24 02:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(231, 1232, 60, 49, '2025-08-18 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(232, 1233, 60, 60, '2025-08-28 03:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(233, 1234, 45, 46, '2025-09-22 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(234, 1235, 45, 45, '2025-08-22 04:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(235, 1236, 45, 44, '2025-08-17 04:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(236, 1237, 60, 65, '2025-07-06 06:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(237, 1238, 60, 59, '2025-09-05 06:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(238, 1239, 60, 56, '2025-09-25 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(239, 1240, 60, 62, '2025-07-22 04:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(240, 1241, 60, 73, '2025-07-02 07:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(241, 1242, 45, 47, '2025-07-11 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(242, 1243, 60, 57, '2025-09-10 04:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(243, 1244, 60, 56, '2025-07-05 04:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(244, 1245, 45, 55, '2025-08-02 03:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(245, 1246, 45, 43, '2025-09-08 04:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(246, 1247, 60, 69, '2025-07-10 05:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(247, 1248, 60, 66, '2025-09-26 05:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(248, 1249, 45, 50, '2025-07-11 07:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(249, 1250, 60, 50, '2025-09-15 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(250, 1251, 60, 64, '2025-09-08 06:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(251, 1252, 45, 41, '2025-09-24 02:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(252, 1253, 45, 52, '2025-07-25 05:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(253, 1254, 45, 56, '2025-07-11 05:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(254, 1255, 45, 45, '2025-09-29 02:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(255, 1256, 60, 50, '2025-08-16 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(256, 1257, 45, 44, '2025-08-01 05:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(257, 1258, 60, 70, '2025-09-26 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(258, 1259, 45, 43, '2025-07-28 03:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(259, 1260, 60, 65, '2025-09-04 04:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(260, 1261, 60, 64, '2025-09-12 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(261, 1262, 60, 48, '2025-09-02 04:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(262, 1263, 60, 61, '2025-08-24 06:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(263, 1264, 60, 58, '2025-07-27 04:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(264, 1265, 45, 48, '2025-07-13 05:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(265, 1266, 60, 58, '2025-07-16 05:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(266, 1267, 60, 49, '2025-08-14 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(267, 1268, 60, 62, '2025-08-08 07:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(268, 1269, 45, 53, '2025-09-25 04:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(269, 1270, 60, 67, '2025-09-08 02:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(270, 1271, 45, 37, '2025-09-13 02:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(271, 1272, 45, 42, '2025-09-09 04:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(272, 1273, 60, 50, '2025-07-07 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(273, 1274, 60, 65, '2025-08-21 02:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(274, 1275, 45, 45, '2025-07-06 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(275, 1276, 45, 48, '2025-07-19 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(276, 1277, 60, 56, '2025-08-21 03:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(277, 1278, 45, 49, '2025-09-22 04:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(278, 1279, 45, 53, '2025-09-22 05:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(279, 1280, 60, 67, '2025-07-05 06:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(280, 1281, 45, 41, '2025-08-21 02:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(281, 1282, 60, 60, '2025-08-06 07:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(282, 1283, 60, 57, '2025-09-12 06:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(283, 1284, 45, 41, '2025-07-10 02:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(284, 1285, 60, 58, '2025-08-12 05:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(285, 1286, 60, 67, '2025-09-05 02:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(286, 1287, 45, 49, '2025-09-11 05:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(287, 1288, 60, 62, '2025-07-31 07:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(288, 1289, 60, 72, '2025-09-21 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(289, 1290, 45, 46, '2025-09-17 06:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(290, 1291, 45, 41, '2025-07-16 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(291, 1292, 45, 45, '2025-07-29 07:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(292, 1293, 60, 58, '2025-08-13 04:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(293, 1294, 60, 65, '2025-09-19 04:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(294, 1295, 60, 56, '2025-07-02 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(295, 1296, 45, 48, '2025-08-31 02:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(296, 1297, 45, 52, '2025-09-07 04:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(297, 1298, 60, 53, '2025-07-04 07:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(298, 1299, 60, 62, '2025-09-24 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(299, 1300, 60, 70, '2025-09-19 03:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(300, 1301, 45, 49, '2025-07-02 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(301, 1302, 60, 59, '2025-07-14 02:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(302, 1303, 60, 57, '2025-08-27 05:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(303, 1304, 60, 58, '2025-07-09 04:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(304, 1305, 45, 58, '2025-07-19 04:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(305, 1306, 60, 52, '2025-09-25 05:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(306, 1307, 60, 63, '2025-09-11 02:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(307, 1308, 60, 61, '2025-09-09 06:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(308, 1309, 60, 63, '2025-09-01 04:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(309, 1310, 45, 38, '2025-07-14 07:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(310, 1311, 45, 47, '2025-07-01 02:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(311, 1312, 60, 56, '2025-08-13 02:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(312, 1313, 60, 57, '2025-07-03 07:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(313, 1314, 60, 63, '2025-09-01 06:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(314, 1315, 45, 41, '2025-08-20 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(315, 1316, 45, 35, '2025-09-22 02:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(316, 1317, 60, 50, '2025-09-12 05:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(317, 1318, 45, 47, '2025-08-20 02:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(318, 1319, 60, 70, '2025-07-31 06:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(319, 1320, 60, 67, '2025-07-29 06:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(320, 1321, 45, 41, '2025-07-11 06:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(321, 1322, 60, 64, '2025-08-13 04:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(322, 1323, 45, 45, '2025-09-17 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(323, 1324, 60, 60, '2025-09-24 02:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(324, 1325, 60, 49, '2025-09-17 07:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(325, 1326, 60, 57, '2025-07-05 02:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(326, 1327, 60, 60, '2025-08-21 07:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(327, 1328, 60, 56, '2025-09-02 05:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(328, 1329, 60, 62, '2025-08-09 07:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(329, 1330, 45, 54, '2025-07-13 02:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(330, 1331, 60, 56, '2025-09-21 05:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(331, 1332, 45, 63, '2025-09-29 02:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(332, 1333, 45, 38, '2025-09-05 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(333, 1334, 60, 63, '2025-09-11 04:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(334, 1335, 60, 60, '2025-07-21 02:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(335, 1336, 45, 46, '2025-08-17 03:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(336, 1337, 45, 46, '2025-07-26 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(337, 1338, 60, 50, '2025-08-31 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(338, 1339, 45, 47, '2025-08-07 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(339, 1340, 60, 60, '2025-08-06 02:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(340, 1341, 60, 71, '2025-09-15 06:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(341, 1342, 60, 66, '2025-07-23 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(342, 1343, 45, 49, '2025-07-26 06:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(343, 1344, 60, 57, '2025-09-15 02:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(344, 1345, 45, 44, '2025-07-09 02:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(345, 1346, 45, 41, '2025-09-04 04:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(346, 1347, 45, 52, '2025-09-02 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(347, 1348, 45, 47, '2025-08-05 04:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(348, 1349, 60, 64, '2025-07-13 07:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(349, 1350, 45, 39, '2025-08-09 07:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(350, 1351, 45, 42, '2025-07-17 03:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(351, 1352, 60, 67, '2025-07-12 02:52:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(352, 1353, 60, 64, '2025-09-14 04:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(353, 1354, 60, 50, '2025-09-20 06:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(354, 1355, 60, 71, '2025-07-10 04:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(355, 1356, 45, 42, '2025-09-30 01:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(356, 1357, 60, 73, '2025-09-01 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(357, 1358, 45, 37, '2025-08-05 06:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(358, 1359, 60, 57, '2025-09-29 07:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(359, 1360, 45, 45, '2025-08-31 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(360, 1361, 60, 54, '2025-07-22 04:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(361, 1362, 60, 71, '2025-07-11 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(362, 1363, 45, 45, '2025-08-28 05:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(363, 1364, 45, 52, '2025-07-24 03:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(364, 1365, 45, 37, '2025-07-12 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(365, 1366, 45, 46, '2025-09-07 02:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(366, 1367, 45, 40, '2025-07-08 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(367, 1368, 60, 57, '2025-07-30 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(368, 1369, 45, 60, '2025-07-26 07:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(369, 1370, 60, 54, '2025-07-29 06:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(370, 1371, 45, 36, '2025-07-31 05:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(371, 1372, 45, 54, '2025-08-06 03:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(372, 1373, 60, 70, '2025-07-11 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(373, 1374, 45, 41, '2025-07-19 07:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(374, 1375, 60, 53, '2025-09-10 06:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(375, 1376, 60, 74, '2025-09-27 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(376, 1377, 60, 59, '2025-09-21 02:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(377, 1378, 45, 41, '2025-08-10 04:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(378, 1379, 45, 48, '2025-09-30 02:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(379, 1380, 60, 68, '2025-09-15 05:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(380, 1381, 60, 67, '2025-09-08 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(381, 1382, 60, 58, '2025-09-08 06:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(382, 1383, 60, 54, '2025-08-25 07:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(383, 1384, 45, 45, '2025-07-11 04:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(384, 1385, 60, 57, '2025-09-07 06:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(385, 1386, 60, 71, '2025-08-10 03:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(386, 1387, 45, 39, '2025-07-30 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(387, 1388, 60, 67, '2025-09-15 02:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(388, 1389, 60, 55, '2025-07-24 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(389, 1390, 60, 63, '2025-07-03 04:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(390, 1391, 60, 56, '2025-07-13 02:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(391, 1392, 60, 54, '2025-08-18 03:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(392, 1393, 45, 53, '2025-07-26 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(393, 1394, 60, 54, '2025-07-21 07:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(394, 1395, 60, 57, '2025-09-27 06:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(395, 1396, 60, 62, '2025-09-03 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(396, 1397, 45, 41, '2025-08-28 06:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(397, 1398, 45, 49, '2025-08-25 02:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(398, 1399, 60, 57, '2025-07-29 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(399, 1400, 60, 60, '2025-07-14 03:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(400, 1401, 60, 67, '2025-09-02 02:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(401, 1402, 60, 61, '2025-08-28 03:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(402, 1403, 45, 48, '2025-09-24 05:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(403, 1404, 60, 61, '2025-07-21 04:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(404, 1405, 60, 64, '2025-08-14 06:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(405, 1406, 45, 49, '2025-07-28 03:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(406, 1407, 60, 62, '2025-08-04 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(407, 1408, 45, 45, '2025-08-29 07:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(408, 1409, 60, 64, '2025-08-28 05:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(409, 1410, 60, 71, '2025-08-17 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(410, 1411, 45, 49, '2025-07-19 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(411, 1412, 60, 61, '2025-08-03 07:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(412, 1413, 60, 67, '2025-07-06 05:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(413, 1414, 60, 67, '2025-08-29 04:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(414, 1415, 60, 77, '2025-09-24 06:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(415, 1416, 45, 47, '2025-09-16 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(416, 1417, 60, 62, '2025-07-25 02:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(417, 1418, 60, 71, '2025-09-04 05:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(418, 1419, 60, 60, '2025-09-06 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(419, 1420, 60, 49, '2025-07-03 06:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(420, 1421, 60, 77, '2025-08-10 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(421, 1422, 60, 54, '2025-08-13 03:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(422, 1423, 45, 53, '2025-07-16 03:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(423, 1424, 60, 64, '2025-07-05 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(424, 1425, 60, 55, '2025-07-31 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(425, 1426, 60, 62, '2025-07-12 06:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(426, 1427, 60, 59, '2025-08-04 07:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(427, 1428, 60, 60, '2025-08-18 05:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(428, 1429, 60, 73, '2025-08-10 03:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(429, 1430, 60, 56, '2025-08-28 03:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(430, 1431, 60, 64, '2025-08-03 03:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(431, 1432, 45, 45, '2025-08-28 07:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(432, 1433, 45, 42, '2025-07-17 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(433, 1434, 45, 50, '2025-07-25 05:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(434, 1435, 45, 42, '2025-07-11 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(435, 1436, 45, 31, '2025-07-14 06:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(436, 1437, 45, 47, '2025-09-01 06:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(437, 1438, 60, 58, '2025-09-11 04:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(438, 1439, 60, 56, '2025-07-16 01:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(439, 1440, 60, 48, '2025-08-16 06:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(440, 1441, 60, 61, '2025-07-02 05:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(441, 1442, 45, 49, '2025-09-28 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(442, 1443, 45, 43, '2025-09-17 07:46:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(443, 1444, 60, 60, '2025-07-01 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(444, 1445, 60, 55, '2025-08-11 03:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(445, 1446, 45, 48, '2025-09-19 06:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(446, 1447, 45, 50, '2025-08-11 07:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(447, 1448, 45, 53, '2025-07-15 06:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(448, 1449, 60, 68, '2025-07-22 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(449, 1450, 45, 39, '2025-08-16 01:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(450, 1451, 45, 49, '2025-07-28 06:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(451, 1452, 60, 56, '2025-09-07 07:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(452, 1453, 60, 48, '2025-07-12 07:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(453, 1454, 60, 58, '2025-09-23 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(454, 1455, 45, 46, '2025-09-12 02:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(455, 1456, 45, 48, '2025-09-15 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(456, 1457, 45, 45, '2025-07-05 06:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(457, 1458, 45, 54, '2025-09-27 03:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(458, 1459, 45, 41, '2025-07-24 03:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(459, 1460, 60, 67, '2025-08-11 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(460, 1461, 60, 66, '2025-09-05 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(461, 1462, 60, 66, '2025-09-11 04:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(462, 1463, 60, 65, '2025-09-06 04:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(463, 1464, 60, 57, '2025-07-27 04:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(464, 1465, 60, 58, '2025-07-13 04:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(465, 1466, 60, 53, '2025-09-01 07:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(466, 1467, 60, 68, '2025-09-03 04:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(467, 1468, 45, 41, '2025-09-13 03:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(468, 1469, 60, 69, '2025-07-10 03:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(469, 1470, 60, 56, '2025-07-16 04:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(470, 1471, 60, 69, '2025-09-05 06:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(471, 1472, 45, 53, '2025-08-27 05:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(472, 1473, 45, 44, '2025-08-09 01:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(473, 1474, 45, 50, '2025-07-18 06:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(474, 1475, 45, 39, '2025-08-04 05:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(475, 1476, 60, 76, '2025-08-25 03:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(476, 1477, 60, 70, '2025-07-31 07:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(477, 1478, 45, 59, '2025-08-30 04:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(478, 1479, 45, 54, '2025-09-02 05:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(479, 1480, 60, 61, '2025-08-18 07:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(480, 1481, 45, 42, '2025-07-12 04:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(481, 1482, 45, 51, '2025-09-15 06:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(482, 1483, 60, 63, '2025-08-28 05:02:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(483, 1484, 60, 60, '2025-07-26 03:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(484, 1485, 45, 47, '2025-09-15 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(485, 1486, 45, 53, '2025-08-31 06:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(486, 1487, 60, 66, '2025-07-24 05:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(487, 1488, 60, 68, '2025-09-25 02:21:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(488, 1489, 45, 37, '2025-07-02 01:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(489, 1490, 60, 57, '2025-09-14 06:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(490, 1491, 60, 72, '2025-09-28 03:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(491, 1492, 60, 61, '2025-09-26 05:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(492, 1493, 60, 56, '2025-09-27 04:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(493, 1494, 60, 64, '2025-07-19 02:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(494, 1495, 45, 56, '2025-07-30 02:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(495, 1496, 60, 74, '2025-09-06 07:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(496, 1497, 60, 73, '2025-08-09 06:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(497, 1498, 60, 62, '2025-08-15 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(498, 1499, 60, 48, '2025-07-03 06:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(499, 1500, 60, 63, '2025-08-28 03:38:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(500, 1501, 45, 50, '2025-08-15 06:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(501, 1502, 60, 65, '2025-09-26 02:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(502, 1503, 60, 60, '2025-09-24 07:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(503, 1504, 45, 47, '2025-07-11 07:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(504, 1505, 60, 61, '2025-08-24 02:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(505, 1506, 60, 50, '2025-09-16 06:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(506, 1507, 60, 57, '2025-09-20 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(507, 1508, 60, 54, '2025-07-29 07:35:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(508, 1509, 45, 54, '2025-09-25 07:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(509, 1510, 45, 48, '2025-07-21 07:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(510, 1511, 60, 58, '2025-08-29 06:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(511, 1512, 60, 59, '2025-09-10 04:31:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(512, 1513, 60, 69, '2025-08-27 06:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(513, 1514, 60, 58, '2025-07-12 06:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(514, 1515, 60, 65, '2025-09-03 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(515, 1516, 45, 43, '2025-09-03 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(516, 1517, 45, 43, '2025-08-27 02:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(517, 1518, 60, 58, '2025-08-13 02:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(518, 1519, 60, 65, '2025-09-13 03:03:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(519, 1520, 60, 51, '2025-09-01 07:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(520, 1521, 45, 46, '2025-07-06 05:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(521, 1522, 45, 48, '2025-08-18 03:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(522, 1523, 60, 65, '2025-09-14 03:08:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(523, 1524, 60, 53, '2025-08-22 06:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(524, 1525, 60, 55, '2025-08-13 02:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(525, 1526, 45, 51, '2025-09-04 03:01:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(526, 1527, 60, 66, '2025-09-02 03:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(527, 1528, 60, 64, '2025-07-25 04:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(528, 1529, 60, 56, '2025-09-28 03:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(529, 1530, 45, 49, '2025-08-11 04:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(530, 1531, 45, 43, '2025-09-08 03:09:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(531, 1532, 45, 44, '2025-09-22 07:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(532, 1533, 45, 53, '2025-07-30 06:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(533, 1534, 45, 41, '2025-08-27 02:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(534, 1535, 60, 52, '2025-09-07 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(535, 1536, 60, 73, '2025-09-11 06:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(536, 1537, 60, 64, '2025-08-27 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(537, 1538, 60, 65, '2025-07-29 03:39:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(538, 1539, 60, 72, '2025-09-22 04:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(539, 1540, 45, 39, '2025-07-05 03:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(540, 1541, 45, 50, '2025-08-02 01:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(541, 1542, 45, 48, '2025-09-06 04:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(542, 1543, 45, 49, '2025-09-18 06:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(543, 1544, 60, 57, '2025-07-05 06:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(544, 1545, 60, 71, '2025-08-19 07:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(545, 1546, 60, 48, '2025-09-06 07:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(546, 1547, 60, 63, '2025-09-12 02:51:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(547, 1548, 45, 36, '2025-09-09 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(548, 1549, 60, 64, '2025-08-16 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(549, 1550, 60, 61, '2025-08-02 06:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(550, 1551, 45, 54, '2025-07-21 04:20:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(551, 1552, 60, 59, '2025-09-05 04:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(552, 1553, 60, 64, '2025-08-04 05:56:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(553, 1554, 60, 63, '2025-08-16 07:10:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(554, 1555, 45, 49, '2025-07-19 03:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(555, 1556, 60, 63, '2025-09-24 07:23:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(556, 1557, 60, 56, '2025-08-28 05:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(557, 1558, 60, 55, '2025-08-13 07:12:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(558, 1559, 60, 58, '2025-08-01 07:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(559, 1560, 45, 41, '2025-08-12 05:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(560, 1561, 45, 40, '2025-09-18 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(561, 1562, 45, 48, '2025-09-06 06:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(562, 1563, 45, 42, '2025-07-03 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(563, 1564, 60, 63, '2025-08-31 05:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(564, 1565, 60, 57, '2025-09-17 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(565, 1566, 45, 54, '2025-08-16 05:04:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(566, 1567, 60, 58, '2025-09-17 04:28:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(567, 1568, 45, 44, '2025-09-26 04:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(568, 1569, 60, 58, '2025-08-01 06:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13');
-INSERT INTO `task_performance_histories` (`id`, `task_id`, `estimated_duration_minutes`, `actual_duration_minutes`, `completed_at`, `created_at`, `updated_at`) VALUES
-(569, 1570, 60, 61, '2025-08-23 07:49:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(570, 1571, 60, 62, '2025-08-19 07:50:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(571, 1572, 60, 64, '2025-07-21 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(572, 1573, 45, 43, '2025-09-18 07:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(573, 1574, 60, 61, '2025-07-31 04:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(574, 1575, 45, 55, '2025-08-19 07:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(575, 1576, 45, 40, '2025-09-09 01:59:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(576, 1577, 45, 47, '2025-08-06 07:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(577, 1578, 60, 62, '2025-07-25 03:36:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(578, 1579, 45, 44, '2025-07-17 02:07:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(579, 1580, 60, 56, '2025-09-09 07:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(580, 1581, 60, 73, '2025-09-19 07:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(581, 1582, 45, 42, '2025-08-30 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(582, 1583, 60, 64, '2025-07-18 02:55:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(583, 1584, 60, 69, '2025-09-26 03:22:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(584, 1585, 45, 46, '2025-09-22 07:19:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(585, 1586, 45, 53, '2025-09-13 05:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(586, 1587, 60, 63, '2025-07-31 05:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(587, 1588, 60, 71, '2025-09-03 06:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(588, 1589, 45, 50, '2025-09-22 03:06:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(589, 1590, 45, 42, '2025-09-05 03:47:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(590, 1591, 45, 45, '2025-09-27 04:11:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(591, 1592, 60, 68, '2025-07-14 04:27:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(592, 1593, 60, 56, '2025-07-24 03:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(593, 1594, 60, 71, '2025-07-03 07:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(594, 1595, 60, 63, '2025-09-03 05:37:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(595, 1596, 45, 36, '2025-07-28 02:45:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(596, 1597, 60, 53, '2025-07-27 03:58:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(597, 1598, 45, 41, '2025-07-04 05:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(598, 1599, 45, 54, '2025-09-20 05:33:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(599, 1600, 60, 63, '2025-07-07 05:32:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(600, 1601, 60, 56, '2025-08-29 06:53:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(601, 1602, 45, 55, '2025-07-28 07:34:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(602, 1603, 45, 49, '2025-07-10 02:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(603, 1604, 60, 50, '2025-09-02 02:54:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(604, 1605, 45, 45, '2025-07-06 02:14:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(605, 1606, 45, 37, '2025-08-23 03:29:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(606, 1607, 45, 40, '2025-09-01 05:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(607, 1608, 60, 64, '2025-09-17 06:48:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(608, 1609, 45, 43, '2025-08-04 07:15:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(609, 1610, 45, 39, '2025-07-01 06:18:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(610, 1611, 60, 48, '2025-08-14 02:16:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(611, 1612, 60, 55, '2025-09-12 05:24:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(612, 1613, 60, 58, '2025-08-26 02:30:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(613, 1614, 60, 51, '2025-09-20 02:57:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(614, 1615, 45, 40, '2025-07-31 03:00:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(615, 1616, 60, 64, '2025-08-14 07:05:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(616, 1617, 60, 56, '2025-07-10 07:40:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(617, 1618, 45, 54, '2025-07-28 05:44:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(618, 1619, 60, 59, '2025-08-25 06:41:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(619, 1620, 45, 51, '2025-07-20 03:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(620, 1621, 45, 47, '2025-08-30 01:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(621, 1622, 45, 45, '2025-08-01 06:17:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(622, 1623, 45, 41, '2025-07-25 03:26:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(623, 1624, 45, 37, '2025-07-15 04:43:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(624, 1625, 60, 53, '2025-09-26 04:13:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(625, 1626, 60, 68, '2025-09-05 02:25:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(626, 1627, 60, 64, '2025-09-01 05:42:00', '2025-10-03 03:21:13', '2025-10-03 03:21:13'),
-(1025, 2, 60, 40, '2025-10-02 19:33:07', '2025-10-02 19:33:07', '2025-10-02 19:33:07'),
-(1026, 2067, 60, 0, '2025-10-04 06:57:14', '2025-10-04 06:57:14', '2025-10-04 06:57:14'),
-(1027, 2068, 60, 1, '2025-10-04 06:58:10', '2025-10-04 06:58:10', '2025-10-04 06:58:10'),
-(1028, 1, 60, 50, '2025-10-02 18:52:40', '2025-10-04 15:19:24', '2025-10-04 15:19:24'),
-(1029, 2069, 60, 58, '2025-10-04 07:55:13', '2025-10-04 07:55:13', '2025-10-04 07:55:13'),
-(1030, 2070, 60, 58, '2025-10-04 07:55:13', '2025-10-04 07:55:13', '2025-10-04 07:55:13'),
-(1031, 2071, 60, 58, '2025-10-04 07:55:14', '2025-10-04 07:55:14', '2025-10-04 07:55:14'),
-(1032, 2072, 60, 58, '2025-10-04 07:55:15', '2025-10-04 07:55:15', '2025-10-04 07:55:15');
+-- Error reading structure for table opticrew.task_performance_histories: #1146 - Table &#039;opticrew.task_performance_histories&#039; doesn&#039;t exist
+-- Error reading data for table opticrew.task_performance_histories: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near &#039;FROM `opticrew`.`task_performance_histories`&#039; at line 1
 
 -- --------------------------------------------------------
 
@@ -4649,7 +4003,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `username`, `email`, `profile_picture`, `phone`, `location`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Admin', 'admin', 'admin@opticrew.com', 'profile_pictures/kMkdVeDfYpYvi9nC94Ohceut2lk14HMFnmgEqVXg.jpg', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', '7VBCFsRkyWWuDzZd7Ni46mwBR3uIyt2olMqUbZcKjNLqZAePtZO5yxRnDO3a', '2025-10-02 18:51:46', '2025-10-25 06:42:28', NULL),
+(1, 'Admin', 'admin', 'admin@opticrew.com', 'profile_pictures/kMkdVeDfYpYvi9nC94Ohceut2lk14HMFnmgEqVXg.jpg', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$C/Y15/YOU5NHpf0zFtpsDO6RL2R.HMjTRi3C2rfA0eizMVOwEBvq2', 'admin', NULL, '2025-10-02 18:51:46', '2025-10-25 06:42:28', NULL),
 (2, 'Vincent Rey Digol', 'vince123', 'vincentreydigol@finnoys.com', 'profile_pictures/IDMjQjtw1oK4v43oJLaET1NlUk863qV9mMM0mFgh.png', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$oo44Ffamrr.hoI349F5rzOVkuiDEKbKNHX9Q/DFlZRNLOSCSKYBCW', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-29 02:24:13', NULL),
 (3, 'Martin Yvann Leonardo', 'martin123', 'martinyvannleonardo@finnoys.com', NULL, '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$fEn6ftE4hV6qwLE6Pu7i5uTTpwHeEKyXtviZ7oTI7mh2hKzE660GS', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-25 06:42:00', NULL),
 (4, 'Earl Leonardo', NULL, 'earlleonardo@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$UyZcyuwzjz1SrB6dPNZ3J.hCGWcCJ9ixAA0NP59Y7n9tkR/1JGdDW', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
@@ -4661,7 +4015,7 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `profile_picture`, `phon
 (10, 'Cherrylyn Morales ', NULL, 'cherrylynmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$1swK95thyuDIKhCj1CDFJ.T591GF9ysJ4KvKJRaTfAiV7QTdU9Yaa', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
 (11, 'John Carl Morales', NULL, 'johncarlmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$rLfpy6PWrrJYqVOkZUyFa.cLOLrTwLbKfkdp7tAS/vLQUotLTYOhi', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
 (12, 'John Kevin Morales', NULL, 'johnkevinmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$/CV5zvi4rk3qSqg6JuYsme9FU7O06qgGq2eKBtDTSJXGhSPRAUAt.', 'employee', NULL, '2025-10-02 18:51:46', '2025-10-02 18:51:46', NULL),
-(17, 'Miradel Leonardo', 'mira123', 'miradel@gmail.com', NULL, '0401234567', 'Inari, Finland', NULL, '$2y$10$ogpFC.oYTxztWlLor7uXaecaHk9TA6jOrwk3DIOIt5TTQFAjFFB0C', 'external_client', NULL, '2025-10-26 07:09:50', '2025-10-27 12:19:57', NULL),
+(17, 'Miradel Leonardo', 'mira123', 'miradel@gmail.com', NULL, '0401234567', 'Inari, Finland', NULL, '$2y$10$ogpFC.oYTxztWlLor7uXaecaHk9TA6jOrwk3DIOIt5TTQFAjFFB0C', 'external_client', 'JKByX8lUV6wGDkojeQw622DCRSgUgz5MIIMTRxsf3Nk6MC7F1XTH56ja0gR0', '2025-10-26 07:09:50', '2025-10-27 12:19:57', NULL),
 (19, 'Kakslauttanen', 'kakslauttanen', 'kakslauttanen@company.com', NULL, '+358 00 000 0000', NULL, '2025-10-29 07:25:47', '$2y$10$caOzaZwOF315fH011mFFJegP0nJTHhXbHzXguXH/92NwCTh/zCx0y', 'company', NULL, '2025-10-29 07:25:47', '2025-10-29 07:25:47', NULL),
 (20, 'Aikamatkat', 'aikamatkat', 'aikamatkat@company.com', NULL, '+358 00 000 0000', NULL, '2025-10-29 07:25:47', '$2y$10$Ne4U0KoxXs3KpJe.8Gob/e00tfBGmYDt/RogDhlB36eWpglZNC7bW', 'company', NULL, '2025-10-29 07:25:47', '2025-10-29 07:25:47', NULL);
 
@@ -4754,13 +4108,6 @@ ALTER TABLE `employee_performance`
   ADD KEY `employee_performance_date_index` (`date`);
 
 --
--- Indexes for table `employee_schedules`
---
-ALTER TABLE `employee_schedules`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `employee_schedules_employee_id_work_date_unique` (`employee_id`,`work_date`);
-
---
 -- Indexes for table `feedback`
 --
 ALTER TABLE `feedback`
@@ -4843,13 +4190,6 @@ ALTER TABLE `optimization_team_members`
   ADD KEY `idx_opt_members_employee_id` (`employee_id`);
 
 --
--- Indexes for table `payroll_reports`
---
-ALTER TABLE `payroll_reports`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `payroll_reports_employee_id_foreign` (`employee_id`);
-
---
 -- Indexes for table `performance_flags`
 --
 ALTER TABLE `performance_flags`
@@ -4889,12 +4229,6 @@ ALTER TABLE `scenario_analyses`
   ADD KEY `scenario_analyses_service_date_scenario_type_index` (`service_date`,`scenario_type`);
 
 --
--- Indexes for table `scheduling_logs`
---
-ALTER TABLE `scheduling_logs`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `tasks`
 --
 ALTER TABLE `tasks`
@@ -4909,13 +4243,6 @@ ALTER TABLE `tasks`
   ADD KEY `idx_tasks_location_id` (`location_id`),
   ADD KEY `idx_tasks_client_id` (`client_id`),
   ADD KEY `idx_tasks_scheduled_deleted` (`scheduled_date`,`deleted_at`);
-
---
--- Indexes for table `task_performance_histories`
---
-ALTER TABLE `task_performance_histories`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `task_performance_histories_task_id_foreign` (`task_id`);
 
 --
 -- Indexes for table `users`
@@ -4993,12 +4320,6 @@ ALTER TABLE `employee_performance`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `employee_schedules`
---
-ALTER TABLE `employee_schedules`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
-
---
 -- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
@@ -5032,7 +4353,7 @@ ALTER TABLE `locations`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -5050,25 +4371,19 @@ ALTER TABLE `optimization_generations`
 -- AUTO_INCREMENT for table `optimization_runs`
 --
 ALTER TABLE `optimization_runs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=257;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=260;
 
 --
 -- AUTO_INCREMENT for table `optimization_teams`
 --
 ALTER TABLE `optimization_teams`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1129;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1144;
 
 --
 -- AUTO_INCREMENT for table `optimization_team_members`
 --
 ALTER TABLE `optimization_team_members`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2192;
-
---
--- AUTO_INCREMENT for table `payroll_reports`
---
-ALTER TABLE `payroll_reports`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2222;
 
 --
 -- AUTO_INCREMENT for table `performance_flags`
@@ -5086,7 +4401,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `quotations`
 --
 ALTER TABLE `quotations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `scenario_analyses`
@@ -5095,22 +4410,10 @@ ALTER TABLE `scenario_analyses`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `scheduling_logs`
---
-ALTER TABLE `scheduling_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
-
---
 -- AUTO_INCREMENT for table `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4200;
-
---
--- AUTO_INCREMENT for table `task_performance_histories`
---
-ALTER TABLE `task_performance_histories`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1033;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4221;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -5176,12 +4479,6 @@ ALTER TABLE `employee_performance`
   ADD CONSTRAINT `employee_performance_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `employee_schedules`
---
-ALTER TABLE `employee_schedules`
-  ADD CONSTRAINT `employee_schedules_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
-
---
 -- Constraints for table `feedback`
 --
 ALTER TABLE `feedback`
@@ -5194,87 +4491,10 @@ ALTER TABLE `holidays`
   ADD CONSTRAINT `holidays_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `invalid_tasks`
---
-ALTER TABLE `invalid_tasks`
-  ADD CONSTRAINT `invalid_tasks_optimization_result_id_foreign` FOREIGN KEY (`optimization_result_id`) REFERENCES `optimization_results` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `invalid_tasks_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
-
---
 -- Constraints for table `locations`
 --
 ALTER TABLE `locations`
   ADD CONSTRAINT `locations_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `notifications`
---
-ALTER TABLE `notifications`
-  ADD CONSTRAINT `notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `optimization_generations`
---
-ALTER TABLE `optimization_generations`
-  ADD CONSTRAINT `optimization_generations_ibfk_1` FOREIGN KEY (`optimization_run_id`) REFERENCES `optimization_runs` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `optimization_runs`
---
-ALTER TABLE `optimization_runs`
-  ADD CONSTRAINT `optimization_runs_triggered_by_task_id_foreign` FOREIGN KEY (`triggered_by_task_id`) REFERENCES `tasks` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `optimization_teams`
---
-ALTER TABLE `optimization_teams`
-  ADD CONSTRAINT `optimization_teams_ibfk_1` FOREIGN KEY (`optimization_run_id`) REFERENCES `optimization_runs` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `optimization_teams_ibfk_2` FOREIGN KEY (`car_id`) REFERENCES `cars` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `optimization_team_members`
---
-ALTER TABLE `optimization_team_members`
-  ADD CONSTRAINT `optimization_team_members_ibfk_1` FOREIGN KEY (`optimization_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `optimization_team_members_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `payroll_reports`
---
-ALTER TABLE `payroll_reports`
-  ADD CONSTRAINT `payroll_reports_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `performance_flags`
---
-ALTER TABLE `performance_flags`
-  ADD CONSTRAINT `performance_flags_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `performance_flags_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `performance_flags_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `quotations`
---
-ALTER TABLE `quotations`
-  ADD CONSTRAINT `quotations_appointment_id_foreign` FOREIGN KEY (`appointment_id`) REFERENCES `client_appointments` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `quotations_converted_by_foreign` FOREIGN KEY (`converted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `quotations_quoted_by_foreign` FOREIGN KEY (`quoted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `quotations_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `tasks`
---
-ALTER TABLE `tasks`
-  ADD CONSTRAINT `tasks_assigned_team_id_foreign` FOREIGN KEY (`assigned_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `tasks_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
-  ADD CONSTRAINT `tasks_location_id_foreign` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`),
-  ADD CONSTRAINT `tasks_optimization_run_id_foreign` FOREIGN KEY (`optimization_run_id`) REFERENCES `optimization_runs` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `task_performance_histories`
---
-ALTER TABLE `task_performance_histories`
-  ADD CONSTRAINT `task_performance_histories_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

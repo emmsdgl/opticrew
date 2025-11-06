@@ -8,11 +8,25 @@
                     class="w-full h-full rounded-lg">
                     @php
                         $user = Auth::user();
+
+                        // Handle both old and new profile picture paths
+                        $profilePhotoUrl = null;
+                        if ($user->profile_picture) {
+                            // Check if it's old format (starts with 'profile_pictures/')
+                            if (str_starts_with($user->profile_picture, 'profile_pictures/')) {
+                                $profilePhotoUrl = asset('storage/' . $user->profile_picture);
+                            } else {
+                                // New format (starts with 'uploads/')
+                                $profilePhotoUrl = asset($user->profile_picture);
+                            }
+                            $profilePhotoUrl .= '?v=' . time();
+                        }
+
                         $employee = [
                             'full_name' => $user->name,
                             'work_email' => $user->email,
                             'work_phone' => $user->phone ?? '+358 40 123 4567',
-                            'profile_photo' => $user->profile_picture ? asset('storage/' . $user->profile_picture) : null,
+                            'profile_photo' => $profilePhotoUrl,
                             'office_status' => 'Employee',
                             'username' => $user->username,
                             'work_location' => $user->location ?? 'Inari, Finland'
@@ -41,33 +55,7 @@
 
                 <!-- Inner Up - Recommendation Service List -->
                 <div class="w-full overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
-                        <x-profilesummary title="Daily Overview" :cards="[
-            [
-                'label' => 'Total Tasks Completed',
-                'amount' => '30',
-                'description' => 'Boost your productivity today',
-                'icon' => '<i class=&quot;fas fa-check-circle&quot;></i>',
-                'percentage' => '+12%',
-                'percentageColor' => '#10b981',
-                'bgColor' => '#fef3c7',
-            ],
-            [
-                'label' => 'Incomplete Tasks',
-                'amount' => '1,240',
-                'description' => 'Check out your list',
-                'icon' => '<i class=&quot;fas fa-times-circle&quot;></i>',
-                'percentage' => '+8%',
-                'percentageColor' => '#3b82f6',
-            ],
-            [
-                'label' => 'Pending Tasks',
-                'amount' => '1,240',
-                'description' => 'Your tasks await',
-                'icon' => '<i class=&quot;fas fa-hourglass-half&quot;></i>',
-                'percentage' => '+8%',
-                'percentageColor' => '#3b82f6',
-            ],
-        ]" />
+                        <x-profilesummary title="Daily Overview" :cards="$cards" />
                 </div>
         </section>
     </x-layouts.general-employee>

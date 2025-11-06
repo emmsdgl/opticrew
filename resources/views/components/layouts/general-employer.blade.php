@@ -15,8 +15,12 @@
                 ]
             ],
             ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/analytics'],
-            ['label' => 'Optimization Result', 'icon' => 'fa-file-lines', 'href' => route('optimization.result')],
         ];
+
+        // Only show Optimization Result in local development environment
+        if (app()->environment('local')) {
+            $navOptions[] = ['label' => 'Optimization Result', 'icon' => 'fa-file-lines', 'href' => route('optimization.result')];
+        }
 
         $teams = ['HR Team', 'Research Team'];
     @endphp
