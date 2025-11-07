@@ -127,16 +127,7 @@
                                        . ($task->assigned_by ? ' • Assigned by: ' . $task->assigned_by->name : ''),
                         'action_url' => route('employee.tasks.show', $task->id),
                         'action_label' => 'View Details',
-                        'menu_items' => $isClockedIn ? [
-                            [
-                                'label' => 'Start Task',
-                                'action' => "window.location.href='" . route('employee.tasks.start', $task->id) . "'"
-                            ],
-                            [
-                                'label' => 'Mark as Complete',
-                                'action' => "window.location.href='" . route('employee.tasks.complete', $task->id) . "'"
-                            ]
-                        ] : []
+                        'menu_items' => [] // Task start/complete actions will be added later
                     ];
                 })->toArray();
             @endphp
@@ -197,16 +188,7 @@
                                        . $teamInfo,
                         'action_url' => route('employee.tasks.show', $task->id),
                         'action_label' => 'View Details',
-                        'menu_items' => $isClockedIn && $task->status !== 'Completed' ? [
-                            [
-                                'label' => 'Start Task',
-                                'action' => "window.location.href='" . route('employee.tasks.start', $task->id) . "'"
-                            ],
-                            [
-                                'label' => 'Mark as Complete',
-                                'action' => "window.location.href='" . route('employee.tasks.complete', $task->id) . "'"
-                            ]
-                        ] : []
+                        'menu_items' => [] // Task start/complete actions will be added later
                     ];
                 })->toArray();
             @endphp

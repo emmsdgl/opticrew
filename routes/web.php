@@ -258,6 +258,15 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/tasks', [EmployeeTasksController::class, 'index'])
     ->name('employee.tasks');
 
+    Route::get('/employee/tasks/{task}', [EmployeeTasksController::class, 'show'])
+    ->name('employee.tasks.show');
+
+    Route::post('/employee/tasks/{task}/start', [EmployeeTasksController::class, 'start'])
+    ->name('employee.tasks.start');
+
+    Route::post('/employee/tasks/{task}/complete', [EmployeeTasksController::class, 'complete'])
+    ->name('employee.tasks.complete');
+
     Route::get('/employee/performance', [App\Http\Controllers\EmployeePerformanceController::class, 'index'])
     ->name('employee.performance');
 

@@ -153,15 +153,21 @@ class RuleBasedPreProcessor
             $taskRatio = $clientTasks->count() / $totalTasks;
             $tasksForClient = $clientTasks->count();
 
-            // Calculate proportional share based on task count
-            $proportionalCount = round($totalEmployeesToAllocate * $taskRatio);
+            // ✅ RULE 5: For single client, allocate ALL employees (maximize utilization)
+            if (count($tasksByClient) === 1) {
+                // Only one client - give them ALL employees
+                $proportionalCount = $totalEmployeesToAllocate;
+            } else {
+                // Calculate proportional share based on task count
+                $proportionalCount = round($totalEmployeesToAllocate * $taskRatio);
 
-            // Ensure minimum of 2 employees (1 pair) per client
-            $proportionalCount = max(2, $proportionalCount);
+                // Ensure minimum of 2 employees (1 pair) per client
+                $proportionalCount = max(2, $proportionalCount);
 
-            // Ensure even number for pairing
-            if ($proportionalCount % 2 !== 0) {
-                $proportionalCount++;
+                // Ensure even number for pairing (only for multiple clients)
+                if ($proportionalCount % 2 !== 0) {
+                    $proportionalCount++;
+                }
             }
 
             $clientAllocations[$clientId] = [
@@ -171,7 +177,7 @@ class RuleBasedPreProcessor
             ];
         }
 
-        // ✅ SECOND PASS: Adjust if total exceeds available employees
+        // ✅ SECOND PASS: Adjust allocations to use ALL employees
         $totalAllocated = array_sum(array_column($clientAllocations, 'employee_count'));
 
         if ($totalAllocated > $totalEmployeesToAllocate) {
@@ -184,12 +190,36 @@ class RuleBasedPreProcessor
             $reductionFactor = $totalEmployeesToAllocate / $totalAllocated;
             foreach ($clientAllocations as $clientId => &$allocation) {
                 $adjustedCount = max(2, floor($allocation['employee_count'] * $reductionFactor));
-                // Keep even for pairing
-                if ($adjustedCount % 2 !== 0) {
-                    $adjustedCount = max(2, $adjustedCount - 1);
-                }
                 $allocation['employee_count'] = $adjustedCount;
             }
+        }
+
+        // ✅ THIRD PASS: Distribute remaining employees (RULE 5: maximize utilization)
+        $totalAllocated = array_sum(array_column($clientAllocations, 'employee_count'));
+        $remainingEmployees = $totalEmployeesToAllocate - $totalAllocated;
+
+        if ($remainingEmployees > 0) {
+            Log::info("Distributing remaining employees to clients", [
+                'remaining' => $remainingEmployees,
+                'current_allocation' => $clientAllocations
+            ]);
+
+            // Sort clients by task count (descending) - give more employees to busier clients
+            $clientsByTaskCount = collect($clientAllocations)->sortByDesc('task_count')->keys()->toArray();
+
+            // Distribute remaining employees one by one
+            $clientIndex = 0;
+            while ($remainingEmployees > 0) {
+                $clientId = $clientsByTaskCount[$clientIndex % count($clientsByTaskCount)];
+                $clientAllocations[$clientId]['employee_count']++;
+                $remainingEmployees--;
+                $clientIndex++;
+            }
+
+            Log::info("After distributing remaining employees", [
+                'updated_allocation' => $clientAllocations,
+                'total_allocated' => array_sum(array_column($clientAllocations, 'employee_count'))
+            ]);
         }
 
         Log::info("Employee allocation plan", [
@@ -203,7 +233,7 @@ class RuleBasedPreProcessor
             }, $clientAllocations)
         ]);
 
-        // ✅ THIRD PASS: Actually allocate employees to each client
+        // ✅ FOURTH PASS: Actually allocate employees to each client
         foreach ($clientAllocations as $clientId => $allocation) {
             if ($availableEmployees->isEmpty()) {
                 Log::warning("No more employees available for client", [

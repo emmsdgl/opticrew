@@ -53,4 +53,32 @@ class EmployeeTasksController extends Controller
             'clockInTime' => $clockInTime,
         ]);
     }
+
+    public function show(Task $task)
+    {
+        $user = Auth::user();
+        $employee = $user->employee;
+
+        // Verify employee has access to this task (security check)
+        $hasAccess = $task->optimizationTeam &&
+                     $task->optimizationTeam->members()
+                          ->where('employee_id', $employee->id)
+                          ->exists();
+
+        if (!$hasAccess) {
+            abort(403, 'You do not have access to this task.');
+        }
+
+        // Load task with relationships
+        $task->load([
+            'location',
+            'optimizationTeam.members.employee.user',
+            'optimizationTeam.car'
+        ]);
+
+        return view('employee.tasks.show', [
+            'employee' => $employee,
+            'task' => $task,
+        ]);
+    }
 }

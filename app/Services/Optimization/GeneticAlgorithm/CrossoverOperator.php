@@ -2,11 +2,46 @@
 
 namespace App\Services\Optimization\GeneticAlgorithm;
 
+/**
+ * Crossover Operator - Uniform Crossover (Production)
+ *
+ * ┌─────────────────────────────────────────────────────────────────────────┐
+ * │ PRODUCTION vs SIMULATION COMPARISON                                     │
+ * ├─────────────────────────────────────────────────────────────────────────┤
+ * │                                                                         │
+ * │ PRODUCTION (This Implementation):                                       │
+ * │ ✓ Type: Uniform Crossover                                              │
+ * │ ✓ Method: Random 50/50 selection per team from parents                 │
+ * │ ✓ Repair: Assign missing tasks to LEAST loaded team (balance-aware)    │
+ * │ ✓ Rate: Always applied (100%)                                          │
+ * │                                                                         │
+ * │ SIMULATION MODEL:                                                       │
+ * │ ✓ Type: Single-Point Crossover                                         │
+ * │ ✓ Method: Split at random point, combine parent segments               │
+ * │ ✓ Repair: Remove duplicate task assignments                            │
+ * │ ✓ Rate: 85% probability                                                │
+ * │                                                                         │
+ * │ WHY DIFFERENT?                                                          │
+ * │ Uniform crossover provides higher diversity than single-point for      │
+ * │ scheduling problems with multiple objectives (Syswerda, 1989).         │
+ * │ Both approaches are valid genetic operators with proven effectiveness.  │
+ * │                                                                         │
+ * └─────────────────────────────────────────────────────────────────────────┘
+ *
+ * @package App\Services\Optimization\GeneticAlgorithm
+ */
 class CrossoverOperator
 {
     /**
      * Perform uniform crossover between two parent schedules
-     * Each team's task list has a 50% chance of coming from either parent
+     *
+     * Each team's task list has a 50% chance of coming from either parent.
+     * This provides higher diversity compared to single-point crossover,
+     * which is beneficial for multi-objective scheduling optimization.
+     *
+     * @param Individual $parentA First parent individual
+     * @param Individual $parentB Second parent individual
+     * @return Individual Child individual created from crossover
      */
     public function crossover(Individual $parentA, Individual $parentB): Individual
     {
