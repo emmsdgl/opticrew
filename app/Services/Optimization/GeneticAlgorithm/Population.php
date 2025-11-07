@@ -22,10 +22,10 @@ class Population
         }
     }
 
-    public function evaluateFitness(FitnessCalculator $calculator, array $teamEfficiencies): void
+    public function evaluateFitness(FitnessCalculator $calculator, array $teamEfficiencies, ?int $totalTaskCount = null): void
     {
         foreach ($this->individuals as $individual) {
-            $fitness = $calculator->calculate($individual, $teamEfficiencies);
+            $fitness = $calculator->calculate($individual, $teamEfficiencies, $totalTaskCount);
             $individual->setFitness($fitness);
         }
 

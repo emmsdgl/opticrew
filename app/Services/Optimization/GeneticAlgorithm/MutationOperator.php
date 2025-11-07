@@ -2,10 +2,44 @@
 
 namespace App\Services\Optimization\GeneticAlgorithm;
 
+/**
+ * Mutation Operator - Enhanced Implementation (Production)
+ *
+ * ┌─────────────────────────────────────────────────────────────────────────┐
+ * │ PRODUCTION vs SIMULATION COMPARISON                                     │
+ * ├─────────────────────────────────────────────────────────────────────────┤
+ * │                                                                         │
+ * │ PRODUCTION (This Implementation):                                       │
+ * │ ✓ 3 Mutation Types: Swap, Insert (balance-aware), Scramble             │
+ * │ ✓ Rate: 20% per individual (matches simulation after alignment)        │
+ * │ ✓ Strategy: Random selection among 3 types for diversity               │
+ * │                                                                         │
+ * │ SIMULATION MODEL:                                                       │
+ * │ ✓ 1 Mutation Type: Simple team reassignment                            │
+ * │ ✓ Rate: 20% per individual                                             │
+ * │ ✓ Strategy: Move random task to random team (same client)              │
+ * │                                                                         │
+ * │ WHY DIFFERENT?                                                          │
+ * │ Production uses enhanced operators based on scheduling literature       │
+ * │ (Syswerda, 1989). Both approaches are valid; production version        │
+ * │ provides better balance optimization for real-world scenarios.          │
+ * │                                                                         │
+ * └─────────────────────────────────────────────────────────────────────────┘
+ *
+ * @package App\Services\Optimization\GeneticAlgorithm
+ */
 class MutationOperator
 {
     /**
-     * Swap mutation - randomly swap tasks between two teams
+     * Apply mutation to an individual
+     *
+     * Randomly selects one of three mutation types:
+     * 1. Swap: Exchange tasks between two teams
+     * 2. Insert: Move task from most loaded to least loaded (balance-aware)
+     * 3. Scramble: Reorder tasks within a team
+     *
+     * @param Individual $individual
+     * @return Individual Mutated individual
      */
     public function mutate(Individual $individual): Individual
     {

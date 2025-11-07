@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\Log;
 
 class GeneticAlgorithmOptimizer
 {
-    protected const POPULATION_SIZE = 20;
-    protected const PATIENCE = 15; // Generations without improvement
+    // Read GA parameters from config (aligned with simulation model)
+    protected int $populationSize;
+    protected int $patience;
 
     protected TeamFormationService $teamFormation;
     protected TeamEfficiencyCalculator $efficiencyCalculator;
@@ -29,6 +30,10 @@ class GeneticAlgorithmOptimizer
         $this->fitnessCalculator = $fitnessCalculator;
         $this->crossover = $crossover;
         $this->mutation = $mutation;
+
+        // Load GA parameters from config
+        $this->populationSize = config('optimization.genetic_algorithm.population_size', 50);
+        $this->patience = config('optimization.genetic_algorithm.patience', 15);
     }
 
     public function optimize(
@@ -60,17 +65,7 @@ class GeneticAlgorithmOptimizer
                 ]);
             }
 
-            // 1. Form teams
-            $teams = $this->teamFormation->formTeams($availableEmployees);
-
-            if ($teams->isEmpty()) {
-                Log::warning("No teams formed for client", ['client_id' => $clientId]);
-                continue;
-            }
-
-            $teamEfficiencies = $this->efficiencyCalculator->calculate($teams);
-
-            // 2. Get tasks for this client
+            // 2. Get tasks for this client FIRST (needed to calculate team count)
             $clientTasks = $validTasks->filter(function($task) use ($clientId) {
                 if (str_starts_with($clientId, 'contracted_')) {
                     $contractedClientId = str_replace('contracted_', '', $clientId);
@@ -102,35 +97,53 @@ class GeneticAlgorithmOptimizer
                 continue;
             }
 
+            // 1. Form teams (after getting tasks, so we can limit team count)
+            // ✅ RULE 5: Pass task count to limit teams and ensure all employees utilized
+            $teams = $this->teamFormation->formTeams($availableEmployees, $clientTasks->count());
+
+            if ($teams->isEmpty()) {
+                Log::warning("No teams formed for client", ['client_id' => $clientId]);
+                continue;
+            }
+
+            $teamEfficiencies = $this->efficiencyCalculator->calculate($teams);
+
+            // ✅ CRITICAL: Store fixed teams - they should NOT change during evolution
+            $fixedTeams = $teams;
+
             // ✅ RULE 6 & 7: Use FAIR greedy schedule (even distribution + time limits)
             $greedySchedule = $this->generateFairGreedySchedule(
-                $teams, 
-                $clientTasks, 
+                $fixedTeams,
+                $clientTasks,
                 $teamEfficiencies
             );
 
             // 3. Initialize population with BALANCED schedules
-            $population = new Population(self::POPULATION_SIZE);
+            $population = new Population($this->populationSize);
             $population->addIndividual($greedySchedule);
 
             // ✅ FIX: Create MORE balanced schedules instead of random ones
             // Generate 70% balanced + 30% random for diversity
-            $balancedCount = (int) (self::POPULATION_SIZE * 0.7);
-            $randomCount = self::POPULATION_SIZE - $balancedCount;
+            $balancedCount = (int) ($this->populationSize * 0.7);
+            $randomCount = $this->populationSize - $balancedCount;
 
             // Create variations of the greedy schedule (balanced)
             for ($i = 1; $i < $balancedCount; $i++) {
-                $balancedSchedule = $this->generateFairGreedySchedule($teams, $clientTasks, $teamEfficiencies);
+                $balancedSchedule = $this->generateFairGreedySchedule($fixedTeams, $clientTasks, $teamEfficiencies);
                 // Add slight randomness for diversity
                 if (rand(0, 100) < 30) {
                     $balancedSchedule = $this->mutation->mutate($balancedSchedule);
                 }
+                // ✅ Restore original teams (mutation might have corrupted them)
+                $balancedSchedule = $this->ensureTeamsAreFixed($balancedSchedule, $fixedTeams);
                 $population->addIndividual($balancedSchedule);
             }
 
             // Add some random schedules for diversity
             for ($i = 0; $i < $randomCount; $i++) {
-                $randomSchedule = $this->generateRandomSchedule($teams, $clientTasks);
+                $randomSchedule = $this->generateRandomSchedule($fixedTeams, $clientTasks);
+                // ✅ Restore original teams
+                $randomSchedule = $this->ensureTeamsAreFixed($randomSchedule, $fixedTeams);
                 $population->addIndividual($randomSchedule);
             }
 
@@ -140,7 +153,7 @@ class GeneticAlgorithmOptimizer
             $generation = 0;
 
             for ($generation = 1; $generation <= $maxGenerations; $generation++) {
-                $population->evaluateFitness($this->fitnessCalculator, $teamEfficiencies);
+                $population->evaluateFitness($this->fitnessCalculator, $teamEfficiencies, $clientTasks->count());
 
                 $currentBest = $population->getBest();
                 if ($currentBest->getFitness() > $bestFitness) {
@@ -150,16 +163,16 @@ class GeneticAlgorithmOptimizer
                     $generationsWithoutImprovement++;
                 }
 
-                if ($generationsWithoutImprovement >= self::PATIENCE) {
+                if ($generationsWithoutImprovement >= $this->patience) {
                     break;
                 }
 
-                $newPopulation = new Population(self::POPULATION_SIZE);
+                $newPopulation = new Population($this->populationSize);
 
                 // ✅ ELITISM: Preserve best solution from previous generation
                 $newPopulation->addIndividual($currentBest);
 
-                while ($newPopulation->size() < self::POPULATION_SIZE) {
+                while ($newPopulation->size() < $this->populationSize) {
                     $parentA = $this->tournamentSelection($population);
                     $parentB = $this->tournamentSelection($population);
 
@@ -168,6 +181,9 @@ class GeneticAlgorithmOptimizer
                     if (rand(0, 100) / 100 < 0.1) {
                         $child = $this->mutation->mutate($child);
                     }
+
+                    // ✅ CRITICAL: Restore original teams after crossover/mutation
+                    $child = $this->ensureTeamsAreFixed($child, $fixedTeams);
 
                     $newPopulation->addIndividual($child);
                 }
@@ -244,11 +260,11 @@ class GeneticAlgorithmOptimizer
     //         $greedySchedule = $this->generateGreedySchedule($teams, $clientTasks, $teamEfficiencies);
     
     //         // 4. Initialize population
-    //         $population = new Population(self::POPULATION_SIZE);
+    //         $population = new Population($this->populationSize);
     //         $population->addIndividual($greedySchedule); // Seed with greedy solution
     
     //         // Fill rest with random schedules
-    //         for ($i = 1; $i < self::POPULATION_SIZE; $i++) {
+    //         for ($i = 1; $i < $this->populationSize; $i++) {
     //             $randomSchedule = $this->generateRandomSchedule($teams, $clientTasks);
     //             $population->addIndividual($randomSchedule);
     //         }
@@ -272,18 +288,18 @@ class GeneticAlgorithmOptimizer
     //             }
     
     //             // Early stopping
-    //             if ($generationsWithoutImprovement >= self::PATIENCE) {
+    //             if ($generationsWithoutImprovement >= $this->patience) {
     //                 break;
     //             }
     
     //             // Create new population
-    //             $newPopulation = new Population(self::POPULATION_SIZE);
+    //             $newPopulation = new Population($this->populationSize);
                 
     //             // Elitism: preserve best
     //             $newPopulation->addIndividual($currentBest);
     
     //             // Generate offspring
-    //             while ($newPopulation->size() < self::POPULATION_SIZE) {
+    //             while ($newPopulation->size() < $this->populationSize) {
     //                 $parentA = $this->tournamentSelection($population);
     //                 $parentB = $this->tournamentSelection($population);
     
@@ -348,25 +364,31 @@ class GeneticAlgorithmOptimizer
         $sortedTasks = $tasks->sortByDesc('arrival_status')->values();
     
         foreach ($sortedTasks as $task) {
-            // ✅ Find team with LEAST workload that hasn't exceeded 12 hours
+            // ✅ RULE 6: Find team with LEAST tasks (primary) and LEAST workload (secondary)
             $selectedTeam = null;
+            $minTaskCount = PHP_INT_MAX;
             $minWorkload = PHP_INT_MAX;
-    
+
             foreach ($schedule as $index => $teamSchedule) {
                 $taskDurationHours = ($task->duration + $task->travel_time) / 60;
                 $projectedHours = $teamSchedule['total_hours'] + $taskDurationHours;
-    
+
                 // ✅ RULE 7: Skip if exceeds 12 hours
                 if ($projectedHours > 12) {
                     continue;
                 }
-    
+
+                $currentTaskCount = $teamSchedule['tasks']->count();
                 $workload = $this->calculateTeamWorkload(
-                    $teamSchedule['tasks'], 
+                    $teamSchedule['tasks'],
                     $efficiencies[$index]
                 );
-    
-                if ($workload < $minWorkload) {
+
+                // ✅ Primary: Prefer team with fewer tasks (ensures even distribution)
+                // ✅ Secondary: Among teams with same task count, prefer lower workload
+                if ($currentTaskCount < $minTaskCount ||
+                    ($currentTaskCount === $minTaskCount && $workload < $minWorkload)) {
+                    $minTaskCount = $currentTaskCount;
                     $minWorkload = $workload;
                     $selectedTeam = $index;
                 }
@@ -385,6 +407,14 @@ class GeneticAlgorithmOptimizer
     
             $schedule[$selectedTeam]['tasks']->push($task);
             $schedule[$selectedTeam]['total_hours'] += ($task->duration + $task->travel_time) / 60;
+
+            Log::info("Task assigned by fair greedy", [
+                'task_id' => $task->id,
+                'arrival_status' => $task->arrival_status,
+                'selected_team' => $selectedTeam + 1,
+                'team_task_count_after' => $schedule[$selectedTeam]['tasks']->count(),
+                'all_teams_task_counts' => collect($schedule)->map(fn($ts) => $ts['tasks']->count())->toArray()
+            ]);
         }
     
         // ✅ RULE 5: Log if any team has 0 tasks
@@ -464,5 +494,76 @@ class GeneticAlgorithmOptimizer
     protected function calculateTeamWorkload(Collection $tasks, float $efficiency): float
     {
         return $tasks->sum(fn($task) => $task->duration / $efficiency);
+    }
+
+    /**
+     * ✅ CRITICAL FIX: Ensure teams remain fixed across all individuals
+     * Teams should NOT change during evolution - only task assignments change
+     * This prevents employees from appearing in multiple teams
+     */
+    protected function ensureTeamsAreFixed(Individual $individual, Collection $fixedTeams): Individual
+    {
+        $schedule = $individual->getSchedule();
+        $correctedSchedule = [];
+
+        // Replace team composition with fixed teams
+        foreach ($schedule as $teamIndex => $teamSchedule) {
+            if (isset($fixedTeams[$teamIndex])) {
+                $correctedSchedule[$teamIndex] = [
+                    'team' => $fixedTeams[$teamIndex], // Use FIXED team
+                    'tasks' => $teamSchedule['tasks'], // Keep task assignments
+                    'total_hours' => $teamSchedule['total_hours'] ?? 0
+                ];
+            }
+        }
+
+        // ✅ VALIDATION: Check for duplicate employee assignments
+        $allEmployeeIds = collect();
+        $duplicateEmployees = collect();
+
+        foreach ($correctedSchedule as $teamIndex => $teamSchedule) {
+            $teamEmployeeIds = collect($teamSchedule['team'])->pluck('id');
+
+            foreach ($teamEmployeeIds as $empId) {
+                if ($allEmployeeIds->contains($empId)) {
+                    $duplicateEmployees->push($empId);
+                    Log::error("❌ CRITICAL: Employee appears in multiple teams!", [
+                        'employee_id' => $empId,
+                        'team_index' => $teamIndex + 1,
+                        'all_teams' => collect($correctedSchedule)->map(fn($ts, $idx) => [
+                            'team' => $idx + 1,
+                            'members' => collect($ts['team'])->pluck('id')->toArray()
+                        ])->values()->toArray()
+                    ]);
+                }
+                $allEmployeeIds->push($empId);
+            }
+        }
+
+        // ✅ VALIDATION: Check for duplicate task assignments
+        $allTaskIds = collect();
+        foreach ($correctedSchedule as $teamIndex => $teamSchedule) {
+            foreach ($teamSchedule['tasks'] as $task) {
+                if ($allTaskIds->contains($task->id)) {
+                    Log::warning("⚠️ Duplicate task detected in schedule", [
+                        'task_id' => $task->id,
+                        'team_index' => $teamIndex
+                    ]);
+                }
+                $allTaskIds->push($task->id);
+            }
+        }
+
+        $correctedIndividual = new Individual($correctedSchedule);
+
+        // ✅ Only set fitness if it exists (not null)
+        $fitness = $individual->getFitness();
+        if ($fitness !== null) {
+            $correctedIndividual->setFitness($fitness);
+        }
+
+        $correctedIndividual->setMetadata($individual->getMetadata());
+
+        return $correctedIndividual;
     }
 }

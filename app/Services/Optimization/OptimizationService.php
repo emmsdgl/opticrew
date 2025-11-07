@@ -198,8 +198,13 @@ class OptimizationService
                 'task_ids' => $allTasks->pluck('id')->toArray()
             ]);
 
+            // ✅ Get active employees whose users are NOT soft-deleted
             $allEmployees = Employee::where('is_active', true)
                 ->whereDoesntHave('dayOffs', fn($q) => $q->whereDate('date', $serviceDate))
+                ->whereHas('user', function($q) {
+                    $q->whereNull('deleted_at'); // Exclude soft-deleted users
+                })
+                ->with('user') // Eager load user for efficiency
                 ->get();
 
             Log::info("Employees fetched", [

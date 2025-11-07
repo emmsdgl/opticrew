@@ -1,12 +1,27 @@
 <?php
 
 return [
+    /*
+    |--------------------------------------------------------------------------
+    | Genetic Algorithm Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Parameters aligned with simulation model for consistency while
+    | maintaining production performance requirements.
+    |
+    | Simulation model uses: population=100, generations=150, mutation=20%
+    | Production uses optimized values balancing quality vs speed:
+    |   - Increased population from 20 to 50 for better exploration
+    |   - Increased mutation from 10% to 20% (matches simulation)
+    |   - Reduced tournament from 5 to 3 (matches simulation, less selection pressure)
+    |
+    */
     'genetic_algorithm' => [
-        'population_size' => env('GA_POPULATION_SIZE', 20),
-        'max_generations' => env('GA_MAX_GENERATIONS', 100),
-        'mutation_rate' => env('GA_MUTATION_RATE', 0.1),
-        'tournament_size' => env('GA_TOURNAMENT_SIZE', 5),
-        'patience' => env('GA_PATIENCE', 15),
+        'population_size' => env('GA_POPULATION_SIZE', 50), // Increased from 20 (sim: 100)
+        'max_generations' => env('GA_MAX_GENERATIONS', 100), // Kept for performance (sim: 150)
+        'mutation_rate' => env('GA_MUTATION_RATE', 0.20), // Matches simulation (was 0.1)
+        'tournament_size' => env('GA_TOURNAMENT_SIZE', 3), // Matches simulation (was 5)
+        'patience' => env('GA_PATIENCE', 15), // Kept for performance (sim: 25)
     ],
 
     'workforce' => [
