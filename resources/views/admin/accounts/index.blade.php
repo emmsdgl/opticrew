@@ -1,28 +1,29 @@
 <x-layouts.general-employer :title="'User Accounts'">
-    <section class="flex flex-col gap-6 p-4 md:p-6 flex-1">
+    <section class="flex flex-col gap-6 p-4 px-12 md:p-6 flex-1">
 
         <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">User Accounts</h1>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage all user accounts in the system</p>
+                <x-labelwithvalue label="Account Summary" :count="''" />
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
+                <!-- View Archived Button -->
                 <a href="{{ route('admin.accounts.archived') }}"
-                   class="inline-flex items-center justify-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium rounded-lg transition duration-150 ease-in-out whitespace-nowrap">
                     <i class="fas fa-archive mr-2"></i>
                     View Archived
                 </a>
-                <a href="{{ route('admin.accounts.create', ['type' => 'company']) }}"
-                   class="inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-building mr-2"></i>
-                    Add Company
-                </a>
-                <a href="{{ route('admin.accounts.create') }}"
-                   class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-plus mr-2"></i>
-                    Add Employee
-                </a>
+
+                <!-- Add User Dropdown -->
+                <x-action-dropdown label="Add User" icon='<i class="fas fa-plus mr-2"></i>'>
+                    <x-action-dropdown-item href="{{ route('admin.accounts.create', ['type' => 'company']) }}"
+                        icon="fas fa-building">
+                        Company
+                    </x-action-dropdown-item>
+                    <x-action-dropdown-item href="{{ route('admin.accounts.create') }}" icon="fas fa-user">
+                        Employee
+                    </x-action-dropdown-item>
+                </x-action-dropdown>
             </div>
         </div>
 
@@ -34,219 +35,240 @@
             </div>
         @endif
 
-        <!-- Filters -->
-        <div class="flex flex-col md:flex-row gap-4">
-            <!-- Search Bar -->
-            <div class="flex-1">
-                <div class="relative">
-                    <input type="text" id="searchInput"
-                           placeholder="Search by name, username, or email..."
-                           class="w-full px-4 py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                </div>
+        <!-- KPI Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <x-statisticscard
+                title="All Accounts"
+                :value="$employeesCount + $contractedCompanyCount + $companyCount + $personalCount"
+                trend="up"
+                trendValue="+ 3.4 %"
+                trendLabel="users growth vs last month" />
+
+            <x-statisticscard
+                title="Active Accounts"
+                :value="$users->where('email_verified_at', '!=', null)->count()"
+                trend="up"
+                trendValue="+ 3.4 %"
+                trendLabel="activity growth vs last month" />
+
+            <x-statisticscard
+                title="Archived Accounts"
+                :value="0"
+                subtitle="Deleted accounts that are no longer..." />
+        </div>
+
+        <!-- Users Section Header with Filters -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 my-4">
+            <div>
+                <x-labelwithvalue label="All Users" :count="''" />
             </div>
 
-            <!-- Account Type Filter -->
-            <div class="w-full md:w-64">
-                <select id="accountTypeFilter"
-                        onchange="window.location.href='{{ route('admin.accounts.index') }}?type=' + this.value"
-                        class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
-                    <option value="all" {{ $accountType === 'all' ? 'selected' : '' }}>
-                        All Accounts ({{ $employeesCount + $contractedCompanyCount + $companyCount + $personalCount }})
-                    </option>
-                    <option value="employees" {{ $accountType === 'employees' ? 'selected' : '' }}>
-                        Employee Accounts ({{ $employeesCount }})
-                    </option>
-                    <option value="contracted_company" {{ $accountType === 'contracted_company' ? 'selected' : '' }}>
-                        Contracted Company Accounts ({{ $contractedCompanyCount }})
-                    </option>
-                    <option value="company" {{ $accountType === 'company' ? 'selected' : '' }}>
-                        External Company Accounts ({{ $companyCount }})
-                    </option>
-                    <option value="personal" {{ $accountType === 'personal' ? 'selected' : '' }}>
-                        Personal/Private Accounts ({{ $personalCount }})
-                    </option>
-                </select>
+            <!-- Filters -->
+            <div class="flex flex-col md:flex-row gap-4 flex-1 md:max-w-3xl">
+                <!-- Search Bar -->
+                <div class="flex-1">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search by name, username, or email..."
+                            class="w-full px-4 py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-2 md:gap-4">
+                    <!-- Account Type Filter -->
+                    <div class="w-full md:w-auto">
+                        <x-filter-dropdown label="Filter by Account Type" :selected="$accountType" :options="[
+                            'all' => 'All Accounts (' . ($employeesCount + $contractedCompanyCount + $companyCount + $personalCount) . ')',
+                            'employees' => 'Employee Accounts (' . $employeesCount . ')',
+                            'contracted_company' => 'Contracted Company Accounts (' . $contractedCompanyCount . ')',
+                            'company' => 'External Company Accounts (' . $companyCount . ')',
+                            'personal' => 'Personal/Private Accounts (' . $personalCount . ')',
+                        ]"
+                            onSelect="window.location.href='{{ route('admin.accounts.index') }}?type={value}'" />
+                    </div>
+
+                    <!-- Sort Dropdown -->
+                    <div class="w-full md:w-auto">
+                        <x-dropdown label="Sort by:" default="Latest" :options="[
+                            'latest' => 'Latest',
+                            'oldest' => 'Oldest',
+                            'name_asc' => 'Name (A-Z)',
+                            'name_desc' => 'Name (Z-A)',
+                            'role_asc' => 'Role (A-Z)',
+                            'role_desc' => 'Role (Z-A)'
+                        ]" id="sort-dropdown" />
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Accounts Table/Cards -->
+
+        @php
+            $tableHeaders = [
+                ['label' => 'Name', 'align' => 'left'],
+                ['label' => 'Title', 'align' => 'left'],
+                ['label' => 'Status', 'align' => 'left'],
+                ['label' => 'Role', 'align' => 'left'],
+                ['label' => '', 'align' => 'right'],
+            ];
+
+            $tableRows = [];
+            foreach ($users as $user) {
+                // Determine title
+                if ($user->role === 'employee') {
+                    $title = $user->employee->position ?? 'Employee';
+                    $subtitle = $user->employee->department ?? 'N/A';
+                } elseif ($user->client && $user->client->client_type === 'company') {
+                    $title = 'Company Account';
+                    $subtitle = ucfirst($user->client->client_type);
+                } else {
+                    $title = 'Personal Account';
+                    $subtitle = $user->client ? ucfirst($user->client->client_type) : 'User';
+                }
+
+                // Determine role
+                if ($user->role === 'employee') {
+                    $role = 'Employee';
+                } elseif ($user->client && $user->client->client_type === 'company') {
+                    $role = 'External Client';
+                } else {
+                    $role = 'Employer';
+                }
+
+                $tableRows[] = [
+                    'attributes' => [
+                        'data-name' => strtolower($user->name),
+                        'data-username' => strtolower($user->username),
+                        'data-email' => strtolower($user->email),
+                    ],
+                    'columns' => [
+                        // Name Column
+                        '<div class="flex items-center gap-3">
+                                                                <div class="flex-shrink-0">
+                                                                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                                                                        ' . strtoupper(substr($user->name, 0, 2)) . '
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="text-sm font-semibold text-gray-900 dark:text-white">' . e($user->name) . '</div>
+                                                                    <div class="text-xs text-gray-500 dark:text-slate-400">' . e($user->email) . '</div>
+                                                                </div>
+                                                            </div>',
+
+                        // Title Column
+                        '<div class="text-sm font-medium text-gray-900 dark:text-white">' . e($title) . '</div>
+                                                            <div class="text-xs text-blue-600 dark:text-blue-400">' . e($subtitle) . '</div>',
+
+                        // Status Column
+                        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' .
+                        ($user->email_verified_at ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-400') . '">
+                                                                ' . ($user->email_verified_at ? 'Active' : 'Pending') . '
+                                                            </span>',
+
+                        // Role Column
+                        '<span class="text-sm text-gray-700 dark:text-slate-300 font-medium">' . e($role) . '</span>',
+
+                        // Actions Column
+                        '<div class="relative" x-data="{ open: false }">
+                                                                <button @click="open = !open" @click.away="open = false"
+                                                                    class="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800/50">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                                                                    </svg>
+                                                                </button>
+
+                                                                <div x-show="open" x-cloak
+                                                                    x-transition:enter="transition ease-out duration-100"
+                                                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                                                    x-transition:leave="transition ease-in duration-75"
+                                                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                                                    class="absolute right-0 mt-2 w-auto min-w-[120px] bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-10"
+                                                                    style="display: none;">
+                                                                    <a href="' . route('admin.accounts.show', $user->id) . '"
+                                                                       class="flex items-center justify-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap">
+                                                                        <i class="fas fa-eye w-4 text-center"></i>
+                                                                        <span>View</span>
+                                                                    </a>
+                                                                    <a href="' . route('admin.accounts.edit', $user->id) . '"
+                                                                       class="flex items-center justify-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap">
+                                                                        <i class="fas fa-edit w-4 text-center"></i>
+                                                                        <span>Edit</span>
+                                                                    </a>
+                                                                    <button onclick="confirmDelete(' . $user->id . ')"
+                                                                            class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-red-700 dark:hover:text-red-300 transition-colors whitespace-nowrap">
+                                                                        <i class="fas fa-trash w-4 text-center"></i>
+                                                                        <span>Delete</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>',
+                    ],
+                    'mobile' => '
+                                                            <div class="flex items-start justify-between mb-4">
+                                                                <div class="flex items-center gap-3">
+                                                                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                                                                        ' . strtoupper(substr($user->name, 0, 2)) . '
+                                                                    </div>
+                                                                    <div>
+                                                                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">' . e($user->name) . '</h3>
+                                                                        <p class="text-xs text-gray-500 dark:text-slate-400">' . e($user->email) . '</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="space-y-2 mb-4">
+                                                                <div class="flex justify-between items-center">
+                                                                    <span class="text-xs text-gray-500 dark:text-slate-400">Title</span>
+                                                                    <div class="text-right">
+                                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">' . e($title) . '</div>
+                                                                        <div class="text-xs text-blue-600 dark:text-blue-400">' . e($subtitle) . '</div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="flex justify-between items-center">
+                                                                    <span class="text-xs text-gray-500 dark:text-slate-400">Status</span>
+                                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' .
+                        ($user->email_verified_at ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-400') . '">
+                                                                        ' . ($user->email_verified_at ? 'Active' : 'Pending') . '
+                                                                    </span>
+                                                                </div>
+
+                                                                <div class="flex justify-between items-center">
+                                                                    <span class="text-xs text-gray-500 dark:text-slate-400">Role</span>
+                                                                    <span class="text-sm text-gray-700 dark:text-slate-300 font-medium">' . e($role) . '</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="pt-3 border-t border-gray-200 dark:border-slate-800">
+                                                                <div class="flex gap-2">
+                                                                    <a href="' . route('admin.accounts.show', $user->id) . '"
+                                                                       class="flex-1 text-center px-3 py-2 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white text-sm font-medium rounded-lg transition-colors">
+                                                                        <i class="fas fa-eye mr-1"></i> View
+                                                                    </a>
+                                                                    <a href="' . route('admin.accounts.edit', $user->id) . '"
+                                                                       class="flex-1 text-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                                                        <i class="fas fa-edit mr-1"></i> Edit
+                                                                    </a>
+                                                                    <button onclick="confirmDelete(' . $user->id . ')"
+                                                                            class="flex-1 text-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                                                        <i class="fas fa-trash mr-1"></i> Delete
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ',
+                ];
+            }
+        @endphp
+
+        <x-employer-components.data-table :headers="$tableHeaders" :rows="$tableRows" emptyTitle="No accounts found"
+            emptyMessage="Try adjusting your filters or add a new account" />
+
         @if($users->count() > 0)
-            <!-- Desktop Table View (Hidden on mobile) -->
-            <div class="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-900">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    User
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Username
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Contact
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Type
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            @foreach($users as $user)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                    data-name="{{ strtolower($user->name) }}"
-                                    data-username="{{ strtolower($user->username) }}"
-                                    data-email="{{ strtolower($user->email) }}">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                                                    {{ strtoupper(substr($user->name, 0, 1)) }}
-                                                </div>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {{ $user->name }}
-                                                </div>
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                                    {{ $user->email }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 dark:text-white">{{ $user->username }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 dark:text-white">{{ $user->phone }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($user->role === 'employee')
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                Employee
-                                            </span>
-                                        @elseif($user->client && $user->client->client_type === 'company')
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Company
-                                            </span>
-                                        @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                                Personal
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $user->email_verified_at ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                            {{ $user->email_verified_at ? 'Active' : 'Pending' }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="{{ route('admin.accounts.show', $user->id) }}"
-                                               class="text-blue-600 hover:text-blue-900 dark:text-blue-400" title="View">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('admin.accounts.edit', $user->id) }}"
-                                               class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button onclick="confirmDelete({{ $user->id }})"
-                                                    class="text-red-600 hover:text-red-900 dark:text-red-400" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Mobile Card View (Hidden on desktop) -->
-            <div class="md:hidden space-y-4">
-                @foreach($users as $user)
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4"
-                         data-name="{{ strtolower($user->name) }}"
-                         data-username="{{ strtolower($user->username) }}"
-                         data-email="{{ strtolower($user->email) }}">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex items-center">
-                                <div class="h-12 w-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-lg">
-                                    {{ strtoupper(substr($user->name, 0, 1)) }}
-                                </div>
-                                <div class="ml-3">
-                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ $user->name }}</h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">@{{ $user->username }}</p>
-                                </div>
-                            </div>
-                            @if($user->role === 'employee')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    Employee
-                                </span>
-                            @elseif($user->client && $user->client->client_type === 'company')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                    Company
-                                </span>
-                            @else
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                    Personal
-                                </span>
-                            @endif
-                        </div>
-
-                        <div class="space-y-2 mb-4">
-                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                <i class="fas fa-envelope w-5"></i>
-                                <span>{{ $user->email }}</span>
-                            </div>
-                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                <i class="fas fa-phone w-5"></i>
-                                <span>{{ $user->phone }}</span>
-                            </div>
-                            <div class="flex items-center text-sm">
-                                <i class="fas fa-circle w-5 {{ $user->email_verified_at ? 'text-green-500' : 'text-yellow-500' }}"></i>
-                                <span class="text-gray-600 dark:text-gray-400">
-                                    {{ $user->email_verified_at ? 'Active' : 'Pending' }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <a href="{{ route('admin.accounts.show', $user->id) }}"
-                               class="flex-1 text-center px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100">
-                                <i class="fas fa-eye mr-1"></i> View
-                            </a>
-                            <a href="{{ route('admin.accounts.edit', $user->id) }}"
-                               class="flex-1 text-center px-3 py-2 bg-yellow-50 text-yellow-600 rounded-lg text-sm font-medium hover:bg-yellow-100">
-                                <i class="fas fa-edit mr-1"></i> Edit
-                            </a>
-                            <button onclick="confirmDelete({{ $user->id }})"
-                                    class="flex-1 text-center px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100">
-                                <i class="fas fa-trash mr-1"></i> Delete
-                            </button>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
             <!-- Pagination -->
             <div class="mt-4">
                 {{ $users->links() }}
-            </div>
-        @else
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
-                <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
-                <p class="text-lg font-medium text-gray-500 dark:text-gray-400">No accounts found</p>
-                <p class="text-sm text-gray-400 mt-1">Try adjusting your filters or add a new account</p>
             </div>
         @endif
 
@@ -259,10 +281,12 @@
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                     <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                 </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4 text-center">Delete Account</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4 text-center">Delete Account
+                </h3>
                 <div class="mt-2 px-4 py-3">
                     <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
-                        This account will be soft-deleted and can be restored later. Enter your admin password to confirm.
+                        This account will be soft-deleted and can be restored later. Enter your admin password to
+                        confirm.
                     </p>
 
                     <form id="deleteForm" method="POST" onsubmit="return validatePassword(event)">
@@ -270,22 +294,23 @@
                         @method('DELETE')
 
                         <div class="mb-4">
-                            <label for="admin_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label for="admin_password"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Admin Password <span class="text-red-500">*</span>
                             </label>
                             <input type="password" id="admin_password" name="admin_password" required
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                   placeholder="Enter your password">
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                placeholder="Enter your password">
                             <p id="password_error" class="mt-1 text-sm text-red-600 hidden"></p>
                         </div>
 
                         <div class="flex gap-4">
                             <button type="button" onclick="closeDeleteModal()"
-                                    class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300">
+                                class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300">
                                 Cancel
                             </button>
                             <button type="submit"
-                                    class="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">
+                                class="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">
                                 Delete
                             </button>
                         </div>
@@ -309,8 +334,8 @@
                 const email = row.getAttribute('data-email') || '';
 
                 const matchesSearch = name.includes(searchTerm) ||
-                                     username.includes(searchTerm) ||
-                                     email.includes(searchTerm);
+                    username.includes(searchTerm) ||
+                    email.includes(searchTerm);
 
                 row.style.display = matchesSearch ? '' : 'none';
             });
@@ -376,7 +401,7 @@
         }
 
         // Close modal when clicking outside
-        document.getElementById('deleteModal').addEventListener('click', function(e) {
+        document.getElementById('deleteModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeDeleteModal();
             }

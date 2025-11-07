@@ -37,7 +37,7 @@
         @else
             <span class="text-gray-700 dark:text-white text-xs font-normal" x-text="selected"></span>
         @endif
-        <svg 
+        <svg
             class="w-2.5 h-2.5 ms-2 transition-transform duration-300 text-gray-600 dark:text-gray-400"
             :class="{ 'rotate-180': open }"
             aria-hidden="true"
@@ -54,7 +54,7 @@
     </button>
 
     <!-- Dropdown Menu -->
-    <div 
+    <div
         x-show="open"
         @click.away="open = false"
         x-transition:enter="transition ease-out duration-200"
