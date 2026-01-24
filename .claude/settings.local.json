@@ -1,13 +1,17 @@
 {
   "permissions": {
     "allow": [
+      "Bash(cat:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git checkout:*)",
+      "Bash(php artisan list:*)",
+      "Bash(php -l:*)",
+      "Bash(php artisan serve:*)",
+      "Bash(timeout 5 bash:*)",
       "Bash(php artisan:*)",
-      "Bash(grep:*)",
-      "Read(//c//**)"
+      "Bash(find:*)",
+      "Bash(git stash:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
