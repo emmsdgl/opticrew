@@ -19,9 +19,7 @@ class Location extends Model
         'deep_cleaning_rate',
         'light_deep_cleaning_rate',
         'student_rate',
-        'student_sunday_holiday_rate',
-        'address',
-        'description'
+        'student_sunday_holiday_rate'
     ];
 
     /**

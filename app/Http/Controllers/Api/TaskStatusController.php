@@ -394,4 +394,310 @@ class TaskStatusController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get tasks for schedule (Mobile App)
+     * Uses authenticated user's employee_id automatically
+     *
+     * GET /api/schedule/tasks?date=2025-10-20
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getScheduleTasks(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date'
+        ]);
+
+        try {
+            // Get authenticated user
+            $user = $request->user();
+
+            // Get employee record from user
+            if (!$user->employee) {
+                return response()->json([
+                    'tasks' => []
+                ], 200);
+            }
+
+            $employeeId = $user->employee->id;
+            $date = $request->date;
+
+            // Get tasks assigned to teams where this employee is a member
+            $tasks = Task::whereDate('scheduled_date', $date)
+                ->whereHas('optimizationTeam.members', function($query) use ($employeeId) {
+                    $query->where('employee_id', $employeeId);
+                })
+                ->with(['location', 'optimizationTeam.members.employee.user'])
+                ->orderBy('scheduled_time')
+                ->get()
+                ->map(function($task) {
+                    // Format time (remove seconds)
+                    $startTime = $task->scheduled_time
+                        ? Carbon::parse($task->scheduled_time)->format('H:i')
+                        : '09:00';
+
+                    // Get employee names from team members
+                    $employeeNames = 'Unassigned';
+                    if ($task->optimizationTeam && $task->optimizationTeam->members) {
+                        $names = $task->optimizationTeam->members
+                            ->map(function($member) {
+                                return $member->employee && $member->employee->user
+                                    ? $member->employee->user->name
+                                    : null;
+                            })
+                            ->filter()
+                            ->toArray();
+
+                        if (!empty($names)) {
+                            $employeeNames = implode(', ', $names);
+                        }
+                    }
+
+                    return [
+                        'id' => $task->id,
+                        'title' => $task->task_description,
+                        'name' => $task->task_description, // Alias for title
+                        'description' => $task->task_description,
+                        'location' => $task->location->location_name ?? null,
+                        'status' => $task->status,
+                        'start_time' => $startTime,
+                        'duration' => $task->estimated_duration_minutes
+                            ? round($task->estimated_duration_minutes / 60, 1)
+                            : null,
+                        'team' => $employeeNames
+                    ];
+                });
+
+            return response()->json([
+                'tasks' => $tasks
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to get schedule tasks", [
+                'user_id' => $request->user()->id ?? null,
+                'date' => $request->date,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'tasks' => [],
+                'error' => 'Failed to retrieve tasks'
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload task photo (before/after)
+     *
+     * POST /api/tasks/{taskId}/photo
+     * Body: photo (file), type (before/after)
+     *
+     * @param Request $request
+     * @param int $taskId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadTaskPhoto(Request $request, $taskId)
+    {
+        $request->validate([
+            'photo' => 'required|image|max:5120', // Max 5MB
+            'type' => 'required|in:before,after'
+        ]);
+
+        try {
+            $task = Task::findOrFail($taskId);
+
+            // Store the photo
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $filename = 'task_' . $taskId . '_' . $request->type . '_' . time() . '.' . $photo->getClientOriginalExtension();
+                $path = $photo->storeAs('task_photos', $filename, 'public');
+
+                // Update task with photo path (you may need to add these columns to your tasks table)
+                $columnName = $request->type === 'before' ? 'before_photo' : 'after_photo';
+                $task->update([
+                    $columnName => $path
+                ]);
+
+                Log::info("Task photo uploaded", [
+                    'task_id' => $taskId,
+                    'type' => $request->type,
+                    'path' => $path
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => ucfirst($request->type) . ' photo uploaded successfully',
+                    'data' => [
+                        'task_id' => $taskId,
+                        'photo_type' => $request->type,
+                        'photo_path' => $path
+                    ]
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No photo file provided'
+            ], 400);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to upload task photo", [
+                'task_id' => $taskId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload photo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get checklist for a task
+     * Returns the company's checklist with completion status for this task
+     *
+     * GET /api/tasks/{taskId}/checklist
+     */
+    public function getTaskChecklist($taskId)
+    {
+        try {
+            $task = Task::with('location.contractedClient')->findOrFail($taskId);
+
+            // Get the contracted client's checklist
+            $contractedClientId = $task->location->contracted_client_id;
+
+            $checklist = \App\Models\CompanyChecklist::where('contracted_client_id', $contractedClientId)
+                ->where('is_active', true)
+                ->with(['categories.items'])
+                ->first();
+
+            if (!$checklist) {
+                return response()->json([
+                    'success' => true,
+                    'checklist' => null,
+                    'message' => 'No checklist configured for this location'
+                ]);
+            }
+
+            // Get existing completions for this task
+            $completions = \App\Models\TaskChecklistCompletion::where('task_id', $taskId)
+                ->get()
+                ->keyBy('checklist_item_id');
+
+            // Build the response with completion status
+            $checklistData = [
+                'id' => $checklist->id,
+                'name' => $checklist->name,
+                'important_reminders' => $checklist->important_reminders,
+                'categories' => $checklist->categories->map(function ($category) use ($completions) {
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'sort_order' => $category->sort_order,
+                        'items' => $category->items->map(function ($item) use ($completions) {
+                            $completion = $completions->get($item->id);
+                            return [
+                                'id' => $item->id,
+                                'name' => $item->name,
+                                'quantity' => $item->quantity,
+                                'sort_order' => $item->sort_order,
+                                'is_completed' => $completion ? $completion->is_completed : false,
+                                'completed_at' => $completion ? $completion->completed_at : null,
+                            ];
+                        }),
+                    ];
+                }),
+            ];
+
+            // Calculate completion stats
+            $totalItems = 0;
+            $completedItems = 0;
+            foreach ($checklistData['categories'] as $category) {
+                foreach ($category['items'] as $item) {
+                    $totalItems++;
+                    if ($item['is_completed']) {
+                        $completedItems++;
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'checklist' => $checklistData,
+                'stats' => [
+                    'total' => $totalItems,
+                    'completed' => $completedItems,
+                    'percentage' => $totalItems > 0 ? round(($completedItems / $totalItems) * 100) : 0,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to get task checklist", [
+                'task_id' => $taskId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load checklist'
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle a checklist item's completion status
+     *
+     * POST /api/tasks/{taskId}/checklist/{itemId}/toggle
+     */
+    public function toggleChecklistItem(Request $request, $taskId, $itemId)
+    {
+        try {
+            $task = Task::findOrFail($taskId);
+            $item = \App\Models\ChecklistItem::findOrFail($itemId);
+            $user = $request->user();
+
+            // Find or create the completion record
+            $completion = \App\Models\TaskChecklistCompletion::firstOrNew([
+                'task_id' => $taskId,
+                'checklist_item_id' => $itemId,
+            ]);
+
+            // Toggle the completion status
+            $completion->is_completed = !$completion->is_completed;
+
+            if ($completion->is_completed) {
+                $completion->completed_by = $user->id;
+                $completion->completed_at = now();
+            } else {
+                $completion->completed_by = null;
+                $completion->completed_at = null;
+            }
+
+            $completion->save();
+
+            return response()->json([
+                'success' => true,
+                'item_id' => $itemId,
+                'is_completed' => $completion->is_completed,
+                'completed_at' => $completion->completed_at,
+                'message' => $completion->is_completed ? 'Item marked as completed' : 'Item marked as incomplete'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to toggle checklist item", [
+                'task_id' => $taskId,
+                'item_id' => $itemId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update checklist item'
+            ], 500);
+        }
+    }
 }

@@ -210,7 +210,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/{userId}/update-details', [\App\Http\Controllers\Admin\AccountController::class, 'updateContractedClient'])->name('update-details');
     });
 
-    Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
+    Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
 
     Route::get('/admin/profile', [ProfileController::class, 'show'])->name('admin.profile');
 
