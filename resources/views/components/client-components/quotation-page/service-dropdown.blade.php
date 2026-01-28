@@ -3,7 +3,7 @@
     'label' => 'Select Service',
     'name' => 'service',
     'options' => [],
-    'placeholdericon' => [],
+    'placeholdericon' => '',
     'required' => false,
     'xModel' => null,
 ])
@@ -21,8 +21,8 @@
         <button
             type="button"
             @click="open = !open"
-            class="w-full p-4 border-2 rounded-xl transition-all duration-300 bg-white dark:bg-gray-800
-                   border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500
+            class="w-full p-4 border  rounded-xl transition-all duration-300 bg-white dark:bg-gray-900
+                   border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500
                    focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-600"
             :class="{ 'border-blue-600 bg-blue-50 dark:bg-blue-900/20': open }"
         >
@@ -34,10 +34,10 @@
                        class="text-[#081032] dark:text-blue-400 text-lg mt-1"
                        x-show="selected"></i>
                     <div class="flex-1">
-                        <h3 class="text-gray-900 dark:text-white mb-1"
+                        <h3 class="text-sm text-gray-900 dark:text-white mb-1"
                             x-text="selected ? selected.title : '{{ $options[0]['title'] ?? 'Select a service' }}'">
                         </h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-500"
+                        <p class="text-xs text-gray-500 dark:text-gray-500"
                            x-text="selected ? selected.description : '{{ $options[0]['description'] ?? 'Choose from available options' }}'">
                         </p>
                     </div>
@@ -75,7 +75,7 @@
                     >
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex items-start gap-3 flex-1">
-                                <i class="{{ $option['icon'] ?? 'fa-solid fa-spray-can-sparkles' }} text-[#081032] dark:text-blue-400 text-base mt-1"></i>
+                                <i class="{{ $option['icon'] ?? '' }} text-[#081032] dark:text-blue-400 text-base mt-1"></i>
                                 <div>
                                     <h3 class="font-semibold text-gray-900 dark:text-white mb-1">
                                         {{ $option['title'] }}

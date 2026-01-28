@@ -177,7 +177,7 @@
         <!-- Inner Panel - Appointments to Rate -->
         <div class="flex flex-col gap-6 rounded-lg p-8 my-8">
             <x-labelwithvalue label="Appointments To Rate" count="({{ $completedAppointments->count() ?? 0 }})" />
-
+    
             <div class="h-64 overflow-y-auto">
                 @php
                     // Transform completed appointments to the format expected by the component
