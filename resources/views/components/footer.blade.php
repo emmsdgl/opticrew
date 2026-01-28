@@ -27,10 +27,10 @@
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Fin-noys</h2>
                     </div>
                     <p class="text-sm text-gray-600 dark:text-gray-300">
-                        The latest updates, discounts, and services, sent to your directly to your inbox.
+                        The latest updates, discounts, and services, accessed in your own personalized account.
                     </p>
 
-                    <!-- Email Form -->
+                    <!-- Email Form
                     <form
                         class="flex items-center bg-white dark:bg-[#121629] pr-3 p-2 rounded-full overflow-hidden shadow-sm w-full max-w-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus-within:ring-2 focus-within:ring-blue-500 dark:focus-within:ring-indigo-500 transition-all">
                         <input type="email" placeholder="Enter your email" required
@@ -39,24 +39,24 @@
                             class="bg-blue-600 dark:bg-blue-700 text-white px-5 py-2 text-sm font-medium z-10 rounded-full hover:bg-blue-700 dark:hover:bg-blue-800 transition">
                             Submit
                         </button>
-                    </form>
+                    </form> -->
 
                     <p class="text-xs text-gray-500 dark:text-gray-400 max-w-sm">
-                        By subscribing you agree to with our Privacy Policy and provide consent to receive updates from
+                        By creating an account, you agree to with our Privacy Policy and provide consent to receive updates from
                         Fin-noys.
                     </p>
                 </div>
 
                 <!-- Right Section -->
-                <div class="md:col-span-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 text-sm">
-                    <div>
+                <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 text-sm">
+                    <!-- <div>
                         <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Company</h3>
                         <ul class="space-y-3">
                             <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Founders</a></li>
                             <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Services</a></li>
                             <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Pricing</a></li>
                         </ul>
-                    </div>
+                    </div> -->
 
                     <div>
                         <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
