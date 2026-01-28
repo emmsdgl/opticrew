@@ -6,7 +6,8 @@
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('client.dashboard')],
             ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => route('client.appointments')],
             ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => route('client.pricing')],
-            ['label' => 'Feedbacks', 'icon' => 'fa-chart-line', 'href' => route('client.feedback')]
+            //Change routing in Feedback to History page
+            ['label' => 'History', 'icon' => 'fa-chart-line', 'href' => route('client.history')]
         ];
 
         $teams = []; // No teams for client sidebar

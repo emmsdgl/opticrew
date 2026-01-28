@@ -256,19 +256,19 @@ Route::middleware(['auth', 'employee'])->group(function () {
         ->name('employee.attendance.clockout');
 
     Route::get('/employee/tasks', [EmployeeTasksController::class, 'index'])
-    ->name('employee.tasks');
+        ->name('employee.tasks');
 
     Route::get('/employee/tasks/{task}', [EmployeeTasksController::class, 'show'])
-    ->name('employee.tasks.show');
+        ->name('employee.tasks.show');
 
     Route::post('/employee/tasks/{task}/start', [EmployeeTasksController::class, 'start'])
-    ->name('employee.tasks.start');
+        ->name('employee.tasks.start');
 
     Route::post('/employee/tasks/{task}/complete', [EmployeeTasksController::class, 'complete'])
-    ->name('employee.tasks.complete');
+        ->name('employee.tasks.complete');
 
     Route::get('/employee/performance', [App\Http\Controllers\EmployeePerformanceController::class, 'index'])
-    ->name('employee.performance');
+        ->name('employee.performance');
 
     Route::get('/employee/profile', [ProfileController::class, 'show'])->name('employee.profile');
 
@@ -304,6 +304,10 @@ Route::middleware(['auth', 'client'])->group(function () {
     Route::post('/client/feedback', [FeedbackController::class, 'store'])->name('client.feedback.store');
 
     Route::get('/client/profile', [ProfileController::class, 'show'])->name('client.profile');
+    
+    Route::get('/client/history', function () {
+        return view('client.history');
+    })->name('client.history');
 
     Route::get('/client/profile/edit', [ProfileController::class, 'edit'])->name('client.profile.edit');
     Route::post('/client/profile/update', [ProfileController::class, 'update'])->name('client.profile.update');
