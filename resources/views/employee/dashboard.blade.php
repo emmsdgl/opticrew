@@ -169,14 +169,48 @@
                 </div>
                 <!-- Inner Up - Recent Requests (OPTIMIZED) -->
                 <div class="flex flex-row justify-between items-center w-full">
-                    <x-labelwithvalue label="Recent Requests" count="" />
+                    <div class="flex flex-row items-center w-full justify-between">
+                        <x-labelwithvalue label="Recent Requests" count="" />
+                        <a href="{{ route('employee.requests.create') }}"
+                            class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                            New Request
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
                 <div
                     class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 overflow-hidden flex-shrink-0">
                     <div class="space-y-4">
-                        @foreach($requests as $request)
-                            <x-request-list-item :type="$request->type" :fromTime="$request->from_time"
-                                :toTime="$request->to_time" :status="$request->status" />
+                        @php
+                            $placeholderRequests = [
+                                [
+                                    'type' => 'Vacation Leave',
+                                    'from_time' => '08:00 AM',
+                                    'to_time' => '05:00 PM',
+                                    'status' => 'Pending'
+                                ],
+                                [
+                                    'type' => 'Sick Leave',
+                                    'from_time' => '09:00 AM',
+                                    'to_time' => '04:00 PM',
+                                    'status' => 'Approved'
+                                ],
+                                [
+                                    'type' => 'Overtime',
+                                    'from_time' => '06:00 PM',
+                                    'to_time' => '09:00 PM',
+                                    'status' => 'Rejected'
+                                ],
+                            ];
+                        @endphp
+
+                        @foreach($placeholderRequests as $request)
+                            <x-employee-components.request-list-item :type="$request['type']"
+                                :fromTime="$request['from_time']" :toTime="$request['to_time']"
+                                :status="$request['status']" />
                         @endforeach
                     </div>
                 </div>

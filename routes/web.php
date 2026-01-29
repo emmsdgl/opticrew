@@ -24,6 +24,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FeedbackController;
 
+use App\Http\Controllers\EmployeeRequestsController;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
@@ -247,6 +248,8 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
         ->name('employee.dashboard');
 
+    Route::get('/employee/requests/create', [EmployeeRequestsController::class, 'create'])->name('employee.requests.create');
+
     Route::get('/employee/attendance', [AttendanceController::class, 'index'])
         ->name('employee.attendance');
 
@@ -308,7 +311,7 @@ Route::middleware(['auth', 'client'])->group(function () {
     Route::post('/client/feedback', [FeedbackController::class, 'store'])->name('client.feedback.store');
 
     Route::get('/client/profile', [ProfileController::class, 'show'])->name('client.profile');
-    
+
     Route::get('/client/history', function () {
         return view('client.history');
     })->name('client.history');
