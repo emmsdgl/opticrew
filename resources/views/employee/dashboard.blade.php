@@ -35,9 +35,10 @@
                 </div>
 
                 <!-- Inner Down - Tasks Particulars -->
-                <div class="w-full rounded-lg h-48 sm:h-56 md:h-auto">
+                <div class="w-full rounded-lg h-56 sm:h-56 md:h-auto">
                     <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
-                    <div class="h-48 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg my-6">
+                    <div
+                        class="h-48 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg my-6">
 
                         @php
                             // Transform tasks to the format expected by task-overview-list component
@@ -57,38 +58,65 @@
                             emptyMessage="You don't have any tasks at the moment. New tasks will appear here once assigned." />
                     </div>
                 </div>
+                <!-- Inner Down - New Lessons -->
+                <div class="w-full rounded-lg h-48 sm:h-56 md:h-auto flex flex-col gap-6">
+                    <div class="flex flex-row justify-between items-center w-full">
+                        <x-labelwithvalue label="New Lessons" count="" />
+                        @php
+                            $timeOptions = ['All', 'Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
+                        @endphp
+
+                        <x-dropdown :options="$timeOptions" :default="$period" id="dropdown-time" />
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {{-- Card 1: No Progress --}}
+                        <x-employee-components.lesson-card duration="40 mins" title="Stain Removal"
+                            description="This course includes the different methods of stain removal" :progress="0"
+                            buttonText="Check now" buttonUrl="/courses/stain-removal" />
+                        {{-- Card 2: Pending --}}
+                        <x-employee-components.lesson-card duration="40 mins" title="Mop Handling"
+                            description="This course includes the different methods of using a mop" :progress="45"
+                            buttonText="Check now" buttonUrl="/courses/mop-handling" />
+                        {{-- Card 3: Completed --}}
+                        <x-employee-components.lesson-card duration="40 mins" title="Floor Waxing"
+                            description="Professional techniques for floor waxing and maintenance" :progress="100"
+                            buttonText="Review" buttonUrl="/courses/floor-waxing" />
+                    </div>
+                </div>
             </div>
 
             <!-- Right Panel - Tasks Details -->
             <div
                 class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
-                <div class="flex flex-row justify-between w-full">
+
+                <!-- Inner Up - Tasks Summary (OPTIMIZED) -->
+                <div class="flex flex-row justify-between items-center w-full">
                     <x-labelwithvalue label="Tasks Summary" count="" />
                     @php
                         $timeOptions = ['All', 'Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
                     @endphp
 
                     <x-dropdown :options="$timeOptions" :default="$period" id="dropdown-time" />
-
+                </div>
+                <div
+                    class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 overflow-hidden flex-shrink-0">
+                    <div class="w-full aspect-square max-h-[500px] p-4">
+                        <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
+        'done' => 'Done',
+        'inProgress' => 'In Progress',
+        'toDo' => 'To Do'
+    ]" :colors="[
+        'done' => '#2A6DFA',
+        'inProgress' => '#2AC9FA',
+        'toDo' => '#0028B3'
+    ]" />
+                    </div>
                 </div>
 
-                <!-- Inner Up - Tasks Summary -->
-                <div class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 h-64 sm:h-1/2 md:h-1/2">
-
-                    <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
-                        'done' => 'Done',
-                        'inProgress' => 'In Progress',
-                        'toDo' => 'To Do'
-                    ]" :colors="[
-                        'done' => '#2A6DFA',
-                        'inProgress' => '#2AC9FA',
-                        'toDo' => '#0028B3'
-                    ]" />
-                </div>
-
-                <!-- Log Your Attendance Card - NEW -->
+                <!-- Log Your Attendance Card -->
                 <div id="attendance-card"
-                    class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 py-6">
+                    class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 py-6 flex-shrink-0">
                     <!-- Background Image for Light Mode -->
                     <div class="absolute inset-0 bg-cover bg-center block dark:hidden"
                         style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg.svg') }}');">
@@ -139,6 +167,19 @@
                         </div>
                     </div>
                 </div>
+                <!-- Inner Up - Recent Requests (OPTIMIZED) -->
+                <div class="flex flex-row justify-between items-center w-full">
+                    <x-labelwithvalue label="Recent Requests" count="" />
+                </div>
+                <div
+                    class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 overflow-hidden flex-shrink-0">
+                    <div class="space-y-4">
+                        @foreach($requests as $request)
+                            <x-request-list-item :type="$request->type" :fromTime="$request->from_time"
+                                :toTime="$request->to_time" :status="$request->status" />
+                        @endforeach
+                    </div>
+                </div>
             </div>
 
             <!-- Attendance Details Modal -->
@@ -165,7 +206,8 @@
                             <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white text-center mb-3">
                                 Today's Attendance
                             </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 text-center w-full">View your attendance time details
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 text-center w-full">View your
+                                attendance time details
                                 for today</p>
 
                             <!-- Status Badge - Centered -->
@@ -266,17 +308,13 @@
                                     </button>
                                 </form>
                             @endif
-
-                            <button @click="closeAttendanceModal()"
-                                class="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                Close
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 </x-layouts.general-employee>
+
 @push('scripts')
     <script>
         // This script handles the Tasks Summary filter dropdown.

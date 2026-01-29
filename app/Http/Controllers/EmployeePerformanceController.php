@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\Attendance;
 use App\Models\DayOff;
 use Carbon\Carbon;
+use Illuminate\View\View;
 
 class EmployeePerformanceController extends Controller
 {
@@ -42,7 +43,7 @@ class EmployeePerformanceController extends Controller
             ->select('tasks.*')
             ->limit(5)
             ->get()
-            ->map(function($task) {
+            ->map(function ($task) {
                 $clientName = 'No Client';
                 if ($task->location && $task->location->contractedClient) {
                     $clientName = $task->location->contractedClient->name;
@@ -54,7 +55,7 @@ class EmployeePerformanceController extends Controller
                     $teamMembers = $task->optimizationTeam->members()
                         ->with('employee.user')
                         ->get()
-                        ->map(function($member) {
+                        ->map(function ($member) {
                             return [
                                 'name' => $member->employee && $member->employee->user ? $member->employee->user->name : 'Unknown',
                                 'picture' => $member->employee && $member->employee->user ? $member->employee->user->profile_picture : null
@@ -124,7 +125,55 @@ class EmployeePerformanceController extends Controller
             'performanceData' => $performanceData,
         ]);
     }
+    /**
+     * Show development page based on user role
+     */
+    public function development(Request $request): View
+    {
+        $user = $request->user();
+        $role = $user->role;
 
+        // Default empty collection for non-employees
+        $newlessons = collect();
+
+        if ($role === 'employee') {
+            // Placeholder data using a Collection of objects
+            $newlessons = collect([
+                (object) [
+                    'id' => 1,
+                    'title' => 'Stain Removal',
+                    'duration_formatted' => '40 mins',
+                    'description' => 'This course includes the different methods of stain removal',
+                    'pivot' => (object) ['progress' => 0]
+                ],
+                (object) [
+                    'id' => 2,
+                    'title' => 'Mop Handling',
+                    'duration_formatted' => '1hr 40 mins',
+                    'description' => 'This course includes the different methods of using a mop',
+                    'pivot' => (object) ['progress' => 45]
+                ],
+                (object) [
+                    'id' => 3,
+                    'title' => 'Safety Protocols',
+                    'duration_formatted' => '25 mins',
+                    'description' => 'Basic safety guidelines for handling cleaning chemicals',
+                    'pivot' => (object) ['progress' => 0]
+                ],
+            ]);
+
+            return view('employee.development', [
+                'user' => $user,
+                'newlessons' => $newlessons
+            ]);
+        }
+
+        if ($role === 'admin') {
+            return view('admin.development', compact('user'));
+        }
+
+        return view('client.development', compact('user'));
+    }
     private function applyDateFilter($query, $period, $dateColumn)
     {
         switch ($period) {
