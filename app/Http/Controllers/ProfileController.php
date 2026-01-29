@@ -203,6 +203,22 @@ class ProfileController extends Controller
             return view('client.settings', compact('user'));
         }
     }
+    /**
+     * Show help center page based on user role
+     */
+    public function helpcenter(Request $request): View
+    {
+        $user = $request->user();
+        $role = $user->role;
+
+        if ($role === 'admin') {
+            return view('admin.help-center', compact('user'));
+        } elseif ($role === 'employee') {
+            return view('employee.help-center', compact('user'));
+        } else {
+            return view('client.help-center', compact('user'));
+        }
+    }
 
     /**
      * Update password

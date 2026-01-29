@@ -218,6 +218,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/profile/update', [ProfileController::class, 'update'])->name('admin.profile.update');
     Route::post('/admin/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('admin.profile.upload-picture');
     Route::get('/admin/settings', [ProfileController::class, 'settings'])->name('admin.settings');
+    Route::get('/admin/help-center', [ProfileController::class, 'helpcenter'])->name('admin.helpcenter');
     Route::post('/admin/settings/update-password', [ProfileController::class, 'updatePassword'])->name('admin.settings.update-password');
 
     // Analytics dashboard for optimization metrics
@@ -276,6 +277,7 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::post('/employee/profile/update', [ProfileController::class, 'update'])->name('employee.profile.update');
     Route::post('/employee/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('employee.profile.upload-picture');
     Route::get('/employee/settings', [ProfileController::class, 'settings'])->name('employee.settings');
+    Route::get('/employee/help-center', [ProfileController::class, 'helpcenter'])->name('employee.helpcenter');
     Route::post('/employee/settings/update-password', [ProfileController::class, 'updatePassword'])->name('employee.settings.update-password');
 
     // Coming Soon Pages
@@ -313,6 +315,7 @@ Route::middleware(['auth', 'client'])->group(function () {
     Route::post('/client/profile/update', [ProfileController::class, 'update'])->name('client.profile.update');
     Route::post('/client/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('client.profile.upload-picture');
     Route::get('/client/settings', [ProfileController::class, 'settings'])->name('client.settings');
+    Route::get('/client/help-center', [ProfileController::class, 'helpcenter'])->name('client.helpcenter');
     Route::post('/client/settings/update-password', [ProfileController::class, 'updatePassword'])->name('client.settings.update-password');
 });
 
