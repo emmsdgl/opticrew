@@ -73,7 +73,7 @@
     ];
 @endphp
 
-<x-layouts.general-client title="Employee Help Center">
+<x-layouts.general-helpcenter title="Employee Help Center">
     <x-help-center 
         :faqs="$employeeFaqs" 
         title="Employee Support Portal"
