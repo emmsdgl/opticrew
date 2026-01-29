@@ -270,6 +270,8 @@ Route::middleware(['auth', 'employee'])->group(function () {
 
     Route::get('/employee/performance', [App\Http\Controllers\EmployeePerformanceController::class, 'index'])
         ->name('employee.performance');
+    Route::get('/employee/development', [App\Http\Controllers\EmployeePerformanceController::class, 'development'])
+        ->name('employee.development');
 
     Route::get('/employee/profile', [ProfileController::class, 'show'])->name('employee.profile');
 

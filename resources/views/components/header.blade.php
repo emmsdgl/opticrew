@@ -11,7 +11,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
-        {{-- Search bar or other content can go here --}}
     </div>
 
     <div class="flex items-center gap-2 sm:gap-4 md:gap-6 flex-shrink-0">
