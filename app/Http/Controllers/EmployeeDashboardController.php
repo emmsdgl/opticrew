@@ -121,6 +121,7 @@ class EmployeeDashboardController extends Controller
             'holidays' => $holidays, // Pass holidays to the view
             'isClockedIn' => $isClockedIn, // Pass clock in status (for button label)
             'hasAttendanceToday' => $hasAttendanceToday, // Pass attendance check (for preventing duplicates)
+            'requests' => $request
         ]);
     }
 }
