@@ -179,8 +179,8 @@
                         <input 
                             type="text" 
                             required
-                            placeholder="John Smith"
-                            class="custom-input w-full px-4 py-3 rounded-lg text-gray-900 dark:text-white">
+                            placeholder="e.g. Juan Dela Cruz"
+                            class="custom-input w-full text-sm px-4 py-3 rounded-lg text-gray-900 dark:text-white">
                     </div>
 
                     <!-- Email -->
@@ -191,17 +191,17 @@
                         <input 
                             type="email" 
                             required
-                            placeholder="john@example.com"
-                            class="custom-input w-full px-4 py-3 rounded-lg text-gray-900 dark:text-white">
+                            placeholder="email@example.com"
+                            class="custom-input text-sm w-full px-4 py-3 rounded-lg text-gray-900 dark:text-white">
                     </div>
 
                     <!-- Industry/Service Type -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Industry
+                            Service Type
                         </label>
-                        <select class="custom-input w-full px-4 py-3 rounded-lg text-gray-900 dark:text-white">
-                            <option value="">Select</option>
+                        <select class="custom-input text-sm w-full px-4 py-3 rounded-lg text-gray-900 dark:text-white">
+                            <option value="">Select a service</option>
                             <option value="residential">Residential Cleaning</option>
                             <option value="commercial">Commercial Cleaning</option>
                             <option value="industrial">Industrial Cleaning</option>
@@ -213,13 +213,13 @@
                     <!-- Message -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Message
+                            Detailed Concern
                         </label>
                         <textarea 
                             rows="5" 
                             required
                             placeholder="Tell us about your cleaning needs..."
-                            class="custom-input w-full px-4 py-3 rounded-lg text-gray-900 dark:text-white resize-none"></textarea>
+                            class="custom-input w-full text-sm px-4 py-3 rounded-lg text-gray-900 dark:text-white resize-none"></textarea>
                     </div>
 
                     <!-- Submit Button -->
