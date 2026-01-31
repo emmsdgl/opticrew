@@ -71,6 +71,11 @@ Route::get('/contact', function () {
     return view('landingpage-contact');
 })->name('contact');
 
+// Documentation
+Route::get('/documentation', function () {
+    return view('landingpage-documentation');
+})->name('documentation');
+
 // Authentication Routes
 Route::get('/login', function () {
     return view('auth.login');

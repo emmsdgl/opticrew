@@ -126,10 +126,10 @@
         
         <!-- LEFT PANEL - Fixed/Sticky -->
         <section id="container-1"
-            class="flex flex-col justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl px-8 lg:px-12 py-8 lg:py-12 shadow-sm lg:sticky lg:top-8 lg:h-full">
+            class="flex flex-col justify-center rounded-2xl px-8 lg:px-12 lg:py-3 shadow-sm lg:sticky h-fit">
 
             <!-- Breadcrumb -->
-            <div class="w-full mb-8 lg:mb-12">
+            <div class="w-full my-8 lg:mb-12">
                 <nav aria-label="Progress">
                     <ol class="flex items-center justify-between sm:justify-start gap-2 sm:gap-4">
                         <!-- Step 1: Service -->
@@ -178,14 +178,14 @@
             </div>
 
             <!-- Text Contents -->
-            <div class="w-full">
-                <h1 class="text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-2">
+            <div class="w-full py-12 px-6">
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
                     Get a <span class="text-blue-600 dark:text-blue-400">Free Cleaning</span><br>
                     Quote Instantly
                 </h1>
-                <p class="text-base text-gray-600 dark:text-gray-300 font-medium py-4 lg:py-6">No hidden fees. No commitment
+                <p class="text-base text-gray-600 dark:text-gray-300 font-medium py-4 lg:py-y">No hidden fees. No commitment
                 </p>
-                <p class="text-sm lg:text-base text-gray-500 dark:text-gray-400 mt-3">
+                <p class="text-sm lg:text-base text-gray-500 dark:text-gray-400">
                     Get your custom quote and calculate the approximate cost of service <span class="font-bold">according to
                         your space</span>
                 </p>
