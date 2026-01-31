@@ -30,17 +30,6 @@
                         The latest updates, discounts, and services, accessed in your own personalized account.
                     </p>
 
-                    <!-- Email Form
-                    <form
-                        class="flex items-center bg-white dark:bg-[#121629] pr-3 p-2 rounded-full overflow-hidden shadow-sm w-full max-w-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus-within:ring-2 focus-within:ring-blue-500 dark:focus-within:ring-indigo-500 transition-all">
-                        <input type="email" placeholder="Enter your email" required
-                            class="flex-grow min-w-[80px] px-4 py-1 rounded-3xl border-0 bg-transparent text-gray-900 dark:text-white shadow-sm text-sm focus:outline-none placeholder-gray-400 dark:placeholder-gray-500" />
-                        <button type="submit"
-                            class="bg-blue-600 dark:bg-blue-700 text-white px-5 py-2 text-sm font-medium z-10 rounded-full hover:bg-blue-700 dark:hover:bg-blue-800 transition">
-                            Submit
-                        </button>
-                    </form> -->
-
                     <p class="text-xs text-gray-500 dark:text-gray-400 max-w-sm">
                         By creating an account, you agree to with our Privacy Policy and provide consent to receive updates from
                         Fin-noys.
@@ -49,16 +38,8 @@
 
                 <!-- Right Section -->
                 <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 text-sm">
-                    <!-- <div>
-                        <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Company</h3>
-                        <ul class="space-y-3">
-                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Founders</a></li>
-                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Services</a></li>
-                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Pricing</a></li>
-                        </ul>
-                    </div> -->
 
-                    <div>
+                <div>
                         <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
                         <ul class="space-y-3">
                             <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Fin-noys</a></li>
@@ -69,9 +50,8 @@
                     <div>
                         <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Support</h3>
                         <ul class="space-y-3">
-                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Help Center</a></li>
-                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Contact List</a></li>
-                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Documentation</a></li>
+                            <li><a href="{{ route('contact') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Contact Us</a></li>
+                            <li><a href="{{ route('documentation') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Documentation</a></li>
                         </ul>
                     </div>
 

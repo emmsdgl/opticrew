@@ -1,23 +1,40 @@
 @extends('components.layouts.general-landing')
 
 @section('title', 'Contact Us')
+@push ('styles')
+<style>
+    body {
+                background-image: none;
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center;
+            }
+    
+            /* Remove background image in dark mode */
+            .dark body {
+                background-image: none;
+                background-color: #1f2937;
+            }
+
+</style>
+@endpush
 
 @section('content')
 <div class="container mx-auto px-6 py-16">
     <!-- Header -->
     <div class="text-center mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold text-blue-950 dark:text-white mb-4">
+        <h1 class="text-4xl md:text-4xl font-bold text-blue-950 dark:text-white mb-4">
             Get in Touch
         </h1>
-        <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        <p class="text-md text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Have questions about our cleaning services? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
         </p>
     </div>
 
     <div class="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
         <!-- Contact Form -->
-        <div class="frosted-card rounded-2xl p-8 shadow-lg">
-            <h2 class="text-2xl font-bold text-blue-950 dark:text-white mb-6">Send us a Message</h2>
+        <div class="frosted-card rounded-2xl p-8">
+            <h2 class="text-xl font-bold text-blue-950 dark:text-white mb-6">Send us a Message</h2>
             <form class="space-y-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -60,8 +77,8 @@
 
         <!-- Contact Information -->
         <div class="space-y-8">
-            <div class="frosted-card rounded-2xl p-8 shadow-lg">
-                <h2 class="text-2xl font-bold text-blue-950 dark:text-white mb-6">Contact Information</h2>
+            <div class="frosted-card rounded-2xl p-8">
+                <h2 class="text-xl font-bold text-blue-950 dark:text-white mb-6">Contact Information</h2>
 
                 <div class="space-y-6">
                     <div class="flex items-start gap-4">
@@ -117,24 +134,7 @@
                 </div>
             </div>
 
-            <!-- Social Media -->
-            <div class="frosted-card rounded-2xl p-8 shadow-lg">
-                <h2 class="text-2xl font-bold text-blue-950 dark:text-white mb-6">Follow Us</h2>
-                <div class="flex gap-4">
-                    <a href="#" class="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="#" class="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    <a href="#" class="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                </div>
-            </div>
+            
         </div>
     </div>
 </div>
