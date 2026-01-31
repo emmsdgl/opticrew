@@ -76,6 +76,21 @@ Route::get('/documentation', function () {
     return view('landingpage-documentation');
 })->name('documentation');
 
+// Terms and Conditions
+Route::get('/termscondition', function () {
+    return view('landingpage-termscondition');
+})->name('termscondition');
+
+// Privacy Policy
+Route::get('/privacypolicy', function () {
+    return view('landingpage-privacypolicy');
+})->name('privacypolicy');
+
+// Cookies
+Route::get('/cookies', function () {
+    return view('landingpage-cookies');
+})->name('cookies');
+
 // Authentication Routes
 Route::get('/login', function () {
     return view('auth.login');
