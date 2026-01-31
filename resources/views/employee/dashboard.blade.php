@@ -101,16 +101,16 @@
                 </div>
                 <div
                     class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 overflow-hidden flex-shrink-0">
-                    <div class="w-full aspect-square max-h-[500px] p-4">
+                    <div class="w-full aspect-square max-h-[450px] p-4">
                         <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
-        'done' => 'Done',
-        'inProgress' => 'In Progress',
-        'toDo' => 'To Do'
-    ]" :colors="[
-        'done' => '#2A6DFA',
-        'inProgress' => '#2AC9FA',
-        'toDo' => '#0028B3'
-    ]" />
+                            'done' => 'Done',
+                            'inProgress' => 'In Progress',
+                            'toDo' => 'To Do'
+                        ]" :colors="[
+                            'done' => '#2A6DFA',
+                            'inProgress' => '#2AC9FA',
+                            'toDo' => '#0028B3'
+                        ]" />
                     </div>
                 </div>
 
@@ -182,7 +182,7 @@
                     </div>
                 </div>
                 <div
-                    class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 overflow-hidden flex-shrink-0">
+                    class="w-full rounded-lg overflow-hidden flex-shrink-0">
                     <div class="space-y-4">
                         @php
                             $placeholderRequests = [

@@ -249,6 +249,7 @@ Route::middleware(['auth', 'employee'])->group(function () {
         ->name('employee.dashboard');
 
     Route::get('/employee/requests/create', [EmployeeRequestsController::class, 'create'])->name('employee.requests.create');
+    Route::get('/employee/requests/store', [EmployeeRequestsController::class, 'store'])->name('employee.requests.store');
 
     Route::get('/employee/attendance', [AttendanceController::class, 'index'])
         ->name('employee.attendance');
