@@ -42,15 +42,15 @@
                 <div>
                         <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
                         <ul class="space-y-3">
-                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Fin-noys</a></li>
-                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Developers</a></li>
+                            <li><a href="{{ route('about') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Fin-noys</a></li>
+                            <li><a href="{{ route('castcrew') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">CastCrew</a></li>
                         </ul>
                     </div>
 
                     <div>
                         <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Support</h3>
                         <ul class="space-y-3">
-                            <li><a href="{{ route('contact') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Contact Us</a></li>
+                            <li><a href="{{ route('contact') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Contact</a></li>
                             <li><a href="{{ route('documentation') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Documentation</a></li>
                         </ul>
                     </div>
@@ -60,7 +60,6 @@
                         <ul class="space-y-3">
                             <li><a href="{{ route('termscondition') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Terms & Conditions</a></li>
                             <li><a href="{{ route('privacypolicy') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Privacy Policy</a></li>
-                            <li><a href="{{ route('cookies') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Cookies</a></li>
                         </ul>
                     </div>
                 </div>
@@ -70,7 +69,7 @@
             <div
                 class="flex flex-col md:flex-row items-center justify-between border-t border-gray-300 dark:border-gray-700 pt-6">
                 <div id="trademark" class="text-xs text-gray-500 dark:text-gray-400 mb-4 md:mb-0">
-                    © 2025 Fin-noys-OptiCrew All rights reserved.
+                    © 2025 Fin-noys-CastCrew All rights reserved.
                 </div>
                 <div id="socials" class="flex space-x-4">
                     <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition">
