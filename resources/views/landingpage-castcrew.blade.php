@@ -121,7 +121,7 @@
         <div class="mx-auto grid max-w-7xl gap-20 px-6 lg:px-8 xl:grid-cols-3">
             <div class="max-w-xl">
                 <h2 class="text-3xl font-semibold text-pretty text-gray-900 dark:text-white sm:text-4xl">
-                    Meet our team
+                    Meet our team: Ela-vate
                 </h2>
                 <p class="mt-6 text-base text-gray-600 dark:text-gray-400 text-justify">
                     We’re a team of developers passionate about building well-crafted solutions and delivering real value to
@@ -169,7 +169,7 @@
                         <div>
                             <h3 class="text-base/7 font-semibold tracking-tight text-gray-900 dark:text-white">Leiramarie S.
                             </h3>
-                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">lead Front-end Developer |
+                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">Lead Front-end Developer |
                                 UI/UX Designer</p>
                         </div>
                     </div>
