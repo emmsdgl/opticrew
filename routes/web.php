@@ -86,10 +86,10 @@ Route::get('/privacypolicy', function () {
     return view('landingpage-privacypolicy');
 })->name('privacypolicy');
 
-// Cookies
-Route::get('/cookies', function () {
-    return view('landingpage-cookies');
-})->name('cookies');
+// System
+Route::get('/castcrew', function () {
+    return view('landingpage-castcrew');
+})->name('castcrew');
 
 // Authentication Routes
 Route::get('/login', function () {
