@@ -285,6 +285,10 @@ Route::middleware(['auth', 'employee'])->group(function () {
 
     Route::get('/employee/tasks/{task}', [EmployeeTasksController::class, 'show'])
         ->name('employee.tasks.show');
+    Route::post('/employee/tasks/{task}/feedback', [EmployeeTasksController::class, 'storeFeedback'])
+        ->name('employee.tasks.feedback.store');
+
+
 
     Route::post('/employee/tasks/{task}/start', [EmployeeTasksController::class, 'start'])
         ->name('employee.tasks.start');
