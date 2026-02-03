@@ -70,18 +70,21 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {{-- Card 1: No Progress --}}
-                        <x-employee-components.lesson-card duration="40 mins" title="Stain Removal"
-                            description="This course includes the different methods of stain removal" :progress="0"
-                            buttonText="Check now" buttonUrl="/courses/stain-removal" />
-                        {{-- Card 2: Pending --}}
-                        <x-employee-components.lesson-card duration="40 mins" title="Mop Handling"
-                            description="This course includes the different methods of using a mop" :progress="45"
-                            buttonText="Check now" buttonUrl="/courses/mop-handling" />
-                        {{-- Card 3: Completed --}}
-                        <x-employee-components.lesson-card duration="40 mins" title="Floor Waxing"
-                            description="Professional techniques for floor waxing and maintenance" :progress="100"
-                            buttonText="Review" buttonUrl="/courses/floor-waxing" />
+                        {{-- Card 1: Deep Cleaning Fundamentals --}}
+                        <x-employee-components.lesson-card duration="40 mins" title="Deep Cleaning Fundamentals"
+                            description="Master the essential techniques of deep cleaning for residential and commercial spaces"
+                            :progress="0" buttonText="Check now"
+                            buttonUrl="{{ route('employee.development') }}?course=1" />
+
+                        {{-- Card 2: Professional Window Cleaning --}}
+                        <x-employee-components.lesson-card duration="40 mins" title="Professional Window Cleaning"
+                            description="Learn advanced window cleaning methods and safety protocols" :progress="45"
+                            buttonText="Continue" buttonUrl="{{ route('employee.development') }}?course=2" />
+
+                        {{-- Card 3: Industrial Floor Care --}}
+                        <x-employee-components.lesson-card duration="40 mins" title="Industrial Floor Care"
+                            description="Master the art of maintaining various floor types" :progress="100"
+                            buttonText="Review" buttonUrl="{{ route('employee.development') }}?course=4" />
                     </div>
                 </div>
             </div>
@@ -103,14 +106,14 @@
                     class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 overflow-hidden flex-shrink-0">
                     <div class="w-full aspect-square max-h-[450px] p-4">
                         <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
-                            'done' => 'Done',
-                            'inProgress' => 'In Progress',
-                            'toDo' => 'To Do'
-                        ]" :colors="[
-                            'done' => '#2A6DFA',
-                            'inProgress' => '#2AC9FA',
-                            'toDo' => '#0028B3'
-                        ]" />
+        'done' => 'Done',
+        'inProgress' => 'In Progress',
+        'toDo' => 'To Do'
+    ]" :colors="[
+        'done' => '#2A6DFA',
+        'inProgress' => '#2AC9FA',
+        'toDo' => '#0028B3'
+    ]" />
                     </div>
                 </div>
 
@@ -181,8 +184,7 @@
                         </a>
                     </div>
                 </div>
-                <div
-                    class="w-full rounded-lg overflow-hidden flex-shrink-0">
+                <div class="w-full rounded-lg overflow-hidden flex-shrink-0">
                     <div class="space-y-4">
                         @php
                             $placeholderRequests = [
