@@ -6,8 +6,8 @@
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('client.dashboard')],
             ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => route('client.appointments')],
             ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => route('client.pricing')],
-            //Change routing in Feedback to History page
-            ['label' => 'History', 'icon' => 'fa-chart-line', 'href' => route('client.history')]
+                //Change routing in Feedback to History page
+            ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('client.history')]
         ];
 
         $teams = []; // No teams for client sidebar
@@ -16,7 +16,7 @@
     @endslot
 
     <section class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 flex-1">
-            {{ $slot }}
+        {{ $slot }}
     </section>
     @stack('scripts')
 

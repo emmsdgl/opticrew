@@ -309,7 +309,9 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/settings', [ProfileController::class, 'settings'])->name('employee.settings');
     Route::get('/employee/help-center', [ProfileController::class, 'helpcenter'])->name('employee.helpcenter');
     Route::post('/employee/settings/update-password', [ProfileController::class, 'updatePassword'])->name('employee.settings.update-password');
-
+    Route::get('/employee/history', function () {
+        return view('employee.history');
+    })->name('employee.history');
     // Coming Soon Pages
     Route::get('/calendar', function () {
         return view('coming-soon');
