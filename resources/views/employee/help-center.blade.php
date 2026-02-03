@@ -73,10 +73,10 @@
     ];
 @endphp
 
-<x-layouts.general-helpcenter title="Employee Help Center">
-    <x-help-center 
+<x-layouts.general-employee title="Employee Help Center">
+    <x-layouts.general-helpcenter 
         :faqs="$employeeFaqs" 
         title="Employee Support Portal"
         supportPhone="+2355555888"
     />
-</x-layouts.general-client>
+</x-layouts.general-employee>
