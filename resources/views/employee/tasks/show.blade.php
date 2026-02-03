@@ -1,278 +1,753 @@
 <x-layouts.general-employee :title="'Task Details'">
 
-    {{-- MOBILE LAYOUT (< 1024px) - Hidden on large screens --}}
-    <div class="lg:hidden p-4">
-        <div class="mb-4">
-            <a href="{{ route('employee.tasks') }}" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                <i class="fas fa-arrow-left"></i>
-                <span>Back to Tasks</span>
+    {{-- MOBILE LAYOUT (< 1024px) --}} 
+    <section role="status"
+        class="w-full lg:hidden flex flex-col min-h-screen bg-white dark:bg-gray-900">
+
+        {{-- Header with Back Button --}}
+        <div
+            class="sticky top-0 bg-white dark:bg-gray-900 z-10 px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+            <a href="{{ route('employee.tasks') }}"
+                class="inline-flex items-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
             </a>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">{{ $task->task_description }}</h1>
-
-            <div class="space-y-4">
-                <!-- Status Badge -->
-                <div>
+        {{-- Illustration and Title --}}
+        <div class="px-6 py-6 text-center">
+            <div class="flex justify-center mb-4">
+                <img src="{{ asset('images/task-illustration.svg') }}" alt="Task Illustration"
+                    class="w-48 h-48 object-contain" onerror="this.style.display='none'">
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                Task Details
+            </h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                The service is availed by
+                <span class="font-semibold text-blue-600 dark:text-blue-400">
+                    <!-- CHANGE, SHOULD BE FROM THE DATABASE -->
+                    Kakslauttanen
+                </span>.
+                This task has been assigned to you and should be started in
+                <span class="font-semibold text-green-600 dark:text-green-400">
                     @php
-                        $statusColors = [
-                            'Scheduled' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-                            'In Progress' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                            'On Hold' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-                            'Completed' => 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-                            'Pending' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-                        ];
-                        $statusClass = $statusColors[$task->status] ?? 'bg-gray-100 text-gray-800';
+                        $scheduledDate = \Carbon\Carbon::parse($task->scheduled_date);
+                        if ($task->scheduled_time) {
+                            $scheduledTime = \Carbon\Carbon::parse($task->scheduled_time);
+                            $scheduledDateTime = $scheduledDate->setTimeFromTimeString($scheduledTime->format('H:i:s'));
+                        } else {
+                            $scheduledDateTime = $scheduledDate;
+                        }
+                        $now = \Carbon\Carbon::now();
+                        $diff = $now->diff($scheduledDateTime);
+                        $timeRemaining = '';
+                        if ($diff->d > 0) {
+                            $timeRemaining = $diff->d . ' days and ' . $diff->h . ' hours';
+                        } elseif ($diff->h > 0) {
+                            $timeRemaining = $diff->h . ' hrs and ' . $diff->i . ' mins';
+                        } else {
+                            $timeRemaining = $diff->i . ' mins';
+                        }
                     @endphp
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $statusClass }}">
-                        {{ $task->status }}
-                    </span>
+                    {{ $timeRemaining }}
+                </span>
+            </p>
+        </div>
+
+        {{-- Task Details Summary Card --}}
+        <div class="px-6 pb-6">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm">
+                <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+                        Tasks Details Summary
+                    </h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        View the details for this task
+                    </p>
                 </div>
 
-                <!-- Location -->
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-map-marker-alt text-gray-400 mt-1"></i>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Location</p>
-                        <p class="text-gray-900 dark:text-white font-medium">
-                            {{ $task->location ? $task->location->location_name : 'External Client' }}
-                        </p>
+                <div class="p-4 space-y-4">
+                    {{-- Task ID --}}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Task ID</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                            {{ $task->id }}
+                        </span>
                     </div>
-                </div>
 
-                <!-- Date & Time -->
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-calendar text-gray-400 mt-1"></i>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Scheduled</p>
-                        <p class="text-gray-900 dark:text-white font-medium">
-                            {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
-                            @if($task->scheduled_time)
-                                at {{ \Carbon\Carbon::parse($task->scheduled_time)->format('g:i A') }}
+                    {{-- Task Date --}}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Task Date</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                            {{ \Carbon\Carbon::parse($task->scheduled_date)->format('Y-m-d') }}
+                        </span>
+                    </div>
+
+                    {{-- Task Starting Time --}}
+                    @if($task->scheduled_time)
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Task Starting Time</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                {{ \Carbon\Carbon::parse($task->scheduled_time)->format('g:i A') }}
+                            </span>
+                        </div>
+                    @endif
+
+                    {{-- Task Type --}}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Task Type</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                            {{ $task->task_description }}
+                        </span>
+                    </div>
+
+                    {{-- Task Location --}}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Task Location</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white text-right">
+                            @if($task->location)
+                                {{ $task->location->address ?? $task->location->location_name }}
+                            @else
+                                External Client
                             @endif
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Duration -->
-                @if($task->estimated_duration_minutes)
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-clock text-gray-400 mt-1"></i>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Duration</p>
-                        <p class="text-gray-900 dark:text-white font-medium">{{ $task->estimated_duration_minutes }} minutes</p>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Team Members -->
-                @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-users text-gray-400 mt-1"></i>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Team Members</p>
-                        <div class="space-y-1 mt-1">
-                            @foreach($task->optimizationTeam->members as $member)
-                                <p class="text-gray-900 dark:text-white">
-                                    {{ $member->employee->user->name }}
-                                    @if($member->role === 'driver')
-                                        <span class="ml-2 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded">Driver</span>
-                                    @endif
-                                </p>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Vehicle -->
-                @if($task->optimizationTeam && $task->optimizationTeam->car)
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-car text-gray-400 mt-1"></i>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Vehicle</p>
-                        <p class="text-gray-900 dark:text-white font-medium">{{ $task->optimizationTeam->car->car_name }}</p>
-                    </div>
-                </div>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    {{-- DESKTOP LAYOUT (≥ 1024px) - Hidden on small screens --}}
-    <section role="status" class="w-full hidden lg:flex flex-col gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
-
-        <!-- Back Button -->
-        <div class="mb-4">
-            <a href="{{ route('employee.tasks') }}" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                <i class="fas fa-arrow-left"></i>
-                <span class="font-medium">Back to Tasks</span>
-            </a>
-        </div>
-
-        <!-- Task Detail Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-            <!-- Header with Status -->
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-800 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-white">{{ $task->task_description }}</h1>
-                    @php
-                        $statusColors = [
-                            'Scheduled' => 'bg-blue-100 text-blue-800',
-                            'In Progress' => 'bg-green-100 text-green-800',
-                            'On Hold' => 'bg-yellow-100 text-yellow-800',
-                            'Completed' => 'bg-gray-100 text-gray-800',
-                            'Pending' => 'bg-orange-100 text-orange-800',
-                        ];
-                        $statusClass = $statusColors[$task->status] ?? 'bg-gray-100 text-gray-800';
-                    @endphp
-                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold {{ $statusClass }}">
-                        {{ $task->status }}
-                    </span>
-                </div>
-            </div>
-
-            <!-- Task Details -->
-            <div class="p-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    <!-- Left Column -->
-                    <div class="space-y-4">
-                        <!-- Location -->
-                        <div class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-map-marker-alt text-blue-600 dark:text-blue-400 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Location</p>
-                                <p class="text-gray-900 dark:text-white font-semibold text-lg mt-1">
-                                    {{ $task->location ? $task->location->location_name : 'External Client' }}
-                                </p>
-                                @if($task->location && $task->location->address)
-                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ $task->location->address }}</p>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Date & Time -->
-                        <div class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-calendar text-blue-600 dark:text-blue-400 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Scheduled Date & Time</p>
-                                <p class="text-gray-900 dark:text-white font-semibold text-lg mt-1">
-                                    {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
-                                </p>
-                                @if($task->scheduled_time)
-                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                        {{ \Carbon\Carbon::parse($task->scheduled_time)->format('g:i A') }}
-                                    </p>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Duration -->
-                        @if($task->estimated_duration_minutes)
-                        <div class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-clock text-blue-600 dark:text-blue-400 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Estimated Duration</p>
-                                <p class="text-gray-900 dark:text-white font-semibold text-lg mt-1">
-                                    {{ $task->estimated_duration_minutes }} minutes
-                                    <span class="text-sm text-gray-600 dark:text-gray-300">
-                                        ({{ number_format($task->estimated_duration_minutes / 60, 1) }} hours)
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-                        @endif
+                        </span>
                     </div>
 
-                    <!-- Right Column -->
-                    <div class="space-y-4">
-                        <!-- Team Members -->
-                        @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex items-center gap-2 mb-3">
-                                <i class="fas fa-users text-blue-600 dark:text-blue-400 text-xl"></i>
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Team Members</p>
-                            </div>
-                            <div class="space-y-2">
-                                @foreach($task->optimizationTeam->members as $member)
-                                    <div class="flex items-center justify-between p-2 bg-white dark:bg-gray-600 rounded">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold">
-                                                {{ strtoupper(substr($member->employee->user->name, 0, 1)) }}
-                                            </div>
-                                            <span class="text-gray-900 dark:text-white font-medium">
-                                                {{ $member->employee->user->name }}
-                                            </span>
-                                        </div>
-                                        @if($member->role === 'driver')
-                                            <span class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-1 rounded font-medium">
-                                                Driver
-                                            </span>
-                                        @endif
+                    {{-- Task Members --}}
+                    @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Task Members</span>
+                            <div class="flex -space-x-2">
+                                @foreach($task->optimizationTeam->members->take(3) as $member)
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:dark:to-gray-700 border-2 border-white dark:border-gray-900 flex items-center justify-center">
+                                        <span class="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                                            {{ strtoupper(substr($member->employee->user->name, 0, 1)) }}
+                                        </span>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
-                        @endif
+                    @endif
 
-                        <!-- Vehicle -->
-                        @if($task->optimizationTeam && $task->optimizationTeam->car)
-                        <div class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-car text-blue-600 dark:text-blue-400 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Assigned Vehicle</p>
-                                <p class="text-gray-900 dark:text-white font-semibold text-lg mt-1">
-                                    {{ $task->optimizationTeam->car->car_name }}
-                                </p>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Assigned By -->
-                        @if($task->assigned_by)
-                        <div class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-user-tie text-blue-600 dark:text-blue-400 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Assigned By</p>
-                                <p class="text-gray-900 dark:text-white font-semibold text-lg mt-1">
-                                    {{ $task->assigned_by->name }}
-                                </p>
-                            </div>
-                        </div>
-                        @endif
+                    {{-- Special Requests --}}
+                    <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Special Requests</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {{ $task->notes ?? 'No special requests for this task.' }}
+                        </p>
                     </div>
-                </div>
 
-                <!-- Action Buttons (placeholder for future functionality) -->
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
-                    <div class="flex flex-wrap gap-3">
-                        <button class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            <i class="fas fa-play mr-2"></i>
-                            Start Task
-                        </button>
-                        <button class="px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            <i class="fas fa-check mr-2"></i>
-                            Mark as Complete
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Task actions will be enabled once the task management feature is fully implemented.
-                    </p>
+                    {{-- Warning Message --}}
+                    @if($task->status === 'Pending' || $task->status === 'Scheduled')
+                        <div
+                            class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+                            <p class="text-xs text-orange-700 dark:text-orange-300 text-center">
+                                This task is currently pending and should be accepted by you, if preferred
+                            </p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
+
+        {{-- Action Buttons --}}
+        <div class="px-6 pb-8 mt-auto">
+            <div class="flex gap-3">
+                <button
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-blue-600/30 dark:shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    Accept
+                </button>
+                <button
+                    class="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-red-600/30 dark:shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    Reject
+                </button>
+            </div>
+            <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                <i class="fas fa-info-circle mr-1"></i>
+                Actions will be enabled once task is approved by the employee
+            </p>
+        </div>
     </section>
+
+    {{-- DESKTOP LAYOUT (≥ 1024px) - Modern Sidebar Layout --}}
+    <section role="status" class="w-full hidden lg:flex min-h-screen bg-gray-50 dark:bg-gray-900 rounded-lg">
+
+        <!-- Main Content Area (Left Side - 70%) -->
+        <div class="flex-1 p-8 overflow-y-auto">
+            <!-- Back Button -->
+            <div class="mb-6">
+                <a href="{{ route('employee.tasks') }}"
+                    class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                    <i class="fas fa-arrow-left"></i>
+                    <span class="font-medium text-sm">Back to Tasks</span>
+                </a>
+            </div>
+
+            <!-- Task Title and Meta -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    {{ $task->task_description }}
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    Task #{{ $task->id }} • Created {{ \Carbon\Carbon::parse($task->created_at)->format('M d, Y') }}
+                </p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
+                <nav class="flex gap-8" aria-label="Tabs">
+                    <button onclick="switchTaskTab('details')" id="task-tab-details"
+                        class="task-tab-button pb-4 border-b-2 font-medium text-sm transition-colors border-blue-500 text-blue-600 dark:text-blue-400">
+                        Details
+                    </button>
+                    <button onclick="switchTaskTab('activities')" id="task-tab-activities"
+                        class="task-tab-button pb-4 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
+                        Activities
+                    </button>
+                    <button onclick="switchTaskTab('checklist')" id="task-tab-checklist"
+                        class="task-tab-button pb-4 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
+                        Checklist
+                    </button>
+                    <button onclick="switchTaskTab('team')" id="task-tab-team"
+                        class="task-tab-button pb-4 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
+                        Team
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div>
+                <!-- Details Tab -->
+                <div id="task-content-details" class="task-tab-content">
+                    <!-- Description Section -->
+                    <div class="rounded-xl p-6 shadow-sm mb-6">
+                        <h3
+                            class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                            <i class="fas fa-align-left text-gray-400"></i>
+                            Description
+                        </h3>
+                        <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                            The service is availed by
+                            <span class="font-bold text-blue-600 dark:text-blue-400">
+                                <!-- CHNAGE, SHOULD BE FROM THE DATABASE -->
+                                Kakslauttanen
+                            </span>.
+                            This task has been assigned to you and should be started in
+                            <span class="font-bold text-green-600 dark:text-green-400">
+                                {{ $timeRemaining ?? '2 hrs and 12 mins' }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <!-- Location & Schedule Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+                        <!-- Client Card -->
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-building text-blue-600 dark:text-blue-400"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Client</p>
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {{ $task->location->client->name ?? 'External Client' }}
+                                    </p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                        {{ $task->location->client ? 'Internal Client' : 'External Client' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Location Card -->
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-map-marker-alt text-purple-600 dark:text-purple-400"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Service
+                                        Location
+                                    </p>
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                        <!-- CHANGE, SHOULD BE FORM THE DATABASE -->
+                                        Inari, Finland
+                                    </p>
+                                    @if($task->location && $task->location->address)
+                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                            {{ $task->location->address }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Duration Card -->
+                        @if($task->estimated_duration_minutes)
+                            <div
+                                class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                                <div class="flex items-start gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-clock text-green-600 dark:text-green-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Estimated
+                                            Duration</p>
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                            {{ $task->estimated_duration_minutes }} minutes
+                                        </p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                            ({{ number_format($task->estimated_duration_minutes / 60, 1) }} hours)
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Schedule Card -->
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-calendar text-blue-600 dark:text-blue-400"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Scheduled
+                                        Date & Time</p>
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
+                                    </p>
+                                    @if($task->scheduled_time)
+                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                            {{ \Carbon\Carbon::parse($task->scheduled_time)->format('g:i A') }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vehicle Card -->
+                        @if($task->optimizationTeam && $task->optimizationTeam->car)
+                            <div
+                                class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                                <div class="flex items-start gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-car text-orange-600 dark:text-orange-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Assigned
+                                            Vehicle</p>
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                            {{ $task->optimizationTeam->car->car_name }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Special Requests Section -->
+                    <div class="rounded-xl p-6 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i class="fas fa-paperclip text-gray-400"></i>
+                                Special Requests
+                            </h3>
+                        </div>
+                        @if($task->notes)
+                            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {{ $task->notes }}
+                            </p>
+                        @else
+                            <div class="text-center py-8 text-gray-400 dark:text-gray-500">
+                                <i class="fas fa-file text-3xl mb-2"></i>
+                                <p class="text-sm">No special requests yet</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Activities Tab -->
+                <div id="task-content-activities" class="task-tab-content hidden">
+                    <div class="p-6 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                        <div class="space-y-4">
+                            <!-- Activity Item -->
+                            <div class="flex gap-3">
+                                <div class="flex-shrink-0">
+                                    <div
+                                        class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-plus text-blue-600 dark:text-blue-400 text-xs"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-900 dark:text-white">
+                                        <span
+                                            class="font-semibold">{{ $task->assigned_by ? $task->assigned_by->name : 'System' }}</span>
+                                        created this task
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        {{ \Carbon\Carbon::parse($task->created_at)->diffForHumans() }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checklist Tab -->
+                <div id="task-content-checklist" class="task-tab-content hidden">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <!-- Header -->
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                                Tasks Checklist
+                            </h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                View the tasks for this task
+                            </p>
+                        </div>
+
+                        <!-- Checklist Items -->
+                        <div class="space-y-3">
+                            @php
+                                // CHANGE, SHOULD BE FROM THE DATABASE
+                                $checklistItems = [
+                                    'Remove clutter and movable items',
+                                    'Wipe walls, doors, door frames, and switches',
+                                    'Vacuum sofas, chairs, and cushions',
+                                    'Deep vacuum carpets / mop hard floors',
+                                    'Clean shower area (tiles, glass, fixtures)',
+                                    'Dust and Sanitize furniture surfaces and shelves',
+                                    'Report damages or issues (if any)',
+                                ];
+                            @endphp
+
+                            @forelse($checklistItems as $index => $item)
+                                <label
+                                    class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group">
+                                    <!-- Checkbox -->
+                                    <div class="flex items-center h-6 mt-0.5">
+                                        <input type="checkbox" 
+                                            id="checklist-{{ $index }}"
+                                            class="checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 cursor-pointer"
+                                            onchange="updateChecklistProgress()">
+                                    </div>
+
+                                    <!-- Item Text -->
+                                    <div class="flex-1">
+                                        <span
+                                            class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors checklist-text-{{ $index }}">
+                                            {{ $item }}
+                                        </span>
+                                    </div>
+                                </label>
+                            @empty
+                                <!-- Empty State -->
+                                <div class="text-center py-12">
+                                    <i class="fas fa-clipboard-list text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm">No checklist items</p>
+                                    <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Checklist items will appear
+                                        here</p>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- Progress Bar (Optional) -->
+                        @if(count($checklistItems) > 0)
+                            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                                        <span id="checklist-completed">0</span> of
+                                        <span id="checklist-total">{{ count($checklistItems) }}</span> completed
+                                    </span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div id="checklist-progress-bar" 
+                                        class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Team Tab -->
+                <div id="task-content-team" class="task-tab-content hidden">
+                    @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
+                        <div class="rounded-xl p-6 shadow-sm">
+                            <h3
+                                class="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <i class="fas fa-users text-gray-400"></i>
+                                Team Members
+                            </h3>
+                            <div class="space-y-3">
+                                @foreach($task->optimizationTeam->members as $member)
+                                    <div
+                                        class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <div
+                                            class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                            {{ strtoupper(substr($member->employee->user->name, 0, 1)) }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                {{ $member->employee->user->name }}
+                                            </p>
+                                            @if($member->role === 'driver')
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">Driver</p>
+                                            @else
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">Team Member</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div class="text-center py-12">
+                                <i class="fas fa-users text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">No team members assigned</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar (Right Side - 30%) -->
+        <div
+            class="w-96 rounded-xl bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-6 overflow-y-auto">
+            <!-- Status Section -->
+            <div class="mb-6">
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
+                    <i class="fas fa-info-circle"></i>
+                    Status
+                </label>
+                @php
+                    $statusColors = [
+                        'Scheduled' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+                        'In Progress' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+                        'On Hold' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                        'Completed' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                        'Pending' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+                    ];
+                    $statusClass = $statusColors[$task->status] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                @endphp
+                <span
+                    class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold {{ $statusClass }}">
+                    {{ $task->status }}
+                </span>
+                @php
+                    $priorityColors = [
+                        'Not Urgent' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+                        'Priority' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                        'Urgent' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+                    ];
+                    $priorityClass = $priorityColors[$task->priority] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                @endphp
+                <span
+                    class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold {{ $priorityClass }}">
+                    <!-- CHANGE, SHOULD BE FROM THE DATABASE -->
+                    Not Urgent
+                </span>
+            </div>
+
+            <!-- Rooms/Units Section -->
+            <div class="mb-6">
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
+                    <i class="fas fa-door-open"></i>
+                    Rooms/Units (1)
+                </label>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                    @if($task->location)
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                            <i class="fas fa-map-marker-alt text-blue-500 mr-1.5 text-xs"></i>
+                            {{ $task->location->location_name }}
+                        </span>
+                    @endif
+                </p>
+            </div>
+
+            <!-- Assigned Section -->
+            @if($task->optimizationTeam && $task->optimizationTeam->members->isNotEmpty())
+                <div class="mb-6">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
+                        <i class="fas fa-users"></i>
+                        Assigned Members
+                    </label>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        @foreach($task->optimizationTeam->members->take(3) as $member)
+                            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                                title="{{ $member->employee->user->name }}">
+                                {{ strtoupper(substr($member->employee->user->name, 0, 1)) }}
+                            </div>
+                        @endforeach
+                        @if($task->optimizationTeam->members->count() > 3)
+                            <button
+                                class="w-8 h-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors text-xs">
+                                +{{ $task->optimizationTeam->members->count() - 3 }}
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            <!-- Tags Section -->
+            <div class="mb-6">
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
+                    <i class="fas fa-tag"></i>
+                    Tags
+                </label>
+                <div class="flex flex-wrap gap-2">
+                    <span
+                        class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                        <i class="fas fa-briefcase text-purple-500 mr-1.5 text-xs"></i>
+                        {{ $task->task_description }}
+                    </span>
+                    <!-- CHANGE, SHOULD BE FROM THE DATABASE (TYPE OF CLIENT) -->
+                    <span
+                        class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                        <i class="fas fa-map-marker-alt text-blue-500 mr-1.5 text-xs"></i>
+                        External Client
+                    </span>
+                </div>
+            </div>
+
+            <!-- Assigned By Section -->
+            @if($task->assigned_by)
+                <div class="mb-6">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
+                        <i class="fas fa-user-tie"></i>
+                        Assigned By
+                    </label>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                        {{ $task->assigned_by->name }}
+                    </p>
+                </div>
+            @endif
+
+            <!-- Approval Action Buttons -->
+            <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button
+                    class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                    disabled>
+                    <i class="fas fa-check"></i>
+                    Accept
+                </button>
+                <button
+                    class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2"
+                    disabled>
+                    <i class="fas fa-times"></i>
+                    Decline
+                </button>
+            </div>
+
+            <!-- Task Action Buttons -->
+            <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
+                <button
+                    class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
+                    disabled>
+                    <i class="fas fa-play"></i>
+                    Start Task
+                </button>
+                <button
+                    class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
+                    disabled>
+                    <i class="fas fa-check"></i>
+                    Mark Complete
+                </button>
+            </div>
+
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                <i class="fas fa-info-circle mr-1"></i>
+                Actions will be enabled once task is approved by the employee
+            </p>
+        </div>
+    </section>
+
+    @push('scripts')
+        <script>
+            // Task tab switching functionality
+            function switchTaskTab(tabName) {
+                // Hide all tab contents
+                document.querySelectorAll('.task-tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Remove active state from all tabs
+                document.querySelectorAll('.task-tab-button').forEach(button => {
+                    button.classList.remove('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                    button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'dark:text-gray-400', 'dark:hover:text-gray-300');
+                });
+
+                // Show selected tab content
+                document.getElementById('task-content-' + tabName).classList.remove('hidden');
+
+                // Add active state to selected tab
+                const activeTab = document.getElementById('task-tab-' + tabName);
+                activeTab.classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'dark:text-gray-400', 'dark:hover:text-gray-300');
+            }
+
+            // Checklist progress update functionality
+            function updateChecklistProgress() {
+                // Get all checklist items
+                const checklistItems = document.querySelectorAll('.checklist-item');
+                const totalItems = checklistItems.length;
+                
+                // Count checked items
+                let checkedItems = 0;
+                checklistItems.forEach(item => {
+                    if (item.checked) {
+                        checkedItems++;
+                    }
+                });
+                
+                // Calculate percentage
+                const percentage = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+                
+                // Update progress bar
+                const progressBar = document.getElementById('checklist-progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = percentage + '%';
+                }
+                
+                // Update counter text
+                const completedCounter = document.getElementById('checklist-completed');
+                if (completedCounter) {
+                    completedCounter.textContent = checkedItems;
+                }
+                
+                // Optional: Add visual feedback when all items are completed
+                if (checkedItems === totalItems && totalItems > 0) {
+                    progressBar.classList.remove('bg-blue-600');
+                    progressBar.classList.add('bg-green-600');
+                } else {
+                    progressBar.classList.remove('bg-green-600');
+                    progressBar.classList.add('bg-blue-600');
+                }
+            }
+
+            // Initialize progress on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                updateChecklistProgress();
+            });
+        </script>
+    @endpush
 </x-layouts.general-employee>

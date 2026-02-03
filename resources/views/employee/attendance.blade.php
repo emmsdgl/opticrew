@@ -46,7 +46,7 @@
 
         <!-- Inner Panel - Attendance Records List -->
         <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
-            <x-labelwithvalue label="Attendance Records" count="({{ count($attendanceRecords) }})" />
+            <x-labelwithvalue label="Attendance Logs" count="({{ count($attendanceRecords) }})" />
             
             @if(count($attendanceRecords) > 0)
                 <x-attendancelistitem :records="$attendanceRecords" :show-header="true" />
@@ -54,6 +54,27 @@
                 <div class="text-center py-8 text-gray-500">
                     <i class="fa-solid fa-calendar-xmark text-4xl mb-4"></i>
                     <p>No attendance records found for this month.</p>
+                </div>
+            @endif
+        </div>
+        <!-- Inner Panel - Requests Records List -->
+        <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+            <!-- CHANGE DATABASE CONNECTION -->
+            <div class="flex flex-row w-full justify-between">
+                 <x-labelwithvalue label="Request Logs" count="({{ count($attendanceRecords) }})" />
+                <a href="{{ route('employee.requests.create') }}"
+                                        class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+                                        New Request →
+                                    </a>
+             </div>
+            
+            @if(count($attendanceRecords) > 0)
+            <!-- CHANGE DATABASE CONNECTION -->
+                <x-attendancelistitem :records="$attendanceRecords" :show-header="true" />
+            @else
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fa-solid fa-calendar-xmark text-4xl mb-4"></i>
+                    <p>No request records found for this month.</p>
                 </div>
             @endif
         </div>
