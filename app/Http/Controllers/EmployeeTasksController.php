@@ -61,9 +61,9 @@ class EmployeeTasksController extends Controller
 
         // Verify employee has access to this task (security check)
         $hasAccess = $task->optimizationTeam &&
-                     $task->optimizationTeam->members()
-                          ->where('employee_id', $employee->id)
-                          ->exists();
+            $task->optimizationTeam->members()
+                ->where('employee_id', $employee->id)
+                ->exists();
 
         if (!$hasAccess) {
             abort(403, 'You do not have access to this task.');
@@ -81,4 +81,68 @@ class EmployeeTasksController extends Controller
             'task' => $task,
         ]);
     }
+    public function feedback(Task $task)
+    {
+        $user = Auth::user();
+        $employee = $user->employee;
+
+        // Verify employee has access to this task (security check)
+        $hasAccess = $task->optimizationTeam &&
+            $task->optimizationTeam->members()
+                ->where('employee_id', $employee->id)
+                ->exists();
+
+        if (!$hasAccess) {
+            abort(403, 'You do not have access to this task.');
+        }
+
+        // Load task with relationships
+        $task->load([
+            'location',
+            'optimizationTeam.members.employee.user',
+            'optimizationTeam.car'
+        ]);
+
+        return view('employee.tasks.feedback', [
+            'employee' => $employee,
+            'task' => $task,
+        ]);
+    }
+    public function storeFeedback(Request $request, Task $task)
+{
+    $user = Auth::user();
+    $employee = $user->employee;
+
+    // Verify employee has access to this task
+    $hasAccess = $task->optimizationTeam &&
+                 $task->optimizationTeam->members()
+                      ->where('employee_id', $employee->id)
+                      ->exists();
+
+    if (!$hasAccess) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+
+    // Validate the request
+    $validated = $request->validate([
+        'rating' => 'required|integer|min:1|max:5',
+        'keywords' => 'nullable|array',
+        'keywords.*' => 'string',
+        'comment' => 'nullable|string|max:1000'
+    ]);
+
+    // Store the feedback (adjust based on your database structure)
+    // You'll need to create a TaskFeedback model and migration
+    $feedback = $task->feedback()->create([
+        'employee_id' => $employee->id,
+        'rating' => $validated['rating'],
+        'keywords' => json_encode($validated['keywords'] ?? []),
+        'comment' => $validated['comment'] ?? null,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Feedback submitted successfully'
+    ]);
+}
 }
