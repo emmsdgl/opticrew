@@ -3,15 +3,15 @@
 
         {{-- Left Sidebar - Course List --}}
         <div id="courseSidebar"
-            class="w-full lg:w-96 rounded-2xl overflow-y-auto transition-all duration-300">
-            <div class="p-4 md:p-6">
+            class="w-full lg:w-96 rounded-2xl transition-all duration-300 flex flex-col lg:h-screen">
+            <div class="p-4 md:p-6 flex-shrink-0">
                 {{-- Header --}}
                 <div class="mb-6">
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Courses</h1>
 
                     {{-- Search Bar --}}
                     <div class="relative">
-                        <input type="text" placeholder="Search courses..."
+                        <input type="text" id="searchInput" placeholder="Search courses..."
                             class="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
                         <svg class="absolute right-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -20,133 +20,152 @@
                         </svg>
                     </div>
                 </div>
+
+                {{-- Filter Tabs --}}
+                <div class="flex items-center gap-3 mb-6 border-b border-gray-200 dark:border-gray-700">
+                    <button onclick="filterCourses('all')" data-filter="all"
+                        class="filter-tab pb-2 px-1 text-sm font-medium text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400">
+                        All
+                    </button>
+                    <button onclick="filterCourses('active')" data-filter="active"
+                        class="filter-tab pb-2 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                        Active
+                    </button>
+                    <button onclick="filterCourses('completed')" data-filter="completed"
+                        class="filter-tab pb-2 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                        Completed
+                    </button>
+                </div>
+            </div>
+
+            {{-- Course List - Scrollable --}}
+            <div id="courseList" class="space-y-4 px-6 pb-6 flex-1 overflow-y-auto scrollbar-custom">
+                {{-- Course Card 1 - Active --}}
+                <div class="course-item cursor-pointer group" data-course-id="1" data-status="active" onclick="selectCourse(1)">
+                    <div
+                        class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                        
+                        <div class="flex-1 min-w-0">
+                            <h3
+                                class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                Deep Cleaning Fundamentals</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Master the essential techniques of deep cleaning for residential and commercial spaces. Learn proper sanitization methods, equipment usage, and time-saving strategies for thorough cleaning.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (66)</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Beginner
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {{-- Course List --}}
-                <div class="space-y-4 px-6">
-                    {{-- Filter Tabs --}}
-                    <div class="flex items-center gap-3 mb-6 border-b border-gray-200 dark:border-gray-700">
-                        <button
-                            class="pb-2 px-1 text-sm font-medium text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400">All</button>
-                        <button
-                            class="pb-2 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">Active</button>
-                        <button
-                            class="pb-2 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">Completed</button>
-                    </div>
-                    
-                    {{-- Course Card 1 - Active --}}
-                    <div class="course-item cursor-pointer group" data-course-id="1" onclick="selectCourse(1)">
-                        <div
-                            class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
-                            
-                            <div class="flex-1 min-w-0">
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                    Learning strategy: how instead of what</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">This course
-                                    discusses the main skills and principles of the human nervous system that underlie
-                                    oral language...</p>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-1">
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">4/5(66)</span>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        All
-                                    </div>
+                {{-- Course Card 2 - Active & Selected --}}
+                <div class="course-item cursor-pointer group active" data-course-id="2" data-status="active" onclick="selectCourse(2)">
+                    <div
+                        class="flex gap-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 transition-all border-2 border-blue-500 dark:border-blue-500">
+                       
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Professional Window Cleaning Techniques</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Learn advanced window cleaning methods for both residential and high-rise buildings. This course covers safety protocols, streak-free techniques, and proper use of squeegees and cleaning solutions.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (93)</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Intermediate
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {{-- Course Card 2 - Selected State --}}
-                    <div class="course-item cursor-pointer group active" data-course-id="2" onclick="selectCourse(2)">
-                        <div
-                            class="flex gap-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 transition-all border-2 border-blue-500 dark:border-blue-500">
-                           
-                            <div class="flex-1 min-w-0">
-                                <h1 class="font-semibold text-gray-900 dark:text-white mb-1">English for career
-                                    development</h1>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">This course is
-                                    designed for non-native English speakers who are interested in advancing their...
-                                </p>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-1">
-
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">4/5(93)</span>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        Intermediate
-                                    </div>
+                {{-- Course Card 3 - Completed --}}
+                <div class="course-item cursor-pointer group" data-course-id="3" data-status="completed" onclick="selectCourse(3)">
+                    <div
+                        class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                        
+                        <div class="flex-1 min-w-0">
+                            <h3
+                                class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                Eco-Friendly Cleaning Solutions</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Discover sustainable and environmentally safe cleaning methods. Learn how to create effective green cleaning solutions, reduce chemical usage, and implement eco-friendly practices in your cleaning routine.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">5/5 (124)</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    All levels
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {{-- Course Card 3 --}}
-                    <div class="course-item cursor-pointer group" data-course-id="3" onclick="selectCourse(3)">
-                        <div
-                            class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
-                            
-                            <div class="flex-1 min-w-0">
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                    First steps in Chinese</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">This is an
-                                    elementary-level Chinese course offered by Peking University and covers basic oral
-                                    language...</p>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-1">
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">3/5(12)</span>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        Beginner
-                                    </div>
+                {{-- Course Card 4 - Active --}}
+                <div class="course-item cursor-pointer group" data-course-id="4" data-status="active" onclick="selectCourse(4)">
+                    <div
+                        class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                        
+                        <div class="flex-1 min-w-0">
+                            <h3
+                                class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                Industrial Floor Care & Maintenance</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Master the art of maintaining various floor types including hardwood, tile, carpet, and vinyl. Learn buffing, stripping, waxing techniques, and proper maintenance schedules for commercial spaces.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (78)</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Advanced
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {{-- Course Card 4 --}}
-                    <div class="course-item cursor-pointer group" data-course-id="4" onclick="selectCourse(4)">
-                        <div
-                            class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
-                            
-                            <div class="flex-1 min-w-0">
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                    English Teaching: managing the class</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">This course will
-                                    introduce students to important aspects of classroom management (tips and tricks...
-                                </p>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-1">
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">4/5(78)</span>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        Intermediate
-                                    </div>
+                {{-- Course Card 5 - Completed --}}
+                <div class="course-item cursor-pointer group" data-course-id="5" data-status="completed" onclick="selectCourse(5)">
+                    <div
+                        class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                        
+                        <div class="flex-1 min-w-0">
+                            <h3
+                                class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                Sanitization & Disinfection Protocols</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Learn industry-standard sanitization practices for healthcare facilities, food service, and high-traffic areas. Understand proper disinfectant usage, cross-contamination prevention, and compliance with health regulations.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">5/5 (142)</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Intermediate
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    
                 </div>
             </div>
         </div>
@@ -213,26 +232,22 @@
 
                     {{-- Statistics --}}
                     <div class="flex items-center gap-3 mt-4">
-
                         <span class="text-sm text-gray-600 dark:text-gray-400">4/5 (93 employees completed this)</span>
                         <span class="text-sm text-gray-400 dark:text-gray-500">•</span>
                         <button class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Intermediate</button>
-                        <span class="text-sm text-gray-600 dark:text-gray-400">1 Video Lecture • 2 hours</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">12 Video Lectures • 2 hours</span>
                     </div>
                 </div>
 
                 {{-- Course Title --}}
                 <h1 class="course-title text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                    English for career development
+                    Professional Window Cleaning Techniques
                 </h1>
 
                 {{-- Course Description --}}
-                <div class="mb-8">
+                <div class="mb-3">
                     <p class="course-description text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        In this course, you will learn about the job search, application, and interview process in the
-                        United States, while comparing and contrasting the same process in your home country. This
-                        course will also give you the opportunity to explore your global career path, while building
-                        your vocabulary and improving your language skills to achieve your professional goals.
+                        Learn advanced window cleaning methods for both residential and high-rise buildings. This course covers safety protocols, streak-free techniques, and proper use of squeegees and cleaning solutions. You'll gain the skills needed to clean windows efficiently and professionally in any setting.
                     </p>
                 </div>
 
@@ -244,12 +259,11 @@
                             FM
                         </div>
                         <div>
-                            <p class="font-semibold text-gray-900 dark:text-white">Fin-noys Management</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Fin-noys</p>
+                            <p class="text-xs font-semibold text-gray-900 dark:text-white">Fin-noys Management</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Fin-noys</p>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -265,13 +279,40 @@
 
     @push('styles')
         <style>
-            .scrollbar-hide {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
+            /* Custom scrollbar for course list */
+            .scrollbar-custom {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
             }
 
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
+            .scrollbar-custom::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .scrollbar-custom::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .scrollbar-custom::-webkit-scrollbar-thumb {
+                background-color: rgba(156, 163, 175, 0.5);
+                border-radius: 3px;
+            }
+
+            .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+                background-color: rgba(156, 163, 175, 0.7);
+            }
+
+            /* Dark mode scrollbar */
+            .dark .scrollbar-custom {
+                scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
+            }
+
+            .dark .scrollbar-custom::-webkit-scrollbar-thumb {
+                background-color: rgba(75, 85, 99, 0.5);
+            }
+
+            .dark .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+                background-color: rgba(75, 85, 99, 0.7);
             }
         </style>
     @endpush
@@ -280,46 +321,48 @@
         <script>
             const courses = {
                 1: {
-                    title: "Learning strategy: how instead of what",
-                    description: "This course discusses the main skills and principles of the human nervous system that underlie oral language. You'll learn effective learning strategies to maximize your potential.",
+                    title: "Deep Cleaning Fundamentals",
+                    description: "Master the essential techniques of deep cleaning for residential and commercial spaces. Learn proper sanitization methods, equipment usage, and time-saving strategies for thorough cleaning. This comprehensive course covers everything from basic cleaning principles to advanced deep cleaning techniques.",
                     rating: 4,
                     reviews: 66,
-                    level: "All levels",
+                    level: "Beginner",
                     duration: "8 lectures • 1.5 hours"
                 },
                 2: {
-                    title: "English for career development",
-                    description: "In this course, you will learn about the job search, application, and interview process in the United States, while comparing and contrasting the same process in your home country. This course will also give you the opportunity to explore your global career path, while building your vocabulary and improving your language skills to achieve your professional goals.",
+                    title: "Professional Window Cleaning Techniques",
+                    description: "Learn advanced window cleaning methods for both residential and high-rise buildings. This course covers safety protocols, streak-free techniques, and proper use of squeegees and cleaning solutions. You'll gain the skills needed to clean windows efficiently and professionally in any setting.",
                     rating: 4,
                     reviews: 93,
                     level: "Intermediate",
                     duration: "12 lectures • 2 hours"
                 },
                 3: {
-                    title: "First steps in Chinese",
-                    description: "This is an elementary-level Chinese course offered by Peking University and covers basic oral language skills needed for daily communication. Learn fundamental Chinese characters and pronunciation.",
-                    rating: 3,
-                    reviews: 12,
-                    level: "Beginner",
-                    duration: "15 lectures • 3 hours"
+                    title: "Eco-Friendly Cleaning Solutions",
+                    description: "Discover sustainable and environmentally safe cleaning methods. Learn how to create effective green cleaning solutions, reduce chemical usage, and implement eco-friendly practices in your cleaning routine. This course emphasizes the importance of environmental responsibility in professional cleaning.",
+                    rating: 5,
+                    reviews: 124,
+                    level: "All levels",
+                    duration: "10 lectures • 1.5 hours"
                 },
                 4: {
-                    title: "English Teaching: managing the class",
-                    description: "This course will introduce students to important aspects of classroom management, including tips and tricks for creating an engaging learning environment, handling difficult situations, and maximizing student participation.",
+                    title: "Industrial Floor Care & Maintenance",
+                    description: "Master the art of maintaining various floor types including hardwood, tile, carpet, and vinyl. Learn buffing, stripping, waxing techniques, and proper maintenance schedules for commercial spaces. This advanced course prepares you for professional floor care in any environment.",
                     rating: 4,
                     reviews: 78,
-                    level: "Intermediate",
-                    duration: "10 lectures • 2.5 hours"
+                    level: "Advanced",
+                    duration: "15 lectures • 3 hours"
                 },
                 5: {
-                    title: "Pronunciation of American English",
-                    description: "Learners will improve their pronunciation by practicing different syllables and sounds. This course focuses on the nuances of American English pronunciation and will help you speak more clearly and confidently.",
+                    title: "Sanitization & Disinfection Protocols",
+                    description: "Learn industry-standard sanitization practices for healthcare facilities, food service, and high-traffic areas. Understand proper disinfectant usage, cross-contamination prevention, and compliance with health regulations. This course is essential for anyone working in environments requiring strict hygiene standards.",
                     rating: 5,
                     reviews: 142,
-                    level: "All levels",
-                    duration: "20 lectures • 4 hours"
+                    level: "Intermediate",
+                    duration: "14 lectures • 2.5 hours"
                 }
             };
+
+            let currentFilter = 'all';
 
             function selectCourse(courseId) {
                 // Remove active class from all courses
@@ -371,13 +414,64 @@
                 }
             }
 
+            function filterCourses(status) {
+                currentFilter = status;
+                
+                // Update tab styles
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-b-2', 'border-blue-600', 'dark:border-blue-400');
+                    tab.classList.add('text-gray-500', 'dark:text-gray-400');
+                });
+                
+                const activeTab = document.querySelector(`[data-filter="${status}"]`);
+                if (activeTab) {
+                    activeTab.classList.remove('text-gray-500', 'dark:text-gray-400');
+                    activeTab.classList.add('text-blue-600', 'dark:text-blue-400', 'border-b-2', 'border-blue-600', 'dark:border-blue-400');
+                }
+
+                // Filter courses
+                const courseItems = document.querySelectorAll('.course-item');
+                courseItems.forEach(item => {
+                    const courseStatus = item.getAttribute('data-status');
+                    
+                    if (status === 'all' || courseStatus === status) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
             function toggleSidebar() {
                 const sidebar = document.getElementById('courseSidebar');
                 sidebar.classList.toggle('hidden');
                 sidebar.classList.toggle('fixed');
                 sidebar.classList.toggle('inset-0');
                 sidebar.classList.toggle('z-40');
+                sidebar.classList.toggle('bg-white');
+                sidebar.classList.toggle('dark:bg-gray-800');
             }
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const courseItems = document.querySelectorAll('.course-item');
+                
+                courseItems.forEach(item => {
+                    const title = item.querySelector('h3, h1').textContent.toLowerCase();
+                    const description = item.querySelector('p').textContent.toLowerCase();
+                    const courseStatus = item.getAttribute('data-status');
+                    
+                    const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
+                    const matchesFilter = currentFilter === 'all' || courseStatus === currentFilter;
+                    
+                    if (matchesSearch && matchesFilter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
 
             // Close sidebar when clicking outside on mobile
             document.addEventListener('click', function (event) {
