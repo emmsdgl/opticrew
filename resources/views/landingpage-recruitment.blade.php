@@ -370,7 +370,7 @@
 
                     {{-- Action Buttons --}}
                     <div class="flex gap-3 mb-8">
-                        <button
+                        <button onclick="openApplicationModal()"
                             class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-full transition-all shadow-lg text-sm hover:shadow-xl">
                             Apply Now
                         </button>
@@ -531,7 +531,79 @@
             </div>
 
         </div>
-    </div>  
+    </div>
+
+    {{-- Application Modal --}}
+    <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto scrollbar-custom">
+            {{-- Modal Header --}}
+            <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center z-10">
+                <button onclick="closeApplicationModal()" class=" text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h2 class="text-lg font-bold text-center mr-3 w-full text-gray-900 dark:text-white">Get Your Interview Schedule</h2>
+            </div>
+
+            {{-- Modal Body --}}
+            <div class="p-6">
+                <form id="applicationForm" class="space-y-4">
+                    {{-- Email Address --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Email Address
+                        </label>
+                        <input type="email" name="email" required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
+                            placeholder="johndoe@example.com">
+                    </div>
+
+                    {{-- Alternative Email Address --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Alternative Email Address <span class="text-gray-400 text-xs">(Optional)</span>
+                        </label>
+                        <input type="email" name="alternative_email"
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
+                            placeholder="johndoe@example.com">
+                    </div>
+
+                    {{-- Compiled PDF Document --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Compiled PDF Document
+                        </label>
+                        <div class="relative">
+                            <input type="file" name="pdf_document" id="pdfDocument" accept=".pdf" required
+                                class="hidden"
+                                onchange="updateFileName(this)">
+                            <label for="pdfDocument"
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <span id="fileName" class="text-gray-500 dark:text-gray-400 text-sm">Choose file</span>
+                                <i class="fas fa-upload text-gray-400"></i>
+                            </label>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Kindly drag or click to upload your documents
+                        </p>
+                    </div>
+
+                    {{-- Terms and Conditions --}}
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                        <p class="text-xs text-gray-600 dark:text-gray-400 text-center leading-relaxed">
+                            By signing to the form above, you acknowledge that you have read, understood, and agree to be bound by Glowjobs <a href="#" class="text-blue-600 dark:text-blue-400 underline">Terms and Conditions</a> and <a href="#" class="text-blue-600 dark:text-blue-400 underline">Privacy Policy</a>.
+                        </p>
+                    </div>
+
+                    {{-- Submit Button --}}
+                    <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-full transition-all shadow-lg hover:shadow-xl text-sm">
+                        Submit Application
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -857,6 +929,51 @@
                     item.style.display = 'none';
                 }
             });
+        });
+
+        // Modal functions
+        function openApplicationModal() {
+            document.getElementById('applicationModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeApplicationModal() {
+            document.getElementById('applicationModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('applicationForm').reset();
+            document.getElementById('fileName').textContent = 'Choose file';
+        }
+
+        // Update file name display
+        function updateFileName(input) {
+            const fileName = input.files[0]?.name || 'Choose file';
+            document.getElementById('fileName').textContent = fileName;
+        }
+
+        // Handle form submission
+        document.getElementById('applicationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Here you would typically send the data to your server
+            console.log('Form submitted with data:', {
+                email: formData.get('email'),
+                alternative_email: formData.get('alternative_email'),
+                pdf_document: formData.get('pdf_document')?.name
+            });
+
+            // Show success message or handle the submission
+            alert('Application submitted successfully!');
+            closeApplicationModal();
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('applicationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeApplicationModal();
+            }
         });
     </script>
 @endpush
