@@ -8,6 +8,10 @@
         <section role="status" class="hidden lg:flex flex-col lg:flex-row gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]"
             x-data="{
             showAttendanceModal: false,
+            showRequestModal: false,
+            selectedRequest: null,
+            isCancelling: false,
+            employeeRequests: {{ Js::from($employeeRequests) }},
 
             openAttendanceModal() {
                 this.showAttendanceModal = true;
@@ -17,6 +21,49 @@
             closeAttendanceModal() {
                 this.showAttendanceModal = false;
                 document.body.style.overflow = 'auto';
+            },
+
+            openRequestModal(index) {
+                this.selectedRequest = this.employeeRequests[index];
+                this.showRequestModal = true;
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeRequestModal() {
+                this.showRequestModal = false;
+                this.selectedRequest = null;
+                this.isCancelling = false;
+                document.body.style.overflow = 'auto';
+            },
+
+            async cancelRequest() {
+                if (this.isCancelling || !this.selectedRequest) return;
+                if (!confirm('Are you sure you want to cancel this request?')) return;
+
+                this.isCancelling = true;
+
+                try {
+                    const response = await fetch(`/employee/requests/${this.selectedRequest.id}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        this.closeRequestModal();
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Failed to cancel request');
+                    }
+                } catch (error) {
+                    alert('An error occurred. Please try again.');
+                } finally {
+                    this.isCancelling = false;
+                }
             }
         }">
             <!-- Left Panel - Dashboard Content -->
@@ -186,34 +233,24 @@
                 </div>
                 <div class="w-full rounded-lg overflow-hidden flex-shrink-0">
                     <div class="space-y-4">
-                        @php
-                            $placeholderRequests = [
-                                [
-                                    'type' => 'Vacation Leave',
-                                    'from_time' => '08:00 AM',
-                                    'to_time' => '05:00 PM',
-                                    'status' => 'Pending'
-                                ],
-                                [
-                                    'type' => 'Sick Leave',
-                                    'from_time' => '09:00 AM',
-                                    'to_time' => '04:00 PM',
-                                    'status' => 'Approved'
-                                ],
-                                [
-                                    'type' => 'Overtime',
-                                    'from_time' => '06:00 PM',
-                                    'to_time' => '09:00 PM',
-                                    'status' => 'Rejected'
-                                ],
-                            ];
-                        @endphp
-
-                        @foreach($placeholderRequests as $request)
-                            <x-employee-components.request-list-item :type="$request['type']"
-                                :fromTime="$request['from_time']" :toTime="$request['to_time']"
-                                :status="$request['status']" />
-                        @endforeach
+                        @if(count($employeeRequests) > 0)
+                            @foreach($employeeRequests as $index => $request)
+                                <div @click="openRequestModal({{ $index }})">
+                                    <x-employee-components.request-list-item
+                                        :type="$request['type']"
+                                        :date="$request['date']"
+                                        :fromTime="$request['from_time'] ?? $request['time_range']"
+                                        :toTime="$request['to_time'] ?? ''"
+                                        :status="$request['status']"
+                                        :reason="$request['reason']" />
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                                <i class="fa-solid fa-clipboard-list text-3xl mb-3 opacity-50"></i>
+                                <p class="text-sm">No requests yet</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -344,6 +381,118 @@
                                     </button>
                                 </form>
                             @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Details Modal -->
+            <div x-show="showRequestModal" x-cloak @click="closeRequestModal()"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 sm:p-8"
+                style="display: none;">
+                <div @click.stop
+                    class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700"
+                    x-show="showRequestModal" x-transition>
+
+                    <!-- Close button -->
+                    <button type="button" @click="closeRequestModal()"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none rounded-lg p-1 z-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <!-- Modal Body -->
+                    <div class="p-6 sm:p-8">
+                        <!-- Header -->
+                        <div class="py-4 text-center">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                Request Details
+                            </h3>
+                            <!-- Status Badge -->
+                            <div class="flex items-center justify-center gap-2 mt-3">
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Status:</span>
+                                <span class="px-3 py-1 text-xs rounded-full font-semibold"
+                                    :class="{
+                                        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400': selectedRequest?.status === 'Pending',
+                                        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': selectedRequest?.status === 'Approved',
+                                        'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': selectedRequest?.status === 'Rejected'
+                                    }"
+                                    x-text="selectedRequest?.status"></span>
+                            </div>
+                        </div>
+
+                        <!-- Request Information -->
+                        <div class="space-y-4 text-sm py-4 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Request Type</span>
+                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.type"></span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Date</span>
+                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.date"></span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Time Range</span>
+                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.time_range"></span>
+                            </div>
+
+                            <template x-if="selectedRequest?.from_time && selectedRequest?.to_time">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-500 dark:text-gray-400">Custom Hours</span>
+                                    <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.from_time + ' - ' + selectedRequest?.to_time"></span>
+                                </div>
+                            </template>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Reason</span>
+                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.reason"></span>
+                            </div>
+
+                            <template x-if="selectedRequest?.description">
+                                <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <span class="text-gray-500 dark:text-gray-400 block mb-2">Description</span>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg" x-text="selectedRequest?.description"></p>
+                                </div>
+                            </template>
+
+                            <template x-if="selectedRequest?.proof_document">
+                                <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <span class="text-gray-500 dark:text-gray-400">Proof Document</span>
+                                    <a :href="'/storage/' + selectedRequest?.proof_document" target="_blank"
+                                        class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
+                                        View Document
+                                    </a>
+                                </div>
+                            </template>
+
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <span class="text-gray-500 dark:text-gray-400">Submitted On</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-sm" x-text="selectedRequest?.created_at"></span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-4 space-y-3">
+                            <!-- Cancel Button (only for pending requests) -->
+                            <template x-if="selectedRequest?.status === 'Pending'">
+                                <button @click="cancelRequest()"
+                                    :disabled="isCancelling"
+                                    class="w-full px-6 py-3 text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                                    :class="isCancelling ? 'bg-red-400 text-white cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white'">
+                                    <i class="fa-solid fa-ban"></i>
+                                    <span x-text="isCancelling ? 'Cancelling...' : 'Cancel Request'"></span>
+                                </button>
+                            </template>
+
+                            <!-- Close Button -->
+                            <button @click="closeRequestModal()"
+                                class="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors duration-200">
+                                Close
+                            </button>
                         </div>
                     </div>
                 </div>

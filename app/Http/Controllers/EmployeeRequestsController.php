@@ -58,4 +58,39 @@ class EmployeeRequestsController extends Controller
             'redirect_url' => route('employee.dashboard')
         ]);
     }
+
+    /**
+     * Cancel an employee request (only pending requests)
+     */
+    public function cancel($id)
+    {
+        $employee = Auth::user()->employee;
+
+        $employeeRequest = \App\Models\EmployeeRequest::where('id', $id)
+            ->where('employee_id', $employee->id)
+            ->first();
+
+        if (!$employeeRequest) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request not found'
+            ], 404);
+        }
+
+        if ($employeeRequest->status !== 'Pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending requests can be cancelled'
+            ], 400);
+        }
+
+        $employeeRequest->update([
+            'status' => 'Cancelled'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Request cancelled successfully'
+        ]);
+    }
 }

@@ -89,11 +89,15 @@ Route::get('/privacypolicy', function () {
 
 // Careers in Fin-noys
 Route::get('/recruitment', function () {
-    return view('landingpage-recruitment');
+    $jobPostings = \App\Models\JobPosting::active()->orderBy('created_at', 'desc')->get();
+    return view('landingpage-recruitment', compact('jobPostings'));
 })->name('recruitment');
 
 // Job Application Submission (Public)
 Route::post('/recruitment/apply', [JobApplicationController::class, 'store'])->name('recruitment.apply');
+
+// Public API for active job postings
+Route::get('/api/job-postings', [\App\Http\Controllers\Admin\JobPostingController::class, 'getActivePostings'])->name('api.job-postings');
 
 // System
 Route::get('/castcrew', function () {
@@ -152,6 +156,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/attendance', [AttendanceController::class, 'adminIndex'])->name('admin.attendance');
 
+    // Admin Employee Request Approval Routes
+    Route::post('/admin/employee-requests/{id}/approve', [AttendanceController::class, 'approveRequest'])->name('admin.employee-requests.approve');
+    Route::post('/admin/employee-requests/{id}/reject', [AttendanceController::class, 'rejectRequest'])->name('admin.employee-requests.reject');
+
     // Display task calendar and kanban board
     Route::get('/tasks', [TaskController::class, 'index'])->name('admin.tasks');
 
@@ -204,6 +212,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::patch('/{id}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
         Route::get('/{id}/download', [JobApplicationController::class, 'downloadResume'])->name('download');
         Route::delete('/{id}', [JobApplicationController::class, 'destroy'])->name('destroy');
+    });
+
+    // --- ADMIN JOB POSTINGS ROUTES ---
+    Route::prefix('admin/job-postings')->name('admin.job-postings.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\JobPostingController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\JobPostingController::class, 'store'])->name('store');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\JobPostingController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\JobPostingController::class, 'destroy'])->name('destroy');
     });
 
     // --- ADMIN HOLIDAY ROUTES ---
@@ -293,7 +309,8 @@ Route::middleware(['auth', 'employee'])->group(function () {
         ->name('employee.dashboard');
 
     Route::get('/employee/requests/create', [EmployeeRequestsController::class, 'create'])->name('employee.requests.create');
-    Route::get('/employee/requests/store', [EmployeeRequestsController::class, 'store'])->name('employee.requests.store');
+    Route::post('/employee/requests/store', [EmployeeRequestsController::class, 'store'])->name('employee.requests.store');
+    Route::post('/employee/requests/{id}/cancel', [EmployeeRequestsController::class, 'cancel'])->name('employee.requests.cancel');
 
     Route::get('/employee/attendance', [AttendanceController::class, 'index'])
         ->name('employee.attendance');
