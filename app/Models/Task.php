@@ -109,4 +109,20 @@ class Task extends Model
     {
         return $this->hasMany(Alert::class);
     }
+
+    /**
+     * Get the review for this task
+     */
+    public function review()
+    {
+        return $this->hasOne(TaskReview::class);
+    }
+
+    /**
+     * Check if task has been reviewed
+     */
+    public function hasReview()
+    {
+        return $this->review()->exists();
+    }
 }

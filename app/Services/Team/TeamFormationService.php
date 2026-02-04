@@ -56,8 +56,8 @@ class TeamFormationService
         }
 
         // ✅ RULE 2 & 5: Calculate optimal number of teams
-        // Strategy: Balance between employee utilization and task coverage
-        // Consider: employees available, tasks to do, team size constraints (2-3)
+        // Strategy: MAXIMIZE employee utilization - use ALL available employees
+        // Constraint: Each team needs 1 driver + team size 2-3
 
         // Maximum teams we can create with available employees (each team needs min 2 people)
         $maxTeamsByEmployees = intdiv($totalEmployees, self::MIN_TEAM_SIZE);
@@ -65,31 +65,20 @@ class TeamFormationService
         // Maximum teams we can create with available drivers (each team needs 1 driver)
         $maxTeamsByDrivers = $drivers->count();
 
-        // Start with driver constraint
+        // ✅ FIX: Use ALL employees - don't limit by task count
+        // Create as many teams as possible to utilize all employees
+        // Tasks will be distributed across all teams
         $maxTeams = min($maxTeamsByDrivers, $maxTeamsByEmployees);
 
-        if ($taskCount !== null && $taskCount > 0) {
-            // ✅ Key insight: Balance between task coverage and employee availability
-            // Don't create more teams than we have employees for
-            // Don't create more teams than we have tasks for
-            $maxTeams = min($maxTeams, $taskCount);
-
-            Log::info("Team count calculation", [
-                'total_employees' => $totalEmployees,
-                'total_drivers' => $drivers->count(),
-                'total_tasks' => $taskCount,
-                'max_teams_by_employees' => $maxTeamsByEmployees,
-                'max_teams_by_drivers' => $maxTeamsByDrivers,
-                'teams_to_create' => $maxTeams
-            ]);
-        } else {
-            Log::info("Team count calculation (no task count provided)", [
-                'total_employees' => $totalEmployees,
-                'total_drivers' => $drivers->count(),
-                'max_teams_by_employees' => $maxTeamsByEmployees,
-                'teams_to_create' => $maxTeams
-            ]);
-        }
+        Log::info("Team count calculation (ALL EMPLOYEES UTILIZED)", [
+            'total_employees' => $totalEmployees,
+            'total_drivers' => $drivers->count(),
+            'total_tasks' => $taskCount,
+            'max_teams_by_employees' => $maxTeamsByEmployees,
+            'max_teams_by_drivers' => $maxTeamsByDrivers,
+            'teams_to_create' => $maxTeams,
+            'note' => 'All employees will be assigned to teams regardless of task count'
+        ]);
 
         $teams = collect();
         $nonDriverIndex = 0;
@@ -98,24 +87,33 @@ class TeamFormationService
         $usedEmployeeIds = collect();
 
         // ✅ RULE 5: Calculate team sizes to use ALL employees
-        // If we have odd employees with even teams, we need at least one trio
-        $employeesRemaining = $totalEmployees;
-        $teamsRemaining = $maxTeams;
+        // PRIORITY: Pairs (2) over Trios (3) - only ONE trio allowed if odd employees
         $teamSizes = [];
 
-        for ($i = 0; $i < $maxTeams; $i++) {
-            // Calculate optimal size for this team
-            $avgSize = $employeesRemaining / $teamsRemaining;
+        // Calculate how many employees we need to assign
+        // With odd total employees, we need exactly ONE trio
+        $needsTrio = ($totalEmployees % 2 === 1);
 
-            // If average is closer to 3, make it a trio; otherwise a pair
-            if ($avgSize >= 2.5 || $employeesRemaining % 2 === 1) {
+        for ($i = 0; $i < $maxTeams; $i++) {
+            if ($needsTrio && $i === $maxTeams - 1) {
+                // Last team gets the trio (only if odd employees)
                 $teamSizes[] = 3;
-                $employeesRemaining -= 3;
             } else {
+                // All other teams are pairs
                 $teamSizes[] = 2;
-                $employeesRemaining -= 2;
             }
-            $teamsRemaining--;
+        }
+
+        // Verify we're using all employees
+        $employeesUsed = array_sum($teamSizes);
+        if ($employeesUsed < $totalEmployees) {
+            // Edge case: if we have more employees than teams can handle with pairs+1trio
+            // This shouldn't happen if maxTeams is calculated correctly, but safety check
+            Log::warning("Team sizes don't cover all employees", [
+                'total_employees' => $totalEmployees,
+                'employees_used' => $employeesUsed,
+                'team_sizes' => $teamSizes
+            ]);
         }
 
         Log::info("Calculated team sizes", [
