@@ -135,16 +135,16 @@
 
     <!-- Attendance Details Modal -->
     <div x-show="showAttendanceModal" x-cloak @click="closeAttendanceModal()"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 sm:p-8"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4"
         style="display: none;"
         @open-modal.window="openAttendanceModal($event.detail)">
         <div @click.stop
-            class="relative bg-white w-1/3 dark:bg-slate-800 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700"
+            class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700"
             x-show="showAttendanceModal" x-transition>
 
             <!-- Close button -->
             <button type="button" @click="closeAttendanceModal()"
-                class="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 rounded-lg p-1 z-10">
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none z-10">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -152,102 +152,107 @@
             </button>
 
             <!-- Modal Content -->
-            <div class="py-6 sm:p-8">
+            <div class="px-6 py-8">
                 <!-- Header -->
-                <div class="my-6 text-center w-full">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Attendance Details</h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                <div class="text-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Attendance Details</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
                         <template x-if="selectedRecord">
                             <span>Manage your attendance for <span class="font-semibold" x-text="selectedRecord?.date"></span></span>
                         </template>
                     </p>
                 </div>
 
-                <!-- Attendance Info Card -->
+                <!-- Attendance Info -->
                 <template x-if="selectedRecord">
-                    <div class="rounded-xl mb-6">
-
-                        <!-- Status Badge - Centered -->
-                        <div class="flex items-center justify-center gap-2">
-                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Status:</span>
-                            <template x-if="selectedRecord.timedIn">
-                                <span class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Clocked In</span>
+                    <div class="space-y-0 mb-6">
+                        <!-- Status Row -->
+                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
+                            <template x-if="selectedRecord.timedIn && !selectedRecord.isTimedOut">
+                                <span class="text-sm font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Clocked In</span>
                             </template>
                             <template x-if="!selectedRecord.timedIn && !selectedRecord.isTimedOut">
-                                <span class="px-3 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold">Not Clocked In</span>
+                                <span class="text-sm font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">Not Clocked In</span>
                             </template>
                             <template x-if="selectedRecord.isTimedOut">
-                                <span class="px-3 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold">Clocked Out</span>
+                                <span class="text-sm font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Clocked Out</span>
                             </template>
                         </div>
 
-                        <!-- Attendance Details Grid -->
-                        <div class="space-y-3 mt-6 border-t border-gray-200 dark:border-slate-600 pt-6 p-8">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-500 dark:text-gray-400">Date</span>
-                                <span class="font-medium text-gray-900 dark:text-white text-right" x-text="selectedRecord?.date"></span>
-                            </div>
-
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-500 dark:text-gray-400">Clock In Time</span>
-                                <span class="font-medium text-gray-900 dark:text-white text-right">
-                                    <template x-if="selectedRecord.timedIn">
-                                        <span x-text="selectedRecord?.timeIn || 'N/A'"></span>
-                                    </template>
-                                    <template x-if="!selectedRecord.timedIn">
-                                        <span class="text-gray-400 dark:text-gray-500">Not clocked in</span>
-                                    </template>
-                                </span>
-                            </div>
-
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-500 dark:text-gray-400">Clock Out Time</span>
-                                <span class="font-medium text-gray-900 dark:text-white text-right">
-                                    <template x-if="selectedRecord.timedIn && !selectedRecord.isTimedOut">
-                                        <span class="text-blue-500 dark:text-blue-400">Still working...</span>
-                                    </template>
-                                    <template x-if="selectedRecord.isTimedOut">
-                                        <span x-text="selectedRecord?.timeOut || 'N/A'"></span>
-                                    </template>
-                                    <template x-if="!selectedRecord.timedIn">
-                                        <span class="text-gray-400 dark:text-gray-500">N/A</span>
-                                    </template>
-                                </span>
-                            </div>
-
-                            <template x-if="selectedRecord.isTimedOut && selectedRecord.hoursWorked">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 dark:text-gray-400">Total Hours</span>
-                                    <span class="font-medium text-gray-900 dark:text-white text-right" x-text="selectedRecord?.hoursWorked"></span>
-                                </div>
-                            </template>
+                        <!-- Date Row -->
+                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Date</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRecord?.date"></span>
                         </div>
+
+                        <!-- Clock In Time Row -->
+                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Clock In Time</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                <template x-if="selectedRecord.timedIn">
+                                    <span x-text="selectedRecord?.timeIn || 'N/A'"></span>
+                                </template>
+                                <template x-if="!selectedRecord.timedIn">
+                                    <span class="text-gray-400 dark:text-gray-500">Not clocked in</span>
+                                </template>
+                            </span>
+                        </div>
+
+                        <!-- Clock Out Time Row -->
+                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Clock Out Time</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                <template x-if="selectedRecord.timedIn && !selectedRecord.isTimedOut">
+                                    <span class="text-blue-500 dark:text-blue-400">Still working...</span>
+                                </template>
+                                <template x-if="selectedRecord.isTimedOut">
+                                    <span x-text="selectedRecord?.timeOut || 'N/A'"></span>
+                                </template>
+                                <template x-if="!selectedRecord.timedIn">
+                                    <span class="text-gray-400 dark:text-gray-500">N/A</span>
+                                </template>
+                            </span>
+                        </div>
+
+                        <!-- Total Hours Row -->
+                        <template x-if="selectedRecord.isTimedOut && selectedRecord.hoursWorked">
+                            <div class="flex justify-between items-center py-3">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Total Hours</span>
+                                <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRecord?.hoursWorked"></span>
+                            </div>
+                        </template>
                     </div>
                 </template>
 
                 <!-- Action Buttons -->
-                <div class="mt-3 flex flex-col sm:flex-row gap-3">
+                <div class="flex gap-3">
                     <template x-if="selectedRecord && !selectedRecord.timedIn">
                         <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1">
                             @csrf
                             <button type="submit"
-                                class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full transition-colors duration-200 flex items-center justify-center gap-2">
-                                <i class="fi fi-rr-play text-sm"></i>
+                                class="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-play"></i>
                                 Clock In
                             </button>
                         </form>
                     </template>
                     <template x-if="selectedRecord && selectedRecord.timedIn && !selectedRecord.isTimedOut">
-                        <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1 flex justify-center">
+                        <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1">
                             @csrf
                             <button type="submit"
-                                class="w-1/2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-                                <i class="fi fi-rr-stop text-sm"></i>
+                                class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-stop"></i>
                                 Clock Out
                             </button>
                         </form>
                     </template>
-
+                    <template x-if="selectedRecord && selectedRecord.isTimedOut">
+                        <div class="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <i class="fa-solid fa-circle-check text-blue-600 dark:text-blue-400"></i>
+                            <span class="text-sm font-medium text-blue-700 dark:text-blue-400">Attendance completed for today</span>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -268,8 +273,10 @@ function attendanceRow(index, record) {
         timedIn: record.timedIn || false,
         isTimedOut: record.isTimedOut || false,
         isHighlighted: false,
-        
+        customButtonLabel: record.buttonLabel || null,
+
         get buttonText() {
+            if (this.customButtonLabel) return this.customButtonLabel;
             if (this.isTimedOut) return 'Timed Out';
             return this.timedIn ? 'View Details' : 'Time In';
         },
