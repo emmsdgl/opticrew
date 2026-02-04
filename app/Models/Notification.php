@@ -10,6 +10,14 @@ class Notification extends Model
 {
     use HasFactory;
 
+    // Notification types
+    const TYPE_LEAVE_APPROVED = 'leave_approved';
+    const TYPE_LEAVE_REJECTED = 'leave_rejected';
+    const TYPE_LEAVE_SUBMITTED = 'leave_submitted';
+    const TYPE_TASK_ASSIGNED = 'task_assigned';
+    const TYPE_TASK_UPDATED = 'task_updated';
+    const TYPE_GENERAL = 'general';
+
     protected $fillable = [
         'user_id',
         'type',

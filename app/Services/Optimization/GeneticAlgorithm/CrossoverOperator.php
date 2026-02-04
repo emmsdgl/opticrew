@@ -163,7 +163,8 @@ class CrossoverOperator
 
     /**
      * Repair schedule to ensure all tasks are assigned exactly once
-     * ✅ FIX: Assign missing tasks to LEAST LOADED team to maintain balance
+     * ✅ FIX: Assign missing tasks to team with FEWEST TASKS (fair distribution)
+     * Uses task count as primary metric, workload as secondary tiebreaker
      */
     protected function repairSchedule(array $schedule, array $referenceSchedule): array
     {
@@ -173,15 +174,21 @@ class CrossoverOperator
         $assignedIds = $assignedTasks->pluck('id');
         $missingTasks = $allTasksInReference->reject(fn($task) => $assignedIds->contains($task->id));
 
-        // ✅ FIX: Assign missing tasks to LEAST LOADED team (not random!)
+        // ✅ FIX: Assign missing tasks to team with FEWEST TASKS (not random!)
+        // Primary: task count, Secondary: workload (matches generateFairGreedySchedule)
         foreach ($missingTasks as $task) {
-            // Find team with minimum workload
+            $minTaskCount = PHP_INT_MAX;
             $minWorkload = PHP_INT_MAX;
             $selectedTeam = 0;
 
             foreach ($schedule as $teamIndex => $teamSchedule) {
+                $taskCount = $teamSchedule['tasks']->count();
                 $workload = $teamSchedule['tasks']->sum('duration');
-                if ($workload < $minWorkload) {
+
+                // Primary: fewer tasks, Secondary: lower workload
+                if ($taskCount < $minTaskCount ||
+                    ($taskCount === $minTaskCount && $workload < $minWorkload)) {
+                    $minTaskCount = $taskCount;
                     $minWorkload = $workload;
                     $selectedTeam = $teamIndex;
                 }

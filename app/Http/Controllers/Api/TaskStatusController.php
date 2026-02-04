@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\PerformanceFlag;
+use App\Models\Attendance;
 use App\Services\Alert\AlertService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -34,15 +35,58 @@ class TaskStatusController extends Controller
     }
 
     /**
+     * Check if the authenticated user's employee is currently clocked in
+     *
+     * @param Request $request
+     * @return bool
+     */
+    protected function isEmployeeClockedIn(Request $request): bool
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->employee) {
+            return false;
+        }
+
+        // Check if there's an attendance record for today with clock_in but no clock_out
+        $todayAttendance = Attendance::where('employee_id', $user->employee->id)
+            ->whereDate('clock_in', Carbon::today())
+            ->whereNull('clock_out')
+            ->first();
+
+        return $todayAttendance !== null;
+    }
+
+    /**
+     * Return unauthorized response for employees not clocked in
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function clockInRequiredResponse()
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'You must be clocked in to perform this action',
+            'error_code' => 'CLOCK_IN_REQUIRED'
+        ], 403);
+    }
+
+    /**
      * Start a task (set status to "In Progress")
      *
      * POST /api/tasks/{taskId}/start
      *
+     * @param Request $request
      * @param int $taskId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function startTask($taskId)
+    public function startTask(Request $request, $taskId)
     {
+        // Security check: Employee must be clocked in
+        if (!$this->isEmployeeClockedIn($request)) {
+            return $this->clockInRequiredResponse();
+        }
+
         try {
             $task = Task::findOrFail($taskId);
 
@@ -92,6 +136,11 @@ class TaskStatusController extends Controller
      */
     public function putTaskOnHold(Request $request, $taskId)
     {
+        // Security check: Employee must be clocked in
+        if (!$this->isEmployeeClockedIn($request)) {
+            return $this->clockInRequiredResponse();
+        }
+
         $request->validate([
             'reason' => 'required|string|max:255'
         ]);
@@ -183,11 +232,17 @@ class TaskStatusController extends Controller
      *
      * POST /api/tasks/{taskId}/complete
      *
+     * @param Request $request
      * @param int $taskId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function completeTask($taskId)
+    public function completeTask(Request $request, $taskId)
     {
+        // Security check: Employee must be clocked in
+        if (!$this->isEmployeeClockedIn($request)) {
+            return $this->clockInRequiredResponse();
+        }
+
         try {
             $task = Task::findOrFail($taskId);
 
@@ -276,7 +331,7 @@ class TaskStatusController extends Controller
     public function getTaskDetails($taskId)
     {
         try {
-            $task = Task::with(['location', 'optimizationTeam.members.employee'])
+            $task = Task::with(['location.contractedClient', 'optimizationTeam.members.employee'])
                 ->findOrFail($taskId);
 
             // Get team members
@@ -295,6 +350,11 @@ class TaskStatusController extends Controller
                     ->toArray();
             }
 
+            // Get contracted client name from location
+            $clientName = $task->location && $task->location->contractedClient
+                ? $task->location->contractedClient->name
+                : ($task->location->location_name ?? 'Unknown Client');
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -304,6 +364,7 @@ class TaskStatusController extends Controller
                         'id' => $task->location->id ?? null,
                         'name' => $task->location->location_name ?? 'Unknown'
                     ],
+                    'client_name' => $clientName,
                     'status' => $task->status,
                     'scheduled_date' => $task->scheduled_date->toDateString(),
                     'scheduled_time' => $task->scheduled_time,
@@ -313,7 +374,8 @@ class TaskStatusController extends Controller
                     'started_at' => $task->started_at?->toDateTimeString(),
                     'completed_at' => $task->completed_at?->toDateTimeString(),
                     'on_hold_reason' => $task->on_hold_reason,
-                    'team_members' => $teamMembers
+                    'team_members' => $teamMembers,
+                    'notes' => $task->on_hold_reason
                 ]
             ]);
 
@@ -429,7 +491,7 @@ class TaskStatusController extends Controller
                 ->whereHas('optimizationTeam.members', function($query) use ($employeeId) {
                     $query->where('employee_id', $employeeId);
                 })
-                ->with(['location', 'optimizationTeam.members.employee.user'])
+                ->with(['location.contractedClient', 'optimizationTeam.members.employee.user'])
                 ->orderBy('scheduled_time')
                 ->get()
                 ->map(function($task) {
@@ -440,6 +502,7 @@ class TaskStatusController extends Controller
 
                     // Get employee names from team members
                     $employeeNames = 'Unassigned';
+                    $companionsCount = 0;
                     if ($task->optimizationTeam && $task->optimizationTeam->members) {
                         $names = $task->optimizationTeam->members
                             ->map(function($member) {
@@ -452,8 +515,14 @@ class TaskStatusController extends Controller
 
                         if (!empty($names)) {
                             $employeeNames = implode(', ', $names);
+                            $companionsCount = count($names);
                         }
                     }
+
+                    // Get company name from location's contracted client
+                    $companyName = $task->location && $task->location->contractedClient
+                        ? $task->location->contractedClient->name
+                        : null;
 
                     return [
                         'id' => $task->id,
@@ -461,12 +530,18 @@ class TaskStatusController extends Controller
                         'name' => $task->task_description, // Alias for title
                         'description' => $task->task_description,
                         'location' => $task->location->location_name ?? null,
+                        'company_name' => $companyName,
                         'status' => $task->status,
+                        'scheduled_date' => $task->scheduled_date->toDateString(),
+                        'scheduled_time' => $task->scheduled_time,
                         'start_time' => $startTime,
                         'duration' => $task->estimated_duration_minutes
                             ? round($task->estimated_duration_minutes / 60, 1)
                             : null,
-                        'team' => $employeeNames
+                        'duration_minutes' => $task->estimated_duration_minutes,
+                        'team' => $employeeNames,
+                        'companions' => $companionsCount,
+                        'arrival_status' => $task->arrival_status,
                     ];
                 });
 
@@ -655,6 +730,11 @@ class TaskStatusController extends Controller
      */
     public function toggleChecklistItem(Request $request, $taskId, $itemId)
     {
+        // Security check: Employee must be clocked in
+        if (!$this->isEmployeeClockedIn($request)) {
+            return $this->clockInRequiredResponse();
+        }
+
         try {
             $task = Task::findOrFail($taskId);
             $item = \App\Models\ChecklistItem::findOrFail($itemId);
