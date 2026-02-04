@@ -157,21 +157,78 @@ class OptimizationService
             }
 
             // ✅ RE-OPTIMIZATION LOGIC: Check for existing unsaved runs
+            // MULTI-COMPANY FIX: Only delete unsaved runs for the SAME client as the new task
+            // This preserves team assignments for OTHER companies
             $unsavedRuns = OptimizationRun::where('service_date', $serviceDate)
                 ->where('is_saved', false)
                 ->get();
 
-            if ($unsavedRuns->isNotEmpty()) {
-                Log::warning("🔄 RE-OPTIMIZATION TRIGGERED - New task added to unsaved schedule", [
+            if ($unsavedRuns->isNotEmpty() && $triggeredByTaskId) {
+                // Get the client identifier for the triggered task
+                $triggeredTask = Task::with(['location.contractedClient'])->find($triggeredByTaskId);
+                $triggeredClientId = null;
+
+                if ($triggeredTask && $triggeredTask->location && $triggeredTask->location->contracted_client_id) {
+                    $triggeredClientId = 'contracted_' . $triggeredTask->location->contracted_client_id;
+                } elseif ($triggeredTask && $triggeredTask->client_id) {
+                    $triggeredClientId = 'client_' . $triggeredTask->client_id;
+                }
+
+                Log::info("Re-optimization triggered - checking unsaved runs", [
+                    'service_date' => $serviceDate,
+                    'triggered_task_id' => $triggeredByTaskId,
+                    'triggered_client_id' => $triggeredClientId,
+                    'unsaved_runs_found' => $unsavedRuns->count(),
+                ]);
+
+                // Check if there's an existing unsaved run for the SAME client
+                $sameClientRun = null;
+                foreach ($unsavedRuns as $run) {
+                    $runTeams = \App\Models\OptimizationTeam::where('optimization_run_id', $run->id)->first();
+                    if ($runTeams) {
+                        $runTask = Task::with(['location.contractedClient'])
+                            ->where('assigned_team_id', $runTeams->id)
+                            ->first();
+
+                        if ($runTask) {
+                            $runClientId = null;
+                            if ($runTask->location && $runTask->location->contracted_client_id) {
+                                $runClientId = 'contracted_' . $runTask->location->contracted_client_id;
+                            } elseif ($runTask->client_id) {
+                                $runClientId = 'client_' . $runTask->client_id;
+                            }
+
+                            if ($runClientId === $triggeredClientId) {
+                                $sameClientRun = $run;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if ($sameClientRun) {
+                    // Only delete the run for the SAME client and re-optimize that client's tasks
+                    Log::info("🔄 RE-OPTIMIZATION for same client - preserving other clients' runs", [
+                        'deleting_run_id' => $sameClientRun->id,
+                        'triggered_client_id' => $triggeredClientId,
+                    ]);
+                    $sameClientRun->delete();
+                } else {
+                    // New client - don't delete existing runs, just add this task
+                    // The new task will get its own optimization run
+                    Log::info("✅ NEW CLIENT detected - preserving existing optimization runs", [
+                        'triggered_client_id' => $triggeredClientId,
+                        'existing_runs_preserved' => $unsavedRuns->count(),
+                    ]);
+                }
+            } elseif ($unsavedRuns->isNotEmpty()) {
+                // Fallback: no triggered task ID, delete all unsaved runs
+                Log::warning("🔄 RE-OPTIMIZATION TRIGGERED - No task ID provided, full re-optimization", [
                     'service_date' => $serviceDate,
                     'unsaved_runs_found' => $unsavedRuns->count(),
                     'run_ids' => $unsavedRuns->pluck('id')->toArray(),
-                    'triggered_by_task' => $triggeredByTaskId,
-                    'action' => 'Deleting unsaved runs and re-optimizing entire schedule with ALL tasks'
                 ]);
 
-                // Delete all UNSAVED runs - CASCADE will handle teams, team_members
-                // Tasks will have optimization_run_id and assigned_team_id set to NULL
                 foreach ($unsavedRuns as $run) {
                     Log::info("Deleting unsaved optimization run for re-optimization", [
                         'id' => $run->id,
@@ -181,31 +238,99 @@ class OptimizationService
                     ]);
                     $run->delete();
                 }
-
-                Log::info("✅ All unsaved runs deleted - proceeding with full re-optimization", [
-                    'deleted_count' => $unsavedRuns->count()
-                ]);
             }
 
             // Standard optimization flow
-            $allTasks = Task::with(['location.contractedClient', 'client'])
-                ->whereDate('scheduled_date', $serviceDate)
-                ->whereIn('status', ['Pending', 'Scheduled'])
-                ->get();
-                    
-            Log::info('Fetched all tasks for date', [
+            // MULTI-COMPANY FIX: Only fetch tasks that need optimization
+            // When preserving existing runs, only optimize tasks without valid team assignments
+            $tasksQuery = Task::with(['location.contractedClient', 'client'])
+                ->whereDate('scheduled_date', $serviceDate);
+
+            // Check if we're preserving existing runs (new client scenario)
+            $existingUnsavedRunIds = $unsavedRuns->pluck('id')->toArray();
+            if (!empty($existingUnsavedRunIds) && isset($triggeredClientId)) {
+                // Only get tasks that are:
+                // 1. Pending (not yet assigned) OR
+                // 2. Scheduled but NOT assigned to a valid team from preserved runs
+                $tasksQuery->where(function($query) use ($existingUnsavedRunIds) {
+                    $query->where('status', 'Pending')
+                          ->orWhere(function($q) use ($existingUnsavedRunIds) {
+                              $q->where('status', 'Scheduled')
+                                ->where(function($inner) use ($existingUnsavedRunIds) {
+                                    $inner->whereNull('assigned_team_id')
+                                          ->orWhereNotIn('optimization_run_id', $existingUnsavedRunIds);
+                                });
+                          });
+                });
+
+                Log::info("MULTI-COMPANY: Fetching only tasks needing optimization", [
+                    'preserved_run_ids' => $existingUnsavedRunIds,
+                    'triggered_client_id' => $triggeredClientId,
+                ]);
+            } else {
+                // Normal flow: get all pending and scheduled tasks
+                $tasksQuery->whereIn('status', ['Pending', 'Scheduled']);
+            }
+
+            $allTasks = $tasksQuery->get();
+
+            Log::info('Fetched tasks for optimization', [
                 'total_tasks' => $allTasks->count(),
                 'task_ids' => $allTasks->pluck('id')->toArray()
             ]);
 
             // ✅ Get active employees whose users are NOT soft-deleted
-            $allEmployees = Employee::where('is_active', true)
+            // MULTI-COMPANY FIX: Exclude employees already assigned to preserved runs
+            $employeesQuery = Employee::where('is_active', true)
                 ->whereDoesntHave('dayOffs', fn($q) => $q->whereDate('date', $serviceDate))
                 ->whereHas('user', function($q) {
                     $q->whereNull('deleted_at'); // Exclude soft-deleted users
                 })
-                ->with('user') // Eager load user for efficiency
-                ->get();
+                ->with('user');
+
+            // MULTI-COMPANY: Only exclude employees who have INCOMPLETE tasks with other companies
+            // Employees who are done with their tasks OR have no tasks yet can be assigned to any company
+            if (!empty($existingUnsavedRunIds) && isset($triggeredClientId)) {
+                // Find employees who have INCOMPLETE tasks (not Completed, not Cancelled) in preserved runs
+                $employeesWithIncompleteTasks = Task::whereDate('scheduled_date', $serviceDate)
+                    ->whereIn('optimization_run_id', $existingUnsavedRunIds)
+                    ->whereNotIn('status', ['Completed', 'Cancelled'])
+                    ->whereNotNull('assigned_team_id')
+                    ->pluck('assigned_team_id')
+                    ->unique();
+
+                $assignedEmployeeIds = \App\Models\OptimizationTeamMember::whereIn('optimization_team_id', $employeesWithIncompleteTasks)
+                    ->pluck('employee_id')
+                    ->unique()
+                    ->toArray();
+
+                if (!empty($assignedEmployeeIds)) {
+                    $employeesQuery->whereNotIn('id', $assignedEmployeeIds);
+                    Log::info("MULTI-COMPANY: Excluding employees with incomplete tasks", [
+                        'excluded_employee_ids' => $assignedEmployeeIds,
+                        'reason' => 'Employees with incomplete tasks in other companies are excluded',
+                        'note' => 'Employees who completed their tasks are available for new assignments'
+                    ]);
+                }
+            }
+
+            $allEmployees = $employeesQuery->get();
+
+            // MULTI-COMPANY FIX: Handle case when no employees are available for new client
+            if ($allEmployees->isEmpty() && !empty($existingUnsavedRunIds)) {
+                Log::warning("No available employees for new client - all employees assigned to existing runs", [
+                    'existing_run_ids' => $existingUnsavedRunIds,
+                    'tasks_to_optimize' => $allTasks->count(),
+                ]);
+
+                // Tasks remain unassigned until more employees are available or schedule is saved
+                DB::commit();
+                return [
+                    'status' => 'warning',
+                    'message' => 'No available employees - all are assigned to other companies. Tasks saved as pending.',
+                    'tasks_pending' => $allTasks->pluck('id')->toArray(),
+                ];
+            }
 
             Log::info("Employees fetched", [
                 'total' => $allEmployees->count(),
@@ -245,11 +370,15 @@ class OptimizationService
                 $lockedTeams // ✅ Pass locked teams
             );
             
-            // ✅ Clear old unsaved team assignments
+            // ✅ Clear old team assignments ONLY for tasks being optimized
+            // MULTI-COMPANY FIX: Don't clear assignments for tasks in preserved runs
             foreach ($allTasks as $task) {
-                $task->assigned_team_id = null;
-                $task->optimization_run_id = null;
-                $task->save();
+                // Only clear if task is not in a preserved run
+                if (empty($existingUnsavedRunIds) || !in_array($task->optimization_run_id, $existingUnsavedRunIds)) {
+                    $task->assigned_team_id = null;
+                    $task->optimization_run_id = null;
+                    $task->save();
+                }
             }
             
             // Save results to database
@@ -413,14 +542,17 @@ class OptimizationService
             throw new \Exception('No existing teams found for this optimization run');
         }
 
-        // ✅ RULE 7: Find team with least workload that won't exceed 12 hours
+        // ✅ RULE 6 & 7: Find team with LEAST TASKS (primary) and least workload (secondary)
+        // This matches the fair distribution logic in generateFairGreedySchedule
         $selectedTeam = null;
+        $minTaskCount = PHP_INT_MAX;
         $minWorkload = PHP_INT_MAX;
 
         foreach ($existingTeams as $team) {
             $teamTasks = Task::where('assigned_team_id', $team->id)->get();
+            $taskCount = $teamTasks->count();
             $totalHours = $teamTasks->sum(fn($t) => ($t->duration + $t->travel_time) / 60);
-            
+
             $newTaskHours = ($newTask->duration + $newTask->travel_time) / 60;
             $projectedHours = $totalHours + $newTaskHours;
 
@@ -428,25 +560,28 @@ class OptimizationService
             if ($projectedHours > 12) {
                 Log::info("Skipping team - would exceed 12 hours", [
                     'team_id' => $team->id,
+                    'task_count' => $taskCount,
                     'current_hours' => $totalHours,
                     'projected_hours' => $projectedHours
                 ]);
                 continue;
             }
 
-            if ($totalHours < $minWorkload) {
+            // ✅ RULE 6: Primary criterion is task count (fair distribution)
+            // Secondary criterion is workload (tiebreaker)
+            if ($taskCount < $minTaskCount ||
+                ($taskCount === $minTaskCount && $totalHours < $minWorkload)) {
+                $minTaskCount = $taskCount;
                 $minWorkload = $totalHours;
                 $selectedTeam = $team;
             }
         }
 
-        // If no team found (all at 12 hours), assign to least loaded anyway
+        // If no team found (all at 12 hours), assign to team with fewest tasks
         if (!$selectedTeam) {
-            Log::warning("All teams at capacity, assigning to least loaded team anyway");
+            Log::warning("All teams at capacity, assigning to team with fewest tasks anyway");
             $selectedTeam = $existingTeams->sortBy(function($team) {
-                return Task::where('assigned_team_id', $team->id)
-                    ->get()
-                    ->sum(fn($t) => ($t->duration + $t->travel_time) / 60);
+                return Task::where('assigned_team_id', $team->id)->count();
             })->first();
         }
 
@@ -461,15 +596,24 @@ class OptimizationService
         $teamTasks = Task::where('assigned_team_id', $selectedTeam->id)->get();
         $finalHours = $teamTasks->sum(fn($t) => ($t->duration + $t->travel_time) / 60);
 
+        // Get all teams' task counts for logging
+        $allTeamTaskCounts = [];
+        foreach ($existingTeams as $team) {
+            $count = Task::where('assigned_team_id', $team->id)->count();
+            $allTeamTaskCounts['Team ' . $team->team_index] = $count;
+        }
+
         Log::info("✅ Task assigned to existing team (REAL-TIME)", [
             'task_id' => $newTask->id,
             'task_description' => $newTask->task_description,
             'client_name' => $taskClientName,
             'team_id' => $selectedTeam->id,
+            'team_index' => $selectedTeam->team_index,
             'team_members' => $selectedTeam->members->pluck('employee.user.name')->toArray(),
             'team_task_count_before' => $teamTasks->count() - 1,
             'team_task_count_after' => $teamTasks->count(),
-            'team_hours_after' => round($finalHours, 2)
+            'team_hours_after' => round($finalHours, 2),
+            'all_teams_task_counts' => $allTeamTaskCounts
         ]);
 
         return [

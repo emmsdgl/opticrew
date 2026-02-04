@@ -1358,7 +1358,7 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
 
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-                const response = await fetch('/admin/holidays', {
+                const response = await fetch('{{ url("/admin/holidays") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1398,7 +1398,7 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-                const response = await fetch(`/admin/holidays/${this.selectedHolidayId}`, {
+                const response = await fetch(`{{ url("/admin/holidays") }}/${this.selectedHolidayId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,

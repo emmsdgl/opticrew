@@ -15,11 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            CarSeeder::class,               // <-- ADD THIS LINE
-            UserSeeder::class,              // Creates the admin user
-            EmployeeSeeder::class,          // Creates employees and their user accounts
-            ContractedClientSeeder::class,  // Creates Kakslauttanen & Aikamatkat
-            LocationSeeder::class,          // Creates all the individual cabins (MUST run after clients)
+            TrainingVideoSeeder::class,     // Creates training videos for employee app
         ]);
     }
 }

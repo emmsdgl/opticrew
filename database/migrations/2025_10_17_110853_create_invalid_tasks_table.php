@@ -10,14 +10,14 @@ return new class extends Migration
     {
         Schema::create('invalid_tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('optimization_result_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('optimization_run_id')->nullable()->constrained('optimization_runs')->onDelete('cascade');
             $table->foreignId('task_id')->constrained()->onDelete('cascade');
             $table->string('rejection_reason');
             $table->json('task_details')->nullable();
             $table->timestamps();
-            
+
             $table->index('task_id');
-            $table->index('optimization_result_id');
+            $table->index('optimization_run_id');
         });
     }
 
