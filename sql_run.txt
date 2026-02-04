@@ -1,0 +1,1248 @@
+-- =====================================================
+-- OPTICREW DATABASE RECOVERY SCRIPT
+-- =====================================================
+-- IMPORTANT: Run this in phpMyAdmin SQL tab
+--
+-- STEPS TO RECOVER:
+-- 1. First, MOVE all .ibd files from C:\xampp\mysql\data\opticrew to a safe backup location (e.g., Desktop)
+-- 2. Run this SQL script to recreate all table structures
+-- 3. For EACH table, run: ALTER TABLE table_name DISCARD TABLESPACE;
+-- 4. Copy the corresponding .ibd file back to C:\xampp\mysql\data\opticrew
+-- 5. For EACH table, run: ALTER TABLE table_name IMPORT TABLESPACE;
+-- =====================================================
+
+-- Create database if not exists
+CREATE DATABASE IF NOT EXISTS opticrew;
+USE opticrew;
+
+-- =====================================================
+-- 1. USERS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `users` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `username` VARCHAR(255) NULL UNIQUE,
+    `email` VARCHAR(255) NOT NULL UNIQUE,
+    `profile_picture` VARCHAR(255) NULL,
+    `phone` VARCHAR(255) NULL,
+    `location` VARCHAR(255) NULL,
+    `email_verified_at` TIMESTAMP NULL,
+    `password` VARCHAR(255) NOT NULL,
+    `role` ENUM('admin', 'employee', 'external_client', 'company') NOT NULL,
+    `remember_token` VARCHAR(100) NULL,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    `deleted_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 2. EMPLOYEES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `employees` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `full_name` VARCHAR(255) NOT NULL,
+    `skills` JSON NOT NULL,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `is_day_off` TINYINT(1) NOT NULL DEFAULT 0,
+    `is_busy` TINYINT(1) NOT NULL DEFAULT 0,
+    `efficiency` DECIMAL(3,2) NOT NULL DEFAULT 1.00,
+    `has_driving_license` TINYINT(1) NOT NULL DEFAULT 0,
+    `years_of_experience` INT NOT NULL DEFAULT 0,
+    `salary_per_hour` DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+    `months_employed` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    `deleted_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `employees_user_id_foreign` (`user_id`),
+    CONSTRAINT `employees_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 3. CLIENTS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `clients` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NULL,
+    `client_type` ENUM('personal', 'company') NULL,
+    `company_name` VARCHAR(255) NULL,
+    `business_id` VARCHAR(20) NULL,
+    `email` VARCHAR(255) NULL,
+    `phone_number` VARCHAR(20) NULL,
+    `first_name` VARCHAR(255) NULL,
+    `last_name` VARCHAR(255) NULL,
+    `middle_initial` VARCHAR(10) NULL,
+    `birthdate` DATE NULL,
+    `street_address` VARCHAR(255) NULL,
+    `postal_code` VARCHAR(10) NULL,
+    `city` VARCHAR(100) NULL,
+    `district` VARCHAR(100) NULL,
+    `address` TEXT NULL,
+    `billing_address` TEXT NULL,
+    `einvoice_number` VARCHAR(100) NULL,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `security_question_1` VARCHAR(255) NULL,
+    `security_answer_1` VARCHAR(255) NULL,
+    `security_question_2` VARCHAR(255) NULL,
+    `security_answer_2` VARCHAR(255) NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    `deleted_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `clients_user_id_foreign` (`user_id`),
+    CONSTRAINT `clients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 4. CONTRACTED_CLIENTS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `contracted_clients` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NULL,
+    `name` VARCHAR(255) NOT NULL UNIQUE,
+    `email` VARCHAR(255) NULL,
+    `phone` VARCHAR(255) NULL,
+    `address` VARCHAR(255) NULL,
+    `business_id` VARCHAR(255) NULL,
+    `contract_start` DATE NULL,
+    `contract_end` DATE NULL,
+    `latitude` DECIMAL(10,8) NULL,
+    `longitude` DECIMAL(11,8) NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    `deleted_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `contracted_clients_user_id_foreign` (`user_id`),
+    CONSTRAINT `contracted_clients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 5. LOCATIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `locations` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `contracted_client_id` BIGINT UNSIGNED NOT NULL,
+    `location_name` VARCHAR(255) NOT NULL,
+    `location_type` VARCHAR(255) NOT NULL,
+    `base_cleaning_duration_minutes` INT NOT NULL DEFAULT 60,
+    `normal_rate_per_hour` DECIMAL(10,2) NULL,
+    `sunday_holiday_rate` DECIMAL(10,2) NULL,
+    `deep_cleaning_rate` DECIMAL(10,2) NULL,
+    `light_deep_cleaning_rate` DECIMAL(10,2) NULL,
+    `student_rate` DECIMAL(10,2) NULL,
+    `student_sunday_holiday_rate` DECIMAL(10,2) NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    `deleted_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `locations_contracted_client_id_foreign` (`contracted_client_id`),
+    CONSTRAINT `locations_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 6. CARS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `cars` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `car_name` VARCHAR(255) NOT NULL,
+    `is_available` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 7. OPTIMIZATION_RUNS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `optimization_runs` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `service_date` DATE NOT NULL,
+    `triggered_by_task_id` BIGINT UNSIGNED NULL,
+    `status` ENUM('running', 'completed', 'failed') NOT NULL DEFAULT 'running',
+    `is_saved` TINYINT(1) NOT NULL DEFAULT 0,
+    `total_tasks` INT NOT NULL,
+    `total_teams` INT NOT NULL,
+    `total_employees` INT NOT NULL,
+    `employee_allocation_data` JSON NULL,
+    `greedy_result_data` JSON NULL,
+    `final_fitness_score` DECIMAL(8,4) NULL,
+    `generations_run` INT NOT NULL DEFAULT 0,
+    `error_message` TEXT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    `deleted_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 8. OPTIMIZATION_TEAMS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `optimization_teams` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `optimization_run_id` BIGINT UNSIGNED NOT NULL,
+    `team_index` INT NOT NULL,
+    `service_date` DATE NOT NULL,
+    `car_id` BIGINT UNSIGNED NULL,
+    `what_if_scenario_id` BIGINT UNSIGNED NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `optimization_teams_optimization_run_id_service_date_index` (`optimization_run_id`, `service_date`),
+    KEY `optimization_teams_what_if_scenario_id_index` (`what_if_scenario_id`),
+    KEY `optimization_teams_car_id_foreign` (`car_id`),
+    CONSTRAINT `optimization_teams_optimization_run_id_foreign` FOREIGN KEY (`optimization_run_id`) REFERENCES `optimization_runs` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `optimization_teams_car_id_foreign` FOREIGN KEY (`car_id`) REFERENCES `cars` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 9. OPTIMIZATION_TEAM_MEMBERS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `optimization_team_members` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `optimization_team_id` BIGINT UNSIGNED NOT NULL,
+    `employee_id` BIGINT UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `team_employee_unique` (`optimization_team_id`, `employee_id`),
+    KEY `optimization_team_members_employee_id_index` (`employee_id`),
+    CONSTRAINT `optimization_team_members_optimization_team_id_foreign` FOREIGN KEY (`optimization_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `optimization_team_members_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 10. TASKS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `tasks` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `location_id` BIGINT UNSIGNED NULL,
+    `client_id` BIGINT UNSIGNED NULL,
+    `task_description` TEXT NOT NULL,
+    `arrival_status` TINYINT(1) NOT NULL DEFAULT 0,
+    `estimated_duration_minutes` INT NOT NULL,
+    `actual_duration` INT NULL,
+    `scheduled_date` DATE NOT NULL,
+    `scheduled_time` TIME NULL,
+    `duration` INT NULL,
+    `travel_time` INT NOT NULL DEFAULT 0,
+    `required_equipment` JSON NULL,
+    `required_skills` JSON NULL,
+    `status` ENUM('Pending', 'Scheduled', 'In-Progress', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Pending',
+    `on_hold_reason` VARCHAR(255) NULL,
+    `on_hold_timestamp` TIMESTAMP NULL,
+    `assigned_team_id` BIGINT UNSIGNED NULL,
+    `reassigned_at` TIMESTAMP NULL,
+    `reassignment_reason` TEXT NULL,
+    `started_at` TIMESTAMP NULL,
+    `completed_at` TIMESTAMP NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    `deleted_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `tasks_location_id_foreign` (`location_id`),
+    KEY `tasks_client_id_foreign` (`client_id`),
+    KEY `tasks_assigned_team_id_foreign` (`assigned_team_id`),
+    CONSTRAINT `tasks_location_id_foreign` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`),
+    CONSTRAINT `tasks_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 11. OPTIMIZATION_GENERATIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `optimization_generations` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `optimization_run_id` BIGINT UNSIGNED NOT NULL,
+    `generation_number` INT NOT NULL,
+    `best_fitness` DECIMAL(8,4) NOT NULL,
+    `average_fitness` DECIMAL(8,4) NOT NULL,
+    `worst_fitness` DECIMAL(8,4) NOT NULL,
+    `is_improvement` TINYINT(1) NOT NULL DEFAULT 0,
+    `best_schedule_data` JSON NOT NULL,
+    `population_summary` JSON NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `opt_gen_run_gen_idx` (`optimization_run_id`, `generation_number`),
+    CONSTRAINT `optimization_generations_optimization_run_id_foreign` FOREIGN KEY (`optimization_run_id`) REFERENCES `optimization_runs` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 12. ATTENDANCES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `attendances` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `employee_id` BIGINT UNSIGNED NOT NULL,
+    `clock_in` TIMESTAMP NULL,
+    `clock_out` TIMESTAMP NULL,
+    `clock_in_latitude` DECIMAL(10,8) NULL,
+    `clock_in_longitude` DECIMAL(11,8) NULL,
+    `clock_out_latitude` DECIMAL(10,8) NULL,
+    `clock_out_longitude` DECIMAL(11,8) NULL,
+    `clock_in_distance` DECIMAL(8,2) NULL,
+    `clock_out_distance` DECIMAL(8,2) NULL,
+    `total_minutes_worked` INT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `attendances_employee_id_foreign` (`employee_id`),
+    CONSTRAINT `attendances_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 13. DAY_OFFS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `day_offs` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `employee_id` BIGINT UNSIGNED NOT NULL,
+    `date` DATE NOT NULL,
+    `end_date` DATE NULL,
+    `reason` VARCHAR(255) NULL,
+    `type` ENUM('vacation', 'sick', 'personal', 'other') NOT NULL DEFAULT 'personal',
+    `status` ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+    `approved_by` BIGINT UNSIGNED NULL,
+    `approved_at` TIMESTAMP NULL,
+    `admin_notes` TEXT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `day_offs_employee_id_date_unique` (`employee_id`, `date`),
+    KEY `day_offs_date_index` (`date`),
+    KEY `day_offs_status_index` (`status`),
+    KEY `day_offs_approved_by_foreign` (`approved_by`),
+    CONSTRAINT `day_offs_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `day_offs_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 14. INVALID_TASKS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `invalid_tasks` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `optimization_result_id` BIGINT UNSIGNED NULL,
+    `task_id` BIGINT UNSIGNED NOT NULL,
+    `rejection_reason` VARCHAR(255) NOT NULL,
+    `task_details` JSON NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `invalid_tasks_task_id_index` (`task_id`),
+    KEY `invalid_tasks_optimization_result_id_index` (`optimization_result_id`),
+    CONSTRAINT `invalid_tasks_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 15. SCENARIO_ANALYSES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `scenario_analyses` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `service_date` DATE NOT NULL,
+    `scenario_type` VARCHAR(255) NOT NULL,
+    `parameters` JSON NOT NULL,
+    `modified_schedule` JSON NOT NULL,
+    `impact_analysis` JSON NOT NULL,
+    `recommendations` JSON NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `scenario_analyses_service_date_scenario_type_index` (`service_date`, `scenario_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 16. JOBS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `jobs` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `queue` VARCHAR(255) NOT NULL,
+    `payload` LONGTEXT NOT NULL,
+    `attempts` TINYINT UNSIGNED NOT NULL,
+    `reserved_at` INT UNSIGNED NULL,
+    `available_at` INT UNSIGNED NOT NULL,
+    `created_at` INT UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `jobs_queue_index` (`queue`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 17. CLIENT_APPOINTMENTS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `client_appointments` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `client_id` BIGINT UNSIGNED NOT NULL,
+    `is_company_inquiry` TINYINT(1) NOT NULL DEFAULT 0,
+    `booking_type` VARCHAR(255) NOT NULL,
+    `service_type` VARCHAR(255) NOT NULL,
+    `company_service_types` JSON NULL,
+    `service_date` DATE NOT NULL,
+    `service_time` TIME NOT NULL,
+    `is_sunday` TINYINT(1) NOT NULL DEFAULT 0,
+    `is_holiday` TINYINT(1) NOT NULL DEFAULT 0,
+    `number_of_units` INT NOT NULL,
+    `unit_size` VARCHAR(255) NOT NULL,
+    `unit_details` JSON NULL,
+    `cabin_name` VARCHAR(255) NOT NULL,
+    `special_requests` TEXT NULL,
+    `other_concerns` TEXT NULL,
+    `quotation` DECIMAL(10,2) NOT NULL,
+    `vat_amount` DECIMAL(10,2) NOT NULL,
+    `total_amount` DECIMAL(10,2) NOT NULL,
+    `status` ENUM('pending', 'approved', 'rejected', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+    `assigned_team_id` BIGINT UNSIGNED NULL,
+    `recommended_team_id` BIGINT UNSIGNED NULL,
+    `rejection_reason` TEXT NULL,
+    `approved_by` BIGINT UNSIGNED NULL,
+    `approved_at` TIMESTAMP NULL,
+    `rejected_by` BIGINT UNSIGNED NULL,
+    `rejected_at` TIMESTAMP NULL,
+    `client_notified` TINYINT(1) NOT NULL DEFAULT 0,
+    `notified_at` TIMESTAMP NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `client_appointments_client_id_foreign` (`client_id`),
+    KEY `client_appointments_assigned_team_id_foreign` (`assigned_team_id`),
+    KEY `client_appointments_recommended_team_id_foreign` (`recommended_team_id`),
+    KEY `client_appointments_approved_by_foreign` (`approved_by`),
+    KEY `client_appointments_rejected_by_foreign` (`rejected_by`),
+    CONSTRAINT `client_appointments_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `client_appointments_assigned_team_id_foreign` FOREIGN KEY (`assigned_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `client_appointments_recommended_team_id_foreign` FOREIGN KEY (`recommended_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `client_appointments_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `client_appointments_rejected_by_foreign` FOREIGN KEY (`rejected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 18. HOLIDAYS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `holidays` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `date` DATE NOT NULL UNIQUE,
+    `name` VARCHAR(255) NOT NULL,
+    `created_by` BIGINT UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `holidays_created_by_foreign` (`created_by`),
+    CONSTRAINT `holidays_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 19. COMPANY_SETTINGS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `company_settings` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `key` VARCHAR(255) NOT NULL UNIQUE,
+    `value` TEXT NULL,
+    `type` VARCHAR(255) NOT NULL DEFAULT 'string',
+    `description` TEXT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 20. NOTIFICATIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `notifications` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `type` VARCHAR(255) NOT NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `message` TEXT NOT NULL,
+    `data` JSON NULL,
+    `read_at` TIMESTAMP NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `notifications_user_id_read_at_index` (`user_id`, `read_at`),
+    CONSTRAINT `notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 21. FEEDBACK TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `feedback` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `client_id` BIGINT UNSIGNED NOT NULL,
+    `service_type` VARCHAR(255) NOT NULL,
+    `overall_rating` INT NOT NULL,
+    `quality_rating` INT NOT NULL,
+    `cleanliness_rating` INT NOT NULL,
+    `punctuality_rating` INT NOT NULL,
+    `professionalism_rating` INT NOT NULL,
+    `value_rating` INT NOT NULL,
+    `comments` TEXT NOT NULL,
+    `would_recommend` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `feedback_client_id_foreign` (`client_id`),
+    CONSTRAINT `feedback_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 22. QUOTATIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `quotations` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `booking_type` ENUM('personal', 'company') NOT NULL,
+    `cleaning_services` JSON NULL,
+    `date_of_service` DATE NULL,
+    `duration_of_service` INT NULL,
+    `type_of_urgency` VARCHAR(255) NULL,
+    `property_type` VARCHAR(255) NOT NULL,
+    `floors` INT NOT NULL DEFAULT 1,
+    `rooms` INT NOT NULL DEFAULT 1,
+    `people_per_room` INT NULL,
+    `floor_area` DECIMAL(10,2) NULL,
+    `area_unit` VARCHAR(255) NULL,
+    `location_type` VARCHAR(255) NULL,
+    `street_address` VARCHAR(255) NULL,
+    `postal_code` VARCHAR(10) NULL,
+    `city` VARCHAR(255) NULL,
+    `district` VARCHAR(255) NULL,
+    `latitude` DECIMAL(10,7) NULL,
+    `longitude` DECIMAL(10,7) NULL,
+    `company_name` VARCHAR(255) NULL,
+    `client_name` VARCHAR(255) NOT NULL,
+    `phone_number` VARCHAR(255) NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    `estimated_price` DECIMAL(10,2) NULL,
+    `vat_amount` DECIMAL(10,2) NULL,
+    `total_price` DECIMAL(10,2) NULL,
+    `pricing_notes` TEXT NULL,
+    `status` ENUM('pending_review', 'under_review', 'quoted', 'accepted', 'rejected', 'converted') NOT NULL DEFAULT 'pending_review',
+    `reviewed_by` BIGINT UNSIGNED NULL,
+    `reviewed_at` TIMESTAMP NULL,
+    `quoted_by` BIGINT UNSIGNED NULL,
+    `quoted_at` TIMESTAMP NULL,
+    `admin_notes` TEXT NULL,
+    `rejection_reason` TEXT NULL,
+    `appointment_id` BIGINT UNSIGNED NULL,
+    `converted_by` BIGINT UNSIGNED NULL,
+    `converted_at` TIMESTAMP NULL,
+    `client_responded_at` TIMESTAMP NULL,
+    `client_message` TEXT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    `deleted_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `quotations_booking_type_index` (`booking_type`),
+    KEY `quotations_status_index` (`status`),
+    KEY `quotations_email_index` (`email`),
+    KEY `quotations_created_at_index` (`created_at`),
+    KEY `quotations_reviewed_by_foreign` (`reviewed_by`),
+    KEY `quotations_quoted_by_foreign` (`quoted_by`),
+    KEY `quotations_appointment_id_foreign` (`appointment_id`),
+    KEY `quotations_converted_by_foreign` (`converted_by`),
+    CONSTRAINT `quotations_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `quotations_quoted_by_foreign` FOREIGN KEY (`quoted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `quotations_appointment_id_foreign` FOREIGN KEY (`appointment_id`) REFERENCES `client_appointments` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `quotations_converted_by_foreign` FOREIGN KEY (`converted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 23. ALERTS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `alerts` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `task_id` BIGINT UNSIGNED NOT NULL,
+    `alert_type` VARCHAR(255) NOT NULL,
+    `delay_minutes` INT NULL,
+    `reason` TEXT NULL,
+    `triggered_at` TIMESTAMP NOT NULL,
+    `acknowledged_at` TIMESTAMP NULL,
+    `acknowledged_by` BIGINT UNSIGNED NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `alerts_task_id_alert_type_index` (`task_id`, `alert_type`),
+    KEY `alerts_acknowledged_by_foreign` (`acknowledged_by`),
+    CONSTRAINT `alerts_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `alerts_acknowledged_by_foreign` FOREIGN KEY (`acknowledged_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 24. PERFORMANCE_FLAGS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `performance_flags` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `task_id` BIGINT UNSIGNED NOT NULL,
+    `employee_id` BIGINT UNSIGNED NULL,
+    `team_id` BIGINT UNSIGNED NULL,
+    `flag_type` VARCHAR(255) NOT NULL,
+    `estimated_minutes` INT NULL,
+    `actual_minutes` INT NULL,
+    `variance_minutes` INT NULL,
+    `flagged_at` TIMESTAMP NOT NULL,
+    `reviewed` TINYINT(1) NOT NULL DEFAULT 0,
+    `reviewed_by` BIGINT UNSIGNED NULL,
+    `reviewed_at` TIMESTAMP NULL,
+    `review_notes` TEXT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `performance_flags_task_id_flag_type_index` (`task_id`, `flag_type`),
+    KEY `performance_flags_reviewed_index` (`reviewed`),
+    KEY `performance_flags_employee_id_foreign` (`employee_id`),
+    KEY `performance_flags_reviewed_by_foreign` (`reviewed_by`),
+    CONSTRAINT `performance_flags_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `performance_flags_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `performance_flags_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 25. EMPLOYEE_PERFORMANCE TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `employee_performance` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `employee_id` BIGINT UNSIGNED NOT NULL,
+    `date` DATE NOT NULL,
+    `tasks_completed` INT NOT NULL DEFAULT 0,
+    `total_performance_score` DECIMAL(8,4) NOT NULL DEFAULT 0,
+    `average_performance` DECIMAL(8,4) NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `employee_performance_employee_id_date_unique` (`employee_id`, `date`),
+    KEY `employee_performance_date_index` (`date`),
+    CONSTRAINT `employee_performance_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 26. COMPANY_CHECKLISTS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `company_checklists` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `contracted_client_id` BIGINT UNSIGNED NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `important_reminders` TEXT NULL,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `company_checklists_contracted_client_id_foreign` (`contracted_client_id`),
+    CONSTRAINT `company_checklists_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 27. CHECKLIST_CATEGORIES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `checklist_categories` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `checklist_id` BIGINT UNSIGNED NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `checklist_categories_checklist_id_foreign` (`checklist_id`),
+    CONSTRAINT `checklist_categories_checklist_id_foreign` FOREIGN KEY (`checklist_id`) REFERENCES `company_checklists` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 28. CHECKLIST_ITEMS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `checklist_items` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `category_id` BIGINT UNSIGNED NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `quantity` VARCHAR(255) NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `checklist_items_category_id_foreign` (`category_id`),
+    CONSTRAINT `checklist_items_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `checklist_categories` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 29. TASK_CHECKLIST_COMPLETIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `task_checklist_completions` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `task_id` BIGINT UNSIGNED NOT NULL,
+    `checklist_item_id` BIGINT UNSIGNED NOT NULL,
+    `is_completed` TINYINT(1) NOT NULL DEFAULT 0,
+    `completed_by` BIGINT UNSIGNED NULL,
+    `completed_at` TIMESTAMP NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `task_checklist_completions_task_id_checklist_item_id_unique` (`task_id`, `checklist_item_id`),
+    KEY `task_checklist_completions_checklist_item_id_foreign` (`checklist_item_id`),
+    KEY `task_checklist_completions_completed_by_foreign` (`completed_by`),
+    CONSTRAINT `task_checklist_completions_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `task_checklist_completions_checklist_item_id_foreign` FOREIGN KEY (`checklist_item_id`) REFERENCES `checklist_items` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `task_checklist_completions_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 30. TASK_REVIEWS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `task_reviews` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `task_id` BIGINT UNSIGNED NOT NULL,
+    `contracted_client_id` BIGINT UNSIGNED NOT NULL,
+    `reviewer_user_id` BIGINT UNSIGNED NOT NULL,
+    `rating` TINYINT UNSIGNED NOT NULL,
+    `feedback_tags` JSON NULL,
+    `review_text` TEXT NULL,
+    `metadata` JSON NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `task_reviews_task_id_contracted_client_id_unique` (`task_id`, `contracted_client_id`),
+    KEY `task_reviews_rating_index` (`rating`),
+    KEY `task_reviews_contracted_client_id_index` (`contracted_client_id`),
+    KEY `task_reviews_created_at_index` (`created_at`),
+    KEY `task_reviews_reviewer_user_id_foreign` (`reviewer_user_id`),
+    CONSTRAINT `task_reviews_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `task_reviews_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `task_reviews_reviewer_user_id_foreign` FOREIGN KEY (`reviewer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 31. TRAINING_VIDEOS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `training_videos` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `category` VARCHAR(255) NOT NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `title_fi` VARCHAR(255) NULL,
+    `description` TEXT NULL,
+    `description_fi` TEXT NULL,
+    `video_id` VARCHAR(255) NOT NULL,
+    `platform` VARCHAR(255) NOT NULL DEFAULT 'youtube',
+    `duration` VARCHAR(255) NULL,
+    `required` TINYINT(1) NOT NULL DEFAULT 0,
+    `thumbnail_url` VARCHAR(255) NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 32. EMPLOYEE_WATCHED_VIDEOS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `employee_watched_videos` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `training_video_id` BIGINT UNSIGNED NOT NULL,
+    `watched_at` TIMESTAMP NOT NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `employee_watched_videos_user_id_training_video_id_unique` (`user_id`, `training_video_id`),
+    KEY `employee_watched_videos_training_video_id_foreign` (`training_video_id`),
+    CONSTRAINT `employee_watched_videos_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `employee_watched_videos_training_video_id_foreign` FOREIGN KEY (`training_video_id`) REFERENCES `training_videos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 33. PUSH_TOKENS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `push_tokens` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `token` VARCHAR(255) NOT NULL UNIQUE,
+    `device_type` VARCHAR(255) NULL,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `push_tokens_user_id_is_active_index` (`user_id`, `is_active`),
+    CONSTRAINT `push_tokens_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 34. PERSONAL_ACCESS_TOKENS TABLE (Laravel Sanctum)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `tokenable_type` VARCHAR(255) NOT NULL,
+    `tokenable_id` BIGINT UNSIGNED NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `token` VARCHAR(64) NOT NULL UNIQUE,
+    `abilities` TEXT NULL,
+    `last_used_at` TIMESTAMP NULL,
+    `expires_at` TIMESTAMP NULL,
+    `created_at` TIMESTAMP NULL,
+    `updated_at` TIMESTAMP NULL,
+    PRIMARY KEY (`id`),
+    KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`, `tokenable_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- 35. MIGRATIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `migrations` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `migration` VARCHAR(255) NOT NULL,
+    `batch` INT NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- OPTICREW DATABASE RECOVERY - IMPORT WITHOUT .CFG FILES
+-- =====================================================
+-- This script handles importing .ibd files when .cfg files are missing
+-- Run this AFTER you have:
+-- 1. Created all tables
+-- 2. Run DISCARD TABLESPACE on all tables
+-- 3. Copied .ibd files back to C:\xampp\mysql\data\opticrew
+-- =====================================================
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- =====================================================
+-- 1. USERS TABLE
+-- =====================================================
+-- When importing without .cfg file, ALL secondary indexes must be dropped first
+-- The inline UNIQUE constraints create indexes named after the column
+ALTER TABLE `users` DROP INDEX `email`;
+ALTER TABLE `users` DROP INDEX `username`;
+-- Discard and Import
+ALTER TABLE `users` DISCARD TABLESPACE;
+ALTER TABLE `users` IMPORT TABLESPACE;
+-- Recreate indexes
+ALTER TABLE `users` ADD UNIQUE KEY `email` (`email`);
+ALTER TABLE `users` ADD UNIQUE KEY `username` (`username`);
+
+-- =====================================================
+-- 2. EMPLOYEES TABLE
+-- =====================================================
+-- Drop foreign keys and indexes
+ALTER TABLE `employees` DROP FOREIGN KEY `employees_user_id_foreign`;
+ALTER TABLE `employees` DROP INDEX `employees_user_id_foreign`;
+-- Discard and Import
+ALTER TABLE `employees` DISCARD TABLESPACE;
+ALTER TABLE `employees` IMPORT TABLESPACE;
+-- Recreate
+ALTER TABLE `employees` ADD KEY `employees_user_id_foreign` (`user_id`);
+ALTER TABLE `employees` ADD CONSTRAINT `employees_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 3. CLIENTS TABLE
+-- =====================================================
+ALTER TABLE `clients` DROP FOREIGN KEY `clients_user_id_foreign`;
+ALTER TABLE `clients` DROP INDEX `clients_user_id_foreign`;
+ALTER TABLE `clients` DISCARD TABLESPACE;
+ALTER TABLE `clients` IMPORT TABLESPACE;
+ALTER TABLE `clients` ADD KEY `clients_user_id_foreign` (`user_id`);
+ALTER TABLE `clients` ADD CONSTRAINT `clients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 4. CONTRACTED_CLIENTS TABLE
+-- =====================================================
+ALTER TABLE `contracted_clients` DROP FOREIGN KEY `contracted_clients_user_id_foreign`;
+ALTER TABLE `contracted_clients` DROP INDEX `contracted_clients_user_id_foreign`;
+ALTER TABLE `contracted_clients` DROP INDEX `name`;
+ALTER TABLE `contracted_clients` DISCARD TABLESPACE;
+ALTER TABLE `contracted_clients` IMPORT TABLESPACE;
+ALTER TABLE `contracted_clients` ADD UNIQUE KEY `name` (`name`);
+ALTER TABLE `contracted_clients` ADD KEY `contracted_clients_user_id_foreign` (`user_id`);
+ALTER TABLE `contracted_clients` ADD CONSTRAINT `contracted_clients_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 5. LOCATIONS TABLE
+-- =====================================================
+ALTER TABLE `locations` DROP FOREIGN KEY `locations_contracted_client_id_foreign`;
+ALTER TABLE `locations` DROP INDEX `locations_contracted_client_id_foreign`;
+ALTER TABLE `locations` DISCARD TABLESPACE;
+ALTER TABLE `locations` IMPORT TABLESPACE;
+ALTER TABLE `locations` ADD KEY `locations_contracted_client_id_foreign` (`contracted_client_id`);
+ALTER TABLE `locations` ADD CONSTRAINT `locations_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 6. CARS TABLE (no secondary indexes)
+-- =====================================================
+ALTER TABLE `cars` DISCARD TABLESPACE;
+ALTER TABLE `cars` IMPORT TABLESPACE;
+
+-- =====================================================
+-- 7. OPTIMIZATION_RUNS TABLE (no secondary indexes initially)
+-- =====================================================
+ALTER TABLE `optimization_runs` DISCARD TABLESPACE;
+ALTER TABLE `optimization_runs` IMPORT TABLESPACE;
+
+-- =====================================================
+-- 8. OPTIMIZATION_TEAMS TABLE
+-- =====================================================
+ALTER TABLE `optimization_teams` DROP FOREIGN KEY `optimization_teams_optimization_run_id_foreign`;
+ALTER TABLE `optimization_teams` DROP FOREIGN KEY `optimization_teams_car_id_foreign`;
+ALTER TABLE `optimization_teams` DROP INDEX `optimization_teams_optimization_run_id_service_date_index`;
+ALTER TABLE `optimization_teams` DROP INDEX `optimization_teams_what_if_scenario_id_index`;
+ALTER TABLE `optimization_teams` DROP INDEX `optimization_teams_car_id_foreign`;
+ALTER TABLE `optimization_teams` DISCARD TABLESPACE;
+ALTER TABLE `optimization_teams` IMPORT TABLESPACE;
+ALTER TABLE `optimization_teams` ADD KEY `optimization_teams_optimization_run_id_service_date_index` (`optimization_run_id`, `service_date`);
+ALTER TABLE `optimization_teams` ADD KEY `optimization_teams_what_if_scenario_id_index` (`what_if_scenario_id`);
+ALTER TABLE `optimization_teams` ADD KEY `optimization_teams_car_id_foreign` (`car_id`);
+ALTER TABLE `optimization_teams` ADD CONSTRAINT `optimization_teams_optimization_run_id_foreign` FOREIGN KEY (`optimization_run_id`) REFERENCES `optimization_runs` (`id`) ON DELETE CASCADE;
+ALTER TABLE `optimization_teams` ADD CONSTRAINT `optimization_teams_car_id_foreign` FOREIGN KEY (`car_id`) REFERENCES `cars` (`id`) ON DELETE SET NULL;
+
+-- =====================================================
+-- 9. OPTIMIZATION_TEAM_MEMBERS TABLE
+-- =====================================================
+ALTER TABLE `optimization_team_members` DROP FOREIGN KEY `optimization_team_members_optimization_team_id_foreign`;
+ALTER TABLE `optimization_team_members` DROP FOREIGN KEY `optimization_team_members_employee_id_foreign`;
+ALTER TABLE `optimization_team_members` DROP INDEX `team_employee_unique`;
+ALTER TABLE `optimization_team_members` DROP INDEX `optimization_team_members_employee_id_index`;
+ALTER TABLE `optimization_team_members` DISCARD TABLESPACE;
+ALTER TABLE `optimization_team_members` IMPORT TABLESPACE;
+ALTER TABLE `optimization_team_members` ADD UNIQUE KEY `team_employee_unique` (`optimization_team_id`, `employee_id`);
+ALTER TABLE `optimization_team_members` ADD KEY `optimization_team_members_employee_id_index` (`employee_id`);
+ALTER TABLE `optimization_team_members` ADD CONSTRAINT `optimization_team_members_optimization_team_id_foreign` FOREIGN KEY (`optimization_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE CASCADE;
+ALTER TABLE `optimization_team_members` ADD CONSTRAINT `optimization_team_members_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 10. TASKS TABLE
+-- =====================================================
+ALTER TABLE `tasks` DROP FOREIGN KEY `tasks_location_id_foreign`;
+ALTER TABLE `tasks` DROP FOREIGN KEY `tasks_client_id_foreign`;
+ALTER TABLE `tasks` DROP INDEX `tasks_location_id_foreign`;
+ALTER TABLE `tasks` DROP INDEX `tasks_client_id_foreign`;
+ALTER TABLE `tasks` DROP INDEX `tasks_assigned_team_id_foreign`;
+ALTER TABLE `tasks` DISCARD TABLESPACE;
+ALTER TABLE `tasks` IMPORT TABLESPACE;
+ALTER TABLE `tasks` ADD KEY `tasks_location_id_foreign` (`location_id`);
+ALTER TABLE `tasks` ADD KEY `tasks_client_id_foreign` (`client_id`);
+ALTER TABLE `tasks` ADD KEY `tasks_assigned_team_id_foreign` (`assigned_team_id`);
+ALTER TABLE `tasks` ADD CONSTRAINT `tasks_location_id_foreign` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`);
+ALTER TABLE `tasks` ADD CONSTRAINT `tasks_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`);
+
+-- =====================================================
+-- 11. OPTIMIZATION_GENERATIONS TABLE
+-- =====================================================
+ALTER TABLE `optimization_generations` DROP FOREIGN KEY `optimization_generations_optimization_run_id_foreign`;
+ALTER TABLE `optimization_generations` DROP INDEX `opt_gen_run_gen_idx`;
+ALTER TABLE `optimization_generations` DISCARD TABLESPACE;
+ALTER TABLE `optimization_generations` IMPORT TABLESPACE;
+ALTER TABLE `optimization_generations` ADD KEY `opt_gen_run_gen_idx` (`optimization_run_id`, `generation_number`);
+ALTER TABLE `optimization_generations` ADD CONSTRAINT `optimization_generations_optimization_run_id_foreign` FOREIGN KEY (`optimization_run_id`) REFERENCES `optimization_runs` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 12. ATTENDANCES TABLE
+-- =====================================================
+ALTER TABLE `attendances` DROP FOREIGN KEY `attendances_employee_id_foreign`;
+ALTER TABLE `attendances` DROP INDEX `attendances_employee_id_foreign`;
+ALTER TABLE `attendances` DISCARD TABLESPACE;
+ALTER TABLE `attendances` IMPORT TABLESPACE;
+ALTER TABLE `attendances` ADD KEY `attendances_employee_id_foreign` (`employee_id`);
+ALTER TABLE `attendances` ADD CONSTRAINT `attendances_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 13. DAY_OFFS TABLE
+-- =====================================================
+ALTER TABLE `day_offs` DROP FOREIGN KEY `day_offs_employee_id_foreign`;
+ALTER TABLE `day_offs` DROP FOREIGN KEY `day_offs_approved_by_foreign`;
+ALTER TABLE `day_offs` DROP INDEX `day_offs_employee_id_date_unique`;
+ALTER TABLE `day_offs` DROP INDEX `day_offs_date_index`;
+ALTER TABLE `day_offs` DROP INDEX `day_offs_status_index`;
+ALTER TABLE `day_offs` DROP INDEX `day_offs_approved_by_foreign`;
+ALTER TABLE `day_offs` DISCARD TABLESPACE;
+ALTER TABLE `day_offs` IMPORT TABLESPACE;
+ALTER TABLE `day_offs` ADD UNIQUE KEY `day_offs_employee_id_date_unique` (`employee_id`, `date`);
+ALTER TABLE `day_offs` ADD KEY `day_offs_date_index` (`date`);
+ALTER TABLE `day_offs` ADD KEY `day_offs_status_index` (`status`);
+ALTER TABLE `day_offs` ADD KEY `day_offs_approved_by_foreign` (`approved_by`);
+ALTER TABLE `day_offs` ADD CONSTRAINT `day_offs_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+ALTER TABLE `day_offs` ADD CONSTRAINT `day_offs_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+-- =====================================================
+-- 14. INVALID_TASKS TABLE
+-- =====================================================
+ALTER TABLE `invalid_tasks` DROP FOREIGN KEY `invalid_tasks_task_id_foreign`;
+ALTER TABLE `invalid_tasks` DROP INDEX `invalid_tasks_task_id_index`;
+ALTER TABLE `invalid_tasks` DROP INDEX `invalid_tasks_optimization_result_id_index`;
+ALTER TABLE `invalid_tasks` DISCARD TABLESPACE;
+ALTER TABLE `invalid_tasks` IMPORT TABLESPACE;
+ALTER TABLE `invalid_tasks` ADD KEY `invalid_tasks_task_id_index` (`task_id`);
+ALTER TABLE `invalid_tasks` ADD KEY `invalid_tasks_optimization_result_id_index` (`optimization_result_id`);
+ALTER TABLE `invalid_tasks` ADD CONSTRAINT `invalid_tasks_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 15. SCENARIO_ANALYSES TABLE
+-- =====================================================
+ALTER TABLE `scenario_analyses` DROP INDEX `scenario_analyses_service_date_scenario_type_index`;
+ALTER TABLE `scenario_analyses` DISCARD TABLESPACE;
+ALTER TABLE `scenario_analyses` IMPORT TABLESPACE;
+ALTER TABLE `scenario_analyses` ADD KEY `scenario_analyses_service_date_scenario_type_index` (`service_date`, `scenario_type`);
+
+-- =====================================================
+-- 16. JOBS TABLE
+-- =====================================================
+ALTER TABLE `jobs` DROP INDEX `jobs_queue_index`;
+ALTER TABLE `jobs` DISCARD TABLESPACE;
+ALTER TABLE `jobs` IMPORT TABLESPACE;
+ALTER TABLE `jobs` ADD KEY `jobs_queue_index` (`queue`);
+
+-- =====================================================
+-- 17. CLIENT_APPOINTMENTS TABLE
+-- =====================================================
+ALTER TABLE `client_appointments` DROP FOREIGN KEY `client_appointments_client_id_foreign`;
+ALTER TABLE `client_appointments` DROP FOREIGN KEY `client_appointments_assigned_team_id_foreign`;
+ALTER TABLE `client_appointments` DROP FOREIGN KEY `client_appointments_recommended_team_id_foreign`;
+ALTER TABLE `client_appointments` DROP FOREIGN KEY `client_appointments_approved_by_foreign`;
+ALTER TABLE `client_appointments` DROP FOREIGN KEY `client_appointments_rejected_by_foreign`;
+ALTER TABLE `client_appointments` DROP INDEX `client_appointments_client_id_foreign`;
+ALTER TABLE `client_appointments` DROP INDEX `client_appointments_assigned_team_id_foreign`;
+ALTER TABLE `client_appointments` DROP INDEX `client_appointments_recommended_team_id_foreign`;
+ALTER TABLE `client_appointments` DROP INDEX `client_appointments_approved_by_foreign`;
+ALTER TABLE `client_appointments` DROP INDEX `client_appointments_rejected_by_foreign`;
+ALTER TABLE `client_appointments` DISCARD TABLESPACE;
+ALTER TABLE `client_appointments` IMPORT TABLESPACE;
+ALTER TABLE `client_appointments` ADD KEY `client_appointments_client_id_foreign` (`client_id`);
+ALTER TABLE `client_appointments` ADD KEY `client_appointments_assigned_team_id_foreign` (`assigned_team_id`);
+ALTER TABLE `client_appointments` ADD KEY `client_appointments_recommended_team_id_foreign` (`recommended_team_id`);
+ALTER TABLE `client_appointments` ADD KEY `client_appointments_approved_by_foreign` (`approved_by`);
+ALTER TABLE `client_appointments` ADD KEY `client_appointments_rejected_by_foreign` (`rejected_by`);
+ALTER TABLE `client_appointments` ADD CONSTRAINT `client_appointments_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE;
+ALTER TABLE `client_appointments` ADD CONSTRAINT `client_appointments_assigned_team_id_foreign` FOREIGN KEY (`assigned_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE SET NULL;
+ALTER TABLE `client_appointments` ADD CONSTRAINT `client_appointments_recommended_team_id_foreign` FOREIGN KEY (`recommended_team_id`) REFERENCES `optimization_teams` (`id`) ON DELETE SET NULL;
+ALTER TABLE `client_appointments` ADD CONSTRAINT `client_appointments_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+ALTER TABLE `client_appointments` ADD CONSTRAINT `client_appointments_rejected_by_foreign` FOREIGN KEY (`rejected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+-- =====================================================
+-- 18. HOLIDAYS TABLE
+-- =====================================================
+ALTER TABLE `holidays` DROP FOREIGN KEY `holidays_created_by_foreign`;
+ALTER TABLE `holidays` DROP INDEX `date`;
+ALTER TABLE `holidays` DROP INDEX `holidays_created_by_foreign`;
+ALTER TABLE `holidays` DISCARD TABLESPACE;
+ALTER TABLE `holidays` IMPORT TABLESPACE;
+ALTER TABLE `holidays` ADD UNIQUE KEY `date` (`date`);
+ALTER TABLE `holidays` ADD KEY `holidays_created_by_foreign` (`created_by`);
+ALTER TABLE `holidays` ADD CONSTRAINT `holidays_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 19. COMPANY_SETTINGS TABLE
+-- =====================================================
+ALTER TABLE `company_settings` DROP INDEX `key`;
+ALTER TABLE `company_settings` DISCARD TABLESPACE;
+ALTER TABLE `company_settings` IMPORT TABLESPACE;
+ALTER TABLE `company_settings` ADD UNIQUE KEY `key` (`key`);
+
+-- =====================================================
+-- 20. NOTIFICATIONS TABLE
+-- =====================================================
+ALTER TABLE `notifications` DROP FOREIGN KEY `notifications_user_id_foreign`;
+ALTER TABLE `notifications` DROP INDEX `notifications_user_id_read_at_index`;
+ALTER TABLE `notifications` DISCARD TABLESPACE;
+ALTER TABLE `notifications` IMPORT TABLESPACE;
+ALTER TABLE `notifications` ADD KEY `notifications_user_id_read_at_index` (`user_id`, `read_at`);
+ALTER TABLE `notifications` ADD CONSTRAINT `notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 21. FEEDBACK TABLE
+-- =====================================================
+ALTER TABLE `feedback` DROP FOREIGN KEY `feedback_client_id_foreign`;
+ALTER TABLE `feedback` DROP INDEX `feedback_client_id_foreign`;
+ALTER TABLE `feedback` DISCARD TABLESPACE;
+ALTER TABLE `feedback` IMPORT TABLESPACE;
+ALTER TABLE `feedback` ADD KEY `feedback_client_id_foreign` (`client_id`);
+ALTER TABLE `feedback` ADD CONSTRAINT `feedback_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 22. QUOTATIONS TABLE
+-- =====================================================
+ALTER TABLE `quotations` DROP FOREIGN KEY `quotations_reviewed_by_foreign`;
+ALTER TABLE `quotations` DROP FOREIGN KEY `quotations_quoted_by_foreign`;
+ALTER TABLE `quotations` DROP FOREIGN KEY `quotations_appointment_id_foreign`;
+ALTER TABLE `quotations` DROP FOREIGN KEY `quotations_converted_by_foreign`;
+ALTER TABLE `quotations` DROP INDEX `quotations_booking_type_index`;
+ALTER TABLE `quotations` DROP INDEX `quotations_status_index`;
+ALTER TABLE `quotations` DROP INDEX `quotations_email_index`;
+ALTER TABLE `quotations` DROP INDEX `quotations_created_at_index`;
+ALTER TABLE `quotations` DROP INDEX `quotations_reviewed_by_foreign`;
+ALTER TABLE `quotations` DROP INDEX `quotations_quoted_by_foreign`;
+ALTER TABLE `quotations` DROP INDEX `quotations_appointment_id_foreign`;
+ALTER TABLE `quotations` DROP INDEX `quotations_converted_by_foreign`;
+ALTER TABLE `quotations` DISCARD TABLESPACE;
+ALTER TABLE `quotations` IMPORT TABLESPACE;
+ALTER TABLE `quotations` ADD KEY `quotations_booking_type_index` (`booking_type`);
+ALTER TABLE `quotations` ADD KEY `quotations_status_index` (`status`);
+ALTER TABLE `quotations` ADD KEY `quotations_email_index` (`email`);
+ALTER TABLE `quotations` ADD KEY `quotations_created_at_index` (`created_at`);
+ALTER TABLE `quotations` ADD KEY `quotations_reviewed_by_foreign` (`reviewed_by`);
+ALTER TABLE `quotations` ADD KEY `quotations_quoted_by_foreign` (`quoted_by`);
+ALTER TABLE `quotations` ADD KEY `quotations_appointment_id_foreign` (`appointment_id`);
+ALTER TABLE `quotations` ADD KEY `quotations_converted_by_foreign` (`converted_by`);
+ALTER TABLE `quotations` ADD CONSTRAINT `quotations_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+ALTER TABLE `quotations` ADD CONSTRAINT `quotations_quoted_by_foreign` FOREIGN KEY (`quoted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+ALTER TABLE `quotations` ADD CONSTRAINT `quotations_appointment_id_foreign` FOREIGN KEY (`appointment_id`) REFERENCES `client_appointments` (`id`) ON DELETE SET NULL;
+ALTER TABLE `quotations` ADD CONSTRAINT `quotations_converted_by_foreign` FOREIGN KEY (`converted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+-- =====================================================
+-- 23. ALERTS TABLE
+-- =====================================================
+ALTER TABLE `alerts` DROP FOREIGN KEY `alerts_task_id_foreign`;
+ALTER TABLE `alerts` DROP FOREIGN KEY `alerts_acknowledged_by_foreign`;
+ALTER TABLE `alerts` DROP INDEX `alerts_task_id_alert_type_index`;
+ALTER TABLE `alerts` DROP INDEX `alerts_acknowledged_by_foreign`;
+ALTER TABLE `alerts` DISCARD TABLESPACE;
+ALTER TABLE `alerts` IMPORT TABLESPACE;
+ALTER TABLE `alerts` ADD KEY `alerts_task_id_alert_type_index` (`task_id`, `alert_type`);
+ALTER TABLE `alerts` ADD KEY `alerts_acknowledged_by_foreign` (`acknowledged_by`);
+ALTER TABLE `alerts` ADD CONSTRAINT `alerts_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
+ALTER TABLE `alerts` ADD CONSTRAINT `alerts_acknowledged_by_foreign` FOREIGN KEY (`acknowledged_by`) REFERENCES `users` (`id`);
+
+-- =====================================================
+-- 24. PERFORMANCE_FLAGS TABLE
+-- =====================================================
+ALTER TABLE `performance_flags` DROP FOREIGN KEY `performance_flags_task_id_foreign`;
+ALTER TABLE `performance_flags` DROP FOREIGN KEY `performance_flags_employee_id_foreign`;
+ALTER TABLE `performance_flags` DROP FOREIGN KEY `performance_flags_reviewed_by_foreign`;
+ALTER TABLE `performance_flags` DROP INDEX `performance_flags_task_id_flag_type_index`;
+ALTER TABLE `performance_flags` DROP INDEX `performance_flags_reviewed_index`;
+ALTER TABLE `performance_flags` DROP INDEX `performance_flags_employee_id_foreign`;
+ALTER TABLE `performance_flags` DROP INDEX `performance_flags_reviewed_by_foreign`;
+ALTER TABLE `performance_flags` DISCARD TABLESPACE;
+ALTER TABLE `performance_flags` IMPORT TABLESPACE;
+ALTER TABLE `performance_flags` ADD KEY `performance_flags_task_id_flag_type_index` (`task_id`, `flag_type`);
+ALTER TABLE `performance_flags` ADD KEY `performance_flags_reviewed_index` (`reviewed`);
+ALTER TABLE `performance_flags` ADD KEY `performance_flags_employee_id_foreign` (`employee_id`);
+ALTER TABLE `performance_flags` ADD KEY `performance_flags_reviewed_by_foreign` (`reviewed_by`);
+ALTER TABLE `performance_flags` ADD CONSTRAINT `performance_flags_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
+ALTER TABLE `performance_flags` ADD CONSTRAINT `performance_flags_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL;
+ALTER TABLE `performance_flags` ADD CONSTRAINT `performance_flags_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`);
+
+-- =====================================================
+-- 25. EMPLOYEE_PERFORMANCE TABLE
+-- =====================================================
+ALTER TABLE `employee_performance` DROP FOREIGN KEY `employee_performance_employee_id_foreign`;
+ALTER TABLE `employee_performance` DROP INDEX `employee_performance_employee_id_date_unique`;
+ALTER TABLE `employee_performance` DROP INDEX `employee_performance_date_index`;
+ALTER TABLE `employee_performance` DISCARD TABLESPACE;
+ALTER TABLE `employee_performance` IMPORT TABLESPACE;
+ALTER TABLE `employee_performance` ADD UNIQUE KEY `employee_performance_employee_id_date_unique` (`employee_id`, `date`);
+ALTER TABLE `employee_performance` ADD KEY `employee_performance_date_index` (`date`);
+ALTER TABLE `employee_performance` ADD CONSTRAINT `employee_performance_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 26. COMPANY_CHECKLISTS TABLE
+-- =====================================================
+ALTER TABLE `company_checklists` DROP FOREIGN KEY `company_checklists_contracted_client_id_foreign`;
+ALTER TABLE `company_checklists` DROP INDEX `company_checklists_contracted_client_id_foreign`;
+ALTER TABLE `company_checklists` DISCARD TABLESPACE;
+ALTER TABLE `company_checklists` IMPORT TABLESPACE;
+ALTER TABLE `company_checklists` ADD KEY `company_checklists_contracted_client_id_foreign` (`contracted_client_id`);
+ALTER TABLE `company_checklists` ADD CONSTRAINT `company_checklists_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 27. CHECKLIST_CATEGORIES TABLE
+-- =====================================================
+ALTER TABLE `checklist_categories` DROP FOREIGN KEY `checklist_categories_checklist_id_foreign`;
+ALTER TABLE `checklist_categories` DROP INDEX `checklist_categories_checklist_id_foreign`;
+ALTER TABLE `checklist_categories` DISCARD TABLESPACE;
+ALTER TABLE `checklist_categories` IMPORT TABLESPACE;
+ALTER TABLE `checklist_categories` ADD KEY `checklist_categories_checklist_id_foreign` (`checklist_id`);
+ALTER TABLE `checklist_categories` ADD CONSTRAINT `checklist_categories_checklist_id_foreign` FOREIGN KEY (`checklist_id`) REFERENCES `company_checklists` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 28. CHECKLIST_ITEMS TABLE
+-- =====================================================
+ALTER TABLE `checklist_items` DROP FOREIGN KEY `checklist_items_category_id_foreign`;
+ALTER TABLE `checklist_items` DROP INDEX `checklist_items_category_id_foreign`;
+ALTER TABLE `checklist_items` DISCARD TABLESPACE;
+ALTER TABLE `checklist_items` IMPORT TABLESPACE;
+ALTER TABLE `checklist_items` ADD KEY `checklist_items_category_id_foreign` (`category_id`);
+ALTER TABLE `checklist_items` ADD CONSTRAINT `checklist_items_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `checklist_categories` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 29. TASK_CHECKLIST_COMPLETIONS TABLE
+-- =====================================================
+ALTER TABLE `task_checklist_completions` DROP FOREIGN KEY `task_checklist_completions_task_id_foreign`;
+ALTER TABLE `task_checklist_completions` DROP FOREIGN KEY `task_checklist_completions_checklist_item_id_foreign`;
+ALTER TABLE `task_checklist_completions` DROP FOREIGN KEY `task_checklist_completions_completed_by_foreign`;
+ALTER TABLE `task_checklist_completions` DROP INDEX `task_checklist_completions_task_id_checklist_item_id_unique`;
+ALTER TABLE `task_checklist_completions` DROP INDEX `task_checklist_completions_checklist_item_id_foreign`;
+ALTER TABLE `task_checklist_completions` DROP INDEX `task_checklist_completions_completed_by_foreign`;
+ALTER TABLE `task_checklist_completions` DISCARD TABLESPACE;
+ALTER TABLE `task_checklist_completions` IMPORT TABLESPACE;
+ALTER TABLE `task_checklist_completions` ADD UNIQUE KEY `task_checklist_completions_task_id_checklist_item_id_unique` (`task_id`, `checklist_item_id`);
+ALTER TABLE `task_checklist_completions` ADD KEY `task_checklist_completions_checklist_item_id_foreign` (`checklist_item_id`);
+ALTER TABLE `task_checklist_completions` ADD KEY `task_checklist_completions_completed_by_foreign` (`completed_by`);
+ALTER TABLE `task_checklist_completions` ADD CONSTRAINT `task_checklist_completions_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
+ALTER TABLE `task_checklist_completions` ADD CONSTRAINT `task_checklist_completions_checklist_item_id_foreign` FOREIGN KEY (`checklist_item_id`) REFERENCES `checklist_items` (`id`) ON DELETE CASCADE;
+ALTER TABLE `task_checklist_completions` ADD CONSTRAINT `task_checklist_completions_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+-- =====================================================
+-- 30. TASK_REVIEWS TABLE
+-- =====================================================
+ALTER TABLE `task_reviews` DROP FOREIGN KEY `task_reviews_task_id_foreign`;
+ALTER TABLE `task_reviews` DROP FOREIGN KEY `task_reviews_contracted_client_id_foreign`;
+ALTER TABLE `task_reviews` DROP FOREIGN KEY `task_reviews_reviewer_user_id_foreign`;
+ALTER TABLE `task_reviews` DROP INDEX `task_reviews_task_id_contracted_client_id_unique`;
+ALTER TABLE `task_reviews` DROP INDEX `task_reviews_rating_index`;
+ALTER TABLE `task_reviews` DROP INDEX `task_reviews_contracted_client_id_index`;
+ALTER TABLE `task_reviews` DROP INDEX `task_reviews_created_at_index`;
+ALTER TABLE `task_reviews` DROP INDEX `task_reviews_reviewer_user_id_foreign`;
+ALTER TABLE `task_reviews` DISCARD TABLESPACE;
+ALTER TABLE `task_reviews` IMPORT TABLESPACE;
+ALTER TABLE `task_reviews` ADD UNIQUE KEY `task_reviews_task_id_contracted_client_id_unique` (`task_id`, `contracted_client_id`);
+ALTER TABLE `task_reviews` ADD KEY `task_reviews_rating_index` (`rating`);
+ALTER TABLE `task_reviews` ADD KEY `task_reviews_contracted_client_id_index` (`contracted_client_id`);
+ALTER TABLE `task_reviews` ADD KEY `task_reviews_created_at_index` (`created_at`);
+ALTER TABLE `task_reviews` ADD KEY `task_reviews_reviewer_user_id_foreign` (`reviewer_user_id`);
+ALTER TABLE `task_reviews` ADD CONSTRAINT `task_reviews_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE;
+ALTER TABLE `task_reviews` ADD CONSTRAINT `task_reviews_contracted_client_id_foreign` FOREIGN KEY (`contracted_client_id`) REFERENCES `contracted_clients` (`id`) ON DELETE CASCADE;
+ALTER TABLE `task_reviews` ADD CONSTRAINT `task_reviews_reviewer_user_id_foreign` FOREIGN KEY (`reviewer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 31. TRAINING_VIDEOS TABLE (no secondary indexes)
+-- =====================================================
+ALTER TABLE `training_videos` DISCARD TABLESPACE;
+ALTER TABLE `training_videos` IMPORT TABLESPACE;
+
+-- =====================================================
+-- 32. EMPLOYEE_WATCHED_VIDEOS TABLE
+-- =====================================================
+ALTER TABLE `employee_watched_videos` DROP FOREIGN KEY `employee_watched_videos_user_id_foreign`;
+ALTER TABLE `employee_watched_videos` DROP FOREIGN KEY `employee_watched_videos_training_video_id_foreign`;
+ALTER TABLE `employee_watched_videos` DROP INDEX `employee_watched_videos_user_id_training_video_id_unique`;
+ALTER TABLE `employee_watched_videos` DROP INDEX `employee_watched_videos_training_video_id_foreign`;
+ALTER TABLE `employee_watched_videos` DISCARD TABLESPACE;
+ALTER TABLE `employee_watched_videos` IMPORT TABLESPACE;
+ALTER TABLE `employee_watched_videos` ADD UNIQUE KEY `employee_watched_videos_user_id_training_video_id_unique` (`user_id`, `training_video_id`);
+ALTER TABLE `employee_watched_videos` ADD KEY `employee_watched_videos_training_video_id_foreign` (`training_video_id`);
+ALTER TABLE `employee_watched_videos` ADD CONSTRAINT `employee_watched_videos_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+ALTER TABLE `employee_watched_videos` ADD CONSTRAINT `employee_watched_videos_training_video_id_foreign` FOREIGN KEY (`training_video_id`) REFERENCES `training_videos` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 33. PUSH_TOKENS TABLE
+-- =====================================================
+ALTER TABLE `push_tokens` DROP FOREIGN KEY `push_tokens_user_id_foreign`;
+ALTER TABLE `push_tokens` DROP INDEX `token`;
+ALTER TABLE `push_tokens` DROP INDEX `push_tokens_user_id_is_active_index`;
+ALTER TABLE `push_tokens` DISCARD TABLESPACE;
+ALTER TABLE `push_tokens` IMPORT TABLESPACE;
+ALTER TABLE `push_tokens` ADD UNIQUE KEY `token` (`token`);
+ALTER TABLE `push_tokens` ADD KEY `push_tokens_user_id_is_active_index` (`user_id`, `is_active`);
+ALTER TABLE `push_tokens` ADD CONSTRAINT `push_tokens_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- =====================================================
+-- 34. PERSONAL_ACCESS_TOKENS TABLE
+-- =====================================================
+ALTER TABLE `personal_access_tokens` DROP INDEX `token`;
+ALTER TABLE `personal_access_tokens` DROP INDEX `personal_access_tokens_tokenable_type_tokenable_id_index`;
+ALTER TABLE `personal_access_tokens` DISCARD TABLESPACE;
+ALTER TABLE `personal_access_tokens` IMPORT TABLESPACE;
+ALTER TABLE `personal_access_tokens` ADD UNIQUE KEY `token` (`token`);
+ALTER TABLE `personal_access_tokens` ADD KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`, `tokenable_id`);
+
+-- =====================================================
+-- 35. MIGRATIONS TABLE (no secondary indexes)
+-- =====================================================
+ALTER TABLE `migrations` DISCARD TABLESPACE;
+ALTER TABLE `migrations` IMPORT TABLESPACE;
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
+SELECT 'Recovery complete! Check for any errors above.' AS Status;
