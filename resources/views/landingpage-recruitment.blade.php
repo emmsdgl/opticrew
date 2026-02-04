@@ -545,7 +545,10 @@
 
             {{-- Modal Body --}}
             <div class="p-6">
-                <form id="applicationForm" class="space-y-4">
+                <form id="applicationForm" class="space-y-4" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="job_title" id="applicationJobTitle">
+                    <input type="hidden" name="job_type" id="applicationJobType">
                     {{-- Email Address --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -569,7 +572,7 @@
                     {{-- Compiled PDF Document --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Compiled PDF Document
+                            Resume & Cover Letter
                         </label>
                         <div class="relative">
                             <input type="file" name="pdf_document" id="pdfDocument" accept=".pdf" required
@@ -583,14 +586,14 @@
                         </div>
                         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                             <i class="fas fa-info-circle mr-1"></i>
-                            Kindly drag or click to upload your documents
+                            Kindly drag or click to upload your compiled documents
                         </p>
                     </div>
 
                     {{-- Terms and Conditions --}}
                     <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
                         <p class="text-xs text-gray-600 dark:text-gray-400 text-center leading-relaxed">
-                            By signing to the form above, you acknowledge that you have read, understood, and agree to be bound by Glowjobs <a href="#" class="text-blue-600 dark:text-blue-400 underline">Terms and Conditions</a> and <a href="#" class="text-blue-600 dark:text-blue-400 underline">Privacy Policy</a>.
+                            By signing to the form above, you acknowledge that you have read, understood, and agree to be bound by Finnoys <a href="#" class="text-blue-600 dark:text-blue-400 underline">Terms and Conditions</a> and <a href="#" class="text-blue-600 dark:text-blue-400 underline">Privacy Policy</a>.
                         </p>
                     </div>
 
@@ -932,6 +935,11 @@
 
         // Modal functions
         function openApplicationModal() {
+            // Set job details in hidden fields
+            if (selectedJobId && jobs[selectedJobId]) {
+                document.getElementById('applicationJobTitle').value = jobs[selectedJobId].title;
+                document.getElementById('applicationJobType').value = jobs[selectedJobId].type;
+            }
             document.getElementById('applicationModal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
@@ -941,6 +949,10 @@
             document.body.style.overflow = 'auto';
             document.getElementById('applicationForm').reset();
             document.getElementById('fileName').textContent = 'Choose file';
+            // Reset submit button
+            const submitBtn = document.querySelector('#applicationForm button[type="submit"]');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit Application';
         }
 
         // Update file name display
@@ -952,21 +964,64 @@
         // Handle form submission
         document.getElementById('applicationForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+
             // Get form data
             const formData = new FormData(this);
-            
-            // Here you would typically send the data to your server
-            console.log('Form submitted with data:', {
-                email: formData.get('email'),
-                alternative_email: formData.get('alternative_email'),
-                pdf_document: formData.get('pdf_document')?.name
-            });
 
-            // Show success message or handle the submission
-            alert('Application submitted successfully!');
-            closeApplicationModal();
+            // Send AJAX request
+            fetch('{{ route("recruitment.apply") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showNotification('success', data.message);
+                    closeApplicationModal();
+                } else {
+                    showNotification('error', data.message || 'Something went wrong. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Submit Application';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('error', 'An error occurred. Please try again later.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Application';
+            });
         });
+
+        // Notification function
+        function showNotification(type, message) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-[100] max-w-sm p-4 rounded-xl shadow-lg transform transition-all duration-300 ${
+                type === 'success'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-red-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-xl"></i>
+                    <p class="text-sm font-medium">${message}</p>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
 
         // Close modal when clicking outside
         document.getElementById('applicationModal').addEventListener('click', function(e) {

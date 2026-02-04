@@ -14,6 +14,7 @@
                     ['label' => 'Quotation Requests', 'icon' => 'fa-file-invoice', 'href' => route('admin.quotations.index')],
                 ]
             ],
+            ['label' => 'Recruitment', 'icon' => 'fa-user-plus', 'href' => route('admin.recruitment.index')],
             ['label' => 'Attendance', 'icon' => 'fa-solid fa-calendar-check', 'href' => route('admin.attendance')],
             ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('admin.history')],
             ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => route('admin.analytics')],
