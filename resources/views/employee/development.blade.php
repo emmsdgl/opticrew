@@ -3,7 +3,7 @@
 
         {{-- Left Sidebar - Course List --}}
         <div id="courseSidebar"
-            class="w-full lg:w-96 rounded-2xl transition-all duration-300 flex flex-col lg:h-screen">
+            class="w-full lg:w-96 rounded-2xl transition-all duration-300 flex flex-col lg:h-full">
             <div class="p-4 md:p-6 flex-shrink-0">
                 {{-- Header --}}
                 <div class="mb-6">
@@ -215,11 +215,12 @@
                     </div>
 
                     {{-- Statistics --}}
-                    <div class="flex items-center gap-3 mt-4">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">4/5 (93 employees completed this)</span>
+                    <div class="flex items-center gap-3 mt-4 flex-wrap">
+                        <span id="courseRating" class="text-sm text-gray-600 dark:text-gray-400">4/5 (93 employees completed this)</span>
                         <span class="text-sm text-gray-400 dark:text-gray-500">•</span>
-                        <button class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Intermediate</button>
-                        <span class="text-sm text-gray-600 dark:text-gray-400">12 Video Lectures • 2 hours</span>
+                        <span id="courseLevel" class="text-sm text-blue-600 dark:text-blue-400">Intermediate</span>
+                        <span class="text-sm text-gray-400 dark:text-gray-500">•</span>
+                        <span id="courseDuration" class="text-sm text-gray-600 dark:text-gray-400">12 lectures • 2 hours</span>
                     </div>
                 </div>
 
@@ -306,9 +307,6 @@
         {{-- YouTube IFrame API --}}
         <script src="https://www.youtube.com/iframe_api"></script>
         <script>
-            // VIDEO IDs - Replace these with your organization's training video IDs from YouTube
-            // To get a video ID: Copy the part after "v=" from any YouTube URL
-            // Example: https://www.youtube.com/watch?v=RbhcRKsRwFM → videoId: "RbhcRKsRwFM"
             const courses = {
                 1: {
                     title: "Deep Cleaning Fundamentals",
@@ -697,16 +695,20 @@
                 }
                 // If pending, the initializePlayer already reset everything to 0%
 
-                // Update level button
-                const levelButton = document.querySelector('.text-sm.text-blue-600');
-                if (levelButton) {
-                    levelButton.textContent = course.level;
+                // Update statistics
+                const courseRating = document.getElementById('courseRating');
+                if (courseRating) {
+                    courseRating.textContent = `${course.rating}/5 (${course.reviews} employees completed this)`;
                 }
 
-                // Update duration
-                const durationSpan = document.querySelector('.text-2xl + .text-sm');
-                if (durationSpan) {
-                    durationSpan.textContent = course.duration;
+                const courseLevel = document.getElementById('courseLevel');
+                if (courseLevel) {
+                    courseLevel.textContent = course.level;
+                }
+
+                const courseDuration = document.getElementById('courseDuration');
+                if (courseDuration) {
+                    courseDuration.textContent = course.duration;
                 }
 
                 // Update status tag

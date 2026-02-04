@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 04, 2026 at 04:51 AM
+-- Generation Time: Feb 04, 2026 at 02:43 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -758,7 +758,9 @@ INSERT INTO `attendances` (`id`, `employee_id`, `clock_in`, `clock_out`, `clock_
 (2064, 3, '2026-02-03 21:27:01', '2026-02-03 21:27:09', 14.56251280, 121.05607460, 14.56254040, 121.05609560, NULL, NULL, NULL, '2026-02-03 21:27:01', '2026-02-03 21:27:09', 'present', NULL, NULL, 0, NULL),
 (2065, 3, '2026-02-03 21:27:56', '2026-02-03 21:36:17', 14.56255040, 121.05609630, 14.56255240, 121.05610060, NULL, NULL, NULL, '2026-02-03 21:27:56', '2026-02-03 21:36:17', 'present', 0.00, NULL, 0, NULL),
 (2066, 4, '2026-02-03 21:32:44', '2026-02-03 21:33:05', 14.56235760, 121.05605050, 14.56235760, 121.05605050, NULL, NULL, NULL, '2026-02-03 21:32:44', '2026-02-03 21:33:05', 'present', 0.00, NULL, 0, NULL),
-(2067, 4, '2026-02-03 21:36:53', '2026-02-03 21:50:27', 14.56245450, 121.05607440, 14.56255570, 121.05610190, NULL, NULL, NULL, '2026-02-03 21:36:53', '2026-02-03 21:50:27', 'present', 0.00, NULL, 0, NULL);
+(2067, 4, '2026-02-03 21:36:53', '2026-02-03 21:50:27', 14.56245450, 121.05607440, 14.56255570, 121.05610190, NULL, NULL, NULL, '2026-02-03 21:36:53', '2026-02-03 21:50:27', 'present', 0.00, NULL, 0, NULL),
+(2068, 4, '2026-02-03 23:04:54', '2026-02-03 23:05:41', 14.56253130, 121.05609300, 14.56255910, 121.05609720, NULL, NULL, NULL, '2026-02-03 23:04:54', '2026-02-03 23:05:41', 'present', 0.00, NULL, 0, NULL),
+(2069, 4, '2026-02-03 23:06:17', NULL, 14.56236010, 121.05605340, NULL, NULL, NULL, NULL, NULL, '2026-02-03 23:06:17', '2026-02-03 23:06:17', 'present', NULL, NULL, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -913,6 +915,13 @@ CREATE TABLE `client_appointments` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `client_appointments`
+--
+
+INSERT INTO `client_appointments` (`id`, `client_id`, `is_company_inquiry`, `booking_type`, `service_type`, `company_service_types`, `service_date`, `service_time`, `is_sunday`, `is_holiday`, `number_of_units`, `unit_size`, `unit_details`, `cabin_name`, `special_requests`, `other_concerns`, `quotation`, `vat_amount`, `total_amount`, `status`, `assigned_team_id`, `recommended_team_id`, `rejection_reason`, `approved_by`, `approved_at`, `rejected_by`, `rejected_at`, `client_notified`, `notified_at`, `created_at`, `updated_at`) VALUES
+(1, 5, 0, 'personal', 'Final Cleaning', NULL, '2026-02-05', '17:18:00', 0, 0, 2, '20-50', '[{\"name\":\"Cabin 2\",\"size\":\"20-50\",\"price\":70,\"hours\":0},{\"name\":\"Cabin 3\",\"size\":\"141-160\",\"price\":245,\"hours\":0}]', 'Cabin 2', 'none', NULL, 315.00, 0.00, 315.00, 'approved', NULL, NULL, NULL, 1, '2026-02-04 00:32:43', NULL, NULL, 0, NULL, '2026-02-04 00:17:31', '2026-02-04 00:32:43');
+
 -- --------------------------------------------------------
 
 --
@@ -1017,11 +1026,24 @@ CREATE TABLE `day_offs` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `employee_id` bigint(20) UNSIGNED NOT NULL,
   `date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
   `reason` varchar(255) DEFAULT NULL,
   `type` varchar(50) DEFAULT 'day_off',
+  `status` varchar(50) DEFAULT 'pending',
+  `approved_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `admin_notes` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `day_offs`
+--
+
+INSERT INTO `day_offs` (`id`, `employee_id`, `date`, `end_date`, `reason`, `type`, `status`, `approved_by`, `approved_at`, `admin_notes`, `created_at`, `updated_at`) VALUES
+(2, 4, '2026-02-19', NULL, 'cvvfvuhggddyh', 'sick', 'approved', 1, '2026-02-03 22:18:47', NULL, '2026-02-03 22:18:12', '2026-02-03 22:18:47'),
+(3, 4, '2026-02-05', NULL, 'health check up', 'sick', 'approved', 1, '2026-02-03 23:03:17', NULL, '2026-02-03 23:02:38', '2026-02-03 23:03:17');
 
 -- --------------------------------------------------------
 
@@ -1083,6 +1105,37 @@ CREATE TABLE `employee_performance` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `employee_requests`
+--
+
+CREATE TABLE `employee_requests` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `employee_id` bigint(20) UNSIGNED NOT NULL,
+  `absence_type` varchar(255) NOT NULL,
+  `absence_date` date NOT NULL,
+  `time_range` varchar(255) NOT NULL,
+  `from_time` time DEFAULT NULL,
+  `to_time` time DEFAULT NULL,
+  `reason` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `proof_document` varchar(255) DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'Pending',
+  `admin_notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employee_requests`
+--
+
+INSERT INTO `employee_requests` (`id`, `employee_id`, `absence_type`, `absence_date`, `time_range`, `from_time`, `to_time`, `reason`, `description`, `proof_document`, `status`, `admin_notes`, `created_at`, `updated_at`) VALUES
+(1, 4, 'Vacation Leave', '2026-02-12', 'Morning (First Half)', NULL, NULL, 'Illness', 'asaas', NULL, 'Approved', NULL, '2026-02-04 01:08:50', '2026-02-04 01:28:18'),
+(2, 4, 'Sick Leave', '2026-02-06', 'Full Shift', NULL, NULL, 'Personal Matters', 'To be cancelled', NULL, 'Cancelled', NULL, '2026-02-04 01:48:36', '2026-02-04 01:48:48');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `employee_watched_videos`
 --
 
@@ -1094,6 +1147,13 @@ CREATE TABLE `employee_watched_videos` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employee_watched_videos`
+--
+
+INSERT INTO `employee_watched_videos` (`id`, `user_id`, `training_video_id`, `watched_at`, `created_at`, `updated_at`) VALUES
+(1, 5, 3, '2026-02-03 21:54:57', '2026-02-03 21:54:57', '2026-02-03 21:54:57');
 
 -- --------------------------------------------------------
 
@@ -1200,6 +1260,29 @@ CREATE TABLE `job_applications` (
 
 INSERT INTO `job_applications` (`id`, `job_title`, `job_type`, `email`, `alternative_email`, `resume_path`, `resume_original_name`, `status`, `admin_notes`, `reviewed_at`, `created_at`, `updated_at`) VALUES
 (1, 'Deep Cleaning Specialist', 'full-time', 'emmausldigol@yahoo.com', NULL, 'job-applications/br28IS5r8Zo3rrr6isKPJer2ipGhOqRxRyHhaOPH.pdf', 'BCSAD_Template_Application-for-Graduation.pdf', 'pending', NULL, NULL, '2026-02-03 21:48:27', '2026-02-03 21:48:27');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `job_postings`
+--
+
+CREATE TABLE `job_postings` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `location` varchar(255) NOT NULL,
+  `salary` varchar(255) NOT NULL,
+  `type` enum('full-time','part-time','remote') NOT NULL DEFAULT 'full-time',
+  `type_badge` varchar(255) NOT NULL DEFAULT 'Full-time Employee',
+  `icon` varchar(255) NOT NULL DEFAULT 'fa-user-tie',
+  `icon_color` varchar(255) NOT NULL DEFAULT 'blue',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `required_skills` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`required_skills`)),
+  `required_docs` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`required_docs`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -1382,7 +1465,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (50, '2025_11_03_201005_drop_unused_tables', 1),
 (51, '2026_01_20_033309_create_company_checklists_table', 1),
 (52, '2026_01_20_100000_create_task_checklist_completions_table', 1),
-(53, '2026_02_04_053704_create_job_applications_table', 2);
+(53, '2026_02_04_053704_create_job_applications_table', 2),
+(54, '2026_02_04_081516_create_job_postings_table', 3),
+(55, '2026_02_04_100000_create_employee_requests_table', 4),
+(56, '2026_02_04_120000_add_admin_notes_to_employee_requests_table', 5);
 
 -- --------------------------------------------------------
 
@@ -1401,6 +1487,14 @@ CREATE TABLE `notifications` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`, `read_at`, `created_at`, `updated_at`) VALUES
+(1, 5, 'leave_approved', 'Leave Request Approved', 'Your leave request for 2026-02-19 has been approved.', '{\"leave_request_id\":2,\"date\":\"2026-02-19\",\"end_date\":null,\"type\":\"sick\",\"admin_notes\":null}', NULL, '2026-02-03 22:18:47', '2026-02-03 22:18:47'),
+(2, 5, 'leave_approved', 'Leave Request Approved', 'Your leave request for 2026-02-05 has been approved.', '{\"leave_request_id\":3,\"date\":\"2026-02-05\",\"end_date\":null,\"type\":\"sick\",\"admin_notes\":null}', NULL, '2026-02-03 23:03:17', '2026-02-03 23:03:17');
 
 -- --------------------------------------------------------
 
@@ -1459,7 +1553,7 @@ INSERT INTO `optimization_runs` (`id`, `service_date`, `triggered_by_task_id`, `
 (6, '2026-02-05', NULL, 'completed', 0, 1, 4, 9, '\"[]\"', '\"[]\"', 0.1515, 17, NULL, '2026-02-03 20:53:46', '2026-02-03 20:53:46', '2026-02-03 20:53:46'),
 (7, '2026-02-05', NULL, 'completed', 0, 2, 4, 9, '\"[]\"', '\"[]\"', 0.0094, 16, NULL, '2026-02-03 20:53:47', '2026-02-03 20:53:47', '2026-02-03 20:53:47'),
 (8, '2026-02-05', NULL, 'completed', 0, 2, 3, 7, '\"[]\"', '\"[]\"', 1.0000, 24, NULL, '2026-02-03 20:53:47', '2026-02-03 20:53:48', '2026-02-03 20:53:48'),
-(9, '2026-02-05', NULL, 'completed', 0, 3, 3, 7, '\"[]\"', '\"[]\"', 0.7960, 16, NULL, '2026-02-03 20:53:48', '2026-02-03 20:53:48', NULL);
+(9, '2026-02-05', NULL, 'completed', 0, 3, 3, 7, '\"[]\"', '\"[]\"', 1.0000, 16, NULL, '2026-02-03 20:53:48', '2026-02-04 00:40:31', NULL);
 
 -- --------------------------------------------------------
 
@@ -1653,8 +1747,8 @@ CREATE TABLE `personal_access_tokens` (
 --
 
 INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
-(6, 'App\\Models\\User', 5, 'mobile-app', '4d2f7c8ddb1fbcacdddda0c1a11fc5759bd2dcb5ee6b09ecf4a1a4a86a2fb9cd', '[\"*\"]', '2026-02-03 21:37:15', NULL, '2026-02-03 21:32:38', '2026-02-03 21:37:15'),
-(8, 'App\\Models\\User', 5, 'mobile-app', '67c5179aa5c942ce431241bd1145088c556bb4cb2d9335255d45aaf54962fffe', '[\"*\"]', '2026-02-03 21:50:30', NULL, '2026-02-03 21:45:50', '2026-02-03 21:50:30');
+(16, 'App\\Models\\User', 5, 'mobile-app', '78e6eff22e31fcac93578d4ffe2f611019f1d5918a24b81349690ea735516d2d', '[\"*\"]', '2026-02-03 23:41:01', NULL, '2026-02-03 23:03:35', '2026-02-03 23:41:01'),
+(17, 'App\\Models\\User', 4, 'mobile-app', '8477a0fcce7e9189a5d00f9667db103d8c2887720c731078134c94945f9635fa', '[\"*\"]', '2026-02-04 03:33:51', NULL, '2026-02-04 03:33:50', '2026-02-04 03:33:51');
 
 -- --------------------------------------------------------
 
@@ -1933,7 +2027,7 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `profile_picture`, `phon
 (2, 'Vincent Rey Digol', 'vince123', 'vincentreydigol@finnoys.com', 'profile_pictures/IDMjQjtw1oK4v43oJLaET1NlUk863qV9mMM0mFgh.png', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$oo44Ffamrr.hoI349F5rzOVkuiDEKbKNHX9Q/DFlZRNLOSCSKYBCW', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-28 18:24:13', NULL),
 (3, 'Martin Yvann Leonardo', 'martin123', 'martinyvannleonardo@finnoys.com', NULL, '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$fEn6ftE4hV6qwLE6Pu7i5uTTpwHeEKyXtviZ7oTI7mh2hKzE660GS', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-24 22:42:00', NULL),
 (4, 'Earl Leonardo', NULL, 'earlleonardo@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$UyZcyuwzjz1SrB6dPNZ3J.hCGWcCJ9ixAA0NP59Y7n9tkR/1JGdDW', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-02 10:51:46', NULL),
-(5, 'Merlyn Guzman', NULL, 'merlynguzman@finnoys.com', 'profile_pictures/WG6Bb2Nyls3YKAPu0wLSGdAMA2Vk5ysLMqlSEyhr.jpg', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$KpT8QxYAqhp9HwVke31Wz.TEFENNoGFJQFdjhKUyyDJnFccFetEBi', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-25 04:04:23', NULL),
+(5, 'Merlyn Guzman', NULL, 'merlynguzman@finnoys.com', 'uploads/profile_pictures/6982e7cda8bd6_1770186701.png', '+358 40 123 4567', 'Inari, Finland', NULL, '$2y$10$KpT8QxYAqhp9HwVke31Wz.TEFENNoGFJQFdjhKUyyDJnFccFetEBi', 'employee', NULL, 1, '2025-10-02 10:51:46', '2026-02-04 00:31:41', NULL),
 (6, 'Aries Guzman', NULL, 'ariesguzman@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$h85peir4XiLSdbJKuonExOoegZi/SBqQRGQ0xSYR5CzaERjEa2N3S', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-02 10:51:46', NULL),
 (7, 'Bella Ostan', NULL, 'bellaostan@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$Zwd38lfJ4T5iG8JVXSxhBusbyZG/V4UWW8CePueSyXBh/IsY9D2Ju', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-02 10:51:46', NULL),
 (8, 'Jennylyn Saballero', NULL, 'jennylynsaballero@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$zFxo49djPY3wMpN51qiYiOVxkkofeQ0RYRROfaphiP.cfs5BvHMQq', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-02 10:51:46', NULL),
@@ -1941,7 +2035,7 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `profile_picture`, `phon
 (10, 'Cherrylyn Morales ', NULL, 'cherrylynmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$1swK95thyuDIKhCj1CDFJ.T591GF9ysJ4KvKJRaTfAiV7QTdU9Yaa', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-02 10:51:46', NULL),
 (11, 'John Carl Morales', NULL, 'johncarlmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$rLfpy6PWrrJYqVOkZUyFa.cLOLrTwLbKfkdp7tAS/vLQUotLTYOhi', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-02 10:51:46', NULL),
 (12, 'John Kevin Morales', NULL, 'johnkevinmorales@finnoys.com', NULL, NULL, NULL, NULL, '$2y$10$/CV5zvi4rk3qSqg6JuYsme9FU7O06qgGq2eKBtDTSJXGhSPRAUAt.', 'employee', NULL, 1, '2025-10-02 10:51:46', '2025-10-02 10:51:46', NULL),
-(17, 'Miradel Leonardo', 'mira123', 'miradel@gmail.com', NULL, '0401234567', 'Inari, Finland', NULL, '$2y$10$ogpFC.oYTxztWlLor7uXaecaHk9TA6jOrwk3DIOIt5TTQFAjFFB0C', 'external_client', 'JKByX8lUV6wGDkojeQw622DCRSgUgz5MIIMTRxsf3Nk6MC7F1XTH56ja0gR0', 1, '2025-10-25 23:09:50', '2025-10-27 04:19:57', NULL),
+(17, 'Miradel Leonardo', 'mira123', 'miradel@gmail.com', NULL, '0401234567', 'Inari, Finland', NULL, '$2y$10$ogpFC.oYTxztWlLor7uXaecaHk9TA6jOrwk3DIOIt5TTQFAjFFB0C', 'external_client', 'ZkIFsi45d5gnuWhaKtZYB0YK4GClAhbnBMRHUABvRIOj9mZVyVOmOdNJtoA5', 1, '2025-10-25 23:09:50', '2025-10-27 04:19:57', NULL),
 (19, 'Kakslauttanen', 'kakslauttanen', 'kakslauttanen@company.com', NULL, '+358 00 000 0000', NULL, '2025-10-28 23:25:47', '$2y$10$caOzaZwOF315fH011mFFJegP0nJTHhXbHzXguXH/92NwCTh/zCx0y', 'company', NULL, 1, '2025-10-28 23:25:47', '2025-10-28 23:25:47', NULL),
 (20, 'Aikamatkat', 'aikamatkat', 'aikamatkat@company.com', NULL, '+358 00 000 0000', NULL, '2025-10-28 23:25:47', '$2y$10$UyZcyuwzjz1SrB6dPNZ3J.hCGWcCJ9ixAA0NP59Y7n9tkR/1JGdDW', 'company', NULL, 1, '2025-10-28 23:25:47', '2025-10-28 23:25:47', NULL);
 
@@ -2063,6 +2157,13 @@ ALTER TABLE `employee_performance`
   ADD KEY `employee_performance_date_index` (`date`);
 
 --
+-- Indexes for table `employee_requests`
+--
+ALTER TABLE `employee_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `employee_requests_employee_id_foreign` (`employee_id`);
+
+--
 -- Indexes for table `employee_watched_videos`
 --
 ALTER TABLE `employee_watched_videos`
@@ -2105,6 +2206,12 @@ ALTER TABLE `jobs`
 -- Indexes for table `job_applications`
 --
 ALTER TABLE `job_applications`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `job_postings`
+--
+ALTER TABLE `job_postings`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -2286,7 +2393,7 @@ ALTER TABLE `alerts`
 -- AUTO_INCREMENT for table `attendances`
 --
 ALTER TABLE `attendances`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2068;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2070;
 
 --
 -- AUTO_INCREMENT for table `cars`
@@ -2316,7 +2423,7 @@ ALTER TABLE `clients`
 -- AUTO_INCREMENT for table `client_appointments`
 --
 ALTER TABLE `client_appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `company_checklists`
@@ -2346,7 +2453,7 @@ ALTER TABLE `daily_team_assignments`
 -- AUTO_INCREMENT for table `day_offs`
 --
 ALTER TABLE `day_offs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `employees`
@@ -2361,10 +2468,16 @@ ALTER TABLE `employee_performance`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `employee_requests`
+--
+ALTER TABLE `employee_requests`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `employee_watched_videos`
 --
 ALTER TABLE `employee_watched_videos`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `feedback`
@@ -2397,6 +2510,12 @@ ALTER TABLE `job_applications`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `job_postings`
+--
+ALTER TABLE `job_postings`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `locations`
 --
 ALTER TABLE `locations`
@@ -2406,13 +2525,13 @@ ALTER TABLE `locations`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `optimization_generations`
@@ -2448,7 +2567,7 @@ ALTER TABLE `performance_flags`
 -- AUTO_INCREMENT for table `personal_access_tokens`
 --
 ALTER TABLE `personal_access_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `push_tokens`
@@ -2579,6 +2698,12 @@ ALTER TABLE `employees`
 --
 ALTER TABLE `employee_performance`
   ADD CONSTRAINT `employee_performance_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_requests`
+--
+ALTER TABLE `employee_requests`
+  ADD CONSTRAINT `employee_requests_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `employee_watched_videos`
