@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobApplication;
+use App\Models\JobPosting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -66,8 +67,9 @@ class JobApplicationController extends Controller
         }
 
         $applications = $query->orderBy('created_at', 'desc')->paginate(15);
+        $jobPostings = JobPosting::orderBy('created_at', 'desc')->get();
 
-        return view('admin.recruitment.index', compact('applications'));
+        return view('admin.recruitment.index', compact('applications', 'jobPostings'));
     }
 
     /**

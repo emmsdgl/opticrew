@@ -368,7 +368,7 @@
             </div>
         </div>
 
-        <!-- Rating Modal -->
+        <!-- Feedback Modal -->
         <div x-show="showRateModal" x-cloak @click="closeRateModal()"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 p-4"
             style="display: none;">
@@ -382,8 +382,9 @@
 
                 <!-- Close button -->
                 <button type="button" @click="closeRateModal()"
-                    class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-900 dark:bg-gray-800 text-white rounded-full hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none z-10">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-900 dark:bg-gray-800 text-white rounded-full hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 dark:focus:ring-gray-700 z-10">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
@@ -395,40 +396,98 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400 tracking-wide">
                             Your feedback matters
                         </p>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight my-3">
-                            How would you rate this service?
+                        <h3
+                            class="text-3xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight my-3">
+                            How would you rate<br class="hidden sm:block">this service?
                         </h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed max-w-md mx-auto">
-                            Your input helps us improve our services.
+                        <p
+                            class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-md mx-auto">
+                            Your input is valuable in helping us better understand your needs.
                         </p>
                     </div>
 
-                    <!-- Star Rating -->
-                    <div class="flex justify-center items-center gap-2 mb-8">
-                        <template x-for="star in 5" :key="star">
-                            <button @click="selectedRating = star" type="button"
-                                class="text-3xl transition-all duration-200 focus:outline-none"
-                                :class="star <= selectedRating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-200'">
-                                <i class="fa-solid fa-star"></i>
+                    <!-- Emoji Rating -->
+                    <div class="flex justify-center items-end gap-2 sm:gap-3 mb-10">
+                        @php
+                            $emojis = [
+                                1 => asset('images/icons/emojis/Very-Dissatisfied.svg'),
+                                2 => asset('images/icons/emojis/Dissatisfied.svg'),
+                                3 => asset('images/icons/emojis/Neutral.svg'),
+                                4 => asset('images/icons/emojis/Satisfied.svg'),
+                                5 => asset('images/icons/emojis/Very-Satisfied.svg')
+                            ];
+                            $ratingLabels = [
+                                1 => 'Very Dissatisfied',
+                                2 => 'Dissatisfied',
+                                3 => 'Neutral',
+                                4 => 'Satisfied',
+                                5 => 'Very Satisfied'
+                            ];
+                        @endphp
+                        @foreach($emojis as $rating => $emojiSrc)
+                            <button @click="selectedRating = {{ $rating }}"
+                                :class="selectedRating === {{ $rating }} ? 'scale-100 sm:scale-100' : 'scale-100'"
+                                class="relative flex flex-col items-center transition-all duration-200 focus:outline-none group"
+                                type="button">
+                                <div class="rounded-full flex items-center justify-center transition-all duration-200"
+                                    :class="selectedRating === {{ $rating }}
+                                        ? 'bg-blue-600 dark:bg-blue-500 ring-4 ring-blue-200 dark:ring-blue-900 w-14 h-14 sm:w-16 sm:h-16'
+                                        : 'bg-gray-200 dark:bg-gray-800 w-12 h-12 sm:w-14 sm:h-14 group-hover:bg-gray-300 dark:group-hover:bg-gray-700'">
+                                    <img src="{{ $emojiSrc }}" alt="Rating {{ $rating }}"
+                                        :class="selectedRating === {{ $rating }} ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8 grayscale opacity-60'"
+                                        class="transition-all duration-200">
+                                </div>
+                                <span x-show="selectedRating === {{ $rating }}" x-transition
+                                    class="absolute -bottom-8 text-xs font-semibold text-white bg-blue-600 dark:bg-blue-500 px-3 py-1 rounded-full whitespace-nowrap shadow-lg">
+                                    {{ $ratingLabels[$rating] }}
+                                </span>
                             </button>
-                        </template>
+                        @endforeach
+                    </div>
+
+                    <!-- Keyword Tags -->
+                    <div class="mt-12 mb-4">
+                        <div class="flex flex-wrap justify-center gap-2">
+                            @php
+                                $keywords = [
+                                    'Punctual Service',
+                                    'Professional Staff',
+                                    'Thorough Cleaning',
+                                    'Good Communication',
+                                    'Value for Money',
+                                    'Friendly Team',
+                                    'Met Expectations',
+                                    'Would Recommend'
+                                ];
+                            @endphp
+                            @foreach($keywords as $keyword)
+                                <button @click="toggleKeyword('{{ $keyword }}')"
+                                    :class="isKeywordSelected('{{ $keyword }}')
+                                            ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-900 dark:border-gray-100'
+                                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600'"
+                                    type="button"
+                                    class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-medium border rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 dark:focus:ring-gray-700">
+                                    {{ $keyword }}
+                                </button>
+                            @endforeach
+                        </div>
                     </div>
 
                     <!-- Detailed Review -->
                     <div class="mb-6">
                         <label class="block text-sm text-gray-900 dark:text-white mb-2">
-                            Comments (Optional)
+                            Detailed Review
                         </label>
-                        <textarea x-model="feedbackText" rows="3" placeholder="Share your experience..."
-                            class="w-full px-4 py-3 text-sm text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none placeholder-gray-400 dark:placeholder-gray-500 resize-none transition-all"></textarea>
+                        <textarea x-model="feedbackText" rows="3" placeholder="Add a comment"
+                            class="w-full px-4 py-3 text-sm text-gray-900 dark:text-white border-0 bg-gray-50 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none placeholder-gray-400 dark:placeholder-gray-500 resize-none transition-all"></textarea>
                     </div>
 
                     <!-- Submit Button -->
-                    <button @click="submitRating()" :disabled="selectedRating === 0"
-                        :class="selectedRating === 0 ? 'opacity-50 cursor-not-allowed bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'"
-                        type="button"
-                        class="w-full px-6 py-3 text-sm font-bold text-white rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600">
-                        Submit Rating
+                    <button @click="submitRating()" :disabled="selectedRating === 0" :class="selectedRating === 0
+                ? 'opacity-50 cursor-not-allowed bg-blue-600 dark:bg-blue-800'
+                : 'bg-blue-900 dark:bg-blue-700 hover:bg-blue-800 dark:hover:bg-blue-600'" type="button"
+                        class="w-full px-6 py-3.5 sm:py-4 text-sm font-bold text-white rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 dark:focus:ring-blue-700 disabled:hover:bg-blue-900 dark:disabled:hover:bg-blue-800">
+                        Submit Feedback
                     </button>
                 </div>
             </div>
@@ -444,6 +503,7 @@
             showRateModal: false,
             selectedRating: 0,
             feedbackText: '',
+            selectedKeywords: [],
             ratingActivityIndex: null,
             activities: [
                 {
@@ -601,15 +661,30 @@
                 this.showRateModal = false;
                 this.selectedRating = 0;
                 this.feedbackText = '';
+                this.selectedKeywords = [];
                 this.ratingActivityIndex = null;
+            },
+
+            toggleKeyword(keyword) {
+                const index = this.selectedKeywords.indexOf(keyword);
+                if (index === -1) {
+                    this.selectedKeywords.push(keyword);
+                } else {
+                    this.selectedKeywords.splice(index, 1);
+                }
+            },
+
+            isKeywordSelected(keyword) {
+                return this.selectedKeywords.includes(keyword);
             },
 
             async submitRating() {
                 if (this.selectedRating === 0) return;
 
-                console.log('Submitting rating:', {
+                console.log('Submitting feedback:', {
                     activityId: this.ratingActivityIndex !== null ? this.activities[this.ratingActivityIndex].id : null,
                     rating: this.selectedRating,
+                    keywords: this.selectedKeywords,
                     comment: this.feedbackText
                 });
 

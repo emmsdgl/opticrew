@@ -96,203 +96,65 @@
 
                 {{-- Job Cards Grid --}}
                 <div id="jobList" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    {{-- Job Card 1 --}}
-                    <div class="job-item cursor-pointer" data-job-id="1" data-type="full-time"
-                        onclick="selectJob(1)">
+                    @forelse($jobPostings ?? [] as $job)
+                    @php
+                        $iconBgClass = match($job->icon_color) {
+                            'green' => 'bg-green-50 dark:bg-green-900/30',
+                            'purple' => 'bg-purple-50 dark:bg-purple-900/30',
+                            'orange' => 'bg-orange-50 dark:bg-orange-900/30',
+                            'red' => 'bg-red-50 dark:bg-red-900/30',
+                            default => 'bg-blue-50 dark:bg-blue-900/30',
+                        };
+                        $iconTextClass = match($job->icon_color) {
+                            'green' => 'text-green-600 dark:text-green-400',
+                            'purple' => 'text-purple-600 dark:text-purple-400',
+                            'orange' => 'text-orange-600 dark:text-orange-400',
+                            'red' => 'text-red-600 dark:text-red-400',
+                            default => 'text-blue-600 dark:text-blue-400',
+                        };
+                        $typeBadgeClass = match($job->type) {
+                            'part-time' => 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+                            'remote' => 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+                            default => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                        };
+                    @endphp
+                    <div class="job-item cursor-pointer" data-job-id="{{ $job->id }}" data-type="{{ $job->type }}"
+                        onclick="selectJob({{ $job->id }})">
                         <div
                             class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700">
                             <div class="flex items-start justify-between mb-4">
-                                <div
-                                    class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-user-tie text-blue-600 dark:text-blue-400 text-xl"></i>
+                                <div class="w-12 h-12 {{ $iconBgClass }} rounded-xl flex items-center justify-center">
+                                    <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-xl"></i>
                                 </div>
                                 <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
                                     <i class="far fa-heart text-xl"></i>
                                 </button>
                             </div>
-                            <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded mb-2">
-                                Full-time Employee
+                            <span class="inline-block px-2 py-1 {{ $typeBadgeClass }} text-xs font-semibold rounded mb-2">
+                                {{ $job->type_badge }}
                             </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Deep Cleaning Specialist</h3>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">{{ $job->title }}</h3>
                             <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                Handling intensive cleaning tasks using specialized equipment and chemicals to meet high sanitation standards.
+                                {{ $job->description }}
                             </p>
                             <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
                                 <span class="flex items-center gap-1">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    Imst, Finland
+                                    {{ $job->location }}
                                 </span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">$30 - $40/hr</span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $job->salary }}</span>
                             </div>
                         </div>
                     </div>
-
-                    {{-- Job Card 2 --}}
-                    <div class="job-item cursor-pointer" data-job-id="2" data-type="part-time"
-                        onclick="selectJob(2)">
-                        <div
-                            class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-start justify-between mb-4">
-                                <div
-                                    class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-broom text-blue-600 dark:text-blue-400 text-xl"></i>
-                                </div>
-                                <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                    <i class="far fa-heart text-xl"></i>
-                                </button>
-                            </div>
-                            <span class="inline-block px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-semibold rounded mb-2">
-                                Part-time Employee
-                            </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Cleaner</h3>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                An ideal position that offers flexible hours ideal for working parents or individuals seeking work-life balance.
-                            </p>
-                            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Imst, Finland
-                                </span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">$30 - $40/hr</span>
-                            </div>
-                        </div>
+                    @empty
+                    <div class="col-span-2 text-center py-12">
+                        <i class="fas fa-briefcase text-gray-400 text-5xl mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400">No job openings available at the moment.</p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Please check back later for new opportunities.</p>
                     </div>
-
-                    {{-- Job Card 3 --}}
-                    <div class="job-item cursor-pointer" data-job-id="3" data-type="full-time"
-                        onclick="selectJob(3)">
-                        <div
-                            class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-start justify-between mb-4">
-                                <div
-                                    class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-dolly text-blue-600 dark:text-blue-400 text-xl"></i>
-                                </div>
-                                <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                    <i class="far fa-heart text-xl"></i>
-                                </button>
-                            </div>
-                            <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded mb-2">
-                                Full-time Employee
-                            </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Move-Out Staff</h3>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                Clean vacated properties, ensuring they meet move-out standards for landlords and tenants.
-                            </p>
-                            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Imst, Finland
-                                </span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">$30 - $40/hr</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Job Card 4 --}}
-                    <div class="job-item cursor-pointer" data-job-id="4" data-type="full-time"
-                        onclick="selectJob(4)">
-                        <div
-                            class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-start justify-between mb-4">
-                                <div
-                                    class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-clipboard-check text-blue-600 dark:text-blue-400 text-xl"></i>
-                                </div>
-                                <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                    <i class="far fa-heart text-xl"></i>
-                                </button>
-                            </div>
-                            <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded mb-2">
-                                Full-time Employee
-                            </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Quality Control Inspector</h3>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                Ensures all cleaning tasks meet company standards through post-cleaning inspections.
-                            </p>
-                            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Imst, Finland
-                                </span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">$30 - $40/hr</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Job Card 5 --}}
-                    <div class="job-item cursor-pointer" data-job-id="5" data-type="remote"
-                        onclick="selectJob(5)">
-                        <div
-                            class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-start justify-between mb-4">
-                                <div
-                                    class="w-12 h-12 bg-purple-50 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-headset text-purple-600 dark:text-purple-400 text-xl"></i>
-                                </div>
-                                <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                    <i class="far fa-heart text-xl"></i>
-                                </button>
-                            </div>
-                            <span class="inline-block px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-semibold rounded mb-2">
-                                Remote
-                            </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Customer Service Representative</h3>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                Handle client inquiries, schedule appointments, and manage customer relationships remotely.
-                            </p>
-                            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Remote
-                                </span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">$25 - $35/hr</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Job Card 6 --}}
-                    <div class="job-item cursor-pointer" data-job-id="6" data-type="full-time"
-                        onclick="selectJob(6)">
-                        <div
-                            class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-start justify-between mb-4">
-                                <div
-                                    class="w-12 h-12 bg-green-50 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-spray-can text-green-600 dark:text-green-400 text-xl"></i>
-                                </div>
-                                <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                    <i class="far fa-heart text-xl"></i>
-                                </button>
-                            </div>
-                            <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded mb-2">
-                                Full-time Employee
-                            </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Sanitization Specialist</h3>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                Focus on disinfection and sanitization in healthcare facilities and high-risk environments.
-                            </p>
-                            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Imst, Finland
-                                </span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">$35 - $45/hr</span>
-                            </div>
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
 
                 {{-- Applied Vacancies Section --}}
@@ -610,167 +472,26 @@
 
 @push('scripts')
     <script>
+        // Dynamically generated jobs from database
         const jobs = {
-            1: {
-                title: "Deep Cleaning Specialist",
-                description: "Handling intensive cleaning tasks using specialized equipment and chemicals to meet high sanitation standards.",
-                location: "Imst, Finland",
-                salary: "$30 - $40/hr",
-                type: "full-time",
-                typeBadge: "Full-time Employee",
-                icon: "fa-user-tie",
-                iconColor: "blue",
-                requiredSkills: [
-                    "Advanced cleaning methods",
-                    "Equipment and chemical handling",
-                    "Safety awareness",
-                    "Prior deep cleaning experience",
-                    "Knowledge of cleaning chemicals",
-                    "PPR compliance"
-                ],
-                requiredDocs: [
-                    "Resume / Bio-data",
-                    "Valid Government ID (e.g., Passport, National ID)",
-                    "Passport-size (recent) photo",
-                    "Educational certificates and photo",
-                    "NBI / Police Clearance",
-                    "2×2 ID Photo (or ROA-acknowledged employment",
-                    "Company Policy & NDA Acknowledgement"
-                ]
+            @foreach($jobPostings ?? [] as $job)
+            {{ $job->id }}: {
+                title: @json($job->title),
+                description: @json($job->description),
+                location: @json($job->location),
+                salary: @json($job->salary),
+                type: @json($job->type),
+                typeBadge: @json($job->type_badge),
+                icon: @json($job->icon),
+                iconColor: @json($job->icon_color),
+                requiredSkills: @json($job->required_skills ?? []),
+                requiredDocs: @json($job->required_docs ?? [])
             },
-            2: {
-                title: "Cleaner",
-                description: "An ideal position that offers flexible hours ideal for working parents or individuals seeking work-life balance.",
-                location: "Imst, Finland",
-                salary: "$30 - $40/hr",
-                type: "part-time",
-                typeBadge: "Part-time Employee",
-                icon: "fa-broom",
-                iconColor: "blue",
-                requiredSkills: [
-                    "Basic cleaning knowledge",
-                    "Attention to detail",
-                    "Time management",
-                    "Reliability and punctuality",
-                    "Physical stamina",
-                    "Customer service skills"
-                ],
-                requiredDocs: [
-                    "Resume / Bio-data",
-                    "Valid Government ID",
-                    "Passport-size photo",
-                    "NBI / Police Clearance",
-                    "Company Policy & NDA Acknowledgement"
-                ]
-            },
-            3: {
-                title: "Move-Out Staff",
-                description: "Clean vacated properties, ensuring they meet move-out standards for landlords and tenants.",
-                location: "Imst, Finland",
-                salary: "$30 - $40/hr",
-                type: "full-time",
-                typeBadge: "Full-time Employee",
-                icon: "fa-dolly",
-                iconColor: "blue",
-                requiredSkills: [
-                    "Deep cleaning expertise",
-                    "Property inspection knowledge",
-                    "Time-efficient cleaning methods",
-                    "Understanding of move-out standards",
-                    "Flexibility in scheduling",
-                    "Professional communication"
-                ],
-                requiredDocs: [
-                    "Resume / Bio-data",
-                    "Valid Government ID",
-                    "Passport-size photo",
-                    "Educational certificates",
-                    "NBI / Police Clearance",
-                    "Company Policy & NDA Acknowledgement"
-                ]
-            },
-            4: {
-                title: "Quality Control Inspector",
-                description: "Ensures all cleaning tasks meet company standards through post-cleaning inspections.",
-                location: "Imst, Finland",
-                salary: "$30 - $40/hr",
-                type: "full-time",
-                typeBadge: "Full-time Employee",
-                icon: "fa-clipboard-check",
-                iconColor: "blue",
-                requiredSkills: [
-                    "Quality assurance experience",
-                    "Attention to detail",
-                    "Knowledge of cleaning standards",
-                    "Inspection and evaluation skills",
-                    "Report writing",
-                    "Communication skills"
-                ],
-                requiredDocs: [
-                    "Resume / Bio-data",
-                    "Valid Government ID",
-                    "Passport-size photo",
-                    "Educational certificates",
-                    "NBI / Police Clearance",
-                    "Relevant certifications",
-                    "Company Policy & NDA Acknowledgement"
-                ]
-            },
-            5: {
-                title: "Customer Service Representative",
-                description: "Handle client inquiries, schedule appointments, and manage customer relationships remotely.",
-                location: "Remote",
-                salary: "$25 - $35/hr",
-                type: "remote",
-                typeBadge: "Remote",
-                icon: "fa-headset",
-                iconColor: "purple",
-                requiredSkills: [
-                    "Excellent communication skills",
-                    "Customer service experience",
-                    "Scheduling and organization",
-                    "CRM software proficiency",
-                    "Problem-solving abilities",
-                    "Professional phone etiquette"
-                ],
-                requiredDocs: [
-                    "Resume / Bio-data",
-                    "Valid Government ID",
-                    "Passport-size photo",
-                    "Educational certificates",
-                    "NBI / Police Clearance",
-                    "Internet setup proof",
-                    "Company Policy & NDA Acknowledgement"
-                ]
-            },
-            6: {
-                title: "Sanitization Specialist",
-                description: "Focus on disinfection and sanitization in healthcare facilities and high-risk environments.",
-                location: "Imst, Finland",
-                salary: "$35 - $45/hr",
-                type: "full-time",
-                typeBadge: "Full-time Employee",
-                icon: "fa-spray-can",
-                iconColor: "green",
-                requiredSkills: [
-                    "Healthcare sanitization protocols",
-                    "Chemical safety knowledge",
-                    "PPE usage expertise",
-                    "Infection control procedures",
-                    "Regulatory compliance",
-                    "Documentation skills"
-                ],
-                requiredDocs: [
-                    "Resume / Bio-data",
-                    "Valid Government ID",
-                    "Passport-size photo",
-                    "Healthcare certifications",
-                    "Safety training certificates",
-                    "NBI / Police Clearance",
-                    "Company Policy & NDA Acknowledgement"
-                ]
-            }
+            @endforeach
         };
+
+        // Get first job ID for default selection
+        const firstJobId = {{ ($jobPostings ?? collect())->first()?->id ?? 'null' }};
 
         let currentFilter = 'all';
         let selectedJobId = null;
@@ -789,9 +510,9 @@
                         block: 'nearest'
                     });
                 }
-            } else {
-                // Pre-select the first job (job ID 1) on page load
-                selectJob(1);
+            } else if (firstJobId) {
+                // Pre-select the first job on page load
+                selectJob(firstJobId);
             }
         });
 

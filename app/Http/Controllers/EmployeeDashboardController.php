@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Holiday;
+use App\Models\EmployeeRequest;
 use Carbon\Carbon;
 
 class EmployeeDashboardController extends Controller
@@ -112,6 +113,28 @@ class EmployeeDashboardController extends Controller
         // Check if employee already has attendance record for today (prevents duplicate clock-ins)
         $hasAttendanceToday = $todayAttendance !== null;
 
+        // --- Fetch Recent Employee Requests (exclude cancelled) ---
+        $employeeRequests = EmployeeRequest::where('employee_id', $employee->id)
+            ->where('status', '!=', 'Cancelled')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($request) {
+                return [
+                    'id' => $request->id,
+                    'type' => $request->absence_type,
+                    'date' => Carbon::parse($request->absence_date)->format('M d, Y'),
+                    'time_range' => $request->time_range,
+                    'from_time' => $request->from_time ? Carbon::parse($request->from_time)->format('h:i A') : null,
+                    'to_time' => $request->to_time ? Carbon::parse($request->to_time)->format('h:i A') : null,
+                    'reason' => $request->reason,
+                    'description' => $request->description,
+                    'status' => $request->status,
+                    'proof_document' => $request->proof_document,
+                    'created_at' => $request->created_at->format('M d, Y h:i A'),
+                ];
+            })->toArray();
+
         return view('employee.dashboard', [
             'employee' => $employee,
             'dailySchedule' => $dailySchedule,
@@ -121,7 +144,7 @@ class EmployeeDashboardController extends Controller
             'holidays' => $holidays, // Pass holidays to the view
             'isClockedIn' => $isClockedIn, // Pass clock in status (for button label)
             'hasAttendanceToday' => $hasAttendanceToday, // Pass attendance check (for preventing duplicates)
-            'requests' => $request
+            'employeeRequests' => $employeeRequests, // Pass employee requests
         ]);
     }
 }

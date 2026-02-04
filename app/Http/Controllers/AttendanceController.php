@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\DayOff;
 use App\Models\Employee;
+use App\Models\EmployeeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -132,49 +133,55 @@ class AttendanceController extends Controller
             ],
         ];
 
-        // Get all leave/day-off requests
-        $leaveRequests = DayOff::with(['employee.user'])
+        // Get all employee requests (leave/absence requests)
+        $employeeRequests = EmployeeRequest::with(['employee.user'])
             ->orderBy('created_at', 'desc')
             ->take(50)
             ->get();
 
         // Format request records for display (table format + modal data)
-        $requestRecords = $leaveRequests->map(function ($leave, $index) {
-            $employeeName = $leave->employee?->fullName ?? 'Unknown';
-            $date = Carbon::parse($leave->date);
+        $requestRecords = $employeeRequests->map(function ($request, $index) {
+            $employeeName = $request->employee?->fullName ?? 'Unknown';
+            $date = Carbon::parse($request->absence_date);
 
             // Map status to display format for badge colors
             $statusMap = [
-                'pending' => 'late',      // Yellow/Orange color
-                'approved' => 'present',  // Green color
-                'rejected' => 'absent'    // Red color
+                'Pending' => 'late',       // Yellow/Orange color
+                'Approved' => 'present',   // Green color
+                'Rejected' => 'absent',    // Red color
+                'Cancelled' => 'archived'  // Gray color
             ];
 
             return [
                 // Table display fields
-                'status' => $statusMap[$leave->status] ?? 'absent',
+                'status' => $statusMap[$request->status] ?? 'late',
                 'date' => $date->format('F d') . ' - ' . $employeeName,
-                'dayOfWeek' => ucfirst($leave->type) . ' (' . ucfirst($leave->status) . ')',
-                'timeIn' => Str::limit(ucfirst($leave->reason), 30),
+                'dayOfWeek' => $request->absence_type . ' (' . $request->status . ')',
+                'timeIn' => Str::limit($request->reason, 30),
                 'timeInNote' => '',
-                'timeOut' => $leave->end_date ? Carbon::parse($leave->end_date)->format('F d') : '-',
+                'timeOut' => $request->time_range,
                 'timeOutNote' => '',
-                'hoursWorked' => ($leave->duration_days ?? 1) . ' day(s)',
+                'hoursWorked' => $request->time_range,
                 'timedIn' => true,
                 'isTimedOut' => false,
                 'buttonLabel' => 'View',
                 // Modal data fields
                 'requestIndex' => $index,
-                'requestId' => $leave->id,
+                'requestId' => $request->id,
                 'requestEmployeeName' => $employeeName,
-                'requestType' => ucfirst($leave->type),
-                'requestStatus' => $leave->status,
+                'requestType' => $request->absence_type,
+                'requestStatus' => strtolower($request->status),
                 'requestDate' => $date->format('F d, Y'),
-                'requestEndDate' => $leave->end_date ? Carbon::parse($leave->end_date)->format('F d, Y') : null,
-                'requestReason' => ucfirst($leave->reason),
-                'requestAdminNotes' => $leave->admin_notes ?? '',
-                'requestDurationDays' => $leave->duration_days ?? 1,
-                'requestCreatedAt' => $leave->created_at->format('M d, Y h:i A'),
+                'requestEndDate' => null,
+                'requestTimeRange' => $request->time_range,
+                'requestFromTime' => $request->from_time ? Carbon::parse($request->from_time)->format('h:i A') : null,
+                'requestToTime' => $request->to_time ? Carbon::parse($request->to_time)->format('h:i A') : null,
+                'requestReason' => $request->reason,
+                'requestDescription' => $request->description,
+                'requestProofDocument' => $request->proof_document,
+                'requestAdminNotes' => $request->admin_notes ?? '',
+                'requestDurationDays' => 1,
+                'requestCreatedAt' => $request->created_at->format('M d, Y h:i A'),
             ];
         })->toArray();
 
@@ -306,7 +313,51 @@ class AttendanceController extends Controller
             ],
         ];
 
-        return view('employee.attendance', compact('stats', 'attendanceRecords'));
+        // --- Fetch Employee Requests (exclude cancelled) ---
+        $employeeRequests = EmployeeRequest::where('employee_id', $employee->id)
+            ->where('status', '!=', 'Cancelled')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $requestRecords = $employeeRequests->map(function ($req, $index) {
+            $statusMap = [
+                'Pending' => 'late',      // Yellow/Orange color
+                'Approved' => 'present',  // Green color
+                'Rejected' => 'absent'    // Red color
+            ];
+
+            return [
+                // Table display fields
+                'status' => $statusMap[$req->status] ?? 'late',
+                'date' => Carbon::parse($req->absence_date)->format('F d'),
+                'dayOfWeek' => $req->absence_type,
+                'timeIn' => $req->time_range,
+                'timeInNote' => $req->status,
+                'timeOut' => $req->from_time && $req->to_time
+                    ? Carbon::parse($req->from_time)->format('g:i a') . ' - ' . Carbon::parse($req->to_time)->format('g:i a')
+                    : '-',
+                'timeOutNote' => '',
+                'hoursWorked' => Str::limit($req->reason, 20),
+                'timedIn' => true,
+                'isTimedOut' => false,
+                'buttonLabel' => 'View',
+                // Modal data fields
+                'requestIndex' => $index,
+                'requestId' => $req->id,
+                'requestType' => $req->absence_type,
+                'requestStatus' => $req->status,
+                'requestDate' => Carbon::parse($req->absence_date)->format('F d, Y'),
+                'requestTimeRange' => $req->time_range,
+                'requestFromTime' => $req->from_time ? Carbon::parse($req->from_time)->format('h:i A') : null,
+                'requestToTime' => $req->to_time ? Carbon::parse($req->to_time)->format('h:i A') : null,
+                'requestReason' => $req->reason,
+                'requestDescription' => $req->description,
+                'requestProofDocument' => $req->proof_document,
+                'requestCreatedAt' => $req->created_at->format('M d, Y h:i A'),
+            ];
+        })->toArray();
+
+        return view('employee.attendance', compact('stats', 'attendanceRecords', 'requestRecords'));
     }
 
     public function clockIn(Request $request)
@@ -450,6 +501,56 @@ class AttendanceController extends Controller
         }
 
         return redirect()->back()->with('success', 'Clocked out successfully');
+    }
+
+    /**
+     * Approve an employee request (Admin only)
+     */
+    public function approveRequest(Request $request, $id)
+    {
+        $employeeRequest = EmployeeRequest::findOrFail($id);
+
+        if ($employeeRequest->status !== 'Pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This request has already been processed'
+            ], 400);
+        }
+
+        $employeeRequest->update([
+            'status' => 'Approved',
+            'admin_notes' => $request->input('admin_notes', ''),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Request approved successfully'
+        ]);
+    }
+
+    /**
+     * Reject an employee request (Admin only)
+     */
+    public function rejectRequest(Request $request, $id)
+    {
+        $employeeRequest = EmployeeRequest::findOrFail($id);
+
+        if ($employeeRequest->status !== 'Pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This request has already been processed'
+            ], 400);
+        }
+
+        $employeeRequest->update([
+            'status' => 'Rejected',
+            'admin_notes' => $request->input('admin_notes', ''),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Request rejected successfully'
+        ]);
     }
 
     // private function dispatch($event)
