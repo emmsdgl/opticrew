@@ -27,9 +27,13 @@
                         class="filter-tab pb-2 px-1 text-sm font-medium text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400">
                         All
                     </button>
-                    <button onclick="filterCourses('active')" data-filter="active"
+                    <button onclick="filterCourses('pending')" data-filter="pending"
                         class="filter-tab pb-2 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                        Active
+                        Pending
+                    </button>
+                    <button onclick="filterCourses('in_progress')" data-filter="in_progress"
+                        class="filter-tab pb-2 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                        In Progress
                     </button>
                     <button onclick="filterCourses('completed')" data-filter="completed"
                         class="filter-tab pb-2 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
@@ -40,8 +44,8 @@
 
             {{-- Course List - Scrollable --}}
             <div id="courseList" class="space-y-4 px-6 pb-6 flex-1 overflow-y-auto scrollbar-custom">
-                {{-- Course Card 1 - Active --}}
-                <div class="course-item cursor-pointer group" data-course-id="1" data-status="active"
+                {{-- Course Card 1 - Pending --}}
+                <div class="course-item cursor-pointer group" data-course-id="1" data-status="pending"
                     onclick="selectCourse(1)">
                     <div
                         class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
@@ -54,24 +58,15 @@
                                 techniques of deep cleaning for residential and commercial spaces. Learn proper
                                 sanitization methods, equipment usage, and time-saving strategies for thorough cleaning.
                             </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (66)</span>
-                                </div>
-                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Beginner
-                                </div>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (66)</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Course Card 2 - Active & Selected --}}
-                <div class="course-item cursor-pointer group active" data-course-id="2" data-status="active"
+                {{-- Course Card 2 - Pending & Selected --}}
+                <div class="course-item cursor-pointer group active" data-course-id="2" data-status="pending"
                     onclick="selectCourse(2)">
                     <div
                         class="flex gap-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 transition-all border-2 border-blue-500 dark:border-blue-500">
@@ -83,24 +78,15 @@
                                 cleaning methods for both residential and high-rise buildings. This course covers safety
                                 protocols, streak-free techniques, and proper use of squeegees and cleaning solutions.
                             </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (93)</span>
-                                </div>
-                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Intermediate
-                                </div>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (93)</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Course Card 3 - Completed --}}
-                <div class="course-item cursor-pointer group" data-course-id="3" data-status="completed"
+                {{-- Course Card 3 - Pending --}}
+                <div class="course-item cursor-pointer group" data-course-id="3" data-status="pending"
                     onclick="selectCourse(3)">
                     <div
                         class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
@@ -113,24 +99,15 @@
                                 and environmentally safe cleaning methods. Learn how to create effective green cleaning
                                 solutions, reduce chemical usage, and implement eco-friendly practices in your cleaning
                                 routine.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">5/5 (124)</span>
-                                </div>
-                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    All levels
-                                </div>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">5/5 (124)</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Course Card 4 - Active --}}
-                <div class="course-item cursor-pointer group" data-course-id="4" data-status="active"
+                {{-- Course Card 4 - Pending --}}
+                <div class="course-item cursor-pointer group" data-course-id="4" data-status="pending"
                     onclick="selectCourse(4)">
                     <div
                         class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
@@ -143,24 +120,15 @@
                                 maintaining various floor types including hardwood, tile, carpet, and vinyl. Learn
                                 buffing, stripping, waxing techniques, and proper maintenance schedules for commercial
                                 spaces.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (78)</span>
-                                </div>
-                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Advanced
-                                </div>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (78)</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Course Card 5 - Completed --}}
-                <div class="course-item cursor-pointer group" data-course-id="5" data-status="completed"
+                {{-- Course Card 5 - Pending --}}
+                <div class="course-item cursor-pointer group" data-course-id="5" data-status="pending"
                     onclick="selectCourse(5)">
                     <div
                         class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
@@ -173,17 +141,8 @@
                                 industry-standard sanitization practices for healthcare facilities, food service, and
                                 high-traffic areas. Understand proper disinfectant usage, cross-contamination
                                 prevention, and compliance with health regulations.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">5/5 (142)</span>
-                                </div>
-                                <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Intermediate
-                                </div>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">5/5 (142)</span>
                             </div>
                         </div>
                     </div>
@@ -196,58 +155,62 @@
             <div class="max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
                 {{-- Video Player Section --}}
                 <div class="mb-6">
-                    <div class="relative rounded-2xl overflow-hidden bg-gray-900 shadow-2xl aspect-video">
-                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=450&fit=crop"
-                            alt="Course instructor" class="w-full h-full object-cover">
+                    <div class="relative rounded-2xl overflow-hidden bg-gray-900 shadow-2xl aspect-video" id="videoContainer">
+                        {{-- YouTube Video Player (will be replaced by API) --}}
+                        <div id="courseVideo" class="w-full h-full"></div>
 
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                            <div class="absolute bottom-0 left-0 right-0 p-6">
-                                {{-- Progress Bar --}}
-                                <div class="mb-4">
-                                    <div class="w-full h-1 bg-white/30 rounded-full overflow-hidden">
-                                        <div class="h-full w-1/3 bg-white rounded-full"></div>
-                                    </div>
-                                </div>
-
-                                {{-- Controls --}}
-                                <div class="flex items-center justify-between text-white">
-                                    <div class="flex items-center gap-4">
-                                        <button class="hover:scale-110 transition-transform">
-                                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                                                <path
-                                                    d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                                            </svg>
-                                        </button>
-                                        <span class="text-sm font-medium">0:45 / 2:15</span>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <button class="hover:scale-110 transition-transform">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                            </svg>
-                                        </button>
-                                        <button class="hover:scale-110 transition-transform">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
+                        {{-- Fallback Placeholder (hidden by default, shown if video fails) --}}
+                        <div id="videoFallback" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
+                            <div class="text-center p-8">
+                                <i class="fa-solid fa-play-circle text-6xl text-blue-400 mb-4"></i>
+                                <h3 id="fallbackTitle" class="text-xl font-bold mb-2">Professional Window Cleaning Techniques</h3>
+                                <p class="text-gray-400 text-sm mb-4">Video content is being prepared</p>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-600/20 text-blue-400 text-xs">
+                                    <i class="fa-solid fa-clock mr-1"></i>
+                                    Coming Soon
+                                </span>
                             </div>
                         </div>
 
-                        {{-- Pause Icon (shown when paused) --}}
-                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                            <div
-                                class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center backdrop-blur-sm">
-                                <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                        {{-- Completion Overlay (shown when video is completed) --}}
+                        <div id="completionOverlay" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white z-10">
+                            <div class="text-center p-8">
+                                <i class="fa-solid fa-circle-check text-6xl text-green-400 mb-4"></i>
+                                <h3 class="text-xl font-bold mb-2">Course Completed!</h3>
+                                <p class="text-gray-300 text-sm mb-4">Great job! You've finished this lesson.</p>
+                                <button onclick="replayVideo()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
+                                    <i class="fa-solid fa-rotate-right mr-2"></i>Watch Again
+                                </button>
                             </div>
+                        </div>
+                    </div>
+
+                    {{-- Progress Bar Section --}}
+                    <div class="mt-4 bg-gray-100 dark:bg-gray-800 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-play-circle text-blue-500"></i>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Watch Progress</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span id="progressTime" class="text-xs text-gray-500 dark:text-gray-400">0:00 / 0:00</span>
+                                <span id="progressPercent" class="text-sm font-semibold text-blue-600 dark:text-blue-400">0%</span>
+                            </div>
+                        </div>
+                        <div class="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div id="progressBar" class="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            {{-- Watched segments indicator --}}
+                            <div id="watchedSegments" class="absolute inset-0"></div>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span id="progressStatus" class="text-xs text-gray-500 dark:text-gray-400">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Watch the video to track progress
+                            </span>
+                            <span id="completionBadge" class="hidden inline-flex items-center px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
+                                <i class="fa-solid fa-check mr-1"></i>
+                                Completed
+                            </span>
                         </div>
                     </div>
 
@@ -270,9 +233,9 @@
                     <div class="flex flex-wrap gap-2">
                         <!-- DYNAMIC STATUS TAG -->
                         <span id="courseStatusTag"
-                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                            <i class="fas fa-play-circle text-blue-500 mr-1.5 text-xs"></i>
-                            Active
+                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                            <i class="fas fa-clock text-orange-500 mr-1.5 text-xs"></i>
+                            Pending
                         </span>
                     </div>
                 </div>
@@ -340,7 +303,12 @@
     @endpush
 
     @push('scripts')
+        {{-- YouTube IFrame API --}}
+        <script src="https://www.youtube.com/iframe_api"></script>
         <script>
+            // VIDEO IDs - Replace these with your organization's training video IDs from YouTube
+            // To get a video ID: Copy the part after "v=" from any YouTube URL
+            // Example: https://www.youtube.com/watch?v=RbhcRKsRwFM → videoId: "RbhcRKsRwFM"
             const courses = {
                 1: {
                     title: "Deep Cleaning Fundamentals",
@@ -349,7 +317,8 @@
                     reviews: 66,
                     level: "Beginner",
                     duration: "8 lectures • 1.5 hours",
-                    status: "active"
+                    status: "pending",
+                    videoId: "Rx2Bh9n6VKc"  // Deep cleaning tutorial
                 },
                 2: {
                     title: "Professional Window Cleaning Techniques",
@@ -358,7 +327,8 @@
                     reviews: 93,
                     level: "Intermediate",
                     duration: "12 lectures • 2 hours",
-                    status: "active"
+                    status: "pending",
+                    videoId: "B5s4uYNIM24"  // Window cleaning techniques
                 },
                 3: {
                     title: "Eco-Friendly Cleaning Solutions",
@@ -367,7 +337,8 @@
                     reviews: 124,
                     level: "All levels",
                     duration: "10 lectures • 1.5 hours",
-                    status: "completed"
+                    status: "pending",
+                    videoId: "rcBPZs9mOe4"  // Natural cleaning products
                 },
                 4: {
                     title: "Industrial Floor Care & Maintenance",
@@ -376,7 +347,8 @@
                     reviews: 78,
                     level: "Advanced",
                     duration: "15 lectures • 3 hours",
-                    status: "active"
+                    status: "pending",
+                    videoId: "P6HGlnSI7jo"  // Floor care maintenance
                 },
                 5: {
                     title: "Sanitization & Disinfection Protocols",
@@ -385,21 +357,277 @@
                     reviews: 142,
                     level: "Intermediate",
                     duration: "14 lectures • 2.5 hours",
-                    status: "completed"
+                    status: "pending",
+                    videoId: "MbEmFGIkoZU"  // Sanitization protocols
                 }
             };
 
             let currentFilter = 'all';
+            let player = null;
+            let currentCourseId = 2; // Default course
+            let progressInterval = null;
+            let watchedSeconds = new Set(); // Track unique seconds watched
+            let videoDuration = 0;
+            let isCompleted = false;
+            const COMPLETION_THRESHOLD = 90; // Must watch 90% to complete
+
+            // YouTube API ready callback
+            function onYouTubeIframeAPIReady() {
+                initializePlayer(courses[currentCourseId].videoId);
+            }
+
+            function initializePlayer(videoId) {
+                // Stop any existing progress tracking first
+                stopProgressTracking();
+
+                // Destroy existing player if any
+                if (player) {
+                    player.destroy();
+                    player = null;
+
+                    // Recreate the div element since YouTube API removes it when destroying
+                    const container = document.getElementById('videoContainer');
+                    const existingVideo = document.getElementById('courseVideo');
+
+                    // Remove old element if it exists (might be an iframe now)
+                    if (existingVideo) {
+                        existingVideo.remove();
+                    }
+
+                    // Create new div for the player
+                    const newDiv = document.createElement('div');
+                    newDiv.id = 'courseVideo';
+                    newDiv.className = 'w-full h-full';
+                    container.insertBefore(newDiv, container.firstChild);
+                }
+
+                // Reset all progress tracking state
+                watchedSeconds = new Set();
+                videoDuration = 0;
+                isCompleted = false;
+
+                // Reset all UI elements
+                updateProgressUI(0, 0, 0);
+                hideCompletionOverlay();
+                updateProgressStatus('default');
+
+                // Hide completion badge
+                const completionBadge = document.getElementById('completionBadge');
+                if (completionBadge) {
+                    completionBadge.classList.add('hidden');
+                }
+
+                // Hide fallback if it was shown
+                document.getElementById('videoFallback').classList.add('hidden');
+
+                player = new YT.Player('courseVideo', {
+                    videoId: videoId,
+                    playerVars: {
+                        'rel': 0,
+                        'modestbranding': 1,
+                        'enablejsapi': 1
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange,
+                        'onError': onPlayerError
+                    }
+                });
+            }
+
+            function onPlayerReady(event) {
+                videoDuration = player.getDuration();
+                updateProgressUI(0, videoDuration, 0);
+            }
+
+            function onPlayerStateChange(event) {
+                if (event.data === YT.PlayerState.PLAYING) {
+                    // Start tracking progress
+                    startProgressTracking();
+                    updateProgressStatus('watching');
+
+                    // Update course status to "in_progress" if it was pending
+                    if (courses[currentCourseId].status === 'pending') {
+                        courses[currentCourseId].status = 'in_progress';
+                        updateCourseStatusTag('in_progress');
+
+                        // Update sidebar course item
+                        const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
+                        if (courseItem) {
+                            courseItem.setAttribute('data-status', 'in_progress');
+                        }
+                    }
+                } else if (event.data === YT.PlayerState.PAUSED) {
+                    stopProgressTracking();
+                    updateProgressStatus('paused');
+                } else if (event.data === YT.PlayerState.ENDED) {
+                    stopProgressTracking();
+                    checkCompletion(true);
+                }
+            }
+
+            function onPlayerError(event) {
+                console.error('YouTube Player Error:', event.data);
+                document.getElementById('videoFallback').classList.remove('hidden');
+            }
+
+            function startProgressTracking() {
+                if (progressInterval) return;
+
+                progressInterval = setInterval(() => {
+                    if (player && player.getCurrentTime) {
+                        const currentTime = Math.floor(player.getCurrentTime());
+                        watchedSeconds.add(currentTime);
+
+                        const watchedPercentage = calculateWatchedPercentage();
+                        updateProgressUI(player.getCurrentTime(), videoDuration, watchedPercentage);
+
+                        // Check for completion
+                        if (watchedPercentage >= COMPLETION_THRESHOLD && !isCompleted) {
+                            checkCompletion(false);
+                        }
+                    }
+                }, 1000);
+            }
+
+            function stopProgressTracking() {
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                    progressInterval = null;
+                }
+            }
+
+            function calculateWatchedPercentage() {
+                if (videoDuration <= 0) return 0;
+                const uniqueSecondsWatched = watchedSeconds.size;
+                return Math.min(100, Math.round((uniqueSecondsWatched / videoDuration) * 100));
+            }
+
+            function updateProgressUI(currentTime, duration, percentage) {
+                // Update progress bar
+                const progressBar = document.getElementById('progressBar');
+                if (progressBar) {
+                    progressBar.style.width = `${percentage}%`;
+                }
+
+                // Update time display
+                const progressTime = document.getElementById('progressTime');
+                if (progressTime) {
+                    progressTime.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+                }
+
+                // Update percentage
+                const progressPercent = document.getElementById('progressPercent');
+                if (progressPercent) {
+                    progressPercent.textContent = `${percentage}%`;
+                }
+            }
+
+            function updateProgressStatus(status) {
+                const progressStatus = document.getElementById('progressStatus');
+                if (!progressStatus) return;
+
+                switch(status) {
+                    case 'watching':
+                        progressStatus.innerHTML = '<i class="fa-solid fa-circle text-green-500 mr-1 animate-pulse text-xs"></i> Watching...';
+                        break;
+                    case 'paused':
+                        progressStatus.innerHTML = '<i class="fa-solid fa-pause text-yellow-500 mr-1"></i> Paused';
+                        break;
+                    case 'completed':
+                        progressStatus.innerHTML = '<i class="fa-solid fa-check-circle text-green-500 mr-1"></i> Course completed!';
+                        break;
+                    default:
+                        progressStatus.innerHTML = '<i class="fa-solid fa-info-circle mr-1"></i> Watch the video to track progress';
+                }
+            }
+
+            function checkCompletion(videoEnded) {
+                const percentage = calculateWatchedPercentage();
+
+                if (percentage >= COMPLETION_THRESHOLD || videoEnded) {
+                    isCompleted = true;
+
+                    // Update UI
+                    updateProgressStatus('completed');
+                    document.getElementById('completionBadge').classList.remove('hidden');
+
+                    // Show completion overlay
+                    if (videoEnded) {
+                        showCompletionOverlay();
+                    }
+
+                    // Update course status to completed
+                    courses[currentCourseId].status = 'completed';
+                    updateCourseStatusTag('completed');
+
+                    // Update sidebar course item
+                    const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
+                    if (courseItem) {
+                        courseItem.setAttribute('data-status', 'completed');
+                    }
+
+                    // Here you could also save completion to database via AJAX
+                    // saveCompletionToDatabase(currentCourseId);
+                }
+            }
+
+            function showCompletionOverlay() {
+                const overlay = document.getElementById('completionOverlay');
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                }
+            }
+
+            function hideCompletionOverlay() {
+                const overlay = document.getElementById('completionOverlay');
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                }
+            }
+
+            function replayVideo() {
+                hideCompletionOverlay();
+                if (player) {
+                    player.seekTo(0);
+                    player.playVideo();
+                }
+            }
+
+            function updateCourseStatusTag(status) {
+                const statusTag = document.getElementById('courseStatusTag');
+                if (!statusTag) return;
+
+                if (status === 'completed') {
+                    statusTag.className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+                    statusTag.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-1.5 text-xs"></i>Completed';
+                } else if (status === 'in_progress') {
+                    statusTag.className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+                    statusTag.innerHTML = '<i class="fas fa-play text-blue-500 mr-1.5 text-xs"></i>In Progress';
+                } else {
+                    // pending (not started)
+                    statusTag.className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300';
+                    statusTag.innerHTML = '<i class="fas fa-clock text-orange-500 mr-1.5 text-xs"></i>Pending';
+                }
+            }
+
+            function formatTime(seconds) {
+                if (!seconds || isNaN(seconds)) return '0:00';
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
 
             // Check for course parameter in URL and auto-select on page load
             document.addEventListener('DOMContentLoaded', function() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const courseId = urlParams.get('course');
-                
+
                 if (courseId && courses[courseId]) {
+                    currentCourseId = parseInt(courseId);
                     // Select the course from URL parameter
-                    selectCourse(parseInt(courseId));
-                    
+                    selectCourse(currentCourseId);
+
                     // Scroll to the selected course card (optional)
                     const selectedCourseCard = document.querySelector(`[data-course-id="${courseId}"]`);
                     if (selectedCourseCard) {
@@ -409,6 +637,8 @@
             });
 
             function selectCourse(courseId) {
+                currentCourseId = courseId;
+
                 // Remove active class from all courses
                 document.querySelectorAll('.course-item').forEach(item => {
                     item.classList.remove('active');
@@ -445,6 +675,28 @@
                 // Update description
                 document.querySelector('.course-description').textContent = course.description;
 
+                // Update fallback title for error state
+                const fallbackTitle = document.getElementById('fallbackTitle');
+                if (fallbackTitle) fallbackTitle.textContent = course.title;
+
+                // Initialize new video player (this resets all progress tracking to 0)
+                if (course.videoId) {
+                    initializePlayer(course.videoId);
+                }
+
+                // Update UI based on course status (after player init which resets everything)
+                if (course.status === 'completed') {
+                    // Course was already completed - show completed state
+                    isCompleted = true;
+                    updateProgressUI(0, 0, 100); // Show 100% progress
+                    updateProgressStatus('completed');
+                    document.getElementById('completionBadge').classList.remove('hidden');
+                } else if (course.status === 'in_progress') {
+                    // Course was started but not completed - show in progress state
+                    updateProgressStatus('paused');
+                }
+                // If pending, the initializePlayer already reset everything to 0%
+
                 // Update level button
                 const levelButton = document.querySelector('.text-sm.text-blue-600');
                 if (levelButton) {
@@ -458,16 +710,7 @@
                 }
 
                 // Update status tag
-                const statusTag = document.getElementById('courseStatusTag');
-                if (statusTag && course.status) {
-                    if (course.status === 'active') {
-                        statusTag.className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
-                        statusTag.innerHTML = '<i class="fas fa-play-circle text-blue-500 mr-1.5 text-xs"></i>Active';
-                    } else if (course.status === 'completed') {
-                        statusTag.className = 'inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
-                        statusTag.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-1.5 text-xs"></i>Completed';
-                    }
-                }
+                updateCourseStatusTag(course.status);
             }
 
             function filterCourses(status) {
