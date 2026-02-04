@@ -43,6 +43,7 @@
                         <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
                         <ul class="space-y-3">
                             <li><a href="{{ route('about') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Fin-noys</a></li>
+                            <li><a href="{{ route('recruitment') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Careers in Fin-noys</a></li>
                             <li><a href="{{ route('castcrew') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">CastCrew</a></li>
                         </ul>
                     </div>

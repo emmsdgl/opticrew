@@ -86,6 +86,11 @@ Route::get('/privacypolicy', function () {
     return view('landingpage-privacypolicy');
 })->name('privacypolicy');
 
+// Careers in Fin-noys
+Route::get('/recruitment', function () {
+    return view('landingpage-recruitment');
+})->name('recruitment');
+
 // System
 Route::get('/castcrew', function () {
     return view('landingpage-castcrew');
