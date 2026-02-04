@@ -3,13 +3,184 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\DayOff;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
+    /**
+     * Admin Attendance View - Shows all employees' attendance and leave requests
+     */
+    public function adminIndex(Request $request)
+    {
+        // Get current month or selected month
+        $month = $request->input('month', now()->format('Y-m'));
+        $startDate = Carbon::parse($month . '-01')->startOfMonth();
+        $endDate = Carbon::parse($month . '-01')->endOfMonth();
+
+        // Get all attendance records for the month
+        $attendances = Attendance::with(['employee.user'])
+            ->whereBetween('clock_in', [$startDate, $endDate])
+            ->orderBy('clock_in', 'desc')
+            ->get();
+
+        // Format attendance records for display
+        $attendanceRecords = $attendances->map(function ($attendance) {
+            $clockIn = Carbon::parse($attendance->clock_in);
+            $clockOut = $attendance->clock_out ? Carbon::parse($attendance->clock_out) : null;
+
+            // Determine status
+            $status = 'present';
+            $scheduledTime = $clockIn->copy()->setTime(11, 0);
+
+            if ($clockIn->gt($scheduledTime)) {
+                $minutesLate = $clockIn->diffInMinutes($scheduledTime);
+                $status = 'late';
+                $timeInNote = $minutesLate . ' m late';
+            } else {
+                $minutesEarly = $scheduledTime->diffInMinutes($clockIn);
+                $timeInNote = $minutesEarly . ' m early';
+            }
+
+            // Calculate hours worked
+            $hoursWorkedText = null;
+            if ($clockOut) {
+                $minutesWorked = $attendance->total_minutes_worked ?? $clockOut->diffInMinutes($clockIn);
+                $hours = floor($minutesWorked / 60);
+                $minutes = $minutesWorked % 60;
+
+                if ($hours > 0 && $minutes > 0) {
+                    $hoursWorkedText = "{$hours} hr {$minutes} min";
+                } elseif ($hours > 0) {
+                    $hoursWorkedText = $hours == 1 ? "{$hours} hr" : "{$hours} hrs";
+                } else {
+                    $hoursWorkedText = "{$minutes} min";
+                }
+            }
+
+            $employeeName = $attendance->employee?->fullName ?? 'Unknown';
+
+            return [
+                'status' => $status,
+                'date' => $clockIn->format('F d') . ' - ' . $employeeName,
+                'dayOfWeek' => $clockIn->format('l'),
+                'timeIn' => $clockIn->format('g:i a'),
+                'timeInNote' => $timeInNote ?? '',
+                'timeOut' => $clockOut ? $clockOut->format('g:i a') : null,
+                'timeOutNote' => '',
+                'hoursWorked' => $hoursWorkedText,
+                'timedIn' => true,
+                'isTimedOut' => $clockOut !== null
+            ];
+        })->toArray();
+
+        // Get all active employees count
+        $totalEmployees = Employee::where('is_active', true)->count();
+
+        // Get today's attendance for present/absent calculation
+        $today = now()->toDateString();
+        $todayAttendances = Attendance::whereDate('clock_in', $today)->get();
+        $presentToday = $todayAttendances->unique('employee_id')->count();
+        $absentToday = $totalEmployees - $presentToday;
+
+        // Calculate total hours worked this week
+        $weekStart = now()->startOfWeek();
+        $weekEnd = now()->endOfWeek();
+        $weeklyAttendances = Attendance::whereBetween('clock_in', [$weekStart, $weekEnd])->get();
+        $totalWeeklyMinutes = $weeklyAttendances->sum('total_minutes_worked');
+        $totalWeeklyHours = floor($totalWeeklyMinutes / 60);
+        $totalWeeklyMinutesRemainder = $totalWeeklyMinutes % 60;
+
+        // Calculate employees on leave today
+        $onLeaveToday = DayOff::where('status', 'approved')
+            ->where('date', '<=', $today)
+            ->where(function ($q) use ($today) {
+                $q->where('end_date', '>=', $today)
+                  ->orWhereNull('end_date');
+            })
+            ->count();
+
+        // Prepare statistics
+        $stats = [
+            [
+                'title' => 'Present Today',
+                'value' => $presentToday,
+                'subtitle' => 'Employees clocked in today',
+                'icon' => 'fa-solid fa-user-check',
+                'iconBg' => '',
+                'iconColor' => 'text-green-600',
+            ],
+            [
+                'title' => 'Absent Today',
+                'value' => $absentToday,
+                'subtitle' => $onLeaveToday . ' on approved leave',
+                'icon' => 'fa-solid fa-user-xmark',
+                'iconBg' => '',
+                'iconColor' => 'text-red-600',
+            ],
+            [
+                'title' => 'Hours Worked This Week',
+                'value' => $totalWeeklyHours . ' h ' . $totalWeeklyMinutesRemainder . ' m',
+                'subtitle' => 'Total hours across all employees',
+                'icon' => 'fa-solid fa-clock',
+                'iconBg' => '',
+                'iconColor' => 'text-blue-600',
+            ],
+        ];
+
+        // Get all leave/day-off requests
+        $leaveRequests = DayOff::with(['employee.user'])
+            ->orderBy('created_at', 'desc')
+            ->take(50)
+            ->get();
+
+        // Format request records for display (table format + modal data)
+        $requestRecords = $leaveRequests->map(function ($leave, $index) {
+            $employeeName = $leave->employee?->fullName ?? 'Unknown';
+            $date = Carbon::parse($leave->date);
+
+            // Map status to display format for badge colors
+            $statusMap = [
+                'pending' => 'late',      // Yellow/Orange color
+                'approved' => 'present',  // Green color
+                'rejected' => 'absent'    // Red color
+            ];
+
+            return [
+                // Table display fields
+                'status' => $statusMap[$leave->status] ?? 'absent',
+                'date' => $date->format('F d') . ' - ' . $employeeName,
+                'dayOfWeek' => ucfirst($leave->type) . ' (' . ucfirst($leave->status) . ')',
+                'timeIn' => Str::limit(ucfirst($leave->reason), 30),
+                'timeInNote' => '',
+                'timeOut' => $leave->end_date ? Carbon::parse($leave->end_date)->format('F d') : '-',
+                'timeOutNote' => '',
+                'hoursWorked' => ($leave->duration_days ?? 1) . ' day(s)',
+                'timedIn' => true,
+                'isTimedOut' => false,
+                'buttonLabel' => 'View',
+                // Modal data fields
+                'requestIndex' => $index,
+                'requestId' => $leave->id,
+                'requestEmployeeName' => $employeeName,
+                'requestType' => ucfirst($leave->type),
+                'requestStatus' => $leave->status,
+                'requestDate' => $date->format('F d, Y'),
+                'requestEndDate' => $leave->end_date ? Carbon::parse($leave->end_date)->format('F d, Y') : null,
+                'requestReason' => ucfirst($leave->reason),
+                'requestAdminNotes' => $leave->admin_notes ?? '',
+                'requestDurationDays' => $leave->duration_days ?? 1,
+                'requestCreatedAt' => $leave->created_at->format('M d, Y h:i A'),
+            ];
+        })->toArray();
+
+        return view('admin.attendance', compact('stats', 'attendanceRecords', 'requestRecords'));
+    }
+
     public function index(Request $request)
     {
         // Get the authenticated employee
