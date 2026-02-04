@@ -3,9 +3,9 @@
     @slot('sidebar')
     @php
         $navOptions = [
-            ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('admin.dashboard')],
+            ['label' => 'Dashboard', 'icon' => 'fa-solid fa-house', 'href' => route('admin.dashboard')],
             ['label' => 'Accounts', 'icon' => 'fa-users', 'href' => route('admin.accounts.index')],
-            ['label' => 'Tasks', 'icon' => 'fa-folder', 'href' => route('admin.tasks')],
+            ['label' => 'Tasks', 'icon' => 'fa-solid fa-list-check', 'href' => route('admin.tasks')],
             [
                 'label' => 'Appointments',
                 'icon' => 'fa-calendar-check',
@@ -14,7 +14,9 @@
                     ['label' => 'Quotation Requests', 'icon' => 'fa-file-invoice', 'href' => route('admin.quotations.index')],
                 ]
             ],
-            ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => '/analytics'],
+            ['label' => 'Attendance', 'icon' => 'fa-solid fa-calendar-check', 'href' => route('admin.attendance')],
+            ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('admin.history')],
+            ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => route('admin.analytics')],
         ];
 
         // Only show Optimization Result in local development environment
