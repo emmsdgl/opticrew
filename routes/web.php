@@ -25,6 +25,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FeedbackController;
 
 use App\Http\Controllers\EmployeeRequestsController;
+use App\Http\Controllers\JobApplicationController;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
@@ -90,6 +91,9 @@ Route::get('/privacypolicy', function () {
 Route::get('/recruitment', function () {
     return view('landingpage-recruitment');
 })->name('recruitment');
+
+// Job Application Submission (Public)
+Route::post('/recruitment/apply', [JobApplicationController::class, 'store'])->name('recruitment.apply');
 
 // System
 Route::get('/castcrew', function () {
@@ -193,6 +197,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('admin/quotations')->name('admin.quotations.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\QuotationController::class, 'index'])->name('index');
         Route::get('/{id}', [\App\Http\Controllers\Admin\QuotationController::class, 'show'])->name('show');
+    });
+
+    // --- ADMIN RECRUITMENT ROUTES ---
+    Route::prefix('admin/recruitment')->name('admin.recruitment.')->group(function () {
+        Route::get('/', [JobApplicationController::class, 'index'])->name('index');
+        Route::get('/{id}', [JobApplicationController::class, 'show'])->name('show');
+        Route::patch('/{id}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{id}/download', [JobApplicationController::class, 'downloadResume'])->name('download');
+        Route::delete('/{id}', [JobApplicationController::class, 'destroy'])->name('destroy');
     });
 
     // --- ADMIN HOLIDAY ROUTES ---
