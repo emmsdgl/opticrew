@@ -101,8 +101,9 @@ class MutationOperator
     }
 
     /**
-     * Move a task from MOST loaded team to LEAST loaded team (balance-preserving)
-     * ✅ FIX: This mutation now improves balance instead of destroying it
+     * Move a task from team with MOST TASKS to team with FEWEST TASKS (balance-preserving)
+     * ✅ FIX: Uses task count as primary metric for fair distribution
+     * Primary: task count, Secondary: workload as tiebreaker
      */
     protected function insertMutation(array $schedule): array
     {
@@ -112,15 +113,21 @@ class MutationOperator
             return $schedule;
         }
 
-        // ✅ Find MOST loaded team (source)
+        // ✅ Find team with MOST TASKS (source)
+        // Primary: task count, Secondary: workload as tiebreaker
+        $maxTaskCount = -1;
         $maxWorkload = -1;
         $sourceTeamIndex = null;
         foreach ($teamIndices as $index) {
             if ($schedule[$index]['tasks']->isEmpty()) {
                 continue;
             }
+            $taskCount = $schedule[$index]['tasks']->count();
             $workload = $schedule[$index]['tasks']->sum('duration');
-            if ($workload > $maxWorkload) {
+
+            if ($taskCount > $maxTaskCount ||
+                ($taskCount === $maxTaskCount && $workload > $maxWorkload)) {
+                $maxTaskCount = $taskCount;
                 $maxWorkload = $workload;
                 $sourceTeamIndex = $index;
             }
@@ -130,15 +137,21 @@ class MutationOperator
             return $schedule;
         }
 
-        // ✅ Find LEAST loaded team (target)
+        // ✅ Find team with FEWEST TASKS (target)
+        // Primary: task count, Secondary: workload as tiebreaker
+        $minTaskCount = PHP_INT_MAX;
         $minWorkload = PHP_INT_MAX;
         $targetTeamIndex = null;
         foreach ($teamIndices as $index) {
             if ($index === $sourceTeamIndex) {
                 continue; // Skip source team
             }
+            $taskCount = $schedule[$index]['tasks']->count();
             $workload = $schedule[$index]['tasks']->sum('duration');
-            if ($workload < $minWorkload) {
+
+            if ($taskCount < $minTaskCount ||
+                ($taskCount === $minTaskCount && $workload < $minWorkload)) {
+                $minTaskCount = $taskCount;
                 $minWorkload = $workload;
                 $targetTeamIndex = $index;
             }
@@ -148,12 +161,18 @@ class MutationOperator
             return $schedule;
         }
 
-        // Select random task from MOST loaded team
+        // Only move if source actually has more tasks than target
+        // This prevents unnecessary moves that don't improve balance
+        if ($maxTaskCount <= $minTaskCount + 1) {
+            return $schedule; // Already balanced, don't mutate
+        }
+
+        // Select random task from team with MOST TASKS
         $sourceTasks = $schedule[$sourceTeamIndex]['tasks'];
         $taskIndex = rand(0, $sourceTasks->count() - 1);
         $task = $sourceTasks[$taskIndex];
 
-        // Move task from MOST loaded to LEAST loaded
+        // Move task from MOST to FEWEST
         $schedule[$sourceTeamIndex]['tasks'] = $sourceTasks->forget($taskIndex)->values();
         $schedule[$targetTeamIndex]['tasks']->push($task);
 
