@@ -394,7 +394,6 @@
 
                     {{-- Tab Content --}}
                     <div id="tab-content-overview" class="tab-content">
-                        {{-- Required Skills --}}
                         <div class="mb-8">
                             <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">
                                 Required Skills and Experience

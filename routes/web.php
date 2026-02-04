@@ -142,6 +142,14 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+    Route::get('/admin/history', function () {
+        return view('admin.history');
+    })->name('admin.history');
+
+    Route::get('/admin/attendance', function () {
+        return view('admin.attendance');
+    })->name('admin.attendance');
+
     // Display task calendar and kanban board
     Route::get('/tasks', [TaskController::class, 'index'])->name('admin.tasks');
 
