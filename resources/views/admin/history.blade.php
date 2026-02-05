@@ -80,8 +80,9 @@
                                     :class="selectedActivity === index ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
                                     <div class="flex items-start gap-4">
                                         <!-- Icon -->
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-2xl"
-                                            x-text="activity.icon"></div>
+                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                        </div>
 
                                         <!-- Content -->
                                         <div class="flex-1 min-w-0">
@@ -120,8 +121,9 @@
                                 <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200"
                                     :class="selectedActivity === activities.indexOf(activity) ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
                                     <div class="flex items-start gap-4">
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-2xl"
-                                            x-text="activity.icon"></div>
+                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                        </div>
                                         <div class="flex-1 min-w-0">
                                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="activity.title"></h3>
                                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" x-text="activity.date"></p>
@@ -154,8 +156,9 @@
                                 <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200"
                                     :class="selectedActivity === activities.indexOf(activity) ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
                                     <div class="flex items-start gap-4">
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-2xl"
-                                            x-text="activity.icon"></div>
+                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                        </div>
                                         <div class="flex-1 min-w-0">
                                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="activity.title"></h3>
                                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" x-text="activity.date"></p>
@@ -386,137 +389,7 @@
         activeTab: 'all',
         selectedActivity: null,
         newTaskName: '',
-        activities: [
-            {
-                id: 1,
-                icon: '🧹',
-                title: 'Deep Cleaning Service - Unit 204',
-                date: '14 Dec 2025, 8:50 pm',
-                price: '€ 280',
-                status: 'Completed',
-                type: 'service',
-                needsRating: true,
-                appointmentId: 'APT-2025-001',
-                serviceDate: '2025-12-14',
-                serviceTime: '8:50 PM',
-                serviceType: 'Deep Cleaning',
-                location: '101 S from, Helsinki, Finland',
-                clientName: 'Maria Johnson',
-                totalAmount: '€280.00',
-                payableAmount: '€120.00',
-                assignedMembers: [
-                    { name: 'John Doe', initial: 'J' },
-                    { name: 'Jane Smith', initial: 'J' },
-                    { name: 'Bob Johnson', initial: 'B' },
-                    { name: 'Alice Cooper', initial: 'A' }
-                ],
-                checklist: [
-                    { name: 'Remove clutter and movable items', completed: true },
-                    { name: 'Wipe walls, doors, door frames, and switches', completed: true },
-                    { name: 'Vacuum sofas, chairs, and cushions', completed: true },
-                    { name: 'Deep vacuum carpets / mop hard floors', completed: true },
-                    { name: 'Clean shower area (tiles, glass, fixtures)', completed: true },
-                    { name: 'Dust and Sanitize furniture surfaces', completed: true },
-                    { name: 'Report damages or issues (if any)', completed: true }
-                ]
-            },
-            {
-                id: 2,
-                icon: '🏠',
-                title: 'Move-Out Cleaning - Villa 15',
-                date: '10 Dec 2025, 2:30 pm',
-                price: '€ 450',
-                status: 'In Progress',
-                type: 'service',
-                needsRating: false,
-                appointmentId: 'APT-2025-002',
-                serviceDate: '2025-12-10',
-                serviceTime: '2:30 PM',
-                serviceType: 'Move-Out Cleaning',
-                location: '45 Oak Street, Espoo, Finland',
-                clientName: 'Peter Anderson',
-                totalAmount: '€450.00',
-                payableAmount: '€200.00',
-                assignedMembers: [
-                    { name: 'Sarah Wilson', initial: 'S' },
-                    { name: 'Mike Brown', initial: 'M' },
-                    { name: 'Lisa Davis', initial: 'L' }
-                ],
-                checklist: [
-                    { name: 'Empty all rooms and storage areas', completed: true },
-                    { name: 'Clean all windows inside and out', completed: true },
-                    { name: 'Deep clean kitchen appliances', completed: false },
-                    { name: 'Sanitize all bathroom fixtures', completed: false },
-                    { name: 'Clean and polish all floors', completed: false },
-                    { name: 'Remove all wall marks and scuffs', completed: false },
-                    { name: 'Final walkthrough inspection', completed: false }
-                ]
-            },
-            {
-                id: 3,
-                icon: '✨',
-                title: 'Regular Maintenance - Office Block A',
-                date: '8 Dec 2025, 9:00 am',
-                price: '€ 180',
-                status: 'Pending',
-                type: 'service',
-                needsRating: false,
-                appointmentId: 'APT-2025-003',
-                serviceDate: '2025-12-15',
-                serviceTime: '9:00 AM',
-                serviceType: 'Regular Maintenance',
-                location: '88 Business Park, Vantaa, Finland',
-                clientName: 'Nordic Corp Ltd.',
-                totalAmount: '€180.00',
-                payableAmount: '€180.00',
-                assignedMembers: [
-                    { name: 'Tom White', initial: 'T' },
-                    { name: 'Emma Green', initial: 'E' }
-                ],
-                checklist: [
-                    { name: 'Dust all surfaces and desks', completed: false },
-                    { name: 'Empty all trash bins', completed: false },
-                    { name: 'Vacuum carpeted areas', completed: false },
-                    { name: 'Mop hard floor areas', completed: false },
-                    { name: 'Clean break room and kitchen', completed: false },
-                    { name: 'Restock bathroom supplies', completed: false }
-                ]
-            },
-            {
-                id: 4,
-                icon: '🧼',
-                title: 'Post-Construction Cleaning - New Build',
-                date: '5 Dec 2025, 7:00 am',
-                price: '€ 650',
-                status: 'Completed',
-                type: 'service',
-                needsRating: true,
-                appointmentId: 'APT-2025-004',
-                serviceDate: '2025-12-05',
-                serviceTime: '7:00 AM',
-                serviceType: 'Post-Construction',
-                location: '22 New Development, Tampere, Finland',
-                clientName: 'BuildRight Construction',
-                totalAmount: '€650.00',
-                payableAmount: '€350.00',
-                assignedMembers: [
-                    { name: 'John Doe', initial: 'J' },
-                    { name: 'Sarah Wilson', initial: 'S' },
-                    { name: 'Mike Brown', initial: 'M' },
-                    { name: 'Lisa Davis', initial: 'L' },
-                    { name: 'Tom White', initial: 'T' }
-                ],
-                checklist: [
-                    { name: 'Remove all construction debris', completed: true },
-                    { name: 'Clean and polish all windows', completed: true },
-                    { name: 'Remove paint splatters and stickers', completed: true },
-                    { name: 'Deep clean all surfaces', completed: true },
-                    { name: 'Sanitize bathroom installations', completed: true },
-                    { name: 'Clean ventilation and ducts', completed: true },
-                    { name: 'Final quality inspection', completed: true }
-                ]
-            }
-        ],
+        activities: @json($activities ?? []),
 
         selectActivity(index) {
             this.selectedActivity = index;

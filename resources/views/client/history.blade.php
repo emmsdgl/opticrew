@@ -44,6 +44,14 @@
                                 <span x-show="activeTab === 'to_rate'" x-transition
                                     class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></span>
                             </button>
+
+                            <button @click="activeTab = 'ratings'"
+                                class="relative pb-4 text-sm font-medium transition-colors duration-200"
+                                :class="activeTab === 'ratings' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'">
+                                Ratings
+                                <span x-show="activeTab === 'ratings'" x-transition
+                                    class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></span>
+                            </button>
                         </nav>
                     </div>
 
@@ -71,8 +79,9 @@
                                     :class="selectedActivity === index ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
                                     <div class="flex items-start gap-4">
                                         <!-- Icon -->
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-2xl"
-                                            x-text="activity.icon"></div>
+                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                        </div>
 
                                         <!-- Content -->
                                         <div class="flex-1 min-w-0">
@@ -120,8 +129,9 @@
                                 <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200"
                                     :class="selectedActivity === activities.indexOf(activity) ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
                                     <div class="flex items-start gap-4">
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-2xl"
-                                            x-text="activity.icon"></div>
+                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                        </div>
                                         <div class="flex-1 min-w-0">
                                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="activity.title"></h3>
                                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" x-text="activity.date"></p>
@@ -158,8 +168,9 @@
                                 <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200"
                                     :class="selectedActivity === activities.indexOf(activity) ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
                                     <div class="flex items-start gap-4">
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-2xl"
-                                            x-text="activity.icon"></div>
+                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                        </div>
                                         <div class="flex-1 min-w-0">
                                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="activity.title"></h3>
                                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" x-text="activity.date"></p>
@@ -187,6 +198,63 @@
                                 <div class="text-center py-12 text-gray-500 dark:text-gray-400">
                                     <i class="fa-regular fa-star text-4xl mb-3"></i>
                                     <p>No services to rate</p>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Ratings Tab Content --}}
+                        <div x-show="activeTab === 'ratings'" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 transform translate-y-2"
+                            x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
+
+                            <template x-for="(rating, index) in ratings" :key="'rating-' + index">
+                                <div class="rounded-lg p-3 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200">
+                                    <div class="flex items-start gap-4">
+                                        <!-- Icon -->
+                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="rating.icon" alt="Service Icon" class="w-6 h-6">
+                                        </div>
+
+                                        <!-- Content -->
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="rating.serviceName"></h3>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2" x-text="rating.location"></p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 mb-3" x-text="rating.submitted_at"></p>
+
+                                            <!-- Rating Stars -->
+                                            <div class="flex items-center gap-1 mb-3">
+                                                <template x-for="star in 5" :key="star">
+                                                    <svg :class="star <= rating.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                                                        class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                </template>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400 ml-2" x-text="rating.rating + '/5'"></span>
+                                            </div>
+
+                                            <!-- Keywords -->
+                                            <template x-if="rating.keywords && rating.keywords.length > 0">
+                                                <div class="flex flex-wrap gap-1 mb-3">
+                                                    <template x-for="keyword in rating.keywords" :key="keyword">
+                                                        <span class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full"
+                                                            x-text="keyword"></span>
+                                                    </template>
+                                                </div>
+                                            </template>
+
+                                            <!-- Feedback Text -->
+                                            <template x-if="rating.feedback_text">
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 italic" x-text="rating.feedback_text"></p>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template x-if="ratings.length === 0">
+                                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                                    <i class="fa-regular fa-star text-4xl mb-3"></i>
+                                    <p>No ratings submitted yet</p>
                                 </div>
                             </template>
                         </div>
@@ -505,131 +573,8 @@
             feedbackText: '',
             selectedKeywords: [],
             ratingActivityIndex: null,
-            activities: [
-                {
-                    id: 1,
-                    icon: '🧹',
-                    title: 'Deep Cleaning Service - Unit 204',
-                    date: '14 Dec 2025, 8:50 pm',
-                    price: '€ 280',
-                    status: 'Completed',
-                    type: 'service',
-                    needsRating: true,
-                    appointmentId: 'APT-2025-001',
-                    serviceDate: '2025-12-14',
-                    serviceTime: '8:50 PM',
-                    serviceType: 'Deep Cleaning',
-                    location: '101 S from, Helsinki, Finland',
-                    totalAmount: '€280.00',
-                    payableAmount: '€120.00',
-                    assignedMembers: [
-                        { name: 'John Doe', initial: 'J' },
-                        { name: 'Jane Smith', initial: 'J' },
-                        { name: 'Bob Johnson', initial: 'B' }
-                    ],
-                    checklist: [
-                        { name: 'Remove clutter and movable items', completed: true },
-                        { name: 'Wipe walls, doors, door frames, and switches', completed: true },
-                        { name: 'Vacuum sofas, chairs, and cushions', completed: true },
-                        { name: 'Deep vacuum carpets / mop hard floors', completed: true },
-                        { name: 'Clean shower area (tiles, glass, fixtures)', completed: true },
-                        { name: 'Dust and Sanitize furniture surfaces', completed: true },
-                        { name: 'Report damages or issues (if any)', completed: true }
-                    ]
-                },
-                {
-                    id: 2,
-                    icon: '🏠',
-                    title: 'Move-Out Cleaning - Villa 15',
-                    date: '10 Dec 2025, 2:30 pm',
-                    price: '€ 450',
-                    status: 'In Progress',
-                    type: 'service',
-                    needsRating: false,
-                    appointmentId: 'APT-2025-002',
-                    serviceDate: '2025-12-10',
-                    serviceTime: '2:30 PM',
-                    serviceType: 'Move-Out Cleaning',
-                    location: '45 Oak Street, Espoo, Finland',
-                    totalAmount: '€450.00',
-                    payableAmount: '€200.00',
-                    assignedMembers: [
-                        { name: 'Sarah Wilson', initial: 'S' },
-                        { name: 'Mike Brown', initial: 'M' },
-                        { name: 'Lisa Davis', initial: 'L' }
-                    ],
-                    checklist: [
-                        { name: 'Empty all rooms and storage areas', completed: true },
-                        { name: 'Clean all windows inside and out', completed: true },
-                        { name: 'Deep clean kitchen appliances', completed: false },
-                        { name: 'Sanitize all bathroom fixtures', completed: false },
-                        { name: 'Clean and polish all floors', completed: false },
-                        { name: 'Remove all wall marks and scuffs', completed: false },
-                        { name: 'Final walkthrough inspection', completed: false }
-                    ]
-                },
-                {
-                    id: 3,
-                    icon: '✨',
-                    title: 'Regular Maintenance - Office Block A',
-                    date: '8 Dec 2025, 9:00 am',
-                    price: '€ 180',
-                    status: 'Pending',
-                    type: 'service',
-                    needsRating: false,
-                    appointmentId: 'APT-2025-003',
-                    serviceDate: '2025-12-15',
-                    serviceTime: '9:00 AM',
-                    serviceType: 'Regular Maintenance',
-                    location: '88 Business Park, Vantaa, Finland',
-                    totalAmount: '€180.00',
-                    payableAmount: '€180.00',
-                    assignedMembers: [
-                        { name: 'Tom White', initial: 'T' },
-                        { name: 'Emma Green', initial: 'E' }
-                    ],
-                    checklist: [
-                        { name: 'Dust all surfaces and desks', completed: false },
-                        { name: 'Empty all trash bins', completed: false },
-                        { name: 'Vacuum carpeted areas', completed: false },
-                        { name: 'Mop hard floor areas', completed: false },
-                        { name: 'Clean break room and kitchen', completed: false },
-                        { name: 'Restock bathroom supplies', completed: false }
-                    ]
-                },
-                {
-                    id: 4,
-                    icon: '🧼',
-                    title: 'Post-Construction Cleaning',
-                    date: '5 Dec 2025, 7:00 am',
-                    price: '€ 650',
-                    status: 'Completed',
-                    type: 'service',
-                    needsRating: true,
-                    appointmentId: 'APT-2025-004',
-                    serviceDate: '2025-12-05',
-                    serviceTime: '7:00 AM',
-                    serviceType: 'Post-Construction',
-                    location: '22 New Development, Tampere, Finland',
-                    totalAmount: '€650.00',
-                    payableAmount: '€350.00',
-                    assignedMembers: [
-                        { name: 'John Doe', initial: 'J' },
-                        { name: 'Sarah Wilson', initial: 'S' },
-                        { name: 'Mike Brown', initial: 'M' },
-                        { name: 'Lisa Davis', initial: 'L' }
-                    ],
-                    checklist: [
-                        { name: 'Remove all construction debris', completed: true },
-                        { name: 'Clean and polish all windows', completed: true },
-                        { name: 'Remove paint splatters and stickers', completed: true },
-                        { name: 'Deep clean all surfaces', completed: true },
-                        { name: 'Sanitize bathroom installations', completed: true },
-                        { name: 'Clean ventilation and ducts', completed: true },
-                        { name: 'Final quality inspection', completed: true }
-                    ]
-                }
-            ],
+            activities: @json($activities ?? []),
+            ratings: @json($ratings ?? []),
 
             selectActivity(index) {
                 this.selectedActivity = index;
@@ -679,21 +624,63 @@
             },
 
             async submitRating() {
-                if (this.selectedRating === 0) return;
-
-                console.log('Submitting feedback:', {
-                    activityId: this.ratingActivityIndex !== null ? this.activities[this.ratingActivityIndex].id : null,
-                    rating: this.selectedRating,
-                    keywords: this.selectedKeywords,
-                    comment: this.feedbackText
-                });
-
-                if (this.ratingActivityIndex !== null) {
-                    this.activities[this.ratingActivityIndex].needsRating = false;
+                if (this.selectedRating === 0) {
+                    alert('Please select a rating');
+                    return;
                 }
 
-                this.closeRateModal();
-                alert('Thank you for your feedback!');
+                const activity = this.ratingActivityIndex !== null ? this.activities[this.ratingActivityIndex] : null;
+                if (!activity) {
+                    alert('No activity selected');
+                    return;
+                }
+
+                console.log('Submitting feedback for activity:', activity);
+
+                try {
+                    const response = await fetch('{{ route("client.history.feedback") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            appointment_id: activity.id,
+                            rating: this.selectedRating,
+                            keywords: this.selectedKeywords,
+                            feedback_text: this.feedbackText
+                        })
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Error response:', errorText);
+                        alert('Server error: ' + response.status + '\n' + errorText.substring(0, 200));
+                        return;
+                    }
+
+                    const data = await response.json();
+                    console.log('Response data:', data);
+
+                    if (data.success) {
+                        // Mark as rated (remove from needsRating)
+                        this.activities[this.ratingActivityIndex].needsRating = false;
+
+                        this.closeRateModal();
+                        alert('Thank you for your feedback!');
+
+                        // Reload the page to refresh the ratings list
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Failed to submit feedback');
+                    }
+                } catch (error) {
+                    console.error('Error submitting feedback:', error);
+                    alert('An error occurred while submitting feedback: ' + error.message);
+                }
             }
         };
     }

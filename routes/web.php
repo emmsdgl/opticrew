@@ -150,9 +150,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
-    Route::get('/admin/history', function () {
-        return view('admin.history');
-    })->name('admin.history');
+    Route::get('/admin/history', [Admin\HistoryController::class, 'index'])->name('admin.history');
 
     Route::get('/admin/attendance', [AttendanceController::class, 'adminIndex'])->name('admin.attendance');
 
@@ -350,9 +348,8 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/settings', [ProfileController::class, 'settings'])->name('employee.settings');
     Route::get('/employee/help-center', [ProfileController::class, 'helpcenter'])->name('employee.helpcenter');
     Route::post('/employee/settings/update-password', [ProfileController::class, 'updatePassword'])->name('employee.settings.update-password');
-    Route::get('/employee/history', function () {
-        return view('employee.history');
-    })->name('employee.history');
+    Route::get('/employee/history', [App\Http\Controllers\Employee\HistoryController::class, 'index'])->name('employee.history');
+    Route::post('/employee/history/feedback', [App\Http\Controllers\Employee\HistoryController::class, 'storeFeedback'])->name('employee.history.feedback');
     // Coming Soon Pages
     Route::get('/calendar', function () {
         return view('coming-soon');
@@ -380,9 +377,8 @@ Route::middleware(['auth', 'client'])->group(function () {
 
     Route::get('/client/profile', [ProfileController::class, 'show'])->name('client.profile');
 
-    Route::get('/client/history', function () {
-        return view('client.history');
-    })->name('client.history');
+    Route::get('/client/history', [App\Http\Controllers\Client\HistoryController::class, 'index'])->name('client.history');
+    Route::post('/client/history/feedback', [App\Http\Controllers\Client\HistoryController::class, 'storeFeedback'])->name('client.history.feedback');
 
     Route::get('/client/profile/edit', [ProfileController::class, 'edit'])->name('client.profile.edit');
     Route::post('/client/profile/update', [ProfileController::class, 'update'])->name('client.profile.update');
