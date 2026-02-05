@@ -24,6 +24,7 @@ class EmployeeDashboardController extends Controller
             ->join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
             ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
             ->where('optimization_team_members.employee_id', $employee->id)
+            ->where('tasks.employee_approved', true)
             ->whereDate('tasks.scheduled_date', $today)
             ->select(
                 DB::raw("COALESCE(contracted_clients.name, 'No Client Assigned') as client_name"),
@@ -46,6 +47,7 @@ class EmployeeDashboardController extends Controller
             ->join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
             ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
             ->where('optimization_team_members.employee_id', $employee->id)
+            ->where('tasks.employee_approved', true)
             ->whereIn('tasks.status', ['Pending', 'Scheduled', 'In Progress'])
             ->select(
                 'tasks.id',
@@ -65,7 +67,8 @@ class EmployeeDashboardController extends Controller
         $tasksSummaryQuery = DB::table('tasks')
             ->join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
             ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
-            ->where('optimization_team_members.employee_id', $employee->id);
+            ->where('optimization_team_members.employee_id', $employee->id)
+            ->where('tasks.employee_approved', true);
 
         // Apply date filtering based on the selected period
         switch ($period) {

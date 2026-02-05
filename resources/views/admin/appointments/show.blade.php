@@ -1,16 +1,15 @@
 <x-layouts.general-employer :title="'Appointment Details'">
     <section class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]" x-data="appointmentDetail()">
+        <div>
+            <a href="{{ route('admin.appointments.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-2 inline-flex items-center">
+                <i class="fi fi-rr-angle-left mr-1"></i> Back to Appointments
+            </a>
+        </div>
         <!-- Header -->
-        <div class="flex items-center justify-between">
-            <div>
-                <a href="{{ route('admin.appointments.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-2 inline-flex items-center">
-                    <i class="fi fi-rr-angle-left mr-1"></i> Back to Appointments
-                </a>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Appointment #{{ $appointment->id }}</h1>
-            </div>
-
-            <!-- Status Badge -->
-            <div>
+        <div class="flex flex-row items-center justify-between gap-12">
+            
+                <!-- Status Badge -->
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white">Appointment No. {{ $appointment->id }}</h1>
                 @if($appointment->status === 'pending')
                     <span class="px-3 py-1 text-sm font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
                         Pending Review
@@ -24,7 +23,6 @@
                         Rejected
                     </span>
                 @endif
-            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -34,7 +32,7 @@
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     @if($appointment->is_company_inquiry)
                         <!-- Company Inquiry Information -->
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                             <i class="fi fi-rr-building mr-2"></i> Company Information
                         </h3>
                         <div class="grid grid-cols-2 gap-4">
@@ -69,7 +67,7 @@
                         </div>
                     @else
                         <!-- Personal Client Information -->
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                             <i class="fi fi-rr-user mr-2"></i> Client Information
                         </h3>
                         <div class="grid grid-cols-2 gap-4">
@@ -142,7 +140,7 @@
                         </div>
                     @else
                         <!-- Personal Client Service Details -->
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                             <i class="fi fi-rr-broom mr-2"></i> Service Details
                         </h3>
                         <div class="grid grid-cols-2 gap-4">
@@ -234,8 +232,8 @@
 
                 <!-- Team Assignment (Only show if approved) -->
                 @if($appointment->status === 'approved' && !$appointment->assigned_team_id)
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg shadow p-6 border border-blue-200 dark:border-blue-800">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div class="rounded-lg p-6">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                         <i class="fi fi-rr-users-alt mr-2"></i> Team Assignment
                     </h3>
 
@@ -285,20 +283,19 @@
 
                     @else
                         <!-- Scenario 2: No teams exist - Create team via optimization -->
-                        <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mb-4">
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
                             <div class="flex items-start">
-                                <i class="fi fi-rr-info-circle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2"></i>
+                                <i class="fi fi-rr-info-circle text-blue-600 dark:text-blue-400 mt-0.5 mr-2"></i>
                                 <div>
-                                    <p class="text-sm font-medium text-yellow-800 dark:text-yellow-400 mb-1">No teams found for this date</p>
+                                    <p class="text-sm font-medium text-blue-800 dark:text-blue-400 mb-1">No teams found for this date</p>
                                     <p class="text-xs text-gray-700 dark:text-gray-300">The system will run optimization to create teams and assign the best employees for this task.</p>
                                 </div>
                             </div>
                         </div>
 
                         <button @click="createTeamViaOptimization()" :disabled="assigning"
-                            class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="fi fi-rr-magic-wand mr-2"></i>
-                            <span x-show="!assigning">Run Optimization & Assign Team</span>
+                            class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!assigning">Assign Team</span>
                             <span x-show="assigning">Creating teams via optimization...</span>
                         </button>
 
@@ -336,8 +333,8 @@
             <div class="lg:col-span-1 space-y-6">
                 <!-- Pricing Summary (Only for personal bookings) -->
                 @if(!$appointment->is_company_inquiry)
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div class="rounded-lg p-6">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                         <i class="fi fi-rr-receipt mr-2"></i> Pricing
                     </h3>
                     <div class="space-y-3">
@@ -350,8 +347,8 @@
                             <span class="text-sm font-medium text-gray-900 dark:text-white">€{{ number_format($appointment->vat_amount, 2) }}</span>
                         </div>
                         <div class="pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-                            <span class="text-base font-semibold text-gray-900 dark:text-white">Total</span>
-                            <span class="text-base font-bold text-blue-600 dark:text-blue-400">€{{ number_format($appointment->total_amount, 2) }}</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Total</span>
+                            <span class="text-sm font-bold text-blue-600 dark:text-blue-400">€{{ number_format($appointment->total_amount, 2) }}</span>
                         </div>
                     </div>
                 </div>
@@ -373,18 +370,18 @@
 
                 <!-- Action Buttons -->
                 @if($appointment->status === 'pending')
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Actions</h3>
+                <div class="rounded-lg p-6">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Actions</h3>
                     <div class="space-y-3">
                         <button @click="approveAppointment()" :disabled="approving"
                             class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             <i class="fi fi-rr-check mr-2"></i>
-                            <span x-show="!approving">Approve Appointment</span>
-                            <span x-show="approving">Approving...</span>
+                            <span class="text-sm" x-show="!approving">Approve Appointment</span>
+                            <span class="text-sm" x-show="approving">Approving...</span>
                         </button>
 
                         <button @click="showRejectModal = true"
-                            class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
+                            class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm">
                             <i class="fi fi-rr-cross mr-2"></i> Reject Appointment
                         </button>
                     </div>
@@ -392,8 +389,8 @@
                 @endif
 
                 <!-- Timestamps -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timeline</h3>
+                <div class="rounded-lg p-6">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Timeline</h3>
                     <div class="space-y-3">
                         <div>
                             <p class="text-xs text-gray-500 dark:text-gray-400">Submitted</p>

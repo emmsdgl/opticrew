@@ -106,17 +106,17 @@
             <!-- View Switcher -->
             <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                 <button @click="view = 'day'; updateView()"
-                        :class="view === 'day' ? 'bg-white dark:bg-gray-600 shadow-md' : ''"
+                        :class="view === 'day' ? 'bg-white dark:bg-gray-600' : ''"
                         class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 rounded-md transition-all">
                     Day
                 </button>
                 <button @click="view = 'week'; updateView()"
-                        :class="view === 'week' ? 'bg-white dark:bg-gray-600 shadow-md' : ''"
+                        :class="view === 'week' ? 'bg-white dark:bg-gray-600' : ''"
                         class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 rounded-md transition-all">
                     Week
                 </button>
                 <button @click="view = 'month'; updateView()"
-                        :class="view === 'month' ? 'bg-white dark:bg-gray-600 shadow-md' : ''"
+                        :class="view === 'month' ? 'bg-white dark:bg-gray-600' : ''"
                         class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 rounded-md transition-all">
                     Month
                 </button>
