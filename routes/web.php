@@ -150,7 +150,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
-    Route::get('/admin/history', [Admin\HistoryController::class, 'index'])->name('admin.history');
+    Route::get('/admin/history', [\App\Http\Controllers\Admin\HistoryController::class, 'index'])->name('admin.history');
 
     Route::get('/admin/attendance', [AttendanceController::class, 'adminIndex'])->name('admin.attendance');
 
@@ -160,6 +160,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Display task calendar and kanban board
     Route::get('/tasks', [TaskController::class, 'index'])->name('admin.tasks');
+
+    // Display task details
+    Route::get('/tasks/{id}', [TaskController::class, 'show'])->name('admin.tasks.show');
 
     // Create new task from calendar
     Route::post('/tasks', [TaskController::class, 'store'])
@@ -327,7 +330,10 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::post('/employee/tasks/{task}/feedback', [EmployeeTasksController::class, 'storeFeedback'])
         ->name('employee.tasks.feedback.store');
 
-
+    Route::post('/employee/tasks/{task}/approve', [EmployeeTasksController::class, 'approve'])
+        ->name('employee.tasks.approve');
+    Route::post('/employee/tasks/{task}/decline', [EmployeeTasksController::class, 'decline'])
+        ->name('employee.tasks.decline');
 
     Route::post('/employee/tasks/{task}/start', [EmployeeTasksController::class, 'start'])
         ->name('employee.tasks.start');

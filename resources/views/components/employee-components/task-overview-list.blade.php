@@ -1,7 +1,7 @@
 @props([
     'items' => [],
-    'maxHeight' => '20rem', // Default max height
-    'fixedHeight' => '12rem', // h-48 = 12rem
+    'maxHeight' => '20rem',
+    'fixedHeight' => '12rem', 
     'emptyTitle' => 'No appointments yet',
     'emptyMessage' => 'You don\'t have any appointments at the moment.',
 ])
@@ -10,15 +10,15 @@
     @if(empty($items))
         <!-- Empty State - Auto Height -->
         <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
-            <div class="w-64 h-64 mb-6 flex items-center justify-center">
+            <div class="w-48 h-48 mb-6 flex items-center justify-center">
                 <img src="{{ asset('images/icons/no-items-found.svg') }}"
                      alt="No appointments"
                      class="w-full h-full object-contain opacity-80 dark:opacity-60">
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
                 {{ $emptyTitle }}
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+            <p class="text-xs text-gray-500 dark:text-gray-400 max-w-md">
                 {{ $emptyMessage }}
             </p>
         </div>
@@ -29,7 +29,12 @@
              @scroll.window="openMenuId = null"
              @scroll="openMenuId = null">
             @foreach($items as $index => $item)
-        <div class="group border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+        <div data-task-item
+             data-service="{{ $item['service'] ?? '' }}"
+             data-date="{{ $item['service_date'] ?? '' }}"
+             data-time="{{ $item['service_time'] ?? '' }}"
+             data-client="{{ $item['client'] ?? '' }}"
+             class="group border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
             <div class="py-6 px-6">
                 <!-- Header Section -->
                 <div class="flex items-center justify-between">

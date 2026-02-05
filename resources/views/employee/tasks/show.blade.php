@@ -44,6 +44,14 @@
                     </svg>
                     <span class="text-sm font-medium">Back to {{ $backLabel }}</span>
                 </a>
+
+                {{-- Completed Task Badge --}}
+                @if($task->employee_approved === true && $task->status === 'Completed')
+                    <div class="mt-3 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-3 py-2 flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+                        <span class="text-xs font-semibold text-green-700 dark:text-green-300">Task Completed - Great job!</span>
+                    </div>
+                @endif
             </div>
 
             {{-- Illustration and Title --}}
@@ -171,12 +179,29 @@
                             </p>
                         </div>
 
-                        {{-- Warning Message --}}
-                        @if($task->status === 'Pending' || $task->status === 'Scheduled')
+                        {{-- Status Message --}}
+                        @if(is_null($task->employee_approved))
                             <div
-                                class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
-                                <p class="text-xs text-orange-700 dark:text-orange-300 text-center">
-                                    This task is currently pending and should be accepted by you, if preferred
+                                class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                                <p class="text-xs text-blue-700 dark:text-blue-300 text-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    This task is awaiting your approval. Please accept or decline below.
+                                </p>
+                            </div>
+                        @elseif($task->employee_approved === true)
+                            <div
+                                class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                                <p class="text-xs text-green-700 dark:text-green-300 text-center">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Task approved and ready to start
+                                </p>
+                            </div>
+                        @else
+                            <div
+                                class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                                <p class="text-xs text-red-700 dark:text-red-300 text-center">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    You have declined this task
                                 </p>
                             </div>
                         @endif
@@ -186,22 +211,47 @@
 
             {{-- Action Buttons --}}
             <div class="px-6 pb-8 mt-auto">
-                <div class="flex gap-3">
-                    <button
-                        class="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-blue-600/30 dark:shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled>
-                        Accept
-                    </button>
-                    <button
-                        class="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-red-600/30 dark:shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled>
-                        Reject
-                    </button>
-                </div>
-                <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Actions will be enabled once task is approved by the employee
-                </p>
+                @if(is_null($task->employee_approved))
+                    {{-- Approval Buttons - Show when task needs approval --}}
+                    <div class="flex gap-3">
+                        <button type="button" onclick="document.getElementById('approve-task-form').submit()"
+                            class="flex-1 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20">
+                            <i class="fas fa-check mr-2"></i>Accept
+                        </button>
+                        <button type="button" onclick="if(confirm('Are you sure you want to decline this task?')) document.getElementById('decline-task-form').submit()"
+                            class="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-red-600/30 dark:shadow-red-600/20">
+                            <i class="fas fa-times mr-2"></i>Decline
+                        </button>
+                    </div>
+                    <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Please accept or decline this task
+                    </p>
+                @elseif($task->employee_approved === true)
+                    {{-- Task Action Buttons - Show when task is approved --}}
+                    <div class="space-y-3">
+                        @if($task->status === 'Pending' || $task->status === 'Scheduled')
+                            {{-- Show Start Task button --}}
+                            <button type="button" onclick="document.getElementById('start-task-form').submit()"
+                                class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-blue-600/30 dark:shadow-blue-600/20">
+                                <i class="fas fa-play mr-2"></i>Start Task
+                            </button>
+                        @elseif($task->status === 'In Progress')
+                            {{-- Show Mark Complete button --}}
+                            <button type="button" onclick="if(confirm('Are you sure you want to mark this task as complete?')) document.getElementById('complete-task-form').submit()"
+                                class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20">
+                                <i class="fas fa-check mr-2"></i>Mark Complete
+                            </button>
+                        @endif
+                    </div>
+                @else
+                    {{-- Declined State --}}
+                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 text-center">
+                        <i class="fas fa-times-circle text-red-600 dark:text-red-400 text-3xl mb-2"></i>
+                        <p class="text-sm font-semibold text-red-700 dark:text-red-300">Task Declined</p>
+                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">You have declined this task</p>
+                    </div>
+                @endif
             </div>
             </div>
             </section>
@@ -218,11 +268,12 @@
                             <i class="fas fa-arrow-left"></i>
                             <span class="font-medium text-sm">Back to {{ $backLabel }}</span>
                         </a>
-                    </div>
 
+                    </div>
+                    
                     <!-- Task Title and Meta -->
                     <div class="mb-6">
-                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 mt-6">
                             {{ $task->task_description }}
                         </h1>
                         <p class="text-gray-600 dark:text-gray-400 text-sm">
@@ -292,10 +343,13 @@
                                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Client
                                             </p>
                                             <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                                                {{ $task->location->client->name ?? 'External Client' }}
+                                                {{ $task->location?->contractedClient?->name
+                                                    ?? ($task->client ? trim(($task->client->first_name ?? '') . ' ' . ($task->client->last_name ?? '')) : null)
+                                                    ?? 'Unknown Client' }}
                                             </p>
                                             <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                                {{ $task->location->client ? 'Internal Client' : 'External Client' }}
+                                                {{ $task->location?->contractedClient ? 'Contracted Client'
+                                                    : ($task->client ? 'External Client' : 'Unknown Type') }}
                                             </p>
                                         </div>
                                     </div>
@@ -419,25 +473,110 @@
 
                         <!-- Activities Tab -->
                         <div id="task-content-activities" class="task-tab-content hidden">
-                            <div class="p-6 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                                <div class="space-y-4">
-                                    <!-- Activity Item -->
-                                    <div class="flex gap-3">
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-plus text-blue-600 dark:text-blue-400 text-xs"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-sm text-gray-900 dark:text-white">
-                                                <span
-                                                    class="font-semibold">{{ $task->assigned_by ? $task->assigned_by->name : 'System' }}</span>
-                                                created this task
-                                            </p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                {{ \Carbon\Carbon::parse($task->created_at)->diffForHumans() }}
-                                            </p>
+                            <div class="p-6">
+                                <div class="space-y-6">
+                                    @php
+                                        // Build activity timeline
+                                        $activities = collect();
+
+                                        // Task created
+                                        $activities->push([
+                                            'type' => 'created',
+                                            'icon' => 'fa-plus',
+                                            'icon_color' => 'text-blue-600 dark:text-blue-400',
+                                            'bg_color' => 'bg-blue-100 dark:bg-blue-900/30',
+                                            'user' => ($task->assignedBy && isset($task->assignedBy->name)) ? $task->assignedBy->name : 'System',
+                                            'action' => 'created this task',
+                                            'timestamp' => $task->created_at,
+                                        ]);
+
+                                        // Task assigned to team
+                                        if ($task->optimizationTeam) {
+                                            $activities->push([
+                                                'type' => 'assigned',
+                                                'icon' => 'fa-users',
+                                                'icon_color' => 'text-purple-600 dark:text-purple-400',
+                                                'bg_color' => 'bg-purple-100 dark:bg-purple-900/30',
+                                                'user' => ($task->assignedBy && isset($task->assignedBy->name)) ? $task->assignedBy->name : 'System',
+                                                'action' => 'assigned this task to team',
+                                                'timestamp' => $task->created_at,
+                                            ]);
+                                        }
+
+                                        // Employee approval/decline
+                                        if (!is_null($task->employee_approved)) {
+                                            $activities->push([
+                                                'type' => $task->employee_approved ? 'approved' : 'declined',
+                                                'icon' => $task->employee_approved ? 'fa-check-circle' : 'fa-times-circle',
+                                                'icon_color' => $task->employee_approved ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400',
+                                                'bg_color' => $task->employee_approved ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30',
+                                                'user' => $employee->user->name,
+                                                'action' => $task->employee_approved ? 'approved this task' : 'declined this task',
+                                                'timestamp' => $task->employee_approved_at,
+                                            ]);
+                                        }
+
+                                        // Task started
+                                        if (in_array($task->status, ['In Progress', 'Completed'])) {
+                                            $activities->push([
+                                                'type' => 'started',
+                                                'icon' => 'fa-play',
+                                                'icon_color' => 'text-blue-600 dark:text-blue-400',
+                                                'bg_color' => 'bg-blue-100 dark:bg-blue-900/30',
+                                                'user' => ($task->startedBy && isset($task->startedBy->name)) ? $task->startedBy->name : 'Team Member',
+                                                'action' => 'started working on this task',
+                                                'timestamp' => $task->started_at,
+                                            ]);
+                                        }
+
+                                        // Task completed
+                                        if ($task->status === 'Completed') {
+                                            $activities->push([
+                                                'type' => 'completed',
+                                                'icon' => 'fa-check-circle',
+                                                'icon_color' => 'text-green-600 dark:text-green-400',
+                                                'bg_color' => 'bg-green-100 dark:bg-green-900/30',
+                                                'user' => ($task->completedBy && isset($task->completedBy->name)) ? $task->completedBy->name : 'Team Member',
+                                                'action' => 'marked this task as completed',
+                                                'timestamp' => $task->completed_at,
+                                            ]);
+                                        }
+
+                                        // Sort by timestamp (oldest first)
+                                        $activities = $activities->sortBy('timestamp');
+                                    @endphp
+
+                                    <!-- Activity Timeline -->
+                                    <div class="relative">
+                                        <!-- Activity Items -->
+                                        <div class="space-y-6">
+                                            @foreach($activities as $activity)
+                                                <div class="flex gap-4 relative">
+                                                    <!-- Icon -->
+                                                    <div class="flex-shrink-0 relative z-10">
+                                                        <div class="w-8 h-8 {{ $activity['bg_color'] }} rounded-full flex items-center justify-center">
+                                                            <i class="fas {{ $activity['icon'] }} {{ $activity['icon_color'] }} text-xs"></i>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Content -->
+                                                    <div class="flex-1 pt-0.5">
+                                                        <p class="text-sm text-gray-900 dark:text-white">
+                                                            <span class="font-semibold">{{ $activity['user'] }}</span>
+                                                            {{ $activity['action'] }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                            @if($activity['timestamp'])
+                                                                {{ \Carbon\Carbon::parse($activity['timestamp'])->format('M d, Y g:i A') }}
+                                                                <span class="text-gray-400 dark:text-gray-500">•</span>
+                                                                {{ \Carbon\Carbon::parse($activity['timestamp'])->diffForHumans() }}
+                                                            @else
+                                                                <span class="text-gray-400 dark:text-gray-500 italic">Time not recorded</span>
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
                                         </div>
                                     </div>
                                 </div>
@@ -580,29 +719,48 @@
                         @php
                             $statusColors = [
                                 'Scheduled' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-                                'In Progress' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-                                'On Hold' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-                                'Completed' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                                'In Progress' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                                'On Hold' => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                                'Completed' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
                                 'Pending' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
                             ];
-                            $statusClass = $statusColors[$task->status] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                            $statusClass = $statusColors[$task->status] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+
+                            $statusIcons = [
+                                'Completed' => 'fa-check-circle',
+                                'In Progress' => 'fa-spinner',
+                                'Scheduled' => 'fa-clock',
+                                'Pending' => 'fa-hourglass-half',
+                                'On Hold' => 'fa-pause-circle',
+                            ];
+                            $statusIcon = $statusIcons[$task->status] ?? null;
                         @endphp
-                        <span
-                            class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold {{ $statusClass }}">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium {{ $statusClass }}">
+                            @if($statusIcon)
+                                <i class="fas {{ $statusIcon }} mr-1.5 text-xs"></i>
+                            @endif
                             {{ $task->status }}
                         </span>
                         @php
                             $priorityColors = [
                                 'Not Urgent' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
                                 'Priority' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-                                'Urgent' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+                                'Urgent' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
                             ];
-                            $priorityClass = $priorityColors[$task->priority] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                            $priorityClass = $priorityColors[$task->priority] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+
+                            $priorityIcons = [
+                                'Urgent' => 'fa-exclamation-circle',
+                                'Priority' => 'fa-flag',
+                                'Not Urgent' => 'fa-check',
+                            ];
+                            $priorityIcon = $priorityIcons[$task->priority] ?? null;
                         @endphp
-                        <span
-                            class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold {{ $priorityClass }}">
-                            <!-- CHANGE, SHOULD BE FROM THE DATABASE -->
-                            Not Urgent
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium {{ $priorityClass }}">
+                            @if($priorityIcon)
+                                <i class="fas {{ $priorityIcon }} mr-1.5 text-xs"></i>
+                            @endif
+                            {{ $task->priority ?? 'Not Urgent' }}
                         </span>
                     </div>
 
@@ -685,42 +843,56 @@
                         </div>
                     @endif
 
-                    <!-- Approval Action Buttons -->
-                    <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button
-                            class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
-                            disabled>
-                            <i class="fas fa-check"></i>
-                            Accept
-                        </button>
-                        <button
-                            class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2"
-                            disabled>
-                            <i class="fas fa-times"></i>
-                            Decline
-                        </button>
-                    </div>
+                    @if(is_null($task->employee_approved))
+                        <!-- Approval Action Buttons - Show when task needs approval -->
+                        <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <button type="button" onclick="document.getElementById('approve-task-form').submit()"
+                                class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                                <i class="fas fa-check"></i>
+                                Accept Task
+                            </button>
+                            <button type="button" onclick="if(confirm('Are you sure you want to decline this task?')) document.getElementById('decline-task-form').submit()"
+                                class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2">
+                                <i class="fas fa-times"></i>
+                                Decline Task
+                            </button>
+                        </div>
 
-                    <!-- Task Action Buttons -->
-                    <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
-                        <button
-                            class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
-                            disabled>
-                            <i class="fas fa-play"></i>
-                            Start Task
-                        </button>
-                        <button
-                            class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
-                            disabled>
-                            <i class="fas fa-check"></i>
-                            Mark Complete
-                        </button>
-                    </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Please accept or decline this task
+                        </p>
 
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Actions will be enabled once task is approved by the employee
-                    </p>
+                    @elseif($task->employee_approved === true)
+                        <!-- Task Action Buttons - Show when task is approved -->
+                        <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            @if($task->status === 'Pending' || $task->status === 'Scheduled')
+                                {{-- Show Start Task button --}}
+                                <button type="button" onclick="document.getElementById('start-task-form').submit()"
+                                    class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                                    <i class="fas fa-play"></i>
+                                    Start Task
+                                </button>
+                            @elseif($task->status === 'In Progress')
+                                {{-- Show Mark Complete button --}}
+                                <button type="button" onclick="if(confirm('Are you sure you want to mark this task as complete?')) document.getElementById('complete-task-form').submit()"
+                                    class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                                    <i class="fas fa-check"></i>
+                                    Mark Complete
+                                </button>
+                            @endif
+                        </div>
+
+                    @else
+                        <!-- Declined State -->
+                        <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
+                                <i class="fas fa-times-circle text-red-600 dark:text-red-400 text-2xl mb-2"></i>
+                                <p class="text-sm font-semibold text-red-700 dark:text-red-300">Task Declined</p>
+                                <p class="text-xs text-red-600 dark:text-red-400 mt-1">You have declined this task</p>
+                            </div>
+                        </div>
+                    @endif
                     
                     <!-- Rate this task -->
                     <div class="my-6 text-center">
@@ -986,6 +1158,22 @@
                     });
                 </script>
             @endpush
+
+        {{-- Hidden Forms for Approval Actions --}}
+        <form id="approve-task-form" action="{{ route('employee.tasks.approve', $task->id) }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+        <form id="decline-task-form" action="{{ route('employee.tasks.decline', $task->id) }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+
+        {{-- Hidden Forms for Task Actions --}}
+        <form id="start-task-form" action="{{ route('employee.tasks.start', $task->id) }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+        <form id="complete-task-form" action="{{ route('employee.tasks.complete', $task->id) }}" method="POST" style="display: none;">
+            @csrf
+        </form>
 
     </div>
 </x-layouts.general-employee>

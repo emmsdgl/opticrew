@@ -105,9 +105,198 @@
         <!-- Divider -->
         <hr class="my-6 border-gray-300 dark:border-gray-700">
 
+        <!-- Sort Script - Define before Alpine initializes -->
+        <script>
+        // Sort function for all task sections - defined early for Alpine
+        window.sortTasks = function(section, field, direction) {
+            console.log('Sorting tasks:', section, field, direction);
+
+            // Map section names to their container IDs
+            const sectionIds = {
+                'today': 'today-tasks-list',
+                'pending': 'pending-tasks-list',
+                'history': 'history-tasks-list'
+            };
+
+            // Get the container for this section
+            const listContainer = document.getElementById(sectionIds[section]);
+
+            if (!listContainer) {
+                console.error('List container not found for section:', section);
+                return;
+            }
+
+            // Get all task items
+            const taskItems = Array.from(listContainer.querySelectorAll('[data-task-item]'));
+            console.log('Found task items:', taskItems.length);
+
+            if (taskItems.length === 0) {
+                console.log('No tasks to sort');
+                return;
+            }
+
+            // Sort the task items
+            taskItems.sort((a, b) => {
+                let valueA, valueB;
+
+                switch(field) {
+                    case 'service':
+                        valueA = (a.getAttribute('data-service') || '').toLowerCase();
+                        valueB = (b.getAttribute('data-service') || '').toLowerCase();
+                        break;
+                    case 'date':
+                        // Parse dates for proper comparison
+                        valueA = a.getAttribute('data-date') || '';
+                        valueB = b.getAttribute('data-date') || '';
+                        // Convert to Date objects for proper comparison
+                        const dateA = new Date(valueA);
+                        const dateB = new Date(valueB);
+                        return direction === 'asc' ? dateA - dateB : dateB - dateA;
+                    case 'time':
+                        valueA = a.getAttribute('data-time') || '';
+                        valueB = b.getAttribute('data-time') || '';
+                        break;
+                    case 'client':
+                        valueA = (a.getAttribute('data-client') || '').toLowerCase();
+                        valueB = (b.getAttribute('data-client') || '').toLowerCase();
+                        break;
+                    default:
+                        return 0;
+                }
+
+                // String comparison
+                if (direction === 'asc') {
+                    return valueA.localeCompare(valueB);
+                } else {
+                    return valueB.localeCompare(valueA);
+                }
+            });
+
+            // Get the parent container for the task items
+            const taskParent = taskItems[0]?.parentElement;
+            if (!taskParent) {
+                console.error('Task parent not found');
+                return;
+            }
+
+            // Re-append items in sorted order
+            taskItems.forEach(item => {
+                taskParent.appendChild(item);
+            });
+
+            console.log('Tasks sorted successfully');
+        }
+
+        // Filter tasks by service type
+        window.filterTasksByService = function(section, serviceType) {
+            console.log('Filtering tasks by service:', section, serviceType);
+
+            // Map section names to their container IDs
+            const sectionIds = {
+                'today': 'today-tasks-list',
+                'pending': 'pending-tasks-list',
+                'history': 'history-tasks-list'
+            };
+
+            // Get the container for this section
+            const listContainer = document.getElementById(sectionIds[section]);
+
+            if (!listContainer) {
+                console.error('List container not found for section:', section);
+                return;
+            }
+
+            // Get all task items
+            const taskItems = Array.from(listContainer.querySelectorAll('[data-task-item]'));
+            console.log('Found task items:', taskItems.length);
+
+            if (taskItems.length === 0) {
+                console.log('No tasks to filter');
+                return;
+            }
+
+            // Filter or show all tasks
+            taskItems.forEach(item => {
+                const service = item.getAttribute('data-service') || '';
+
+                if (serviceType === 'all') {
+                    // Show all tasks
+                    item.style.display = '';
+                } else {
+                    // Check if service contains the filter text (case-insensitive)
+                    if (service.toLowerCase().includes(serviceType.toLowerCase())) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+
+            console.log('Tasks filtered successfully');
+        }
+        </script>
+
         <!-- Today's Tasks Section -->
         <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
-            <x-labelwithvalue label="My Tasks for Today" :count="'(' . $todayTasks->count() . ')'" />
+            <div class="flex items-center justify-between">
+                <x-labelwithvalue label="My Tasks for Today" :count="'(' . $todayTasks->count() . ')'" />
+                <div class="flex items-center gap-2">
+                    <!-- Sort by Service Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-filter text-xs"></i>
+                            <span class="text-xs">Filter by Service</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="filterTasksByService('today', 'all'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    All Services
+                                </button>
+                                <button type="button" @click="filterTasksByService('today', 'Deep Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Deep Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('today', 'Snowout Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Snowout Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('today', 'Daily Room Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Daily Room Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('today', 'Hotel Cleaning Service'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Hotel Cleaning Service
+                                </button>
+                                <button type="button" @click="filterTasksByService('today', 'Student Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Student Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('today', 'Final Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Final Cleaning
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort by Order Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sort-amount-down text-xs"></i>
+                            <span class="text-xs">Sort by Order</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="sortTasks('today', 'date', 'desc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-down text-xs w-4"></i>
+                                    Newest First
+                                </button>
+                                <button type="button" @click="sortTasks('today', 'date', 'asc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-up text-xs w-4"></i>
+                                    Oldest First
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             @php
                 // Transform today's tasks to the format expected by task-overview-list component
@@ -118,6 +307,14 @@
 
                     $duration = $task->estimated_duration_minutes ?? 60;
 
+                    // Get client name
+                    $clientName = 'Unknown Client';
+                    if ($task->location && $task->location->contractedClient) {
+                        $clientName = $task->location->contractedClient->name;
+                    } elseif ($task->client) {
+                        $clientName = trim(($task->client->first_name ?? '') . ' ' . ($task->client->last_name ?? ''));
+                    }
+
                     return [
                         'service' => $task->task_description,
                         'status' => $task->status,
@@ -125,6 +322,7 @@
                         'service_time' => $scheduledTime->format('g:i A') . ' (' . $duration . ' min)',
                         'description' => ($task->location ? $task->location->location_name : 'External Client')
                                        . ($task->assigned_by ? ' • Assigned by: ' . $task->assigned_by->name : ''),
+                        'client' => $clientName,
                         'action_url' => route('employee.tasks.show', ['task' => $task->id, 'from' => 'tasks']),
                         'action_label' => 'View Details',
                         'menu_items' => [] // Task start/complete actions will be added later
@@ -132,7 +330,7 @@
                 })->toArray();
             @endphp
 
-            <div class="h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+            <div id="today-tasks-list" class="h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                 <x-employee-components.task-overview-list
                     :items="$todayTasksFormatted"
                     fixedHeight="24rem"
@@ -145,23 +343,201 @@
         <!-- Divider -->
         <hr class="my-6 border-gray-300 dark:border-gray-700">
 
-        <!-- Tasks History Section -->
+        <!-- To Be Approved Section -->
         <div class="flex flex-col gap-6 w-full rounded-lg p-4">
-            @php
-                // Combine all tasks for history view (today's and upcoming)
-                $allTasksHistory = $todayTasks->concat($upcomingTasks);
-            @endphp
+            <div class="flex items-center justify-between">
+                <x-labelwithvalue label="To Be Approved" :count="'(' . $pendingApprovalTasks->count() . ')'" />
+                <div class="flex items-center gap-2">
+                    <!-- Sort by Service Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-filter text-xs"></i>
+                            <span class="text-xs">Filter by Service</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="filterTasksByService('pending', 'all'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    All Services
+                                </button>
+                                <button type="button" @click="filterTasksByService('pending', 'Deep Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Deep Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('pending', 'Snowout Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Snowout Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('pending', 'Daily Room Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Daily Room Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('pending', 'Hotel Cleaning Service'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Hotel Cleaning Service
+                                </button>
+                                <button type="button" @click="filterTasksByService('pending', 'Student Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Student Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('pending', 'Final Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Final Cleaning
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-            <x-labelwithvalue label="Tasks History" :count="'(' . $allTasksHistory->count() . ')'" />
+                    <!-- Sort by Order Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sort-amount-down text-xs"></i>
+                            <span class="text-xs">Sort by Order</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="sortTasks('pending', 'date', 'desc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-down text-xs w-4"></i>
+                                    Newest First
+                                </button>
+                                <button type="button" @click="sortTasks('pending', 'date', 'asc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-up text-xs w-4"></i>
+                                    Oldest First
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             @php
-                // Transform all tasks to the format expected by task-overview-list component
-                $allTasksFormatted = $allTasksHistory->map(function($task) use ($isClockedIn) {
+                // Transform pending approval tasks to the format expected by task-overview-list component
+                $pendingApprovalTasksFormatted = $pendingApprovalTasks->map(function($task) {
                     $scheduledTime = $task->scheduled_time
                         ? \Carbon\Carbon::parse($task->scheduled_time)
                         : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
 
                     $duration = $task->estimated_duration_minutes ?? 60;
+
+                    // Get client name
+                    $clientName = 'Unknown Client';
+                    if ($task->location && $task->location->contractedClient) {
+                        $clientName = $task->location->contractedClient->name;
+                    } elseif ($task->client) {
+                        $clientName = trim(($task->client->first_name ?? '') . ' ' . ($task->client->last_name ?? ''));
+                    }
+
+                    return [
+                        'service' => $task->task_description,
+                        'status' => 'Pending Approval',
+                        'service_date' => \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y'),
+                        'service_time' => $scheduledTime->format('g:i A') . ' (' . $duration . ' min)',
+                        'description' => ($task->location ? $task->location->location_name : 'External Client')
+                                       . ($task->assignedBy ? ' • Assigned by: ' . $task->assignedBy->name : ''),
+                        'client' => $clientName,
+                        'action_url' => route('employee.tasks.show', ['task' => $task->id, 'from' => 'tasks']),
+                        'action_label' => 'View Details',
+                        'menu_items' => []
+                    ];
+                })->toArray();
+            @endphp
+
+            <div id="pending-tasks-list" class="border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+                <x-employee-components.task-overview-list
+                    :items="$pendingApprovalTasksFormatted"
+                    fixedHeight="32rem"
+                    maxHeight="32rem"
+                    emptyTitle="No tasks pending approval"
+                    emptyMessage="All assigned tasks have been reviewed." />
+            </div>
+
+            <!-- Hidden forms for approve/decline actions -->
+            @foreach($pendingApprovalTasks as $task)
+                <form id="approve-form-{{ $task->id }}" action="{{ route('employee.tasks.approve', $task->id) }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+                <form id="decline-form-{{ $task->id }}" action="{{ route('employee.tasks.decline', $task->id) }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+            @endforeach
+        </div>
+
+        <!-- Divider -->
+        <hr class="my-6 border-gray-300 dark:border-gray-700">
+
+        <!-- Tasks History Section -->
+        <div class="flex flex-col gap-6 w-full rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <x-labelwithvalue label="Tasks History" :count="'(' . $completedTasks->count() . ')'" />
+                <div class="flex items-center gap-2">
+                    <!-- Sort by Service Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-filter text-xs"></i>
+                            <span class="text-xs">Filter by Service</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="filterTasksByService('history', 'all'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    All Services
+                                </button>
+                                <button type="button" @click="filterTasksByService('history', 'Deep Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Deep Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('history', 'Snowout Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Snowout Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('history', 'Daily Room Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Daily Room Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('history', 'Hotel Cleaning Service'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Hotel Cleaning Service
+                                </button>
+                                <button type="button" @click="filterTasksByService('history', 'Student Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Student Cleaning
+                                </button>
+                                <button type="button" @click="filterTasksByService('history', 'Final Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Final Cleaning
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort by Order Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sort-amount-down text-xs"></i>
+                            <span class="text-xs">Sort by Order</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="sortTasks('history', 'date', 'desc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-down text-xs w-4"></i>
+                                    Newest First
+                                </button>
+                                <button type="button" @click="sortTasks('history', 'date', 'asc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-up text-xs w-4"></i>
+                                    Oldest First
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @php
+                // Transform completed tasks to the format expected by task-overview-list component
+                $allTasksFormatted = $completedTasks->map(function($task) use ($isClockedIn) {
+                    $scheduledTime = $task->scheduled_time
+                        ? \Carbon\Carbon::parse($task->scheduled_time)
+                        : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+
+                    $duration = $task->estimated_duration_minutes ?? 60;
+
+                    // Get client name
+                    $clientName = 'Unknown Client';
+                    if ($task->location && $task->location->contractedClient) {
+                        $clientName = $task->location->contractedClient->name;
+                    } elseif ($task->client) {
+                        $clientName = trim(($task->client->first_name ?? '') . ' ' . ($task->client->last_name ?? ''));
+                    }
 
                     // Build team information if available
                     $teamInfo = '';
@@ -186,6 +562,7 @@
                         'description' => ($task->location ? $task->location->location_name : 'External Client')
                                        . ($task->assigned_by ? ' • Assigned by: ' . $task->assigned_by->name : '')
                                        . $teamInfo,
+                        'client' => $clientName,
                         'action_url' => route('employee.tasks.show', ['task' => $task->id, 'from' => 'tasks']),
                         'action_label' => 'View Details',
                         'menu_items' => [] // Task start/complete actions will be added later
@@ -193,7 +570,7 @@
                 })->toArray();
             @endphp
 
-            <div class="h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+            <div id="history-tasks-list" class="h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                 <x-employee-components.task-overview-list
                     :items="$allTasksFormatted"
                     fixedHeight="24rem"
@@ -287,6 +664,8 @@
 <script>
 // Listen for task-updated events and show toast notification
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Sort functions ready');
+
     let taskUpdateToast = null;
 
     window.addEventListener('task-updated', function(event) {

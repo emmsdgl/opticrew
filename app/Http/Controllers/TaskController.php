@@ -93,12 +93,17 @@ class TaskController extends Controller
             //     'employees_found' => $employeeNames
             // ]);
             
-            // Get the client name
+            // Get the client name with improved null handling
             $clientName = 'Unknown Client';
             if ($task->location && $task->location->contractedClient) {
-                $clientName = $task->location->contractedClient->name;
+                $clientName = $task->location->contractedClient->name ?? 'Unknown Client';
             } elseif ($task->client) {
-                $clientName = $task->client->first_name . ' ' . $task->client->last_name;
+                $firstName = $task->client->first_name ?? '';
+                $lastName = $task->client->last_name ?? '';
+                $clientName = trim($firstName . ' ' . $lastName);
+                if (empty($clientName)) {
+                    $clientName = 'Unknown Client';
+                }
             }
 
             // ✅ Parse task_description to extract service type and cabin type
@@ -153,13 +158,21 @@ class TaskController extends Controller
         }
 
         // --- 5. BUILD TASKS FOR KANBAN BOARD ---
-        $tasks = $rawTasks->map(function ($task) {
-            // Get client name
+        $tasks = $rawTasks->filter(function ($task) {
+            // Filter out any null tasks
+            return $task !== null;
+        })->map(function ($task) {
+            // Get client name with improved null handling
             $clientName = 'Unknown Client';
             if ($task->location && $task->location->contractedClient) {
-                $clientName = $task->location->contractedClient->name;
+                $clientName = $task->location->contractedClient->name ?? 'Unknown Client';
             } elseif ($task->client) {
-                $clientName = trim($task->client->first_name . ' ' . $task->client->last_name);
+                $firstName = $task->client->first_name ?? '';
+                $lastName = $task->client->last_name ?? '';
+                $clientName = trim($firstName . ' ' . $lastName);
+                if (empty($clientName)) {
+                    $clientName = 'Unknown Client';
+                }
             }
 
             // Get team members for this task
@@ -253,6 +266,7 @@ class TaskController extends Controller
                 'teamMembers' => $teamMembers,
                 'date' => Carbon::parse($task->scheduled_date)->format('F j, Y'),
                 'time' => Carbon::parse($task->scheduled_time)->format('g:i A'),
+                'scheduled_date' => $task->scheduled_date, // Add raw date for sorting
                 'priority' => $priority,
                 'priorityColor' => $priorityColor,
                 'status' => $kanbanStatus,
@@ -821,11 +835,27 @@ class TaskController extends Controller
 
         return response()->json([
             'status' => $optimizationResult['status'],
-            'message' => $optimizationResult['status'] === 'success' 
-                ? 'Re-optimization completed successfully' 
+            'message' => $optimizationResult['status'] === 'success'
+                ? 'Re-optimization completed successfully'
                 : 'Re-optimization failed',
             'statistics' => $optimizationResult['statistics'] ?? null,
             'schedules' => $optimizationResult['schedules'] ?? null
         ]);
+    }
+
+    /**
+     * Display task details (admin view)
+     */
+    public function show($id)
+    {
+        $task = Task::with([
+            'location.contractedClient',
+            'client',
+            'optimizationTeam.members.employee.user',
+            'optimizationTeam.car',
+            'assignedBy'
+        ])->findOrFail($id);
+
+        return view('admin.tasks.show', compact('task'));
     }
 }

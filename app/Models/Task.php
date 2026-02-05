@@ -18,8 +18,12 @@ class Task extends Model
         'estimated_duration_minutes',
         'scheduled_date',
         'status',
+        'employee_approved',      // Employee approval status
+        'employee_approved_at',   // When employee approved/declined
         'assigned_team_id',
+        'started_by',             // User who started the task
         'started_at',
+        'completed_by',           // User who completed the task
         // Optimization system fields
         'scheduled_time',
         'duration',              // You might use this or estimated_duration_minutes
@@ -44,6 +48,7 @@ class Task extends Model
         'scheduled_date' => 'date',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'employee_approved_at' => 'datetime',
         'on_hold_timestamp' => 'datetime',
         'reassigned_at' => 'datetime',
         // Optimization casts
@@ -55,6 +60,7 @@ class Task extends Model
         'required_skills' => 'array',
         // Boolean casts
         'arrival_status' => 'boolean',
+        'employee_approved' => 'boolean',
     ];
 
     // EXISTING RELATIONSHIPS (Keep all of these)
@@ -135,5 +141,21 @@ class Task extends Model
     public function assignedBy()
     {
         return $this->belongsTo(User::class, 'assigned_by');
+    }
+
+    /**
+     * Get the user who started this task
+     */
+    public function startedBy()
+    {
+        return $this->belongsTo(User::class, 'started_by');
+    }
+
+    /**
+     * Get the user who completed this task
+     */
+    public function completedBy()
+    {
+        return $this->belongsTo(User::class, 'completed_by');
     }
 }
