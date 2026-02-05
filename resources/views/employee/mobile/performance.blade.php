@@ -184,6 +184,15 @@
                             </div>
                         </div>
                         @endif
+
+                        {{-- View Details Button --}}
+                        <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                            <a href="{{ route('employee.tasks.show', ['task' => $task['task_id'], 'from' => 'performance']) }}"
+                               class="block w-full text-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200">
+                                <i class="fa-solid fa-eye mr-2"></i>
+                                View Details
+                            </a>
+                        </div>
                     </div>
                 @empty
                     <div class="text-center py-8 text-gray-400 dark:text-gray-500">

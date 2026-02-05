@@ -48,6 +48,7 @@ class EmployeeDashboardController extends Controller
             ->where('optimization_team_members.employee_id', $employee->id)
             ->whereIn('tasks.status', ['Pending', 'Scheduled', 'In Progress'])
             ->select(
+                'tasks.id',
                 DB::raw("COALESCE(contracted_clients.name, 'No Client Assigned') as client_name"),
                 'tasks.scheduled_date as date',
                 'locations.location_name as cabin_name',

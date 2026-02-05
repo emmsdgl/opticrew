@@ -125,7 +125,7 @@
                         'service_time' => $scheduledTime->format('g:i A') . ' (' . $duration . ' min)',
                         'description' => ($task->location ? $task->location->location_name : 'External Client')
                                        . ($task->assigned_by ? ' • Assigned by: ' . $task->assigned_by->name : ''),
-                        'action_url' => route('employee.tasks.show', $task->id),
+                        'action_url' => route('employee.tasks.show', ['task' => $task->id, 'from' => 'tasks']),
                         'action_label' => 'View Details',
                         'menu_items' => [] // Task start/complete actions will be added later
                     ];
@@ -186,7 +186,7 @@
                         'description' => ($task->location ? $task->location->location_name : 'External Client')
                                        . ($task->assigned_by ? ' • Assigned by: ' . $task->assigned_by->name : '')
                                        . $teamInfo,
-                        'action_url' => route('employee.tasks.show', $task->id),
+                        'action_url' => route('employee.tasks.show', ['task' => $task->id, 'from' => 'tasks']),
                         'action_label' => 'View Details',
                         'menu_items' => [] // Task start/complete actions will be added later
                     ];

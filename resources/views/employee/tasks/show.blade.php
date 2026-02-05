@@ -1,4 +1,34 @@
 <x-layouts.general-employee :title="'Task Details'">
+    @php
+        // Determine where the user came from to provide dynamic back navigation
+        $from = request()->query('from', 'tasks');
+
+        // Map source pages to their labels and routes
+        $backNavigation = [
+            'performance' => [
+                'label' => 'Performance',
+                'route' => route('employee.performance')
+            ],
+            'dashboard' => [
+                'label' => 'Dashboard',
+                'route' => route('employee.dashboard')
+            ],
+            'history' => [
+                'label' => 'History',
+                'route' => route('employee.history')
+            ],
+            'tasks' => [
+                'label' => 'Tasks',
+                'route' => route('employee.tasks')
+            ],
+        ];
+
+        // Get the back navigation details, default to tasks if source is unknown
+        $backNav = $backNavigation[$from] ?? $backNavigation['tasks'];
+        $backLabel = $backNav['label'];
+        $backUrl = $backNav['route'];
+    @endphp
+
     <div x-data="feedbackModal()">
 
         {{-- MOBILE LAYOUT (< 1024px) --}} <section role="status"
@@ -7,11 +37,12 @@
             {{-- Header with Back Button --}}
             <div
                 class="sticky top-0 bg-white dark:bg-gray-900 z-10 px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                <a href="{{ route('employee.tasks') }}"
-                    class="inline-flex items-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+                <a href="{{ $backUrl }}"
+                    class="inline-flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
+                    <span class="text-sm font-medium">Back to {{ $backLabel }}</span>
                 </a>
             </div>
 
@@ -182,10 +213,10 @@
                 <div class="flex-1 px-12 overflow-y-auto">
                     <!-- Back Button -->
                     <div class="mb-6">
-                        <a href="{{ route('employee.tasks') }}"
+                        <a href="{{ $backUrl }}"
                             class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                             <i class="fas fa-arrow-left"></i>
-                            <span class="font-medium text-sm">Back to Tasks</span>
+                            <span class="font-medium text-sm">Back to {{ $backLabel }}</span>
                         </a>
                     </div>
 
