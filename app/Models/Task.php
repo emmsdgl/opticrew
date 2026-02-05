@@ -73,11 +73,6 @@ class Task extends Model
         return $this->belongsTo(ContractedClient::class, 'contracted_client_id');
     }
 
-    public function team()
-    {
-        return $this->belongsTo(DailyTeamAssignment::class, 'assigned_team_id');
-    }
-
     /**
      * Get the optimization team assigned to this task
      */
@@ -124,5 +119,21 @@ class Task extends Model
     public function hasReview()
     {
         return $this->review()->exists();
+    }
+
+    /**
+     * Get the checklist completions for this task
+     */
+    public function checklistCompletions()
+    {
+        return $this->hasMany(TaskChecklistCompletion::class);
+    }
+
+    /**
+     * Get the user who assigned this task
+     */
+    public function assignedBy()
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
     }
 }
