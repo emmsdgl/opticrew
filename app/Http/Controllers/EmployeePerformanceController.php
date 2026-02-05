@@ -18,6 +18,12 @@ class EmployeePerformanceController extends Controller
         $user = Auth::user();
         $employee = $user->employee;
 
+        // Safety check: if no employee record exists
+        if (!$employee) {
+            return redirect()->route('employee.dashboard')
+                ->with('error', 'Employee record not found. Please contact support.');
+        }
+
         // Get filter period (default to 'Last 30 days')
         $period = $request->input('period', 'Last 30 days');
 
@@ -68,6 +74,7 @@ class EmployeePerformanceController extends Controller
                 $percentage = 100;
 
                 return [
+                    'task_id' => $task->id,
                     'label' => strtoupper(substr($clientName, 0, 1)),
                     'name' => $clientName,
                     'subtitle' => $task->task_description,

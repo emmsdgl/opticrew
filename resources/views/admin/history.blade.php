@@ -203,7 +203,10 @@
                         {{-- Activity Details --}}
                         <div x-show="selectedActivity !== null" x-transition>
                             {{-- Service Details Title --}}
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-6">Service Details Summary</h3>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">Service Details Summary</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                View the details of the selected activity
+                            </p>
 
                             {{-- Approval Status Alert --}}
                             <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">

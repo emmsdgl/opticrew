@@ -29,7 +29,7 @@
                                     class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></span>
                             </button>
 
-                            <button @click="activeTab === 'services'"
+                            <button @click="activeTab = 'services'"
                                 class="relative pb-4 text-sm font-medium transition-colors duration-200"
                                 :class="activeTab === 'services' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'">
                                 Assigned Tasks
@@ -263,7 +263,10 @@
                         {{-- Activity Details --}}
                         <div x-show="selectedActivity !== null" x-transition>
                             {{-- Task Details Title --}}
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-6">Task Details</h3>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">Task Details</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                View the details of the selected task
+                            </p>
 
                             {{-- Status Alert --}}
                             <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
@@ -308,18 +311,18 @@
                                 </div>
                             </div>
 
-                            {{-- Task Checklist Section (Editable for Employee) --}}
+                            {{-- Task Checklist Section--}}
                             <div class="mb-6 pb-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <div class="mb-4">
                                     <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
                                         Tasks Checklist
                                     </h4>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        Update your progress by checking completed tasks
+                                        Update your progress by checking completed tasks on the tasks page
                                     </p>
                                 </div>
 
-                                {{-- Checklist Items (Editable) --}}
+                                {{-- Checklist Items--}}
                                 <div class="space-y-2 mb-4">
                                     <template x-for="(task, taskIdx) in getSelectedActivity()?.checklist || []" :key="taskIdx">
                                         <label class="flex items-start gap-2 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group">

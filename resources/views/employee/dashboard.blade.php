@@ -96,6 +96,8 @@
                                     'service_date' => \Carbon\Carbon::parse($task->date)->format('M d, Y'),
                                     'service_time' => $task->duration . ' min',
                                     'description' => 'Client: ' . $task->client_name . ($task->cabin_name ? ' • Location: ' . $task->cabin_name : ''),
+                                    'action_url' => route('employee.tasks.show', ['task' => $task->id, 'from' => 'dashboard']),
+                                    'action_label' => 'View Details',
                                 ];
                             })->toArray();
                         @endphp
