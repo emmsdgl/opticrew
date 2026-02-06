@@ -230,6 +230,154 @@
                     @endif
                 </div>
 
+                <!-- Service Checklist -->
+                @if(!$appointment->is_company_inquiry)
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i class="fi fi-rr-list-check mr-2"></i> Service Checklist
+                    </h3>
+
+                    @php
+                        // Checklist templates organized by service type
+                        $checklistTemplates = [
+                            'daily_cleaning' => [
+                                'Sweep and mop floors',
+                                'Vacuum carpets/rugs',
+                                'Dust furniture and surfaces',
+                                'Wipe tables and countertops',
+                                'Empty trash bins',
+                                'Wipe kitchen counters',
+                                'Clean sink',
+                                'Wash visible dishes',
+                                'Wipe appliance exteriors',
+                                'Clean toilet and sink',
+                                'Wipe mirrors',
+                                'Mop floor',
+                                'Organize cluttered areas',
+                                'Light deodorizing',
+                            ],
+                            'snowout_cleaning' => [
+                                'Remove mud, water, and debris',
+                                'Clean door mats',
+                                'Mop and dry floors',
+                                'Deep vacuum carpets',
+                                'Mop with disinfectant solution',
+                                'Wipe walls near entrances',
+                                'Dry wet surfaces',
+                                'Check for water accumulation',
+                                'Clean and sanitize affected areas',
+                                'Dispose of tracked-in debris',
+                                'Replace trash liners',
+                            ],
+                            'deep_cleaning' => [
+                                'Dust high and low areas (vents, corners, baseboards)',
+                                'Clean behind and under furniture',
+                                'Wash walls and remove stains',
+                                'Deep vacuum carpets',
+                                'Clean inside microwave',
+                                'Degrease stove and range hood',
+                                'Clean inside refrigerator (if included)',
+                                'Scrub tile grout',
+                                'Remove limescale and mold buildup',
+                                'Deep scrub tiles and grout',
+                                'Sanitize all fixtures thoroughly',
+                                'Clean window interiors',
+                                'Polish handles and knobs',
+                                'Disinfect frequently touched surfaces',
+                            ],
+                            'general_cleaning' => [
+                                'Dust surfaces',
+                                'Sweep/vacuum floors',
+                                'Mop hard floors',
+                                'Clean glass and mirrors',
+                                'Wipe countertops',
+                                'Clean sink',
+                                'Take out trash',
+                                'Clean toilet, sink, and mirror',
+                                'Mop floor',
+                                'Arrange items neatly',
+                                'Dispose of garbage',
+                                'Light air freshening',
+                            ],
+                            'hotel_cleaning' => [
+                                'Make bed with fresh linens',
+                                'Replace pillowcases and sheets',
+                                'Dust all surfaces (tables, headboard, shelves)',
+                                'Vacuum carpet / sweep & mop floor',
+                                'Clean mirrors and glass surfaces',
+                                'Check under bed for trash/items',
+                                'Empty trash bins and replace liners',
+                                'Clean and disinfect toilet',
+                                'Scrub shower walls, tub, and floor',
+                                'Clean sink and countertop',
+                                'Polish fixtures',
+                                'Replace towels, bath mat, tissue, and toiletries',
+                                'Mop bathroom floor',
+                                'Refill water, coffee, and room amenities',
+                                'Replace slippers and hygiene kits',
+                                'Check minibar (if applicable)',
+                                'Ensure lights, AC, TV working',
+                                'Arrange curtains neatly',
+                                'Deodorize room',
+                            ],
+                        ];
+
+                        // Determine service type from appointment service_type
+                        $serviceTypeRaw = strtolower($appointment->service_type ?? '');
+                        $serviceType = 'general_cleaning'; // Default
+
+                        if (str_contains($serviceTypeRaw, 'daily') || str_contains($serviceTypeRaw, 'routine')) {
+                            $serviceType = 'daily_cleaning';
+                        } elseif (str_contains($serviceTypeRaw, 'snowout') || str_contains($serviceTypeRaw, 'weather')) {
+                            $serviceType = 'snowout_cleaning';
+                        } elseif (str_contains($serviceTypeRaw, 'deep')) {
+                            $serviceType = 'deep_cleaning';
+                        } elseif (str_contains($serviceTypeRaw, 'hotel') || str_contains($serviceTypeRaw, 'room turnover')) {
+                            $serviceType = 'hotel_cleaning';
+                        }
+
+                        $checklistItems = $checklistTemplates[$serviceType] ?? $checklistTemplates['general_cleaning'];
+                    @endphp
+
+                    <div class="space-y-2">
+                        @forelse($checklistItems as $index => $item)
+                            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <div class="flex items-center h-5 mt-0.5">
+                                    <input type="checkbox" id="appt-checklist-{{ $index }}"
+                                        class="appt-checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 cursor-pointer"
+                                        onchange="updateApptChecklistProgress()">
+                                </div>
+                                <label for="appt-checklist-{{ $index }}" class="flex-1 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                    {{ $item }}
+                                </label>
+                            </div>
+                        @empty
+                            <div class="text-center py-6">
+                                <i class="fas fa-clipboard-list text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">No checklist items</p>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    @if(count($checklistItems) > 0)
+                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">
+                                    <span id="appt-checklist-completed">0</span> of
+                                    <span id="appt-checklist-total">{{ count($checklistItems) }}</span> completed
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div id="appt-checklist-progress-bar"
+                                    class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                    style="width: 0%"></div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                @endif
+
                 <!-- Team Assignment (Only show if approved) -->
                 @if($appointment->status === 'approved' && !$appointment->assigned_team_id)
                 <div class="rounded-lg p-6">
@@ -608,5 +756,37 @@
                 }
             }
         }
+
+        // Checklist progress tracking
+        function updateApptChecklistProgress() {
+            const checkboxes = document.querySelectorAll('.appt-checklist-item');
+            const total = checkboxes.length;
+            const completed = document.querySelectorAll('.appt-checklist-item:checked').length;
+            const percentage = total > 0 ? (completed / total) * 100 : 0;
+
+            // Update counter
+            const completedEl = document.getElementById('appt-checklist-completed');
+            const totalEl = document.getElementById('appt-checklist-total');
+            const progressBar = document.getElementById('appt-checklist-progress-bar');
+
+            if (completedEl) completedEl.textContent = completed;
+            if (totalEl) totalEl.textContent = total;
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+                // Change color when complete
+                if (percentage === 100) {
+                    progressBar.classList.remove('bg-blue-600');
+                    progressBar.classList.add('bg-green-500');
+                } else {
+                    progressBar.classList.remove('bg-green-500');
+                    progressBar.classList.add('bg-blue-600');
+                }
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateApptChecklistProgress();
+        });
     </script>
 </x-layouts.general-employer>

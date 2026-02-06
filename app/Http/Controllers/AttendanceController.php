@@ -285,16 +285,46 @@ class AttendanceController extends Controller
             ];
         })->toArray();
 
+        // Add "Today" placeholder row if no attendance exists for today
+        $todayExists = collect($attendanceRecords)->contains(fn($r) => $r['isToday'] === true);
+        if (!$todayExists && Carbon::today()->between($startDate, $endDate)) {
+            // Get shift times (default: 11:00 - 19:00)
+            $shiftStart = $employee->shift_start ?? '11:00';
+            $shiftEnd = $employee->shift_end ?? '19:00';
+            $now = Carbon::now();
+            $shiftStartTime = Carbon::today()->setTimeFromTimeString($shiftStart);
+            $shiftEndTime = Carbon::today()->setTimeFromTimeString($shiftEnd);
+
+            // Determine status based on current time
+            if ($now->gt($shiftEndTime)) {
+                // After shift end - absent
+                $todayStatus = 'absent';
+            } elseif ($now->gte($shiftStartTime)) {
+                // During shift (after start, before end) - late
+                $todayStatus = 'late';
+            } else {
+                // Before shift starts - not clocked in yet
+                $todayStatus = 'not_clocked_in';
+            }
+
+            // Prepend today's placeholder at the beginning of the list
+            array_unshift($attendanceRecords, [
+                'status' => $todayStatus,
+                'date' => Carbon::today()->format('F d'),
+                'dayOfWeek' => Carbon::today()->format('l'),
+                'timeIn' => null,
+                'timeInNote' => '',
+                'timeOut' => null,
+                'timeOutNote' => '',
+                'hoursWorked' => null,
+                'timedIn' => false,
+                'isTimedOut' => false,
+                'isToday' => true
+            ]);
+        }
+
         // Prepare statistics
         $stats = [
-            [
-                'title' => 'Days Worked',
-                'value' => $daysWorked,
-                'subtitle' => 'Total attendance days this month',
-                'icon' => 'fa-solid fa-calendar-check',
-                'iconBg' => '',
-                'iconColor' => 'text-blue-600',
-            ],
             [
                 'title' => 'Worked Hours',
                 'value' => $totalHoursWorked . ' h ' . $totalMinutesRemainder . ' m',
