@@ -22,7 +22,7 @@ class="calendar-scheduler w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg"
     <div class="calendar-header flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <!-- Left: Month/Year and Navigation -->
         <div class="flex items-center gap-4">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100" x-text="currentMonthYear"></h2>
+            <h2 class="text-base font-medium text-gray-900 dark:text-gray-100" x-text="currentMonthYear"></h2>
             
             <!-- Navigation Arrows -->
             <div class="flex items-center gap-2">
@@ -260,15 +260,15 @@ class="calendar-scheduler w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg"
                 </div>
                 
                 <div class="flex gap-2 pt-4">
-                    <button @click="editEvent()" 
+                    <button @click="editEvent()"
                         class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                         Edit Schedule
                     </button>
-                    <button @click="showEventModal = false" 
+                    <button @click="showEventModal = false"
                         class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                         Cancel
                     </button>
-                    <button @click="saveEvent()" 
+                    <button @click="saveEvent()"
                         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                         Save
                     </button>

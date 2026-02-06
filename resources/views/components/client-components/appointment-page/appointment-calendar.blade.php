@@ -250,13 +250,9 @@
 
             <!-- Modal Actions -->
             <div class="flex gap-3 mt-8">
-                <button @click="editEvent(selectedEvent)"
-                        class="flex-1 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold shadow-sm hover:shadow-md">
-                    <i class="fas fa-edit mr-2 text-sm"></i>Edit
-                </button>
-                <button @click="deleteEvent(selectedEvent)"
-                        class="flex-1 px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-semibold shadow-sm hover:shadow-md">
-                    <i class="fas fa-trash mr-2 text-sm"></i>Delete
+                <button @click="showEventModal = false"
+                        class="flex-1 px-5 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-semibold">
+                    Close
                 </button>
             </div>
         </div>

@@ -4,10 +4,10 @@
         {{-- Main Content Area --}}
         <div class="flex-1">
             {{-- Content Grid --}}
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div class="w-full">
 
-                {{-- Left Column - Activity List --}}
-                <div class="lg:col-span-3 space-y-8">
+                {{-- Activity List --}}
+                <div class="space-y-8">
                     <div class="flex items-center gap-4 mb-6">
                         <div
                             class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
@@ -75,8 +75,7 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(activity, index) in activities" :key="index">
-                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200"
-                                    :class="selectedActivity === index ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
+                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                     <div class="flex items-start gap-4">
                                         <!-- Icon -->
                                         <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -126,8 +125,7 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(activity, index) in activities.filter(a => a.type === 'service')" :key="'service-' + index">
-                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200"
-                                    :class="selectedActivity === activities.indexOf(activity) ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
+                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                     <div class="flex items-start gap-4">
                                         <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                                             <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
@@ -165,8 +163,7 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(activity, index) in activities.filter(a => a.needsRating)" :key="'rate-' + index">
-                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200"
-                                    :class="selectedActivity === activities.indexOf(activity) ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' : ''">
+                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                     <div class="flex items-start gap-4">
                                         <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                                             <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
@@ -262,182 +259,33 @@
                     </div>
                 </div>
 
-                {{-- Right Column - Service Details Summary --}}
-                <div class="lg:col-span-2 h-[calc(100vh-4rem)]">
-                    <div class="bg-none dark:bg-none rounded-lg p-8 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
-
-                        {{-- Empty State - No Selection --}}
-                        <div x-show="selectedActivity === null" class="flex flex-col items-center justify-center h-full text-center">
-                            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                                <i class="fa-regular fa-hand-pointer text-2xl text-gray-400 dark:text-gray-500"></i>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Select a Service</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-                                Click "Review" on any service from the list to view its details and progress
-                            </p>
-                        </div>
-
-                        {{-- Activity Details --}}
-                        <div x-show="selectedActivity !== null" x-transition>
-                            {{-- Service Details Title --}}
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">Service Details Summary</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                View the details of the selected service
-                            </p>
-
-                            {{-- Status Alert --}}
-                            <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">
-                                Your service is
-                                <span class="font-semibold"
-                                    :class="getSelectedActivity()?.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
-                                            getSelectedActivity()?.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
-                                            'text-orange-600 dark:text-orange-400'"
-                                    x-text="getSelectedActivity()?.status?.toLowerCase()"></span>.
-                            </p>
-
-                            {{-- Details List --}}
-                            <div class="space-y-4 mb-6">
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Appointment ID</span>
-                                    <span class="font-semibold text-gray-900 dark:text-white" x-text="getSelectedActivity()?.appointmentId"></span>
-                                </div>
-
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Service Date</span>
-                                    <span class="font-semibold text-gray-900 dark:text-white" x-text="getSelectedActivity()?.serviceDate"></span>
-                                </div>
-
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Service Time</span>
-                                    <span class="font-semibold text-gray-900 dark:text-white" x-text="getSelectedActivity()?.serviceTime"></span>
-                                </div>
-
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Service Type</span>
-                                    <span class="font-semibold text-gray-900 dark:text-white" x-text="getSelectedActivity()?.serviceType"></span>
-                                </div>
-
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Service Location</span>
-                                    <span class="font-semibold text-gray-900 dark:text-white" x-text="getSelectedActivity()?.location"></span>
-                                </div>
-                            </div>
-
-                            {{-- Assigned Team Section --}}
-                            <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                                <label class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-3">
-                                    <i class="fas fa-users"></i>
-                                    Assigned Team
-                                </label>
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <template x-for="(member, idx) in getSelectedActivity()?.assignedMembers?.slice(0, 3) || []" :key="idx">
-                                        <div class="relative group">
-                                            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-semibold cursor-pointer transition-transform hover:scale-110"
-                                                x-text="member.initial"></div>
-                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-10"
-                                                x-text="member.name"></div>
-                                        </div>
-                                    </template>
-                                    <template x-if="(getSelectedActivity()?.assignedMembers?.length || 0) > 3">
-                                        <button class="w-8 h-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-gray-400 text-xs"
-                                            x-text="'+' + (getSelectedActivity()?.assignedMembers?.length - 3)"></button>
-                                    </template>
-                                </div>
-                            </div>
-
-                            {{-- Task Checklist Section (Read-only for Client) --}}
-                            <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                                <div class="mb-4">
-                                    <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
-                                        Service Progress
-                                    </h4>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        Track the progress of your service
-                                    </p>
-                                </div>
-
-                                {{-- Checklist Items (Read-only) --}}
-                                <div class="space-y-2 mb-4">
-                                    <template x-for="(task, taskIdx) in getSelectedActivity()?.checklist || []" :key="taskIdx">
-                                        <div class="flex items-start gap-2 p-2 rounded bg-gray-50 dark:bg-gray-800/50">
-                                            <div class="flex items-center h-5 mt-0.5">
-                                                <template x-if="task.completed">
-                                                    <i class="fa-solid fa-circle-check text-green-500 text-sm"></i>
-                                                </template>
-                                                <template x-if="!task.completed">
-                                                    <i class="fa-regular fa-circle text-gray-400 text-sm"></i>
-                                                </template>
-                                            </div>
-                                            <div class="flex-1">
-                                                <span class="text-xs text-gray-700 dark:text-gray-300"
-                                                    :class="task.completed ? 'line-through opacity-60' : ''"
-                                                    x-text="task.name"></span>
-                                            </div>
-                                        </div>
-                                    </template>
-
-                                    <template x-if="!getSelectedActivity()?.checklist?.length">
-                                        <div class="text-center py-4">
-                                            <p class="text-gray-400 dark:text-gray-500 text-xs">No tasks listed</p>
-                                        </div>
-                                    </template>
-                                </div>
-
-                                {{-- Progress Bar --}}
-                                <template x-if="getSelectedActivity()?.checklist?.length > 0">
-                                    <div class="mt-4">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Progress</span>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                <span x-text="getCompletedCount()"></span> of
-                                                <span x-text="getSelectedActivity()?.checklist?.length || 0"></span> completed
-                                            </span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                                            <div class="h-1.5 rounded-full transition-all duration-300"
-                                                :class="getProgressPercentage() === 100 ? 'bg-green-600' : 'bg-blue-600'"
-                                                :style="'width: ' + getProgressPercentage() + '%'"></div>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-
-                            {{-- Pricing --}}
-                            <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2 mb-6">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Total Amount</span>
-                                    <span class="text-lg font-bold text-gray-900 dark:text-white" x-text="getSelectedActivity()?.totalAmount"></span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Payable Amount</span>
-                                    <span class="text-lg font-bold text-blue-600 dark:text-blue-400" x-text="getSelectedActivity()?.payableAmount"></span>
-                                </div>
-                            </div>
-
-                            {{-- Status Notice --}}
-                            <div class="rounded-lg p-4">
-                                <p class="text-sm text-center"
-                                    :class="getSelectedActivity()?.status === 'Completed' ? 'text-green-500 dark:text-green-400' :
-                                            getSelectedActivity()?.status === 'In Progress' ? 'text-blue-500 dark:text-blue-400' :
-                                            'text-orange-400 dark:text-orange-500'">
-                                    <template x-if="getSelectedActivity()?.status === 'Completed'">
-                                        <span><i class="fa-solid fa-circle-check mr-2"></i>Your service has been <span class="font-semibold">completed</span></span>
-                                    </template>
-                                    <template x-if="getSelectedActivity()?.status === 'In Progress'">
-                                        <span><i class="fa-solid fa-spinner mr-2"></i>Your service is <span class="font-semibold">in progress</span></span>
-                                    </template>
-                                    <template x-if="getSelectedActivity()?.status === 'Pending'">
-                                        <span><i class="fa-solid fa-clock mr-2"></i>Your appointment is <span class="font-semibold">pending</span></span>
-                                    </template>
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
             </div>
         </div>
+
+        <!-- Service Details Slide-in Drawer -->
+        <x-client-components.shared.appointment-details-drawer
+            showVar="showDrawer"
+            dataVar="selectedActivity"
+            closeMethod="closeDrawer"
+            title="Service Details"
+            :showTeam="true"
+            :showChecklist="true">
+            <x-slot name="footer">
+                <div class="flex gap-3">
+                    <button
+                        x-show="getDrawerData('needsRating')"
+                        @click="openRateModal(activities.indexOf(selectedActivity)); closeDrawer()"
+                        class="flex-1 text-sm px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
+                        Rate Service
+                    </button>
+                    <button
+                        @click="closeDrawer()"
+                        class="flex-1 text-sm px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium">
+                        Close
+                    </button>
+                </div>
+            </x-slot>
+        </x-client-components.shared.appointment-details-drawer>
 
         <!-- Feedback Modal -->
         <div x-show="showRateModal" x-cloak @click="closeRateModal()"
@@ -571,6 +419,7 @@
         return {
             activeTab: 'all',
             selectedActivity: null,
+            showDrawer: false,
             showRateModal: false,
             selectedRating: 0,
             feedbackText: '',
@@ -579,13 +428,190 @@
             activities: @json($activities ?? []),
             ratings: @json($ratings ?? []),
 
+            // Checklist templates for different service types
+            checklistTemplates: {
+                daily_cleaning: [
+                    'Sweep and mop floors',
+                    'Vacuum carpets/rugs',
+                    'Dust furniture and surfaces',
+                    'Wipe tables and countertops',
+                    'Empty trash bins',
+                    'Wipe kitchen counters',
+                    'Clean sink',
+                    'Wash visible dishes',
+                    'Wipe appliance exteriors',
+                    'Clean toilet and sink',
+                    'Wipe mirrors',
+                    'Mop floor',
+                    'Organize cluttered areas',
+                    'Light deodorizing',
+                ],
+                snowout_cleaning: [
+                    'Remove mud, water, and debris',
+                    'Clean door mats',
+                    'Mop and dry floors',
+                    'Deep vacuum carpets',
+                    'Mop with disinfectant solution',
+                    'Wipe walls near entrances',
+                    'Dry wet surfaces',
+                    'Check for water accumulation',
+                    'Clean and sanitize affected areas',
+                    'Dispose of tracked-in debris',
+                    'Replace trash liners',
+                ],
+                deep_cleaning: [
+                    'Dust high and low areas (vents, corners, baseboards)',
+                    'Clean behind and under furniture',
+                    'Wash walls and remove stains',
+                    'Deep vacuum carpets',
+                    'Clean inside microwave',
+                    'Degrease stove and range hood',
+                    'Clean inside refrigerator (if included)',
+                    'Scrub tile grout',
+                    'Remove limescale and mold buildup',
+                    'Deep scrub tiles and grout',
+                    'Sanitize all fixtures thoroughly',
+                    'Clean window interiors',
+                    'Polish handles and knobs',
+                    'Disinfect frequently touched surfaces',
+                ],
+                general_cleaning: [
+                    'Dust surfaces',
+                    'Sweep/vacuum floors',
+                    'Mop hard floors',
+                    'Clean glass and mirrors',
+                    'Wipe countertops',
+                    'Clean sink',
+                    'Take out trash',
+                    'Clean toilet, sink, and mirror',
+                    'Mop floor',
+                    'Arrange items neatly',
+                    'Dispose of garbage',
+                    'Light air freshening',
+                ],
+                hotel_cleaning: [
+                    'Make bed with fresh linens',
+                    'Replace pillowcases and sheets',
+                    'Dust all surfaces (tables, headboard, shelves)',
+                    'Vacuum carpet / sweep & mop floor',
+                    'Clean mirrors and glass surfaces',
+                    'Check under bed for trash/items',
+                    'Empty trash bins and replace liners',
+                    'Clean and disinfect toilet',
+                    'Scrub shower walls, tub, and floor',
+                    'Clean sink and countertop',
+                    'Polish fixtures',
+                    'Replace towels, bath mat, tissue, and toiletries',
+                    'Mop bathroom floor',
+                    'Refill water, coffee, and room amenities',
+                    'Replace slippers and hygiene kits',
+                    'Check minibar (if applicable)',
+                    'Ensure lights, AC, TV working',
+                    'Arrange curtains neatly',
+                    'Deodorize room',
+                ],
+            },
+
             selectActivity(index) {
-                this.selectedActivity = index;
+                // Store the actual activity object, not just the index
+                this.selectedActivity = this.activities[index];
+                this.showDrawer = true;
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeDrawer() {
+                this.showDrawer = false;
+                this.selectedActivity = null;
+                document.body.style.overflow = 'auto';
+            },
+
+            // Helper methods required by the shared drawer component
+            getDrawerStatus() {
+                return (this.selectedActivity?.status || '').toLowerCase();
+            },
+
+            getDrawerData(key) {
+                if (!this.selectedActivity) return null;
+                // Map activity keys to drawer expected keys
+                const keyMap = {
+                    'service_type': 'serviceType',
+                    'serviceType': 'serviceType',
+                    'service_date': 'serviceDate',
+                    'serviceDate': 'serviceDate',
+                    'service_time': 'serviceTime',
+                    'serviceTime': 'serviceTime',
+                    'total_amount': 'price',
+                    'totalAmount': 'price',
+                    'cabin_name': 'location',
+                    'location': 'location',
+                };
+                // Try direct key first, then mapped key
+                if (this.selectedActivity[key] !== undefined) {
+                    return this.selectedActivity[key];
+                }
+                // Try reverse mapping
+                for (const [origKey, mappedKey] of Object.entries(keyMap)) {
+                    if (key === origKey && this.selectedActivity[mappedKey] !== undefined) {
+                        return this.selectedActivity[mappedKey];
+                    }
+                    if (key === mappedKey && this.selectedActivity[origKey] !== undefined) {
+                        return this.selectedActivity[origKey];
+                    }
+                }
+                return null;
+            },
+
+            getDrawerChecklistItems() {
+                const serviceType = this.selectedActivity?.serviceType || this.selectedActivity?.title || '';
+                return this.getChecklistItems(serviceType);
+            },
+
+            formatDrawerDate(dateString) {
+                if (!dateString) return '-';
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString;
+                return date.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            },
+
+            formatDrawerTime(timeString) {
+                if (!timeString) return '-';
+                const parts = timeString.split(':');
+                if (parts.length < 2) return timeString;
+
+                let hours = parseInt(parts[0]);
+                const minutes = parts[1];
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+
+                return hours + ':' + minutes + ' ' + ampm;
             },
 
             getSelectedActivity() {
-                if (this.selectedActivity === null) return null;
-                return this.activities[this.selectedActivity];
+                return this.selectedActivity;
+            },
+
+            getChecklistItems(serviceType) {
+                if (!serviceType) return this.checklistTemplates.general_cleaning;
+
+                const type = serviceType.toLowerCase();
+
+                if (type.includes('daily') || type.includes('routine')) {
+                    return this.checklistTemplates.daily_cleaning;
+                } else if (type.includes('snowout') || type.includes('weather')) {
+                    return this.checklistTemplates.snowout_cleaning;
+                } else if (type.includes('deep')) {
+                    return this.checklistTemplates.deep_cleaning;
+                } else if (type.includes('hotel') || type.includes('room turnover')) {
+                    return this.checklistTemplates.hotel_cleaning;
+                }
+
+                return this.checklistTemplates.general_cleaning;
             },
 
             getCompletedCount() {

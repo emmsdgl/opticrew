@@ -5,8 +5,28 @@
     showModal: false,
     serviceTitle: '{{ $service['title'] ?? '' }}',
     serviceData: {{ json_encode($service) }},
+    init() {
+        // Load favorite state from localStorage
+        const favorites = JSON.parse(localStorage.getItem('favoriteServices') || '[]');
+        this.isFavorite = favorites.includes(this.serviceTitle);
+    },
     toggleFavorite() {
         this.isFavorite = !this.isFavorite;
+
+        // Save to localStorage
+        let favorites = JSON.parse(localStorage.getItem('favoriteServices') || '[]');
+        if (this.isFavorite) {
+            if (!favorites.includes(this.serviceTitle)) {
+                favorites.push(this.serviceTitle);
+            }
+        } else {
+            favorites = favorites.filter(s => s !== this.serviceTitle);
+        }
+        localStorage.setItem('favoriteServices', JSON.stringify(favorites));
+
+        // Dispatch event for other components to listen
+        window.dispatchEvent(new CustomEvent('favorites-updated', { detail: { favorites } }));
+
         if ('{{ $onFavorite }}' && typeof window['{{ $onFavorite }}'] === 'function') {
             window['{{ $onFavorite }}'](this.isFavorite, this.serviceTitle);
         }
