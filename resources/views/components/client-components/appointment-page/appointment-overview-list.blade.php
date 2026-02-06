@@ -29,7 +29,11 @@
              @scroll.window="openMenuId = null"
              @scroll="openMenuId = null">
             @foreach($items as $index => $item)
-        <div class="group border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+        <div class="group border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
+            data-appointment-item
+            data-status="{{ $item['status'] ?? '' }}"
+            data-service="{{ $item['service'] ?? '' }}"
+            data-date="{{ $item['service_date_raw'] ?? '' }}">
             <div class="py-6 px-6">
                 <!-- Header Section -->
                 <div class="flex items-center justify-between">
@@ -39,19 +43,25 @@
                                 {{ $item['service'] }}
                             </h3>
                             
-                            @if(isset($item['status']))
+                            @if(isset($item['status']) || isset($item['status_display']))
+                            @php
+                                $statusDisplay = $item['status_display'] ?? ucfirst($item['status'] ?? '');
+                                $statusLower = strtolower($item['status'] ?? '');
+                            @endphp
                             <span class="px-2.5 py-0.5 text-xs font-medium rounded-md
-                                @if($item['status'] === 'Complete' || $item['status'] === 'Completed')
+                                @if($statusLower === 'complete' || $statusLower === 'completed')
                                     bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
-                                @elseif($item['status'] === 'In progress')
+                                @elseif($statusLower === 'in progress' || $statusLower === 'confirmed' || $statusLower === 'approved')
                                     bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
-                                @elseif($item['status'] === 'Archived')
+                                @elseif($statusLower === 'archived' || $statusLower === 'pending')
                                     bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400
+                                @elseif($statusLower === 'cancelled' || $statusLower === 'rejected')
+                                    bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
                                 @else
                                     bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300
                                 @endif
                             ">
-                                {{ $item['status'] }}
+                                {{ $statusDisplay }}
                             </span>
                             @endif
                         </div>

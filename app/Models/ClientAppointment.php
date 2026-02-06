@@ -108,4 +108,27 @@ class ClientAppointment extends Model
     {
         return $query->where('is_company_inquiry', false);
     }
+
+    /**
+     * Get the related task for this appointment
+     * Matches based on client_id, service_date, and service_type
+     */
+    public function task()
+    {
+        return $this->hasOne(Task::class, 'client_id', 'client_id')
+            ->where('scheduled_date', $this->service_date)
+            ->where('task_description', 'like', '%' . $this->service_type . '%');
+    }
+
+    /**
+     * Get the related task with checklist completions
+     */
+    public function getRelatedTaskAttribute()
+    {
+        return Task::with('checklistCompletions')
+            ->where('client_id', $this->client_id)
+            ->whereDate('scheduled_date', $this->service_date)
+            ->where('task_description', 'like', '%' . $this->service_type . '%')
+            ->first();
+    }
 }

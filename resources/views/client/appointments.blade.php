@@ -146,20 +146,236 @@
             </div>
         </div>
 
+        <!-- Filter/Sort Script - Define before Alpine initializes -->
+        <script>
+        // Sort function for appointments
+        window.sortAppointments = function(field, direction) {
+            console.log('Sorting appointments:', field, direction);
+
+            const listContainer = document.getElementById('appointments-list');
+            if (!listContainer) {
+                console.error('List container not found');
+                return;
+            }
+
+            // Get all appointment items
+            const appointmentItems = Array.from(listContainer.querySelectorAll('[data-appointment-item]'));
+            console.log('Found appointment items:', appointmentItems.length);
+
+            if (appointmentItems.length === 0) {
+                console.log('No appointments to sort');
+                return;
+            }
+
+            // Sort the appointment items
+            appointmentItems.sort((a, b) => {
+                let valueA, valueB;
+
+                switch(field) {
+                    case 'service':
+                        valueA = (a.getAttribute('data-service') || '').toLowerCase();
+                        valueB = (b.getAttribute('data-service') || '').toLowerCase();
+                        break;
+                    case 'date':
+                        valueA = a.getAttribute('data-date') || '';
+                        valueB = b.getAttribute('data-date') || '';
+                        const dateA = new Date(valueA);
+                        const dateB = new Date(valueB);
+                        return direction === 'asc' ? dateA - dateB : dateB - dateA;
+                    case 'amount':
+                        valueA = parseFloat(a.getAttribute('data-amount') || '0');
+                        valueB = parseFloat(b.getAttribute('data-amount') || '0');
+                        return direction === 'asc' ? valueA - valueB : valueB - valueA;
+                    default:
+                        return 0;
+                }
+
+                // String comparison
+                if (direction === 'asc') {
+                    return valueA.localeCompare(valueB);
+                } else {
+                    return valueB.localeCompare(valueA);
+                }
+            });
+
+            // Get the parent container for the appointment items
+            const appointmentParent = appointmentItems[0]?.parentElement;
+            if (!appointmentParent) {
+                console.error('Appointment parent not found');
+                return;
+            }
+
+            // Re-append items in sorted order
+            appointmentItems.forEach(item => {
+                appointmentParent.appendChild(item);
+            });
+
+            console.log('Appointments sorted successfully');
+        }
+
+        // Filter appointments by status
+        window.filterAppointmentsByStatus = function(statusType) {
+            console.log('Filtering appointments by status:', statusType);
+
+            const listContainer = document.getElementById('appointments-list');
+            if (!listContainer) {
+                console.error('List container not found');
+                return;
+            }
+
+            const appointmentItems = Array.from(listContainer.querySelectorAll('[data-appointment-item]'));
+            console.log('Found appointment items:', appointmentItems.length);
+
+            if (appointmentItems.length === 0) {
+                console.log('No appointments to filter');
+                return;
+            }
+
+            appointmentItems.forEach(item => {
+                const status = item.getAttribute('data-status') || '';
+
+                if (statusType === 'all') {
+                    item.style.display = '';
+                } else {
+                    if (status.toLowerCase() === statusType.toLowerCase()) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+
+            console.log('Appointments filtered by status successfully');
+        }
+
+        // Filter appointments by service type
+        window.filterAppointmentsByService = function(serviceType) {
+            console.log('Filtering appointments by service:', serviceType);
+
+            const listContainer = document.getElementById('appointments-list');
+            if (!listContainer) {
+                console.error('List container not found');
+                return;
+            }
+
+            const appointmentItems = Array.from(listContainer.querySelectorAll('[data-appointment-item]'));
+            console.log('Found appointment items:', appointmentItems.length);
+
+            if (appointmentItems.length === 0) {
+                console.log('No appointments to filter');
+                return;
+            }
+
+            appointmentItems.forEach(item => {
+                const service = item.getAttribute('data-service') || '';
+
+                if (serviceType === 'all') {
+                    item.style.display = '';
+                } else {
+                    if (service.toLowerCase().includes(serviceType.toLowerCase())) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+
+            console.log('Appointments filtered by service successfully');
+        }
+        </script>
+
         <!-- Inner Panel - Appointments History -->
         <div class="flex flex-col gap-6 w-full rounded-lg px-8">
             <div class="flex flex-row justify-between w-full items-center">
                 <x-labelwithvalue label="My Appointments" count="({{ $appointments->count() }})" />
 
                 <div class="flex flex-row gap-2">
-                    <x-dropdown label="Filter by:" default="All" :options="['All', 'Active', 'Inactive', 'Pending']"
-                        id="status-filter" />
-                    <x-dropdown label="Sort by:" default="Latest" :options="[
-                        'latest' => 'Latest',
-                        'oldest' => 'Oldest',
-                        'name_asc' => 'Name (A-Z)',
-                        'name_desc' => 'Name (Z-A)'
-                    ]" />
+                    <!-- Filter by Status Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-filter text-xs"></i>
+                            <span class="text-xs">Filter by Status</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="filterAppointmentsByStatus('all'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    All Statuses
+                                </button>
+                                <button type="button" @click="filterAppointmentsByStatus('pending'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Pending
+                                </button>
+                                <button type="button" @click="filterAppointmentsByStatus('approved'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Approved
+                                </button>
+                                <button type="button" @click="filterAppointmentsByStatus('confirmed'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Confirmed
+                                </button>
+                                <button type="button" @click="filterAppointmentsByStatus('completed'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Completed
+                                </button>
+                                <button type="button" @click="filterAppointmentsByStatus('cancelled'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Cancelled
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter by Service Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-broom text-xs"></i>
+                            <span class="text-xs">Filter by Service</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="filterAppointmentsByService('all'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    All Services
+                                </button>
+                                <button type="button" @click="filterAppointmentsByService('Deep Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Deep Cleaning
+                                </button>
+                                <button type="button" @click="filterAppointmentsByService('Snowout Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Snowout Cleaning
+                                </button>
+                                <button type="button" @click="filterAppointmentsByService('Daily Room Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Daily Room Cleaning
+                                </button>
+                                <button type="button" @click="filterAppointmentsByService('Hotel Cleaning Service'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Hotel Cleaning Service
+                                </button>
+                                <button type="button" @click="filterAppointmentsByService('Student Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Student Cleaning
+                                </button>
+                                <button type="button" @click="filterAppointmentsByService('Final Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Final Cleaning
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort by Order Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sort-amount-down text-xs"></i>
+                            <span class="text-xs">Sort by Order</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="sortAppointments('date', 'desc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-down text-xs w-4"></i>
+                                    Newest First
+                                </button>
+                                <button type="button" @click="sortAppointments('date', 'asc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-up text-xs w-4"></i>
+                                    Oldest First
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <a href="{{ route('client.appointment.create') }}"
                         class="px-4 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm">
                         <i class="fi fi-rr-plus mr-2"></i>
@@ -168,7 +384,7 @@
                 </div>
             </div>
 
-            <div class="h-64 overflow-y-auto">
+            <div id="appointments-list" class="h-64 overflow-y-auto">
                 <x-client-components.appointment-page.client-appointment-list :appointments="$appointments"
                     :show-header="true" />
             </div>

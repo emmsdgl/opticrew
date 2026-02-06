@@ -853,7 +853,8 @@ class TaskController extends Controller
             'client',
             'optimizationTeam.members.employee.user',
             'optimizationTeam.car',
-            'assignedBy'
+            'assignedBy',
+            'checklistCompletions'
         ])->findOrFail($id);
 
         return view('admin.tasks.show', compact('task'));

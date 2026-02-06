@@ -341,6 +341,11 @@ Route::middleware(['auth', 'employee'])->group(function () {
     Route::post('/employee/tasks/{task}/complete', [EmployeeTasksController::class, 'complete'])
         ->name('employee.tasks.complete');
 
+    Route::post('/employee/tasks/{task}/checklist/toggle', [EmployeeTasksController::class, 'toggleChecklistItem'])
+        ->name('employee.tasks.checklist.toggle');
+    Route::get('/employee/tasks/{task}/checklist/status', [EmployeeTasksController::class, 'getChecklistStatus'])
+        ->name('employee.tasks.checklist.status');
+
     Route::get('/employee/performance', [App\Http\Controllers\EmployeePerformanceController::class, 'index'])
         ->name('employee.performance');
     Route::get('/employee/development', [App\Http\Controllers\EmployeePerformanceController::class, 'development'])
