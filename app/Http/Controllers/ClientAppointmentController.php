@@ -88,11 +88,39 @@ class ClientAppointmentController extends Controller
             ]);
         }
 
-        // Fetch all appointments for this client
+        // Fetch all appointments for this client with assigned team members
         $appointments = ClientAppointment::where('client_id', $client->id)
+            ->with(['assignedTeam.employees.user'])
             ->orderBy('service_date', 'desc')
             ->orderBy('service_time', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($appointment) {
+                // Format assigned team members for the drawer component
+                if ($appointment->assignedTeam && $appointment->assignedTeam->employees->count() > 0) {
+                    $appointment->assigned_members = $appointment->assignedTeam->employees->map(function ($employee) {
+                        $fullName = $employee->full_name ?? 'Team Member';
+                        // Extract initials from full name (e.g., "John Doe" -> "JD")
+                        $nameParts = explode(' ', $fullName);
+                        $initial = '';
+                        foreach ($nameParts as $part) {
+                            if (!empty($part)) {
+                                $initial .= strtoupper(substr($part, 0, 1));
+                            }
+                        }
+                        $initial = substr($initial, 0, 2); // Max 2 characters
+
+                        return [
+                            'id' => $employee->id,
+                            'name' => $fullName,
+                            'initial' => $initial ?: 'TM',
+                            'avatar' => $employee->user->profile_photo_path ?? null,
+                        ];
+                    })->toArray();
+                } else {
+                    $appointment->assigned_members = [];
+                }
+                return $appointment;
+            });
 
         Log::info('Appointments fetched', [
             'client_id' => $client->id,

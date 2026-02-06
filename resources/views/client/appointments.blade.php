@@ -146,6 +146,101 @@
             </div>
         </div>
 
+        <!-- Saved Services Section (Only shows favorited services from dashboard) -->
+        @php
+            $finalCleaningRating = \App\Models\Feedback::averageRatingForService('Final Cleaning');
+            $deepCleaningRating = \App\Models\Feedback::averageRatingForService('Deep Cleaning');
+
+            $allServices = [
+                [
+                    'title' => 'Final Cleaning',
+                    'initial' => 'FC',
+                    'color' => 'bg-gradient-to-br from-blue-500 to-blue-600',
+                    'rating' => $finalCleaningRating > 0 ? number_format($finalCleaningRating, 1) : 'New',
+                    'description' => 'Complete move-out cleaning',
+                    'bookings' => $appointments->where('service_type', 'Final Cleaning')->count(),
+                ],
+                [
+                    'title' => 'Deep Cleaning',
+                    'initial' => 'DC',
+                    'color' => 'bg-gradient-to-br from-purple-500 to-indigo-600',
+                    'rating' => $deepCleaningRating > 0 ? number_format($deepCleaningRating, 1) : 'New',
+                    'description' => 'Intensive thorough cleaning',
+                    'bookings' => $appointments->where('service_type', 'Deep Cleaning')->count(),
+                ],
+            ];
+        @endphp
+
+        <div x-data="{
+            favorites: [],
+            allServices: {{ json_encode($allServices) }},
+            init() {
+                this.favorites = JSON.parse(localStorage.getItem('favoriteServices') || '[]');
+                // Listen for favorites updates from other pages
+                window.addEventListener('favorites-updated', (e) => {
+                    this.favorites = e.detail.favorites;
+                });
+            },
+            isFavorite(title) {
+                return this.favorites.includes(title);
+            },
+            removeFavorite(title) {
+                this.favorites = this.favorites.filter(s => s !== title);
+                localStorage.setItem('favoriteServices', JSON.stringify(this.favorites));
+            }
+        }"
+        x-show="favorites.length > 0"
+        x-cloak
+        class="flex flex-col gap-6 w-full rounded-lg px-8">
+            <x-labelwithvalue label="Saved Services" count="" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                @foreach($allServices as $service)
+                <a x-show="isFavorite('{{ $service['title'] }}')"
+                   x-transition:enter="transition ease-out duration-200"
+                   x-transition:enter-start="opacity-0 scale-95"
+                   x-transition:enter-end="opacity-100 scale-100"
+                   x-transition:leave="transition ease-in duration-150"
+                   x-transition:leave-start="opacity-100 scale-100"
+                   x-transition:leave-end="opacity-0 scale-95"
+                   href="{{ route('client.appointment.create') }}?service={{ urlencode($service['title']) }}"
+                   class="group flex items-center gap-4 p-4 bg-gray-900 dark:bg-gray-800 rounded-xl border border-gray-700 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
+                    <!-- Service Initial Badge -->
+                    <div class="flex-shrink-0 w-12 h-12 {{ $service['color'] }} rounded-lg flex items-center justify-center shadow-lg">
+                        <span class="text-white font-bold text-sm">{{ $service['initial'] }}</span>
+                    </div>
+
+                    <!-- Service Info -->
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
+                            {{ $service['title'] }}
+                        </h4>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            {{ $service['bookings'] }} {{ $service['bookings'] == 1 ? 'Booking' : 'Bookings' }}
+                        </p>
+                    </div>
+
+                    <!-- Rating & Remove -->
+                    <div class="flex items-center gap-2">
+                        @if($service['rating'] !== 'New')
+                        <div class="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 rounded-full">
+                            <i class="fas fa-star text-yellow-500 text-xs"></i>
+                            <span class="text-xs font-medium text-yellow-500">{{ $service['rating'] }}</span>
+                        </div>
+                        @else
+                        @endif
+
+                        <button @click.prevent="removeFavorite('{{ $service['title'] }}')"
+                                class="p-1.5 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                title="Remove from saved">
+                            <i class="fas fa-heart text-sm"></i>
+                        </button>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+        </div>
+
         <!-- Filter/Sort Script - Define before Alpine initializes -->
         <script>
         // Sort function for appointments
@@ -285,7 +380,7 @@
         </script>
 
         <!-- Inner Panel - Appointments History -->
-        <div class="flex flex-col gap-6 w-full rounded-lg px-8">
+        <div class="flex flex-col gap-6 w-full rounded-lg px-8 my-12">
             <div class="flex flex-row justify-between w-full items-center">
                 <x-labelwithvalue label="My Appointments" count="({{ $appointments->count() }})" />
 
