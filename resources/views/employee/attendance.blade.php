@@ -12,6 +12,7 @@
             selectedRequest: null,
             isCancelling: false,
             requestRecords: {{ Js::from($requestRecords ?? []) }},
+            showAttendanceModal: false,
 
             openRequestModal(index) {
                 this.selectedRequest = this.requestRecords[index];
@@ -23,6 +24,16 @@
                 this.showRequestModal = false;
                 this.selectedRequest = null;
                 this.isCancelling = false;
+                document.body.style.overflow = 'auto';
+            },
+
+            openAttendanceModal() {
+                this.showAttendanceModal = true;
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeAttendanceModal() {
+                this.showAttendanceModal = false;
                 document.body.style.overflow = 'auto';
             },
 
@@ -316,6 +327,137 @@
                             class="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors duration-200">
                             Close
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Details Modal -->
+        <div x-show="showAttendanceModal" x-cloak @click="closeAttendanceModal()"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 sm:p-8"
+            style="display: none;">
+            <div @click.stop
+                class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full sm:w-2/5 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700"
+                x-show="showAttendanceModal" x-transition>
+
+                <!-- Close button -->
+                <button type="button" @click="closeAttendanceModal()"
+                    class="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 rounded-lg p-1 z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <!-- Modal Body -->
+                <div class="p-6 sm:p-8">
+                    <!-- Header -->
+                    <div class="py-6">
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white text-center mb-3">
+                            Today's Attendance
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 text-center w-full">View your
+                            attendance time details
+                            for today</p>
+
+                        <!-- Status Badge - Centered -->
+                        <div class="flex items-center justify-center gap-2">
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Status:</span>
+                            @if($isClockedIn)
+                                <span
+                                    class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Clocked
+                                    In</span>
+                            @elseif($hasAttendanceToday)
+                                <span
+                                    class="px-3 py-1 text-xs rounded-full bg-[#00BFFF20] text-[#00BFFF] font-semibold">Completed</span>
+                            @else
+                                <span
+                                    class="px-3 py-1 text-xs rounded-full bg-[#FFA50020] text-[#FFA500] font-semibold">Not
+                                    Logged</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Attendance Information Section -->
+                    <div class="mb-5">
+
+                        <div class="space-y-4 text-sm py-2.5 px-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Employee Name</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-right">
+                                    {{ $employee->user->name ?? 'N/A' }}
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Date</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-right">
+                                    {{ \Carbon\Carbon::today()->format('M d, Y') }}
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Clock In Time</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-right">
+                                    @if($hasAttendanceToday)
+                                        {{ \Carbon\Carbon::parse(\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_in)->format('h:i A') }}
+                                    @else
+                                        <span class="text-gray-400 dark:text-gray-500">Not clocked in</span>
+                                    @endif
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 dark:text-gray-400">Clock Out Time</span>
+                                <span class="font-medium text-gray-900 dark:text-white text-right">
+                                    @if($hasAttendanceToday && !\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)
+                                        <span class="text-blue-500 dark:text-blue-400">Still working...</span>
+                                    @elseif($hasAttendanceToday)
+                                        {{ \Carbon\Carbon::parse(\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)->format('h:i A') }}
+                                    @else
+                                        <span class="text-gray-400 dark:text-gray-500">N/A</span>
+                                    @endif
+                                </span>
+                            </div>
+
+                            @if($hasAttendanceToday && \App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)
+                                @php
+                                    $attendance = \App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first();
+                                    $clockIn = \Carbon\Carbon::parse($attendance->clock_in);
+                                    $clockOut = \Carbon\Carbon::parse($attendance->clock_out);
+                                    $duration = $clockOut->diff($clockIn);
+                                @endphp
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-500 dark:text-gray-400">Total Hours</span>
+                                    <span class="font-medium text-gray-900 dark:text-white text-right">
+                                        {{ $duration->h }}h {{ $duration->i }}m
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                        @if(!$hasAttendanceToday)
+                            <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                                    <i class="fi fi-rr-play text-sm"></i>
+                                    Clock In
+                                </button>
+                            </form>
+                        @elseif($isClockedIn)
+                            <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                                    <i class="fi fi-rr-stop text-sm"></i>
+                                    Clock Out
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </div>
