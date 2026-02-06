@@ -376,6 +376,8 @@ Route::middleware(['auth', 'client'])->group(function () {
     Route::get('/client/book-service', [ClientAppointmentController::class, 'create'])->name('client.appointment.create');
     Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
     Route::get('/client/appointments', [ClientAppointmentController::class, 'index'])->name('client.appointments');
+    Route::post('/client/appointments/{id}/cancel', [ClientAppointmentController::class, 'cancel'])->name('client.appointment.cancel');
+    Route::post('/client/appointments/{id}/feedback', [ClientAppointmentController::class, 'storeFeedback'])->name('client.appointment.feedback');
 
     Route::get('/client/pricing', function () {
         return view('client.pricing');

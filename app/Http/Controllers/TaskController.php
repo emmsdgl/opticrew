@@ -13,10 +13,17 @@ use App\Models\OptimizationRun;
 use App\Models\OptimizationGeneration;
 use App\Models\Location;
 use App\Services\Optimization\OptimizationService; // ✅ FIXED: Correct namespace
+use App\Services\Notification\NotificationService;
 use App\Models\Holiday;
 
 class TaskController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     /**
      * Display the calendar view with clients and existing tasks.
      */
@@ -655,6 +662,9 @@ class TaskController extends Controller
                     'run_ids' => collect($savedRuns)->pluck('id')->toArray()
                 ]);
 
+                // Notify all employees assigned to tasks on this date
+                $this->notifyEmployeesForSchedule($request->service_date);
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'All schedules for ' . $request->service_date . ' saved successfully',
@@ -680,6 +690,9 @@ class TaskController extends Controller
                     'optimization_run_id' => $optimizationRun->id,
                     'service_date' => $optimizationRun->service_date
                 ]);
+
+                // Notify all employees assigned to tasks for this run's service date
+                $this->notifyEmployeesForSchedule($optimizationRun->service_date);
 
                 return response()->json([
                     'status' => 'success',
@@ -858,5 +871,68 @@ class TaskController extends Controller
         ])->findOrFail($id);
 
         return view('admin.tasks.show', compact('task'));
+    }
+
+    /**
+     * Notify all employees assigned to tasks for a given service date.
+     */
+    protected function notifyEmployeesForSchedule($serviceDate)
+    {
+        try {
+            // Get all tasks for the service date with their assigned teams and employees
+            $tasks = Task::with(['optimizationTeam.members.employee.user', 'client', 'location.contractedClient'])
+                ->where('scheduled_date', $serviceDate)
+                ->whereNotNull('assigned_team_id')
+                ->get();
+
+            $notifiedEmployees = []; // Track which employees have been notified for which tasks
+
+            foreach ($tasks as $task) {
+                if (!$task->optimizationTeam || !$task->optimizationTeam->members) {
+                    continue;
+                }
+
+                foreach ($task->optimizationTeam->members as $member) {
+                    if (!$member->employee || !$member->employee->user) {
+                        continue;
+                    }
+
+                    $employeeUserId = $member->employee->user->id;
+                    $taskId = $task->id;
+
+                    // Avoid duplicate notifications for the same employee-task combination
+                    $key = "{$employeeUserId}_{$taskId}";
+                    if (isset($notifiedEmployees[$key])) {
+                        continue;
+                    }
+
+                    $this->notificationService->notifyEmployeeTaskAssigned(
+                        $member->employee->user,
+                        $task,
+                        null // No appointment for admin-created tasks
+                    );
+
+                    $notifiedEmployees[$key] = true;
+
+                    Log::info("Employee notified of task assignment", [
+                        'employee_user_id' => $employeeUserId,
+                        'task_id' => $taskId,
+                        'service_date' => $serviceDate
+                    ]);
+                }
+            }
+
+            Log::info("Finished notifying employees for schedule", [
+                'service_date' => $serviceDate,
+                'tasks_count' => $tasks->count(),
+                'notifications_sent' => count($notifiedEmployees)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to notify employees for schedule', [
+                'service_date' => $serviceDate,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

@@ -225,26 +225,37 @@
                             </div>
                         </template>
 
-                        <!-- Checklist Items with status-based icons -->
+                        <!-- Progress indicator for in-progress appointments with actual progress -->
+                        <template x-if="(getDrawerStatus() === 'confirmed' || getDrawerStatus() === 'approved' || getDrawerStatus() === 'in progress' || getDrawerStatus() === 'in_progress') && getDrawerChecklistProgress().completed > 0">
+                            <div class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-spinner fa-spin text-blue-600 dark:text-blue-400"></i>
+                                    <span class="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                        Service in progress
+                                    </span>
+                                </div>
+                                <p class="text-xs text-blue-600 dark:text-blue-400 mt-1 ml-6">
+                                    <span x-text="getDrawerChecklistProgress().completed"></span> of <span x-text="getDrawerChecklistProgress().total"></span> tasks completed
+                                </p>
+                            </div>
+                        </template>
+
+                        <!-- Checklist Items with actual completion status -->
                         <div class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
                             <template x-for="(item, index) in getDrawerChecklistItems()" :key="index">
                                 <div class="flex items-center gap-2 py-1.5">
-                                    <!-- Show different icons based on appointment status -->
-                                    <template x-if="getDrawerStatus() === 'completed'">
-                                        <i class="fa-solid fa-check-circle text-green-500 text-xs"></i>
-                                    </template>
-                                    <template x-if="getDrawerStatus() === 'confirmed' || getDrawerStatus() === 'approved' || getDrawerStatus() === 'in progress' || getDrawerStatus() === 'in_progress'">
-                                        <i class="fa-regular fa-circle text-blue-400 text-xs"></i>
-                                    </template>
-                                    <template x-if="getDrawerStatus() === 'pending'">
-                                        <i class="fa-regular fa-circle text-gray-400 text-xs"></i>
-                                    </template>
-                                    <template x-if="getDrawerStatus() === 'cancelled' || getDrawerStatus() === 'rejected'">
-                                        <i class="fa-solid fa-times-circle text-gray-400 text-xs"></i>
-                                    </template>
+                                    <!-- Single icon based on status - mutually exclusive conditions -->
+                                    <i class="text-xs"
+                                        :class="{
+                                            'fa-solid fa-check-circle text-green-500': getDrawerStatus() === 'completed' || (getDrawerStatus() !== 'cancelled' && getDrawerStatus() !== 'rejected' && getDrawerStatus() !== 'pending' && isChecklistItemCompleted(index)),
+                                            'fa-regular fa-circle text-blue-400': getDrawerStatus() !== 'completed' && getDrawerStatus() !== 'cancelled' && getDrawerStatus() !== 'rejected' && getDrawerStatus() !== 'pending' && !isChecklistItemCompleted(index),
+                                            'fa-regular fa-circle text-gray-400': getDrawerStatus() === 'pending',
+                                            'fa-solid fa-times-circle text-gray-400': getDrawerStatus() === 'cancelled' || getDrawerStatus() === 'rejected'
+                                        }"></i>
                                     <span class="text-sm"
                                         :class="{
-                                            'text-gray-700 dark:text-gray-300': getDrawerStatus() !== 'cancelled' && getDrawerStatus() !== 'rejected',
+                                            'text-green-700 dark:text-green-300 font-medium': getDrawerStatus() === 'completed' || (getDrawerStatus() !== 'cancelled' && getDrawerStatus() !== 'rejected' && isChecklistItemCompleted(index)),
+                                            'text-gray-700 dark:text-gray-300': !isChecklistItemCompleted(index) && getDrawerStatus() !== 'cancelled' && getDrawerStatus() !== 'rejected' && getDrawerStatus() !== 'completed',
                                             'text-gray-400 dark:text-gray-500 line-through': getDrawerStatus() === 'cancelled' || getDrawerStatus() === 'rejected'
                                         }"
                                         x-text="item"></span>
@@ -252,15 +263,28 @@
                             </template>
                         </div>
 
-                        <!-- Progress bar for completed appointments -->
-                        <template x-if="getDrawerStatus() === 'completed'">
+                        <!-- Dynamic progress bar showing actual completion -->
+                        <template x-if="getDrawerStatus() !== 'pending' && getDrawerStatus() !== 'cancelled' && getDrawerStatus() !== 'rejected'">
                             <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Progress</span>
-                                    <span class="text-xs text-green-600 dark:text-green-400 font-semibold">100% Complete</span>
+                                    <span class="text-xs font-semibold"
+                                        :class="{
+                                            'text-green-600 dark:text-green-400': getDrawerChecklistProgress().percentage === 100,
+                                            'text-blue-600 dark:text-blue-400': getDrawerChecklistProgress().percentage > 0 && getDrawerChecklistProgress().percentage < 100,
+                                            'text-gray-600 dark:text-gray-400': getDrawerChecklistProgress().percentage === 0
+                                        }">
+                                        <span x-text="getDrawerChecklistProgress().percentage"></span>% Complete
+                                    </span>
                                 </div>
                                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                                    <div class="bg-green-600 h-1.5 rounded-full w-full"></div>
+                                    <div class="h-1.5 rounded-full transition-all duration-300"
+                                        :class="{
+                                            'bg-green-600': getDrawerChecklistProgress().percentage === 100,
+                                            'bg-blue-600': getDrawerChecklistProgress().percentage > 0 && getDrawerChecklistProgress().percentage < 100,
+                                            'bg-gray-400': getDrawerChecklistProgress().percentage === 0
+                                        }"
+                                        :style="'width: ' + getDrawerChecklistProgress().percentage + '%'"></div>
                                 </div>
                             </div>
                         </template>
@@ -437,6 +461,33 @@ window.getChecklistByServiceType = function(serviceType) {
     }
 
     return window.drawerChecklistTemplates.general_cleaning;
+};
+
+// Helper function to get checklist completions from appointment data
+window.getChecklistCompletions = function(appointmentData) {
+    if (!appointmentData) return [];
+    return appointmentData.checklist_completions || appointmentData.checklistCompletions || [];
+};
+
+// Helper function to check if a checklist item is completed
+window.isItemCompleted = function(appointmentData, itemIndex) {
+    const completions = window.getChecklistCompletions(appointmentData);
+    // checklist_item_id stores the item index (0-based or 1-based depending on implementation)
+    return completions.includes(itemIndex) || completions.includes(itemIndex + 1);
+};
+
+// Helper function to calculate checklist progress
+window.calculateChecklistProgress = function(appointmentData, totalItems) {
+    const completions = window.getChecklistCompletions(appointmentData);
+    const completed = completions.length;
+    const total = totalItems || 1;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    return {
+        completed: completed,
+        total: total,
+        percentage: percentage
+    };
 };
 </script>
 @endPushOnce

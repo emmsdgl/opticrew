@@ -18,6 +18,25 @@ class Notification extends Model
     const TYPE_TASK_UPDATED = 'task_updated';
     const TYPE_GENERAL = 'general';
 
+    // Client notification types
+    const TYPE_APPOINTMENT_APPROVED = 'appointment_approved';
+    const TYPE_APPOINTMENT_CONFIRMED = 'appointment_confirmed';
+    const TYPE_APPOINTMENT_REJECTED = 'appointment_rejected';
+    const TYPE_TASK_STARTED = 'task_started';
+    const TYPE_TASK_COMPLETED = 'task_completed';
+    const TYPE_CHECKLIST_PROGRESS = 'checklist_progress';
+    const TYPE_SERVICE_UPDATE = 'service_update';
+
+    // Admin notification types
+    const TYPE_NEW_APPOINTMENT = 'new_appointment';
+    const TYPE_APPOINTMENT_CANCELLED = 'appointment_cancelled';
+    const TYPE_LEAVE_REQUEST = 'leave_request';
+    const TYPE_TASK_COMPLETED_ADMIN = 'task_completed_admin';
+    const TYPE_TASK_APPROVED = 'task_approved';
+    const TYPE_TASK_DECLINED = 'task_declined';
+    const TYPE_TASK_STARTED_ADMIN = 'task_started_admin';
+    const TYPE_TASK_PROGRESS_ADMIN = 'task_progress_admin';
+
     protected $fillable = [
         'user_id',
         'type',

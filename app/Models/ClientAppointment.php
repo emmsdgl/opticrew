@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Feedback;
 
 class ClientAppointment extends Model
 {
@@ -130,5 +131,13 @@ class ClientAppointment extends Model
             ->whereDate('scheduled_date', $this->service_date)
             ->where('task_description', 'like', '%' . $this->service_type . '%')
             ->first();
+    }
+
+    /**
+     * Get the client feedback for this appointment
+     */
+    public function clientFeedback()
+    {
+        return $this->hasOne(Feedback::class, 'appointment_id');
     }
 }

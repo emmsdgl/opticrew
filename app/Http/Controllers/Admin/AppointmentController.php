@@ -12,15 +12,18 @@ use App\Models\Task;
 use App\Models\OptimizationTeam;
 use App\Models\OptimizationRun;
 use App\Services\Optimization\OptimizationService;
+use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
 
 class AppointmentController extends Controller
 {
     protected $optimizationService;
+    protected $notificationService;
 
-    public function __construct(OptimizationService $optimizationService)
+    public function __construct(OptimizationService $optimizationService, NotificationService $notificationService)
     {
         $this->optimizationService = $optimizationService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -90,6 +93,15 @@ class AppointmentController extends Controller
             ]);
 
             DB::commit();
+
+            // Notify client that their appointment is approved
+            $appointment->load('client.user');
+            if ($appointment->client && $appointment->client->user) {
+                $this->notificationService->notifyClientAppointmentApproved(
+                    $appointment->client->user,
+                    $appointment
+                );
+            }
 
             return response()->json([
                 'success' => true,
@@ -260,6 +272,36 @@ class AppointmentController extends Controller
                     $message = 'Team created and assigned successfully via optimization!';
                 } else {
                     throw new \Exception('Optimization completed but no team was assigned to task');
+                }
+            }
+
+            // Notify client that team has been assigned and appointment is confirmed
+            $appointment->load(['client.user', 'assignedTeam.employees.user']);
+            if ($appointment->client && $appointment->client->user && $appointment->assignedTeam) {
+                $teamMembers = $appointment->assignedTeam->employees->map(function ($employee) {
+                    return [
+                        'id' => $employee->id,
+                        'name' => $employee->full_name ?? 'Team Member',
+                    ];
+                })->toArray();
+
+                $this->notificationService->notifyClientAppointmentConfirmed(
+                    $appointment->client->user,
+                    $appointment,
+                    $teamMembers
+                );
+            }
+
+            // Notify all employees in the assigned team about their new task
+            if ($appointment->assignedTeam && $task) {
+                foreach ($appointment->assignedTeam->employees as $employee) {
+                    if ($employee->user) {
+                        $this->notificationService->notifyEmployeeTaskAssigned(
+                            $employee->user,
+                            $task,
+                            $appointment
+                        );
+                    }
                 }
             }
 

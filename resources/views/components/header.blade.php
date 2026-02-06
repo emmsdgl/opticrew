@@ -15,9 +15,81 @@
 
     <div class="flex items-center gap-2 sm:gap-4 md:gap-6 flex-shrink-0">       
 
+        <!-- Notification Dropdown -->
+        <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open"
+                    class="relative bg-blue-100 dark:bg-blue-900/30 px-3 py-2 rounded-full transition hover:bg-gray-300 dark:hover:bg-gray-700">
+                <i class="fi fi-rr-bell text-blue-600 dark:text-blue-300 text-base"></i>
+
+                <!-- Notification Badge -->
+                @if(count($notifications) > 0)
+                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {{ count($notifications) > 9 ? '9+' : count($notifications) }}
+                </span>
+                @endif
+            </button>
+
+            <!-- Notification Dropdown Panel -->
+            <div x-show="open"
+                 x-cloak
+                 @click.away="open = false"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+
+                <!-- Header -->
+                <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                    @if(count($notifications) > 0)
+                    <button class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Mark all as read</button>
+                    @endif
+                </div>
+
+                <!-- Notification List -->
+                <div class="max-h-80 overflow-y-auto">
+                    @forelse($notifications as $notification)
+                    <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors cursor-pointer">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                <i class="fi fi-rr-info text-blue-600 dark:text-blue-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {{ $notification['title'] ?? 'Notification' }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                                    {{ $notification['message'] ?? '' }}
+                                </p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                    {{ $notification['time'] ?? 'Just now' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="px-4 py-8 text-center">
+                        <i class="fi fi-rr-bell-slash text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No notifications</p>
+                    </div>
+                    @endforelse
+                </div>
+
+                <!-- Footer -->
+                @if(count($notifications) > 0)
+                <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                    
+                </div>
+                @endif
+            </div>
+        </div>
+
         <!-- Theme Toggle Button -->
         <button id="theme-toggle"
-            class="relative bg-gray-200 dark:bg-gray-800 px-3 py-2 rounded-full transition rotate-once">
+            class="relative bg-blue-100 dark:bg-blue-900/30 px-3 py-2 rounded-full transition rotate-once">
             <i id="theme-icon"
                 class="fi fi-rr-brightness text-yellow-300 text-lg transition-transform duration-500"></i>
         </button>

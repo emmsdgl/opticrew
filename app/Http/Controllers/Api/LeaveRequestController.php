@@ -8,15 +8,18 @@ use App\Models\DayOff;
 use App\Models\Employee;
 use App\Models\Attendance;
 use App\Services\PushNotificationService;
+use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
 
 class LeaveRequestController extends Controller
 {
     protected $pushService;
+    protected $notificationService;
 
-    public function __construct(PushNotificationService $pushService)
+    public function __construct(PushNotificationService $pushService, NotificationService $notificationService)
     {
         $this->pushService = $pushService;
+        $this->notificationService = $notificationService;
     }
     /**
      * Get all leave requests for employee (their own requests)
@@ -122,6 +125,10 @@ class LeaveRequestController extends Controller
                 'type' => $request->type,
                 'status' => 'pending',
             ]);
+
+            // Notify all admins about the leave request
+            $employeeName = $employee->fullName ?? ($user->name ?? 'Employee');
+            $this->notificationService->notifyAdminsLeaveRequest($leaveRequest, $employeeName);
 
             return response()->json([
                 'success' => true,

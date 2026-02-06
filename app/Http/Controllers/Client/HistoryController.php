@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ClientAppointment;
 use App\Models\Feedback;
 use App\Models\Client;
+use App\Models\Task;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -57,6 +58,21 @@ class HistoryController extends Controller
             $timeStr = $appointment->service_time ? Carbon::parse($appointment->service_time)->format('H:i:s') : '00:00:00';
             $scheduledDateTime = $dateStr . ' ' . $timeStr;
 
+            // Load related task with checklist completions for progress tracking
+            $checklistCompletions = [];
+            $relatedTask = Task::with('checklistCompletions')
+                ->where('client_id', $appointment->client_id)
+                ->whereDate('scheduled_date', $appointment->service_date)
+                ->where('task_description', 'like', '%' . $appointment->service_type . '%')
+                ->first();
+
+            if ($relatedTask) {
+                $checklistCompletions = $relatedTask->checklistCompletions
+                    ->where('is_completed', true)
+                    ->pluck('checklist_item_id')
+                    ->toArray();
+            }
+
             return [
                 'id' => $appointment->id,
                 'type' => 'service',
@@ -74,7 +90,7 @@ class HistoryController extends Controller
                 'totalAmount' => '€' . number_format($appointment->total_amount ?? 0, 2),
                 'payableAmount' => '€' . number_format($appointment->quotation ?? 0, 2),
                 'assignedMembers' => $assignedMembers,
-                'checklist' => [], // Appointments don't have checklists in the current structure
+                'checklist_completions' => $checklistCompletions,
             ];
         });
 
