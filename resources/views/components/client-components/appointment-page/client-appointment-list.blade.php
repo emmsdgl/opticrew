@@ -48,7 +48,7 @@
 }">
     <!-- Table Header -->
     @if($showHeader)
-    <div class="hidden md:grid md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_0.6fr] gap-4 px-6 py-4
+    <div class="hidden md:grid md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_1fr] gap-4 px-6 py-4
                 border-b border-gray-200 dark:border-gray-700 rounded-t-lg w-full">
         <div class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
             Status
@@ -68,8 +68,14 @@
     <!-- Table Body -->
     <div class="w-full divide-y divide-gray-200 dark:divide-gray-700">
         @foreach($appointments as $appointment)
-        <div class="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_0.6fr] gap-4 px-6 py-4
-                    hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors w-full">
+        <div class="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_1fr] gap-4 px-6 py-4
+                    hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors w-full"
+             data-appointment-item
+             data-status="{{ $appointment->status }}"
+             data-service="{{ $appointment->service_type }}"
+             data-date="{{ \Carbon\Carbon::parse($appointment->service_date)->format('Y-m-d') }}"
+             data-amount="{{ $appointment->total_amount }}"
+             data-cabin="{{ $appointment->cabin_name }}">
 
             <!-- Status Badge -->
             <div class="flex items-center gap-2">
@@ -147,98 +153,14 @@
                 <span class="text-xs text-gray-500 dark:text-gray-400">VAT incl.</span>
             </div>
 
-            <!-- Action Button with Dropdown Menu -->
+            <!-- Action Button -->
             <div class="flex items-center justify-start md:justify-center">
                 <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mr-2">Action:</span>
-                
-                <!-- Menu Button -->
-                <div class="relative"
-                    x-data="{
-                        openMenu: false,
-                        menuStyle: '',
-                        positionMenu() {
-                            const button = $refs.menuButton;
-                            const rect = button.getBoundingClientRect();
-                            const menuWidth = 180;
-                            
-                            this.menuStyle = `
-                                position: fixed;
-                                top: ${rect.bottom + 8}px;
-                                left: ${rect.right - menuWidth}px;
-                            `;
-                        },
-                        isButtonVisible() {
-                            const button = $refs.menuButton;
-                            if (!button) return false;
-                            
-                            const rect = button.getBoundingClientRect();
-                            return (
-                                rect.top >= 0 &&
-                                rect.left >= 0 &&
-                                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-                                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-                            );
-                        }
-                    }"
-                    x-init="
-                        const checkVisibility = setInterval(() => {
-                            if (openMenu && !isButtonVisible()) {
-                                openMenu = false;
-                            }
-                        }, 100);
-                    "
-                    @scroll.window="openMenu = false">
-                    
-                    <button 
-                        x-ref="menuButton"
-                        @click.stop="
-                            openMenu = !openMenu;
-                            if (openMenu) {
-                                $nextTick(() => positionMenu());
-                            }
-                        "
-                        class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                        </svg>
-                    </button>
-                    
-                    <!-- Dropdown Menu Portal -->
-                    <template x-teleport="body">
-                        <div 
-                            x-show="openMenu"
-                            @click.away="openMenu = false"
-                            x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95"
-                            :style="menuStyle"
-                            class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] w-48"
-                            style="display: none;">
-                            <div class="py-1">
-                                <!-- View Details Menu Item -->
-                                <button 
-                                    @click.stop="viewDetails({{ $appointment->id }}); openMenu = false"
-                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">
-                                    <i class="fi fi-rr-eye text-xs"></i>
-                                    View Details
-                                </button>
-                                
-                                <!-- Cancel Menu Item (Only for pending appointments) -->
-                                @if($appointment->status === 'pending')
-                                <button 
-                                    @click.stop="cancelAppointment({{ $appointment->id }}); openMenu = false"
-                                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2">
-                                    <i class="fi fi-rr-cross-circle text-xs"></i>
-                                    Cancel Appointment
-                                </button>
-                                @endif
-                            </div>
-                        </div>
-                    </template>
-                </div>
+                <button
+                    @click="viewDetails({{ $appointment->id }})"
+                    class="px-6 py-3 text-xs font-medium text-gray-700 dark:text-white hover:text-blue-500 hover:bg-blue-500/10 dark:hover:text-blue-500 rounded-full transition-colors duration-200">
+                    View Details
+                </button>
             </div>
         </div>
         @endforeach
@@ -258,178 +180,256 @@
     </div>
     @endif
 
-    <!-- Appointment Details Modal -->
-    <div x-show="showModal" x-cloak @click="closeModal()"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 sm:p-8"
-        style="display: none;">
-        <div @click.stop
-            class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full sm:w-2/5 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700"
-            x-show="showModal" x-transition>
+    <!-- Appointment Details Slide-in Drawer -->
+    <div x-show="showModal" x-cloak class="fixed inset-0 z-50 overflow-hidden" style="display: none;">
+        <!-- Backdrop -->
+        <div x-show="showModal"
+             x-transition:enter="transition-opacity ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="closeModal()"
+             class="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
 
-            <!-- Close button -->
-            <button type="button" @click="closeModal()"
-                class="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 rounded-lg p-1 z-10">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+        <!-- Drawer Panel -->
+        <div class="fixed inset-y-0 right-0 flex max-w-full">
+            <div x-show="showModal"
+                 x-transition:enter="transform transition ease-in-out duration-300"
+                 x-transition:enter-start="translate-x-full"
+                 x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transform transition ease-in-out duration-200"
+                 x-transition:leave-start="translate-x-0"
+                 x-transition:leave-end="translate-x-full"
+                 @click.stop
+                 class="relative w-screen max-w-md sm:max-w-lg">
 
-            <!-- Modal Body -->
-            <div class="p-6 sm:p-12" x-show="selectedAppointment">
-                <!-- Header -->
-                <div class="py-6">
-                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white text-center mb-3">
-                        Appointment Details
-                    </h3>
-                    <!-- Status Badge - Centered -->
-                    <div class="flex items-center justify-center gap-2">
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Status:</span>
-                        <span x-show="selectedAppointment && selectedAppointment.status === 'pending'"
-                            class="px-3 py-1 text-xs rounded-full bg-[#FFA50020] text-[#FFA500] font-semibold">Pending</span>
-                        <span x-show="selectedAppointment && selectedAppointment.status === 'approved'"
-                            class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Approved</span>
-                        <span x-show="selectedAppointment && selectedAppointment.status === 'confirmed'"
-                            class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Confirmed</span>
-                        <span x-show="selectedAppointment && selectedAppointment.status === 'completed'"
-                            class="px-3 py-1 text-xs rounded-full bg-[#00BFFF20] text-[#00BFFF] font-semibold">Completed</span>
-                        <span x-show="selectedAppointment && selectedAppointment.status === 'cancelled'"
-                            class="px-3 py-1 text-xs rounded-full bg-[#FE1E2820] text-[#FE1E28] font-semibold">Cancelled</span>
-                        <span x-show="selectedAppointment && selectedAppointment.status === 'rejected'"
-                            class="px-3 py-1 text-xs rounded-full bg-[#FE1E2820] text-[#FE1E28] font-semibold">Rejected</span>
-                    </div>
-                </div>
-
-                <!-- Service Details Section -->
-                <div class="mb-5">
-                    <div class="py-3">
-                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Service Details</h4>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">View the details of the service availed for this appointment</p>
+                <!-- Drawer Content -->
+                <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
+                    <!-- Drawer Header -->
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-slate-800/50">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Appointment Details</h2>
+                        <button type="button" @click="closeModal()"
+                            class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
 
-                    <div class="space-y-4 text-sm py-2.5 px-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500 dark:text-gray-400">Service Type</span>
-                            <span class="font-medium text-gray-900 dark:text-white text-right"
-                                x-text="selectedAppointment?.service_type || '-'"></span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500 dark:text-gray-400">Service Date</span>
-                            <span class="font-medium text-gray-900 dark:text-white text-right">
-                                <span x-text="selectedAppointment ? formatDate(selectedAppointment.service_date) : '-'"></span>
-                                <span x-show="selectedAppointment && (selectedAppointment.is_sunday || selectedAppointment.is_holiday)"
-                                    class="ml-1 text-xs text-orange-600 dark:text-orange-400 font-semibold">(2x)</span>
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500 dark:text-gray-400">Service Time</span>
-                            <span class="font-medium text-gray-900 dark:text-white text-right"
-                                x-text="selectedAppointment ? formatTime(selectedAppointment.service_time) : '-'"></span>
-                        </div>
-                    </div>
-                </div>
+                    <!-- Drawer Body (Scrollable) -->
+                    <div class="flex-1 overflow-y-auto p-6" x-show="selectedAppointment">
+                                <!-- Status Badge -->
+                                <div class="flex items-center gap-2 mb-6">
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Status:</span>
+                                    <span x-show="selectedAppointment && selectedAppointment.status === 'pending'"
+                                        class="px-3 py-1 text-xs rounded-full bg-[#FFA50020] text-[#FFA500] font-semibold">Pending</span>
+                                    <span x-show="selectedAppointment && selectedAppointment.status === 'approved'"
+                                        class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Approved</span>
+                                    <span x-show="selectedAppointment && selectedAppointment.status === 'confirmed'"
+                                        class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Confirmed</span>
+                                    <span x-show="selectedAppointment && selectedAppointment.status === 'completed'"
+                                        class="px-3 py-1 text-xs rounded-full bg-[#00BFFF20] text-[#00BFFF] font-semibold">Completed</span>
+                                    <span x-show="selectedAppointment && selectedAppointment.status === 'cancelled'"
+                                        class="px-3 py-1 text-xs rounded-full bg-[#FE1E2820] text-[#FE1E28] font-semibold">Cancelled</span>
+                                    <span x-show="selectedAppointment && selectedAppointment.status === 'rejected'"
+                                        class="px-3 py-1 text-xs rounded-full bg-[#FE1E2820] text-[#FE1E28] font-semibold">Rejected</span>
+                                </div>
 
-                <!-- Unit Details Section -->
-                <div class="mb-5">
-                    <div class="py-3">
-                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Unit Details</h4>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">View the details of the units included for this appointment</p>
-                    </div>
+                                <!-- Service Details Section -->
+                                <div class="mb-5">
+                                    <div class="py-3">
+                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Service Details</h4>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">View the details of the service availed for this appointment</p>
+                                    </div>
 
-                    <div class="space-y-1 py-3">
-                        <template x-if="selectedAppointment && selectedAppointment.unit_details && Array.isArray(selectedAppointment.unit_details) && selectedAppointment.unit_details.length > 0">
-                            <div class="">
-                                <template x-for="(unit, index) in selectedAppointment.unit_details" :key="index">
-                                    <div class="flex justify-between items-center py-2 px-3 bg-transparent rounded-lg">
-                                        <div class="flex items-center gap-1 flex-1 min-w-0">
-                                            <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 flex-shrink-0"
-                                                x-text="'Unit ' + (index + 1)"></span>
-                                            <div class="flex items-center gap-2 flex-1 min-w-0">
-                                                <span class="font-medium text-gray-900 dark:text-white text-sm truncate"
-                                                    x-text="unit.name || '-'"></span>
-                                                <span class="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
-                                                    Size: <span x-text="unit.size || '-'"></span> m²
-                                                </span>
-                                            </div>
+                                    <div class="space-y-4 text-sm py-2.5 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500 dark:text-gray-400">Service Type</span>
+                                            <span class="font-medium text-gray-900 dark:text-white text-right"
+                                                x-text="selectedAppointment?.service_type || '-'"></span>
                                         </div>
-                                        <div class="text-right flex-shrink-0 ml-3" x-show="unit.price">
-                                            <span class="text-base font-bold text-gray-900 dark:text-white">
-                                                €<span x-text="parseFloat(unit.price).toFixed(2)"></span>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500 dark:text-gray-400">Service Date</span>
+                                            <span class="font-medium text-gray-900 dark:text-white text-right">
+                                                <span x-text="selectedAppointment ? formatDate(selectedAppointment.service_date) : '-'"></span>
+                                                <span x-show="selectedAppointment && (selectedAppointment.is_sunday || selectedAppointment.is_holiday)"
+                                                    class="ml-1 text-xs text-orange-600 dark:text-orange-400 font-semibold">(2x)</span>
                                             </span>
                                         </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500 dark:text-gray-400">Service Time</span>
+                                            <span class="font-medium text-gray-900 dark:text-white text-right"
+                                                x-text="selectedAppointment ? formatTime(selectedAppointment.service_time) : '-'"></span>
+                                        </div>
                                     </div>
-                                </template>
-                            </div>
-                        </template>
+                                </div>
 
-                        <template x-if="!selectedAppointment || !selectedAppointment.unit_details || !Array.isArray(selectedAppointment.unit_details) || selectedAppointment.unit_details.length === 0">
-                            <div class="flex justify-between items-center py-2.5 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                <div class="flex items-center gap-3 flex-1 min-w-0">
-                                    <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 flex-shrink-0">Unit 1</span>
-                                    <div class="flex items-center gap-2 flex-1 min-w-0">
-                                        <span class="font-medium text-gray-900 dark:text-white text-sm truncate"
-                                            x-text="selectedAppointment?.cabin_name || '-'"></span>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
-                                            Size: <span x-text="selectedAppointment?.unit_size || '-'"></span> m²
+                                <!-- Unit Details Section -->
+                                <div class="mb-5">
+                                    <div class="py-3">
+                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Unit Details</h4>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">View the details of the units included for this appointment</p>
+                                    </div>
+
+                                    <div class="space-y-1 py-3">
+                                        <template x-if="selectedAppointment && selectedAppointment.unit_details && Array.isArray(selectedAppointment.unit_details) && selectedAppointment.unit_details.length > 0">
+                                            <div class="">
+                                                <template x-for="(unit, index) in selectedAppointment.unit_details" :key="index">
+                                                    <div class="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg mb-2">
+                                                        <div class="flex items-center gap-1 flex-1 min-w-0">
+                                                            <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 flex-shrink-0"
+                                                                x-text="'Unit ' + (index + 1)"></span>
+                                                            <div class="flex items-center gap-2 flex-1 min-w-0">
+                                                                <span class="font-medium text-gray-900 dark:text-white text-sm truncate"
+                                                                    x-text="unit.name || '-'"></span>
+                                                                <span class="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
+                                                                    Size: <span x-text="unit.size || '-'"></span> m²
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-right flex-shrink-0 ml-3" x-show="unit.price">
+                                                            <span class="text-base font-bold text-gray-900 dark:text-white">
+                                                                €<span x-text="parseFloat(unit.price).toFixed(2)"></span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="!selectedAppointment || !selectedAppointment.unit_details || !Array.isArray(selectedAppointment.unit_details) || selectedAppointment.unit_details.length === 0">
+                                            <div class="flex justify-between items-center py-2.5 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                                <div class="flex items-center gap-3 flex-1 min-w-0">
+                                                    <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 flex-shrink-0">Unit 1</span>
+                                                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                                                        <span class="font-medium text-gray-900 dark:text-white text-sm truncate"
+                                                            x-text="selectedAppointment?.cabin_name || '-'"></span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                                                            Size: <span x-text="selectedAppointment?.unit_size || '-'"></span> m²
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Special Requests Section -->
+                                <div class="mb-5" x-show="selectedAppointment && selectedAppointment.special_requests">
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Special Requests</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg"
+                                        x-text="selectedAppointment?.special_requests || '-'"></p>
+                                </div>
+
+                                <!-- Service Checklist Section -->
+                                <div class="mb-5" x-data="serviceChecklist()">
+                                    <div class="py-3">
+                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Service Checklist</h4>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                            <template x-if="selectedAppointment?.status === 'completed'">
+                                                <span>All tasks completed by our team</span>
+                                            </template>
+                                            <template x-if="selectedAppointment?.status === 'confirmed' || selectedAppointment?.status === 'approved'">
+                                                <span>Tasks to be performed for this service</span>
+                                            </template>
+                                            <template x-if="selectedAppointment?.status === 'pending'">
+                                                <span>Tasks that will be performed once approved</span>
+                                            </template>
+                                            <template x-if="selectedAppointment?.status === 'cancelled' || selectedAppointment?.status === 'rejected'">
+                                                <span>This appointment was cancelled</span>
+                                            </template>
+                                        </p>
+                                    </div>
+
+                                    <!-- Progress indicator for completed appointments -->
+                                    <template x-if="selectedAppointment?.status === 'completed'">
+                                        <div class="mb-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                            <div class="flex items-center gap-2">
+                                                <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+                                                <span class="text-sm font-medium text-green-700 dark:text-green-300">
+                                                    Service completed successfully
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-green-600 dark:text-green-400 mt-1 ml-6">
+                                                All checklist items have been completed by our team
+                                            </p>
+                                        </div>
+                                    </template>
+
+                                    <!-- Checklist items with status-based icons -->
+                                    <div class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                        <template x-for="(item, index) in getChecklistItems(selectedAppointment?.service_type)" :key="index">
+                                            <div class="flex items-center gap-2 py-1.5">
+                                                <!-- Show different icons based on appointment status -->
+                                                <template x-if="selectedAppointment?.status === 'completed'">
+                                                    <i class="fa-solid fa-check-circle text-green-500 text-xs"></i>
+                                                </template>
+                                                <template x-if="selectedAppointment?.status === 'confirmed' || selectedAppointment?.status === 'approved'">
+                                                    <i class="fa-regular fa-circle text-blue-400 text-xs"></i>
+                                                </template>
+                                                <template x-if="selectedAppointment?.status === 'pending'">
+                                                    <i class="fa-regular fa-circle text-gray-400 text-xs"></i>
+                                                </template>
+                                                <template x-if="selectedAppointment?.status === 'cancelled' || selectedAppointment?.status === 'rejected'">
+                                                    <i class="fa-solid fa-times-circle text-gray-400 text-xs"></i>
+                                                </template>
+                                                <span class="text-sm"
+                                                    :class="{
+                                                        'text-gray-700 dark:text-gray-300': selectedAppointment?.status !== 'cancelled' && selectedAppointment?.status !== 'rejected',
+                                                        'text-gray-400 dark:text-gray-500 line-through': selectedAppointment?.status === 'cancelled' || selectedAppointment?.status === 'rejected'
+                                                    }"
+                                                    x-text="item"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Progress bar for completed appointments -->
+                                    <template x-if="selectedAppointment?.status === 'completed'">
+                                        <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Progress</span>
+                                                <span class="text-xs text-green-600 dark:text-green-400 font-semibold">100% Complete</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                                                <div class="bg-green-600 h-1.5 rounded-full w-full"></div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Total Amount -->
+                                <div class="my-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <div class="text-base font-bold text-gray-900 dark:text-white">Total Amount</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">VAT Inclusive</div>
+                                        </div>
+                                        <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                            €<span x-text="selectedAppointment ? parseFloat(selectedAppointment.total_amount).toFixed(2) : '0.00'"></span>
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                        </template>
-                    </div>
-                </div>
 
-                <!-- Special Requests Section -->
-                <div class="mb-5" x-show="selectedAppointment && selectedAppointment.special_requests">
-                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Special Requests</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg"
-                        x-text="selectedAppointment?.special_requests || '-'"></p>
-                </div>
-
-                <!-- Service Checklist Section -->
-                <div class="mb-5" x-data="serviceChecklist()">
-                    <div class="py-3">
-                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Service Checklist</h4>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Tasks to be performed for this service</p>
-                    </div>
-
-                    <div class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                        <template x-for="(item, index) in getChecklistItems(selectedAppointment?.service_type)" :key="index">
-                            <div class="flex items-center gap-2 py-1.5">
-                                <i class="fa-solid fa-check-circle text-green-500 text-xs"></i>
-                                <span class="text-sm text-gray-700 dark:text-gray-300" x-text="item"></span>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- Total Amount -->
-                <div class="my-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <div class="text-base font-bold text-gray-900 dark:text-white">Total Amount</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">VAT Inclusive</div>
+                    <!-- Drawer Footer (Sticky) -->
+                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
+                        <div class="flex gap-3">
+                            <button
+                                x-show="selectedAppointment && selectedAppointment.status === 'pending'"
+                                @click="cancelAppointment(selectedAppointment.id); closeModal()"
+                                class="flex-1 text-sm px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium">
+                                Cancel Appointment
+                            </button>
+                            <button
+                                @click="closeModal()"
+                                class="flex-1 text-sm px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium">
+                                Close
+                            </button>
                         </div>
-                        <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            €<span x-text="selectedAppointment ? parseFloat(selectedAppointment.total_amount).toFixed(2) : '0.00'"></span>
-                        </span>
                     </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-col items-center justify-center w-full gap-3">
-                    <button 
-                        x-show="selectedAppointment && selectedAppointment.status === 'pending'"
-                        @click="cancelAppointment(selectedAppointment.id); closeModal()"
-                        class="w-1/2 text-sm px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium my-3">
-                        Cancel Appointment
-                    </button>
-                    <button 
-                        x-show="!selectedAppointment || selectedAppointment.status !== 'pending'"
-                        @click="closeModal()"
-                        class="w-1/2 text-sm px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium my-3">
-                        Close
-                    </button>
                 </div>
             </div>
         </div>

@@ -592,9 +592,39 @@
                                         Tasks Checklist
                                     </h3>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        View the tasks for this task
+                                        @if($task->status === 'In Progress')
+                                            Mark items as completed as you work
+                                        @elseif($task->employee_approved && in_array($task->status, ['Pending', 'Scheduled']))
+                                            Start the task to enable checklist editing
+                                        @elseif($task->status === 'Completed')
+                                            Task completed - checklist is locked. Approve and start the task first.
+                                        @else
+                                            Accept the task to enable checklist
+                                        @endif
                                     </p>
                                 </div>
+
+                                @php
+                                    // Checklist can only be edited when task is In Progress
+                                    $canEditChecklist = $task->employee_approved === true && $task->status === 'In Progress';
+
+                                    // Get existing checklist completions from database
+                                    $checklistCompletions = $task->checklistCompletions->keyBy('checklist_item_id');
+                                @endphp
+
+                                <!-- Status Message for non-editable states -->
+                                @if(!$canEditChecklist && $task->status !== 'Completed')
+                                    <div class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                                        <p class="text-xs text-yellow-700 dark:text-yellow-300 text-center">
+                                            <i class="fas fa-lock mr-1"></i>
+                                            @if(!$task->employee_approved)
+                                                Accept the task to enable checklist editing
+                                            @else
+                                                Start the task to enable checklist editing
+                                            @endif
+                                        </p>
+                                    </div>
+                                @endif
 
                                 <!-- Checklist Items -->
                                 <div class="space-y-3">
@@ -698,21 +728,36 @@
                                         }
 
                                         $checklistItems = $checklistTemplates[$serviceType] ?? $checklistTemplates['general_cleaning'];
+
+                                        // Count completed items
+                                        $completedCount = 0;
+                                        foreach($checklistItems as $index => $item) {
+                                            if(isset($checklistCompletions[$index]) && $checklistCompletions[$index]->is_completed) {
+                                                $completedCount++;
+                                            }
+                                        }
                                     @endphp
 
                                     @forelse($checklistItems as $index => $item)
+                                        @php
+                                            $isCompleted = isset($checklistCompletions[$index]) && $checklistCompletions[$index]->is_completed;
+                                        @endphp
                                         <label
-                                            class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group">
+                                            class="flex items-start gap-3 p-3 rounded-lg {{ $canEditChecklist ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer' : 'cursor-default' }} transition-colors group">
                                             <div class="flex items-center h-6 mt-0.5">
                                                 <input type="checkbox" id="checklist-{{ $index }}"
-                                                    class="checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 cursor-pointer"
-                                                    onchange="updateChecklistProgress()">
+                                                    data-item-index="{{ $index }}"
+                                                    data-item-name="{{ $item }}"
+                                                    class="checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 {{ $canEditChecklist ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' }}"
+                                                    {{ $isCompleted ? 'checked' : '' }}
+                                                    {{ !$canEditChecklist ? 'disabled' : '' }}
+                                                    onchange="toggleChecklistItem(this)">
                                             </div>
 
                                             <!-- Item Text -->
                                             <div class="flex-1">
                                                 <span
-                                                    class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors checklist-text-{{ $index }}">
+                                                    class="text-sm {{ $isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }} group-hover:text-gray-900 dark:group-hover:text-white transition-colors checklist-text-{{ $index }}">
                                                     {{ $item }}
                                                 </span>
                                             </div>
@@ -720,12 +765,9 @@
                                     @empty
                                         <!-- Empty State -->
                                         <div class="text-center py-12">
-                                            <i
-                                                class="fas fa-clipboard-list text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                                            <i class="fas fa-clipboard-list text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
                                             <p class="text-gray-500 dark:text-gray-400 text-sm">No checklist items</p>
-                                            <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Checklist items will
-                                                appear
-                                                here</p>
+                                            <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Checklist items will appear here</p>
                                         </div>
                                     @endforelse
                                 </div>
@@ -734,17 +776,19 @@
                                 @if(count($checklistItems) > 0)
                                     <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                                         <div class="flex items-center justify-between mb-2">
-                                            <span
-                                                class="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
                                             <span class="text-sm text-gray-500 dark:text-gray-400">
-                                                <span id="checklist-completed">0</span> of
+                                                <span id="checklist-completed">{{ $completedCount }}</span> of
                                                 <span id="checklist-total">{{ count($checklistItems) }}</span> completed
                                             </span>
                                         </div>
                                         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                            @php
+                                                $progressPercent = count($checklistItems) > 0 ? ($completedCount / count($checklistItems)) * 100 : 0;
+                                            @endphp
                                             <div id="checklist-progress-bar"
-                                                class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                                style="width: 0%"></div>
+                                                class="{{ $completedCount === count($checklistItems) ? 'bg-green-600' : 'bg-blue-600' }} h-2 rounded-full transition-all duration-300"
+                                                style="width: {{ $progressPercent }}%"></div>
                                         </div>
                                     </div>
                                 @endif
@@ -1220,6 +1264,60 @@
                         activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'dark:text-gray-400', 'dark:hover:text-gray-300');
                     }
 
+                    // Toggle checklist item and save to database
+                    async function toggleChecklistItem(checkbox) {
+                        const itemIndex = checkbox.dataset.itemIndex;
+                        const itemName = checkbox.dataset.itemName;
+                        const isCompleted = checkbox.checked;
+
+                        // Update text styling
+                        const textElement = document.querySelector('.checklist-text-' + itemIndex);
+                        if (textElement) {
+                            if (isCompleted) {
+                                textElement.classList.add('line-through', 'text-gray-400', 'dark:text-gray-500');
+                                textElement.classList.remove('text-gray-700', 'dark:text-gray-300');
+                            } else {
+                                textElement.classList.remove('line-through', 'text-gray-400', 'dark:text-gray-500');
+                                textElement.classList.add('text-gray-700', 'dark:text-gray-300');
+                            }
+                        }
+
+                        // Update progress immediately for better UX
+                        updateChecklistProgress();
+
+                        // Save to database via AJAX
+                        try {
+                            const response = await fetch('{{ route("employee.tasks.checklist.toggle", $task->id) }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    item_index: parseInt(itemIndex),
+                                    item_name: itemName,
+                                    is_completed: isCompleted
+                                })
+                            });
+
+                            const data = await response.json();
+
+                            if (!response.ok) {
+                                // Revert checkbox state on error
+                                checkbox.checked = !isCompleted;
+                                updateChecklistProgress();
+                                alert(data.error || 'Failed to update checklist item');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            // Revert checkbox state on error
+                            checkbox.checked = !isCompleted;
+                            updateChecklistProgress();
+                            alert('Error updating checklist item. Please try again.');
+                        }
+                    }
+
                     // Checklist progress update functionality
                     function updateChecklistProgress() {
                         // Get all checklist items
@@ -1241,21 +1339,21 @@
                         const progressBar = document.getElementById('checklist-progress-bar');
                         if (progressBar) {
                             progressBar.style.width = percentage + '%';
+
+                            // Update color based on completion
+                            if (checkedItems === totalItems && totalItems > 0) {
+                                progressBar.classList.remove('bg-blue-600');
+                                progressBar.classList.add('bg-green-600');
+                            } else {
+                                progressBar.classList.remove('bg-green-600');
+                                progressBar.classList.add('bg-blue-600');
+                            }
                         }
 
                         // Update counter text
                         const completedCounter = document.getElementById('checklist-completed');
                         if (completedCounter) {
                             completedCounter.textContent = checkedItems;
-                        }
-
-                        // Optional: Add visual feedback when all items are completed
-                        if (checkedItems === totalItems && totalItems > 0) {
-                            progressBar.classList.remove('bg-blue-600');
-                            progressBar.classList.add('bg-green-600');
-                        } else {
-                            progressBar.classList.remove('bg-green-600');
-                            progressBar.classList.add('bg-blue-600');
                         }
                     }
 

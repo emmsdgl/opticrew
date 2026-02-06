@@ -373,9 +373,14 @@
                                 Tasks Checklist
                             </h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                                View the checklist items for this task
+                                Employee progress on checklist items (read-only)
                             </p>
                         </div>
+
+                        @php
+                            // Get existing checklist completions from database
+                            $checklistCompletions = $task->checklistCompletions->keyBy('checklist_item_id');
+                        @endphp
 
                         <!-- Checklist Items -->
                         <div class="space-y-3">
@@ -479,23 +484,47 @@
                                 }
 
                                 $checklistItems = $checklistTemplates[$serviceType] ?? $checklistTemplates['general_cleaning'];
+
+                                // Count completed items
+                                $completedCount = 0;
+                                foreach($checklistItems as $index => $item) {
+                                    if(isset($checklistCompletions[$index]) && $checklistCompletions[$index]->is_completed) {
+                                        $completedCount++;
+                                    }
+                                }
                             @endphp
 
                             @forelse($checklistItems as $index => $item)
-                                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group">
+                                @php
+                                    $isCompleted = isset($checklistCompletions[$index]) && $checklistCompletions[$index]->is_completed;
+                                    $completedAt = $isCompleted && isset($checklistCompletions[$index]) ? $checklistCompletions[$index]->completed_at : null;
+                                @endphp
+                                <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                                    <!-- Status Icon (Read-only) -->
                                     <div class="flex items-center h-6 mt-0.5">
-                                        <input type="checkbox" id="checklist-{{ $index }}"
-                                            class="checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 cursor-pointer"
-                                            onchange="updateChecklistProgress()">
+                                        @if($isCompleted)
+                                            <div class="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-check text-green-600 dark:text-green-400 text-xs"></i>
+                                            </div>
+                                        @else
+                                            <div class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-circle text-gray-400 dark:text-gray-500 text-[6px]"></i>
+                                            </div>
+                                        @endif
                                     </div>
 
                                     <!-- Item Text -->
                                     <div class="flex-1">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors checklist-text-{{ $index }}">
+                                        <span class="text-sm {{ $isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }}">
                                             {{ $item }}
                                         </span>
+                                        @if($isCompleted && $completedAt)
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                                Completed {{ \Carbon\Carbon::parse($completedAt)->diffForHumans() }}
+                                            </p>
+                                        @endif
                                     </div>
-                                </label>
+                                </div>
                             @empty
                                 <!-- Empty State -->
                                 <div class="text-center py-12">
@@ -512,14 +541,15 @@
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
                                     <span class="text-sm text-gray-500 dark:text-gray-400">
-                                        <span id="checklist-completed">0</span> of
-                                        <span id="checklist-total">{{ count($checklistItems) }}</span> completed
+                                        {{ $completedCount }} of {{ count($checklistItems) }} completed
                                     </span>
                                 </div>
+                                @php
+                                    $progressPercent = count($checklistItems) > 0 ? ($completedCount / count($checklistItems)) * 100 : 0;
+                                @endphp
                                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                    <div id="checklist-progress-bar"
-                                        class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                        style="width: 0%"></div>
+                                    <div class="{{ $completedCount === count($checklistItems) ? 'bg-green-600' : 'bg-blue-600' }} h-2 rounded-full transition-all duration-300"
+                                        style="width: {{ $progressPercent }}%"></div>
                                 </div>
                             </div>
                         @endif
@@ -817,50 +847,6 @@
                 activeTab.classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
                 activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'dark:text-gray-400', 'dark:hover:text-gray-300');
             }
-
-            // Checklist progress update functionality
-            function updateChecklistProgress() {
-                // Get all checklist items
-                const checklistItems = document.querySelectorAll('.checklist-item');
-                const totalItems = checklistItems.length;
-
-                // Count checked items
-                let checkedItems = 0;
-                checklistItems.forEach(item => {
-                    if (item.checked) {
-                        checkedItems++;
-                    }
-                });
-
-                // Calculate percentage
-                const percentage = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
-
-                // Update progress bar
-                const progressBar = document.getElementById('checklist-progress-bar');
-                if (progressBar) {
-                    progressBar.style.width = percentage + '%';
-                }
-
-                // Update counter text
-                const completedCounter = document.getElementById('checklist-completed');
-                if (completedCounter) {
-                    completedCounter.textContent = checkedItems;
-                }
-
-                // Optional: Add visual feedback when all items are completed
-                if (checkedItems === totalItems && totalItems > 0) {
-                    progressBar.classList.remove('bg-blue-600');
-                    progressBar.classList.add('bg-green-600');
-                } else {
-                    progressBar.classList.remove('bg-green-600');
-                    progressBar.classList.add('bg-blue-600');
-                }
-            }
-
-            // Initialize progress on page load
-            document.addEventListener('DOMContentLoaded', function () {
-                updateChecklistProgress();
-            });
         </script>
     @endpush
 </x-layouts.general-employer>

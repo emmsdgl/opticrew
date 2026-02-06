@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Task;
 use App\Models\Attendance;
+use App\Models\TaskChecklistCompletion;
 use Carbon\Carbon;
 
 class EmployeeTasksController extends Controller
@@ -99,7 +100,8 @@ class EmployeeTasksController extends Controller
             'optimizationTeam.members.employee.user',
             'optimizationTeam.car',
             'startedBy',
-            'completedBy'
+            'completedBy',
+            'checklistCompletions'
         ]);
 
         return view('employee.tasks.show', [
@@ -107,6 +109,7 @@ class EmployeeTasksController extends Controller
             'task' => $task,
         ]);
     }
+
     public function feedback(Task $task)
     {
         $user = Auth::user();
@@ -302,5 +305,99 @@ class EmployeeTasksController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Task completed successfully.');
+    }
+
+    /**
+     * Toggle checklist item completion
+     */
+    public function toggleChecklistItem(Request $request, Task $task)
+    {
+        $user = Auth::user();
+        $employee = $user->employee;
+
+        // Verify employee has access to this task
+        $hasAccess = $task->optimizationTeam &&
+                     $task->optimizationTeam->members()
+                          ->where('employee_id', $employee->id)
+                          ->exists();
+
+        if (!$hasAccess) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Check if task is approved and started (In Progress)
+        if (!$task->employee_approved) {
+            return response()->json(['error' => 'Task must be approved first'], 400);
+        }
+
+        if ($task->status !== 'In Progress') {
+            return response()->json(['error' => 'Task must be started before updating checklist'], 400);
+        }
+
+        // Validate the request
+        $validated = $request->validate([
+            'item_index' => 'required|integer|min:0',
+            'item_name' => 'required|string',
+            'is_completed' => 'required|boolean'
+        ]);
+
+        // Find or create checklist completion record
+        $completion = TaskChecklistCompletion::updateOrCreate(
+            [
+                'task_id' => $task->id,
+                'checklist_item_id' => $validated['item_index'], // Using index as ID since we don't have actual checklist_items table populated
+            ],
+            [
+                'is_completed' => $validated['is_completed'],
+                'completed_by' => $validated['is_completed'] ? $user->id : null,
+                'completed_at' => $validated['is_completed'] ? Carbon::now() : null,
+            ]
+        );
+
+        // Get all completions for this task
+        $completions = TaskChecklistCompletion::where('task_id', $task->id)
+            ->where('is_completed', true)
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => $validated['is_completed'] ? 'Item marked as completed' : 'Item marked as incomplete',
+            'completed_count' => $completions
+        ]);
+    }
+
+    /**
+     * Get checklist completion status for a task
+     */
+    public function getChecklistStatus(Task $task)
+    {
+        $user = Auth::user();
+        $employee = $user->employee;
+
+        // Verify employee has access to this task
+        $hasAccess = $task->optimizationTeam &&
+                     $task->optimizationTeam->members()
+                          ->where('employee_id', $employee->id)
+                          ->exists();
+
+        if (!$hasAccess) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Get all completions for this task
+        $completions = TaskChecklistCompletion::where('task_id', $task->id)
+            ->get()
+            ->keyBy('checklist_item_id')
+            ->map(function ($item) {
+                return [
+                    'is_completed' => $item->is_completed,
+                    'completed_at' => $item->completed_at?->format('Y-m-d H:i:s'),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'completions' => $completions
+        ]);
     }
 }
