@@ -268,7 +268,216 @@ class NotificationService
                 'service_time' => $serviceTime,
                 'client_name' => $clientName,
                 'icon' => 'clipboard-list',
-                'color' => 'blue'
+                'color' => 'blue',
+                'action_url' => '/employee/tasks',
+                'action_text' => 'View Task'
+            ]
+        );
+    }
+
+    /**
+     * Notify employee when their leave request is approved.
+     */
+    public function notifyEmployeeLeaveApproved(User $employeeUser, $leaveRequest): ?Notification
+    {
+        if (!$employeeUser) return null;
+
+        $startDate = $leaveRequest->date->format('M d, Y');
+        $endDate = $leaveRequest->end_date ? $leaveRequest->end_date->format('M d, Y') : $startDate;
+        $dateRange = $startDate === $endDate ? $startDate : "{$startDate} - {$endDate}";
+
+        return $this->create(
+            $employeeUser,
+            Notification::TYPE_EMPLOYEE_LEAVE_APPROVED,
+            'Leave Request Approved',
+            "Your {$leaveRequest->type} leave request for {$dateRange} has been approved.",
+            [
+                'leave_request_id' => $leaveRequest->id,
+                'leave_type' => $leaveRequest->type,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'icon' => 'check-circle',
+                'color' => 'green',
+                'action_url' => '/employee/requests',
+                'action_text' => 'View Requests'
+            ]
+        );
+    }
+
+    /**
+     * Notify employee when their leave request is rejected.
+     */
+    public function notifyEmployeeLeaveRejected(User $employeeUser, $leaveRequest, string $reason = ''): ?Notification
+    {
+        if (!$employeeUser) return null;
+
+        $startDate = $leaveRequest->date->format('M d, Y');
+        $endDate = $leaveRequest->end_date ? $leaveRequest->end_date->format('M d, Y') : $startDate;
+        $dateRange = $startDate === $endDate ? $startDate : "{$startDate} - {$endDate}";
+
+        $message = "Your {$leaveRequest->type} leave request for {$dateRange} was not approved.";
+        if ($reason) {
+            $message .= " Reason: {$reason}";
+        }
+
+        return $this->create(
+            $employeeUser,
+            Notification::TYPE_EMPLOYEE_LEAVE_REJECTED,
+            'Leave Request Not Approved',
+            $message,
+            [
+                'leave_request_id' => $leaveRequest->id,
+                'leave_type' => $leaveRequest->type,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'reason' => $reason,
+                'icon' => 'times-circle',
+                'color' => 'red',
+                'action_url' => '/employee/requests',
+                'action_text' => 'View Requests'
+            ]
+        );
+    }
+
+    /**
+     * Notify employee when their general request is approved (e.g., equipment, supplies, etc.).
+     */
+    public function notifyEmployeeRequestApproved(User $employeeUser, $request, string $requestType = 'request'): ?Notification
+    {
+        if (!$employeeUser) return null;
+
+        return $this->create(
+            $employeeUser,
+            Notification::TYPE_EMPLOYEE_REQUEST_APPROVED,
+            'Request Approved',
+            "Your {$requestType} has been approved.",
+            [
+                'request_id' => $request->id ?? null,
+                'request_type' => $requestType,
+                'icon' => 'check-circle',
+                'color' => 'green',
+                'action_url' => '/employee/requests',
+                'action_text' => 'View Requests'
+            ]
+        );
+    }
+
+    /**
+     * Notify employee when their general request is rejected.
+     */
+    public function notifyEmployeeRequestRejected(User $employeeUser, $request, string $requestType = 'request', string $reason = ''): ?Notification
+    {
+        if (!$employeeUser) return null;
+
+        $message = "Your {$requestType} was not approved.";
+        if ($reason) {
+            $message .= " Reason: {$reason}";
+        }
+
+        return $this->create(
+            $employeeUser,
+            Notification::TYPE_EMPLOYEE_REQUEST_REJECTED,
+            'Request Not Approved',
+            $message,
+            [
+                'request_id' => $request->id ?? null,
+                'request_type' => $requestType,
+                'reason' => $reason,
+                'icon' => 'times-circle',
+                'color' => 'red',
+                'action_url' => '/employee/requests',
+                'action_text' => 'View Requests'
+            ]
+        );
+    }
+
+    /**
+     * Notify employee with a daily clock in reminder.
+     */
+    public function notifyEmployeeClockInReminder(User $employeeUser, string $date = null): ?Notification
+    {
+        if (!$employeeUser) return null;
+
+        $date = $date ?? now()->format('M d, Y');
+
+        return $this->create(
+            $employeeUser,
+            Notification::TYPE_EMPLOYEE_CLOCK_IN_REMINDER,
+            'Clock In Reminder',
+            "Don't forget to clock in for your shift today ({$date}).",
+            [
+                'date' => $date,
+                'icon' => 'clock',
+                'color' => 'yellow',
+                'action_url' => '/employee/attendance',
+                'action_text' => 'Clock In'
+            ]
+        );
+    }
+
+    /**
+     * Send clock in reminders to all employees who haven't clocked in today.
+     */
+    public function sendDailyClockInReminders(): Collection
+    {
+        $today = now()->format('Y-m-d');
+        $notifications = collect();
+
+        // Get all employees who are active and haven't clocked in today
+        $employees = \App\Models\Employee::where('status', 'active')
+            ->whereHas('user')
+            ->with('user')
+            ->get();
+
+        foreach ($employees as $employee) {
+            // Check if employee has already clocked in today
+            $hasClockedIn = \App\Models\Attendance::where('employee_id', $employee->id)
+                ->whereDate('clock_in', $today)
+                ->exists();
+
+            // Check if already sent a reminder today
+            $alreadyReminded = Notification::where('user_id', $employee->user_id)
+                ->where('type', Notification::TYPE_EMPLOYEE_CLOCK_IN_REMINDER)
+                ->whereDate('created_at', $today)
+                ->exists();
+
+            if (!$hasClockedIn && !$alreadyReminded && $employee->user) {
+                $notification = $this->notifyEmployeeClockInReminder($employee->user);
+                if ($notification) {
+                    $notifications->push($notification);
+                }
+            }
+        }
+
+        return $notifications;
+    }
+
+    /**
+     * Notify employee when they successfully submit feedback for a task.
+     */
+    public function notifyEmployeeFeedbackSubmitted(User $employeeUser, $feedback, $task): ?Notification
+    {
+        if (!$employeeUser) return null;
+
+        $taskDescription = $task->task_description ?? 'task';
+        $location = $task->location->location_name ?? '';
+        $taskInfo = $location ? "{$taskDescription} - {$location}" : $taskDescription;
+
+        return $this->create(
+            $employeeUser,
+            Notification::TYPE_EMPLOYEE_FEEDBACK_SUBMITTED,
+            'Feedback Submitted',
+            "Thank you! Your {$feedback->rating}-star feedback for {$taskInfo} has been recorded.",
+            [
+                'feedback_id' => $feedback->id,
+                'task_id' => $task->id,
+                'task_description' => $taskDescription,
+                'location' => $location,
+                'rating' => $feedback->rating,
+                'icon' => 'star',
+                'color' => 'yellow',
+                'action_url' => '/employee/history?tab=ratings',
+                'action_text' => 'View Feedback'
             ]
         );
     }
@@ -393,6 +602,36 @@ class NotificationService
                 'latest_item' => $latestItem,
                 'icon' => 'clipboard-check',
                 'color' => 'yellow'
+            ]
+        );
+    }
+
+    /**
+     * Notify client when they submit feedback for a completed service.
+     */
+    public function notifyClientFeedbackSubmitted(User $clientUser, $feedback, $appointment): ?Notification
+    {
+        if (!$clientUser) return null;
+
+        $serviceType = $appointment->service_type ?? 'service';
+        $location = $appointment->cabin_name ?? '';
+        $serviceInfo = $location ? "{$serviceType} - {$location}" : $serviceType;
+
+        return $this->create(
+            $clientUser,
+            Notification::TYPE_FEEDBACK_SUBMITTED,
+            'Feedback Submitted',
+            "Thank you! Your {$feedback->rating}-star feedback for {$serviceInfo} has been recorded.",
+            [
+                'feedback_id' => $feedback->id,
+                'appointment_id' => $appointment->id,
+                'service_type' => $serviceType,
+                'location' => $location,
+                'rating' => $feedback->rating,
+                'icon' => 'star',
+                'color' => 'yellow',
+                'action_url' => '/client/history?tab=ratings',
+                'action_text' => 'View Feedback'
             ]
         );
     }

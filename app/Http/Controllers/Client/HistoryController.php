@@ -7,12 +7,20 @@ use App\Models\ClientAppointment;
 use App\Models\Feedback;
 use App\Models\Client;
 use App\Models\Task;
+use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class HistoryController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function index()
     {
         // Get current client
@@ -185,6 +193,11 @@ class HistoryController extends Controller
             'feedback_text' => $validated['feedback_text'],
             'service_type' => $appointment ? $appointment->service_type : null,
         ]);
+
+        // Send notification to client about feedback submission
+        if ($appointment) {
+            $this->notificationService->notifyClientFeedbackSubmitted($user, $feedback, $appointment);
+        }
 
         return response()->json([
             'success' => true,

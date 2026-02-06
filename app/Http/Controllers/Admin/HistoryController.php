@@ -10,6 +10,134 @@ use Carbon\Carbon;
 
 class HistoryController extends Controller
 {
+    /**
+     * Checklist templates organized by service type
+     */
+    private $checklistTemplates = [
+        'daily_cleaning' => [
+            'Sweep and mop floors',
+            'Vacuum carpets/rugs',
+            'Dust furniture and surfaces',
+            'Wipe tables and countertops',
+            'Empty trash bins',
+            'Wipe kitchen counters',
+            'Clean sink',
+            'Wash visible dishes',
+            'Wipe appliance exteriors',
+            'Clean toilet and sink',
+            'Wipe mirrors',
+            'Mop floor',
+            'Organize cluttered areas',
+            'Light deodorizing',
+        ],
+        'snowout_cleaning' => [
+            'Remove mud, water, and debris',
+            'Clean door mats',
+            'Mop and dry floors',
+            'Deep vacuum carpets',
+            'Mop with disinfectant solution',
+            'Wipe walls near entrances',
+            'Dry wet surfaces',
+            'Check for water accumulation',
+            'Clean and sanitize affected areas',
+            'Dispose of tracked-in debris',
+            'Replace trash liners',
+        ],
+        'deep_cleaning' => [
+            'Dust high and low areas (vents, corners, baseboards)',
+            'Clean behind and under furniture',
+            'Wash walls and remove stains',
+            'Deep vacuum carpets',
+            'Clean inside microwave',
+            'Degrease stove and range hood',
+            'Clean inside refrigerator (if included)',
+            'Scrub tile grout',
+            'Remove limescale and mold buildup',
+            'Deep scrub tiles and grout',
+            'Sanitize all fixtures thoroughly',
+            'Clean window interiors',
+            'Polish handles and knobs',
+            'Disinfect frequently touched surfaces',
+        ],
+        'general_cleaning' => [
+            'Dust surfaces',
+            'Sweep/vacuum floors',
+            'Mop hard floors',
+            'Clean glass and mirrors',
+            'Wipe countertops',
+            'Clean sink',
+            'Take out trash',
+            'Clean toilet, sink, and mirror',
+            'Mop floor',
+            'Arrange items neatly',
+            'Dispose of garbage',
+            'Light air freshening',
+        ],
+        'hotel_cleaning' => [
+            'Make bed with fresh linens',
+            'Replace pillowcases and sheets',
+            'Dust all surfaces (tables, headboard, shelves)',
+            'Vacuum carpet / sweep & mop floor',
+            'Clean mirrors and glass surfaces',
+            'Check under bed for trash/items',
+            'Empty trash bins and replace liners',
+            'Clean and disinfect toilet',
+            'Scrub shower walls, tub, and floor',
+            'Clean sink and countertop',
+            'Polish fixtures',
+            'Replace towels, bath mat, tissue, and toiletries',
+            'Mop bathroom floor',
+            'Refill water, coffee, and room amenities',
+            'Replace slippers and hygiene kits',
+            'Check minibar (if applicable)',
+            'Ensure lights, AC, TV working',
+            'Arrange curtains neatly',
+            'Deodorize room',
+        ],
+    ];
+
+    /**
+     * Get the service type from task description
+     */
+    private function getServiceType($taskDescription)
+    {
+        $taskDescription = strtolower($taskDescription ?? '');
+
+        if (str_contains($taskDescription, 'daily') || str_contains($taskDescription, 'routine')) {
+            return 'daily_cleaning';
+        } elseif (str_contains($taskDescription, 'snowout') || str_contains($taskDescription, 'weather')) {
+            return 'snowout_cleaning';
+        } elseif (str_contains($taskDescription, 'deep')) {
+            return 'deep_cleaning';
+        } elseif (str_contains($taskDescription, 'hotel') || str_contains($taskDescription, 'room turnover')) {
+            return 'hotel_cleaning';
+        }
+
+        return 'general_cleaning';
+    }
+
+    /**
+     * Get checklist items for a task based on its service type
+     */
+    private function getChecklistItemsForTask($task)
+    {
+        $serviceType = $this->getServiceType($task->task_description);
+        $template = $this->checklistTemplates[$serviceType] ?? $this->checklistTemplates['general_cleaning'];
+
+        // Get completions keyed by item index
+        $completions = TaskChecklistCompletion::where('task_id', $task->id)
+            ->get()
+            ->keyBy('checklist_item_id');
+
+        return collect($template)->map(function ($itemName, $index) use ($completions) {
+            $completion = $completions->get($index);
+            return [
+                'name' => $itemName,
+                'completed' => $completion ? $completion->is_completed : false,
+            ];
+        })->values()->toArray();
+    }
+
     public function index()
     {
         // Fetch all tasks with their relationships
@@ -37,16 +165,8 @@ class HistoryController extends Controller
 
         // Add tasks to activities
         foreach ($tasks as $task) {
-            // Get checklist items for this task
-            $checklistItems = TaskChecklistCompletion::where('task_id', $task->id)
-                ->with('checklistItem')
-                ->get()
-                ->map(function ($completion) {
-                    return [
-                        'name' => $completion->checklistItem->item_text ?? 'Task item',
-                        'completed' => $completion->is_completed,
-                    ];
-                });
+            // Get checklist items for this task from template
+            $checklistItems = $this->getChecklistItemsForTask($task);
 
             // Get assigned members
             $assignedMembers = [];
@@ -87,7 +207,7 @@ class HistoryController extends Controller
                 'totalAmount' => '€' . number_format($task->estimated_duration_minutes * 2, 2),
                 'payableAmount' => '€' . number_format($task->estimated_duration_minutes * 2, 2),
                 'assignedMembers' => $assignedMembers,
-                'checklist' => $checklistItems->toArray(),
+                'checklist' => $checklistItems,
             ]);
         }
 

@@ -592,6 +592,9 @@ class ClientAppointmentController extends Controller
                 'rating' => $validated['rating']
             ]);
 
+            // Send notification to client about feedback submission
+            $this->notificationService->notifyClientFeedbackSubmitted($user, $feedback, $appointment);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Thank you for your feedback!'

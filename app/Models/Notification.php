@@ -26,6 +26,15 @@ class Notification extends Model
     const TYPE_TASK_COMPLETED = 'task_completed';
     const TYPE_CHECKLIST_PROGRESS = 'checklist_progress';
     const TYPE_SERVICE_UPDATE = 'service_update';
+    const TYPE_FEEDBACK_SUBMITTED = 'feedback_submitted';
+
+    // Employee notification types
+    const TYPE_EMPLOYEE_LEAVE_APPROVED = 'employee_leave_approved';
+    const TYPE_EMPLOYEE_LEAVE_REJECTED = 'employee_leave_rejected';
+    const TYPE_EMPLOYEE_REQUEST_APPROVED = 'employee_request_approved';
+    const TYPE_EMPLOYEE_REQUEST_REJECTED = 'employee_request_rejected';
+    const TYPE_EMPLOYEE_CLOCK_IN_REMINDER = 'employee_clock_in_reminder';
+    const TYPE_EMPLOYEE_FEEDBACK_SUBMITTED = 'employee_feedback_submitted';
 
     // Admin notification types
     const TYPE_NEW_APPOINTMENT = 'new_appointment';

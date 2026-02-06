@@ -316,6 +316,7 @@ class LeaveRequestController extends Controller
 
             // Send notification to employee
             if ($employee && $employee->user) {
+                // Push notification
                 $this->pushService->notifyLeaveApproved($employee->user, [
                     'leave_request_id' => $leaveRequest->id,
                     'date' => $leaveRequest->date->format('Y-m-d'),
@@ -323,6 +324,9 @@ class LeaveRequestController extends Controller
                     'type' => $leaveRequest->type,
                     'admin_notes' => $request->admin_notes,
                 ]);
+
+                // In-app notification
+                $this->notificationService->notifyEmployeeLeaveApproved($employee->user, $leaveRequest);
             }
 
             return response()->json([
@@ -380,6 +384,7 @@ class LeaveRequestController extends Controller
             // Send notification to employee
             $employee = $leaveRequest->employee;
             if ($employee && $employee->user) {
+                // Push notification
                 $this->pushService->notifyLeaveRejected($employee->user, [
                     'leave_request_id' => $leaveRequest->id,
                     'date' => $leaveRequest->date->format('Y-m-d'),
@@ -387,6 +392,13 @@ class LeaveRequestController extends Controller
                     'type' => $leaveRequest->type,
                     'admin_notes' => $request->admin_notes,
                 ]);
+
+                // In-app notification
+                $this->notificationService->notifyEmployeeLeaveRejected(
+                    $employee->user,
+                    $leaveRequest,
+                    $request->admin_notes
+                );
             }
 
             return response()->json([

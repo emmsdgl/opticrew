@@ -52,10 +52,36 @@
                 <!-- Notification List -->
                 <div class="max-h-80 overflow-y-auto">
                     @forelse($notifications as $notification)
-                    <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors cursor-pointer">
+                    <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
                         <div class="flex items-start gap-3">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                <i class="fi fi-rr-info text-blue-600 dark:text-blue-400 text-sm"></i>
+                            @php
+                                $icon = $notification['data']['icon'] ?? 'info';
+                                $iconMap = [
+                                    'star' => 'fi-rr-star',
+                                    'check-circle' => 'fi-rr-checkbox',
+                                    'times-circle' => 'fi-rr-cross-circle',
+                                    'play-circle' => 'fi-rr-play',
+                                    'clipboard-check' => 'fi-rr-checklist',
+                                    'clipboard-list' => 'fi-rr-list',
+                                    'users' => 'fi-rr-users',
+                                    'calendar-plus' => 'fi-rr-calendar',
+                                    'calendar-times' => 'fi-rr-calendar',
+                                    'user-clock' => 'fi-rr-clock',
+                                    'tasks' => 'fi-rr-ballot-check',
+                                    'info' => 'fi-rr-info',
+                                ];
+                                $iconClass = $iconMap[$icon] ?? 'fi-rr-info';
+                                $color = $notification['data']['color'] ?? 'blue';
+                                $colorClasses = [
+                                    'blue' => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                                    'green' => 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+                                    'yellow' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
+                                    'red' => 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+                                ];
+                                $bgColorClass = $colorClasses[$color] ?? $colorClasses['blue'];
+                            @endphp
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full {{ $bgColorClass }} flex items-center justify-center">
+                                <i class="fi {{ $iconClass }} text-sm"></i>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
@@ -64,9 +90,17 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
                                     {{ $notification['message'] ?? '' }}
                                 </p>
-                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                    {{ $notification['time'] ?? 'Just now' }}
-                                </p>
+                                <div class="flex items-center justify-between mt-1">
+                                    <p class="text-xs text-gray-400 dark:text-gray-500">
+                                        {{ $notification['time'] ?? 'Just now' }}
+                                    </p>
+                                    @if(isset($notification['data']['action_url']))
+                                    <a href="{{ $notification['data']['action_url'] }}"
+                                       class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                                        {{ $notification['data']['action_text'] ?? 'View' }}
+                                    </a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>

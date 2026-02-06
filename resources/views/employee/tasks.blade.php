@@ -325,7 +325,7 @@
                 })->toArray();
             @endphp
 
-            <div id="today-tasks-list" class="h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+            <div id="today-tasks-list" class="{{ $todayTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                 <x-employee-components.task-overview-list
                     :items="$todayTasksFormatted"
                     fixedHeight="24rem"
@@ -432,11 +432,11 @@
                 })->toArray();
             @endphp
 
-            <div id="pending-tasks-list" class="border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+            <div id="pending-tasks-list" class="{{ $pendingApprovalTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                 <x-employee-components.task-overview-list
                     :items="$pendingApprovalTasksFormatted"
-                    fixedHeight="32rem"
-                    maxHeight="32rem"
+                    fixedHeight="24rem"
+                    maxHeight="30rem"
                     emptyTitle="No tasks pending approval"
                     emptyMessage="All assigned tasks have been reviewed." />
             </div>
@@ -565,7 +565,7 @@
                 })->toArray();
             @endphp
 
-            <div id="history-tasks-list" class="h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+            <div id="history-tasks-list" class="{{ $completedTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                 <x-employee-components.task-overview-list
                     :items="$allTasksFormatted"
                     fixedHeight="24rem"
