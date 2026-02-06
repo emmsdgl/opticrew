@@ -134,32 +134,11 @@
    
             <!--DASHBOARD HEADER CONTENTS -->
             @php
-                $notifications = [
-                    [
-                        'message' => 'New comment on your post',
-                        'time' => '5 minutes ago',
-                        'unread' => true,
-                        'icon' => 'fa-solid fa-comment',
-                        'icon_bg' => 'blue',
-                        'icon_color' => 'blue'
-                    ],
-                    [
-                        'message' => 'Your account was logged in from a new device',
-                        'time' => '1 hour ago',
-                        'unread' => true,
-                        'icon' => 'fa-solid fa-shield-halved',
-                        'icon_bg' => 'red',
-                        'icon_color' => 'red'
-                    ],
-                    [
-                        'message' => 'Payment successful',
-                        'time' => '2 hours ago',
-                        'unread' => false,
-                        'icon' => 'fa-solid fa-check-circle',
-                        'icon_bg' => 'green',
-                        'icon_color' => 'green'
-                    ]
-                ];
+                $notifications = [];
+                if (auth()->check()) {
+                    $notificationService = app(\App\Services\Notification\NotificationService::class);
+                    $notifications = $notificationService->getHeaderNotifications(auth()->user(), 10);
+                }
             @endphp
 
             <x-header :notifications="$notifications" />

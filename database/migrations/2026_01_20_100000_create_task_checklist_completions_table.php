@@ -15,7 +15,8 @@ return new class extends Migration
         Schema::create('task_checklist_completions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('task_id')->constrained()->onDelete('cascade');
-            $table->foreignId('checklist_item_id')->constrained('checklist_items')->onDelete('cascade');
+            // Using item_index instead of foreign key since checklist items are defined in templates
+            $table->unsignedBigInteger('checklist_item_id'); // Stores the item index from the template array
             $table->boolean('is_completed')->default(false);
             $table->foreignId('completed_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('completed_at')->nullable();

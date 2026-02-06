@@ -164,6 +164,26 @@
                     return window.getChecklistByServiceType ? window.getChecklistByServiceType(serviceType) : [];
                 },
 
+                // Check if a specific checklist item is completed
+                isChecklistItemCompleted(itemIndex) {
+                    if (!this.selectedAppointment) return false;
+                    const completions = this.selectedAppointment.checklist_completions || [];
+                    return completions.includes(itemIndex);
+                },
+
+                // Get checklist progress stats
+                getDrawerChecklistProgress() {
+                    if (!this.selectedAppointment) return { completed: 0, total: 0, percentage: 0 };
+
+                    const checklistItems = this.getDrawerChecklistItems();
+                    const total = checklistItems.length;
+                    const completions = this.selectedAppointment.checklist_completions || [];
+                    const completed = completions.length;
+                    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                    return { completed, total, percentage };
+                },
+
                 formatDrawerDate(dateString) {
                     if (!dateString) return '-';
                     const date = new Date(dateString);
@@ -392,4 +412,34 @@
             </div>
         </div>
     </section>
+
+    @push('scripts')
+    <script>
+    async function cancelAppointment(appointmentId) {
+        if (confirm('Are you sure you want to cancel this appointment?')) {
+            try {
+                const response = await fetch(`/client/appointments/${appointmentId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Appointment cancelled successfully');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to cancel appointment');
+                }
+            } catch (error) {
+                console.error('Error cancelling appointment:', error);
+                alert('An error occurred while cancelling the appointment');
+            }
+        }
+    }
+    </script>
+    @endpush
 </x-layouts.general-client>

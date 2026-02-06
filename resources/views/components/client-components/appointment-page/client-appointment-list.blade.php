@@ -3,67 +3,88 @@
     'showHeader' => true,
 ])
 
-<div class="w-full min-w-full overflow-visible" x-data="{
-    showDrawer: false,
-    selectedAppointment: null,
-    allAppointments: {{ $appointments->toJson() }},
+<div class="w-full min-w-full overflow-visible"
+     x-data="{
+         showDrawer: false,
+         selectedAppointment: null,
+         allAppointments: {{ $appointments->toJson() }},
 
-    viewDetails(appointmentId) {
-        this.selectedAppointment = this.allAppointments.find(apt => apt.id === appointmentId);
-        if (this.selectedAppointment) {
-            this.showDrawer = true;
-            document.body.style.overflow = 'hidden';
-        }
-    },
+         viewDetails(appointmentId) {
+             this.selectedAppointment = this.allAppointments.find(apt => apt.id === appointmentId);
+             if (this.selectedAppointment) {
+                 this.showDrawer = true;
+                 document.body.style.overflow = 'hidden';
+             }
+         },
 
-    closeDrawer() {
-        this.showDrawer = false;
-        this.selectedAppointment = null;
-        document.body.style.overflow = 'auto';
-    },
+         closeDrawer() {
+             this.showDrawer = false;
+             this.selectedAppointment = null;
+             document.body.style.overflow = 'auto';
+         },
 
-    // Helper methods required by the shared drawer component
-    getDrawerStatus() {
-        return (this.selectedAppointment?.status || '').toLowerCase();
-    },
+         // Helper methods required by the shared drawer component
+         getDrawerStatus() {
+             return (this.selectedAppointment?.status || '').toLowerCase();
+         },
 
-    getDrawerData(key) {
-        if (key === 'assignedMembers') {
-            return this.selectedAppointment?.assigned_members || [];
-        }
-        return this.selectedAppointment?.[key];
-    },
+         getDrawerData(key) {
+             if (key === 'assignedMembers') {
+                 return this.selectedAppointment?.assigned_members || [];
+             }
+             return this.selectedAppointment?.[key];
+         },
 
-    getDrawerChecklistItems() {
-        const serviceType = this.selectedAppointment?.service_type;
-        return window.getChecklistByServiceType ? window.getChecklistByServiceType(serviceType) : [];
-    },
+         getDrawerChecklistItems() {
+             const serviceType = this.selectedAppointment?.service_type;
+             return window.getChecklistByServiceType ? window.getChecklistByServiceType(serviceType) : [];
+         },
 
-    formatDrawerDate(dateString) {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        });
-    },
+         // Check if a specific checklist item is completed
+         isChecklistItemCompleted(itemIndex) {
+             if (!this.selectedAppointment) return false;
+             const completions = this.selectedAppointment.checklist_completions || [];
+             return completions.includes(itemIndex);
+         },
 
-    formatDrawerTime(timeString) {
-        if (!timeString) return '-';
-        const parts = timeString.split(':');
-        if (parts.length < 2) return timeString;
+         // Get checklist progress stats
+         getDrawerChecklistProgress() {
+             if (!this.selectedAppointment) return { completed: 0, total: 0, percentage: 0 };
 
-        let hours = parseInt(parts[0]);
-        const minutes = parts[1];
-        const ampm = hours >= 12 ? 'PM' : 'AM';
+             const checklistItems = this.getDrawerChecklistItems();
+             const total = checklistItems.length;
+             const completions = this.selectedAppointment.checklist_completions || [];
+             const completed = completions.length;
+             const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-        hours = hours % 12;
-        hours = hours ? hours : 12;
+             return { completed, total, percentage };
+         },
 
-        return hours + ':' + minutes + ' ' + ampm;
-    }
-}">
+         formatDrawerDate(dateString) {
+             if (!dateString) return '-';
+             const date = new Date(dateString);
+             return date.toLocaleDateString('en-US', {
+                 month: 'long',
+                 day: 'numeric',
+                 year: 'numeric'
+             });
+         },
+
+         formatDrawerTime(timeString) {
+             if (!timeString) return '-';
+             const parts = timeString.split(':');
+             if (parts.length < 2) return timeString;
+
+             let hours = parseInt(parts[0]);
+             const minutes = parts[1];
+             const ampm = hours >= 12 ? 'PM' : 'AM';
+
+             hours = hours % 12;
+             hours = hours ? hours : 12;
+
+             return hours + ':' + minutes + ' ' + ampm;
+         }
+     }">
     <!-- Table Header -->
     @if($showHeader)
     <div class="hidden md:grid md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_1fr] gap-4 px-6 py-4
@@ -224,16 +245,31 @@
     </x-client-components.shared.appointment-details-drawer>
 </div>
 
-
 @push('scripts')
 <script>
-function cancelAppointment(appointmentId) {
+async function cancelAppointment(appointmentId) {
     if (confirm('Are you sure you want to cancel this appointment?')) {
-        // TODO: Implement cancellation API call
-        console.log('Cancelling appointment:', appointmentId);
-        alert('Appointment #' + appointmentId + ' has been cancelled');
-        // Reload page to reflect changes
-        // window.location.reload();
+        try {
+            const response = await fetch(`/client/appointments/${appointmentId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Appointment cancelled successfully');
+                window.location.reload();
+            } else {
+                alert(data.message || 'Failed to cancel appointment');
+            }
+        } catch (error) {
+            console.error('Error cancelling appointment:', error);
+            alert('An error occurred while cancelling the appointment');
+        }
     }
 }
 </script>

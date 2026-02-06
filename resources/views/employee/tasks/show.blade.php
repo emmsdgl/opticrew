@@ -191,7 +191,7 @@
                         @elseif($task->employee_approved === true)
                             <div
                                 class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                                <p class="text-xs text-green-700 dark:text-green-300 text-center">
+                                <p class="text-xs text-green-700 dark:text-green-700 text-center">
                                     <i class="fas fa-check-circle mr-1"></i>
                                     Task approved and ready to start
                                 </p>
@@ -237,11 +237,16 @@
                                 <i class="fas fa-play mr-2"></i>Start Task
                             </button>
                         @elseif($task->status === 'In Progress')
-                            {{-- Show Mark Complete button --}}
-                            <button type="button" onclick="if(confirm('Are you sure you want to mark this task as complete?')) document.getElementById('complete-task-form').submit()"
-                                class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20">
+                            {{-- Show Mark Complete button - disabled until all checklist items are completed --}}
+                            <button type="button" id="mark-complete-btn-mobile"
+                                onclick="if(confirm('Are you sure you want to mark this task as complete?')) document.getElementById('complete-task-form').submit()"
+                                class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
+                                disabled>
                                 <i class="fas fa-check mr-2"></i>Mark Complete
                             </button>
+                            <p id="checklist-warning-mobile" class="text-xs text-amber-600 dark:text-amber-400 text-center mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>Complete all checklist items to enable
+                            </p>
                         @endif
                     </div>
                 @else
@@ -508,8 +513,8 @@
                                             $activities->push([
                                                 'type' => $task->employee_approved ? 'approved' : 'declined',
                                                 'icon' => $task->employee_approved ? 'fa-check-circle' : 'fa-times-circle',
-                                                'icon_color' => $task->employee_approved ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400',
-                                                'bg_color' => $task->employee_approved ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30',
+                                                'icon_color' => $task->employee_approved ? 'text-green-600 dark:text-green-800/30' : 'text-red-600 dark:text-red-400/30',
+                                                'bg_color' => $task->employee_approved ? 'bg-green-100 dark:bg-green-800/30' : 'bg-red-100 dark:bg-red-900/30',
                                                 'user' => $employee->user->name,
                                                 'action' => $task->employee_approved ? 'approved this task' : 'declined this task',
                                                 'timestamp' => $task->employee_approved_at,
@@ -1025,12 +1030,17 @@
                                     Start Task
                                 </button>
                             @elseif($task->status === 'In Progress')
-                                {{-- Show Mark Complete button --}}
-                                <button type="button" onclick="if(confirm('Are you sure you want to mark this task as complete?')) document.getElementById('complete-task-form').submit()"
-                                    class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                                {{-- Show Mark Complete button - disabled until all checklist items are completed --}}
+                                <button type="button" id="mark-complete-btn-desktop"
+                                    onclick="if(confirm('Are you sure you want to mark this task as complete?')) document.getElementById('complete-task-form').submit()"
+                                    class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    disabled>
                                     <i class="fas fa-check"></i>
                                     Mark Complete
                                 </button>
+                                <p id="checklist-warning-desktop" class="text-xs text-amber-600 dark:text-amber-400 text-center mt-2">
+                                    <i class="fas fa-info-circle mr-1"></i>Complete all checklist items to enable
+                                </p>
                             @endif
                         </div>
 
@@ -1287,6 +1297,9 @@
 
                         // Save to database via AJAX
                         try {
+                            // Get total items count for progress notifications
+                            const totalItems = document.querySelectorAll('.checklist-item').length;
+
                             const response = await fetch('{{ route("employee.tasks.checklist.toggle", $task->id) }}', {
                                 method: 'POST',
                                 headers: {
@@ -1297,7 +1310,8 @@
                                 body: JSON.stringify({
                                     item_index: parseInt(itemIndex),
                                     item_name: itemName,
-                                    is_completed: isCompleted
+                                    is_completed: isCompleted,
+                                    total_items: totalItems
                                 })
                             });
 
@@ -1354,6 +1368,35 @@
                         const completedCounter = document.getElementById('checklist-completed');
                         if (completedCounter) {
                             completedCounter.textContent = checkedItems;
+                        }
+
+                        // Enable/disable Mark Complete buttons based on checklist completion
+                        const allCompleted = checkedItems === totalItems && totalItems > 0;
+
+                        // Mobile button
+                        const mobileBtn = document.getElementById('mark-complete-btn-mobile');
+                        const mobileWarning = document.getElementById('checklist-warning-mobile');
+                        if (mobileBtn) {
+                            mobileBtn.disabled = !allCompleted;
+                            if (allCompleted) {
+                                mobileBtn.classList.remove('disabled:bg-gray-400', 'disabled:cursor-not-allowed', 'disabled:shadow-none');
+                            }
+                        }
+                        if (mobileWarning) {
+                            mobileWarning.style.display = allCompleted ? 'none' : 'block';
+                        }
+
+                        // Desktop button
+                        const desktopBtn = document.getElementById('mark-complete-btn-desktop');
+                        const desktopWarning = document.getElementById('checklist-warning-desktop');
+                        if (desktopBtn) {
+                            desktopBtn.disabled = !allCompleted;
+                            if (allCompleted) {
+                                desktopBtn.classList.remove('disabled:bg-gray-400', 'disabled:cursor-not-allowed');
+                            }
+                        }
+                        if (desktopWarning) {
+                            desktopWarning.style.display = allCompleted ? 'none' : 'block';
                         }
                     }
 

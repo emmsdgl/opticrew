@@ -232,4 +232,420 @@ class NotificationService
             ['date' => $date]
         );
     }
+
+    // ============================================
+    // Employee Notification Methods
+    // ============================================
+
+    /**
+     * Notify employee when they are assigned to a task.
+     */
+    public function notifyEmployeeTaskAssigned(User $employeeUser, $task, $appointment = null): ?Notification
+    {
+        if (!$employeeUser) return null;
+
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'TBD';
+        $serviceTime = $task->scheduled_time ? \Carbon\Carbon::parse($task->scheduled_time)->format('g:i A') : '';
+        $timeInfo = $serviceTime ? " at {$serviceTime}" : '';
+
+        $clientName = 'a client';
+        if ($appointment && $appointment->client) {
+            $clientName = trim(($appointment->client->first_name ?? '') . ' ' . ($appointment->client->last_name ?? ''));
+        } elseif ($task->client) {
+            $clientName = trim(($task->client->first_name ?? '') . ' ' . ($task->client->last_name ?? ''));
+        }
+
+        return $this->create(
+            $employeeUser,
+            Notification::TYPE_TASK_ASSIGNED,
+            'New Task Assignment',
+            "You have been assigned to {$task->task_description} for {$clientName} on {$serviceDate}{$timeInfo}.",
+            [
+                'task_id' => $task->id,
+                'appointment_id' => $appointment ? $appointment->id : null,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'service_time' => $serviceTime,
+                'client_name' => $clientName,
+                'icon' => 'clipboard-list',
+                'color' => 'blue'
+            ]
+        );
+    }
+
+    // ============================================
+    // Client Notification Methods
+    // ============================================
+
+    /**
+     * Notify client when their appointment is approved by admin.
+     */
+    public function notifyClientAppointmentApproved(User $clientUser, $appointment): ?Notification
+    {
+        if (!$clientUser) return null;
+
+        $serviceDate = $appointment->service_date->format('M d, Y');
+
+        return $this->create(
+            $clientUser,
+            Notification::TYPE_APPOINTMENT_APPROVED,
+            'Appointment Approved',
+            "Your {$appointment->service_type} appointment for {$serviceDate} has been approved. A team will be assigned shortly.",
+            [
+                'appointment_id' => $appointment->id,
+                'service_type' => $appointment->service_type,
+                'service_date' => $serviceDate,
+                'icon' => 'check-circle',
+                'color' => 'green'
+            ]
+        );
+    }
+
+    /**
+     * Notify client when team is assigned and appointment is confirmed.
+     */
+    public function notifyClientAppointmentConfirmed(User $clientUser, $appointment, $teamMembers = []): ?Notification
+    {
+        if (!$clientUser) return null;
+
+        $serviceDate = $appointment->service_date->format('M d, Y');
+        $memberNames = collect($teamMembers)->pluck('name')->implode(', ') ?: 'Our professional team';
+
+        return $this->create(
+            $clientUser,
+            Notification::TYPE_APPOINTMENT_CONFIRMED,
+            'Team Assigned - Appointment Confirmed',
+            "Your {$appointment->service_type} on {$serviceDate} is confirmed. {$memberNames} will be handling your service.",
+            [
+                'appointment_id' => $appointment->id,
+                'service_type' => $appointment->service_type,
+                'service_date' => $serviceDate,
+                'team_members' => $teamMembers,
+                'icon' => 'users',
+                'color' => 'blue'
+            ]
+        );
+    }
+
+    /**
+     * Notify client when an employee starts working on their task.
+     */
+    public function notifyClientTaskStarted(User $clientUser, $task, string $employeeName): ?Notification
+    {
+        if (!$clientUser) return null;
+
+        return $this->create(
+            $clientUser,
+            Notification::TYPE_TASK_STARTED,
+            'Service In Progress',
+            "{$employeeName} has started working on your {$task->task_description}.",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'started_at' => now()->format('g:i A'),
+                'icon' => 'play-circle',
+                'color' => 'blue'
+            ]
+        );
+    }
+
+    /**
+     * Notify client when their task/service is completed.
+     */
+    public function notifyClientTaskCompleted(User $clientUser, $task, string $employeeName): ?Notification
+    {
+        if (!$clientUser) return null;
+
+        return $this->create(
+            $clientUser,
+            Notification::TYPE_TASK_COMPLETED,
+            'Service Completed',
+            "Great news! Your {$task->task_description} has been completed by {$employeeName}.",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'completed_at' => now()->format('g:i A'),
+                'icon' => 'check-circle',
+                'color' => 'green'
+            ]
+        );
+    }
+
+    /**
+     * Notify client about checklist progress (batch updates).
+     */
+    public function notifyClientChecklistProgress(User $clientUser, $task, int $completedItems, int $totalItems, string $latestItem): ?Notification
+    {
+        if (!$clientUser) return null;
+
+        $percentage = $totalItems > 0 ? round(($completedItems / $totalItems) * 100) : 0;
+
+        return $this->create(
+            $clientUser,
+            Notification::TYPE_CHECKLIST_PROGRESS,
+            'Service Progress Update',
+            "Your service is {$percentage}% complete. Latest: {$latestItem}",
+            [
+                'task_id' => $task->id,
+                'completed_items' => $completedItems,
+                'total_items' => $totalItems,
+                'percentage' => $percentage,
+                'latest_item' => $latestItem,
+                'icon' => 'clipboard-check',
+                'color' => 'yellow'
+            ]
+        );
+    }
+
+    /**
+     * Notify client about appointment rejection.
+     */
+    public function notifyClientAppointmentRejected(User $clientUser, $appointment, string $reason = ''): ?Notification
+    {
+        if (!$clientUser) return null;
+
+        $serviceDate = $appointment->service_date->format('M d, Y');
+        $message = "Your {$appointment->service_type} appointment for {$serviceDate} was not approved.";
+        if ($reason) {
+            $message .= " Reason: {$reason}";
+        }
+
+        return $this->create(
+            $clientUser,
+            Notification::TYPE_APPOINTMENT_REJECTED,
+            'Appointment Not Approved',
+            $message,
+            [
+                'appointment_id' => $appointment->id,
+                'service_type' => $appointment->service_type,
+                'service_date' => $serviceDate,
+                'reason' => $reason,
+                'icon' => 'times-circle',
+                'color' => 'red'
+            ]
+        );
+    }
+
+    /**
+     * Get formatted notifications for header display.
+     */
+    public function getHeaderNotifications($user, int $limit = 10): array
+    {
+        if (!$user) return [];
+
+        $notifications = $this->getAll($user, $limit);
+
+        return $notifications->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'title' => $notification->title,
+                'message' => $notification->message,
+                'time' => $notification->created_at->diffForHumans(),
+                'read' => $notification->isRead(),
+                'type' => $notification->type,
+                'data' => $notification->data,
+            ];
+        })->toArray();
+    }
+
+    // ============================================
+    // Admin Notification Methods
+    // ============================================
+
+    /**
+     * Notify all admins when a new appointment is created by a client.
+     */
+    public function notifyAdminsNewAppointment($appointment, $clientName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $appointment->service_date->format('M d, Y');
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_NEW_APPOINTMENT,
+            'New Appointment Request',
+            "{$clientName} has requested a {$appointment->service_type} appointment for {$serviceDate}.",
+            [
+                'appointment_id' => $appointment->id,
+                'client_name' => $clientName,
+                'service_type' => $appointment->service_type,
+                'service_date' => $serviceDate,
+                'icon' => 'calendar-plus',
+                'color' => 'blue'
+            ]
+        );
+    }
+
+    /**
+     * Notify all admins when an appointment is cancelled by a client.
+     */
+    public function notifyAdminsAppointmentCancelled($appointment, $clientName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $appointment->service_date->format('M d, Y');
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_APPOINTMENT_CANCELLED,
+            'Appointment Cancelled',
+            "{$clientName} has cancelled their {$appointment->service_type} appointment for {$serviceDate}.",
+            [
+                'appointment_id' => $appointment->id,
+                'client_name' => $clientName,
+                'service_type' => $appointment->service_type,
+                'service_date' => $serviceDate,
+                'icon' => 'calendar-times',
+                'color' => 'red'
+            ]
+        );
+    }
+
+    /**
+     * Notify all admins when an employee submits a leave request.
+     */
+    public function notifyAdminsLeaveRequest($leaveRequest, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $startDate = $leaveRequest->date->format('M d, Y');
+        $endDate = $leaveRequest->end_date ? $leaveRequest->end_date->format('M d, Y') : $startDate;
+        $dateRange = $startDate === $endDate ? $startDate : "{$startDate} - {$endDate}";
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LEAVE_REQUEST,
+            'New Leave Request',
+            "{$employeeName} has submitted a {$leaveRequest->type} leave request for {$dateRange}.",
+            [
+                'leave_request_id' => $leaveRequest->id,
+                'employee_name' => $employeeName,
+                'leave_type' => $leaveRequest->type,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'icon' => 'user-clock',
+                'color' => 'yellow'
+            ]
+        );
+    }
+
+    /**
+     * Notify all admins when a task is completed by an employee.
+     */
+    public function notifyAdminsTaskCompleted($task, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_TASK_COMPLETED_ADMIN,
+            'Task Completed',
+            "{$employeeName} has completed the task: {$task->task_description}.",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'task_description' => $task->task_description,
+                'completed_at' => now()->format('g:i A'),
+                'icon' => 'check-circle',
+                'color' => 'green'
+            ]
+        );
+    }
+
+    /**
+     * Notify all admins when an employee approves a task assignment.
+     */
+    public function notifyAdminsTaskApproved($task, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_TASK_APPROVED,
+            'Task Approved by Employee',
+            "{$employeeName} has approved the task assignment: {$task->task_description} for {$serviceDate}.",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'approved_at' => now()->format('g:i A'),
+                'icon' => 'check-circle',
+                'color' => 'green'
+            ]
+        );
+    }
+
+    /**
+     * Notify all admins when an employee declines a task assignment.
+     */
+    public function notifyAdminsTaskDeclined($task, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_TASK_DECLINED,
+            'Task Declined by Employee',
+            "{$employeeName} has declined the task assignment: {$task->task_description} for {$serviceDate}.",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'declined_at' => now()->format('g:i A'),
+                'icon' => 'times-circle',
+                'color' => 'red'
+            ]
+        );
+    }
+
+    /**
+     * Notify all admins when an employee starts a task.
+     */
+    public function notifyAdminsTaskStarted($task, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_TASK_STARTED_ADMIN,
+            'Task Started',
+            "{$employeeName} has started working on: {$task->task_description}.",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'task_description' => $task->task_description,
+                'started_at' => now()->format('g:i A'),
+                'icon' => 'play-circle',
+                'color' => 'blue'
+            ]
+        );
+    }
+
+    /**
+     * Notify all admins about task progress update.
+     */
+    public function notifyAdminsTaskProgress($task, $employeeName, int $completedItems, int $totalItems): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $percentage = $totalItems > 0 ? round(($completedItems / $totalItems) * 100) : 0;
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_TASK_PROGRESS_ADMIN,
+            'Task Progress Update',
+            "{$employeeName} - {$task->task_description} is {$percentage}% complete ({$completedItems}/{$totalItems} items).",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'task_description' => $task->task_description,
+                'completed_items' => $completedItems,
+                'total_items' => $totalItems,
+                'percentage' => $percentage,
+                'icon' => 'tasks',
+                'color' => 'yellow'
+            ]
+        );
+    }
 }

@@ -9,10 +9,20 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Client;
 use App\Models\ClientAppointment;
 use App\Models\Holiday;
+use App\Models\Task;
+use App\Models\Feedback;
+use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
 
 class ClientAppointmentController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     /**
      * Display client dashboard with appointments
      */
@@ -48,7 +58,32 @@ class ClientAppointmentController extends Controller
             ->whereIn('status', ['pending', 'confirmed'])
             ->orderBy('service_date', 'asc')
             ->orderBy('service_time', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($appointment) {
+                // Load related task with checklist completions for progress tracking
+                $relatedTask = Task::with('checklistCompletions')
+                    ->where('client_id', $appointment->client_id)
+                    ->whereDate('scheduled_date', $appointment->service_date)
+                    ->where('task_description', 'like', '%' . $appointment->service_type . '%')
+                    ->first();
+
+                if ($relatedTask) {
+                    $completedItems = $relatedTask->checklistCompletions
+                        ->where('is_completed', true)
+                        ->pluck('checklist_item_id')
+                        ->toArray();
+
+                    $appointment->checklist_completions = $completedItems;
+                    $appointment->task_id = $relatedTask->id;
+                    $appointment->task_status = $relatedTask->status;
+                } else {
+                    $appointment->checklist_completions = [];
+                    $appointment->task_id = null;
+                    $appointment->task_status = null;
+                }
+
+                return $appointment;
+            });
 
         // Calculate statistics
         $allAppointments = ClientAppointment::where('client_id', $client->id)->get();
@@ -119,6 +154,29 @@ class ClientAppointmentController extends Controller
                 } else {
                     $appointment->assigned_members = [];
                 }
+
+                // Load related task with checklist completions for progress tracking
+                $relatedTask = Task::with('checklistCompletions')
+                    ->where('client_id', $appointment->client_id)
+                    ->whereDate('scheduled_date', $appointment->service_date)
+                    ->where('task_description', 'like', '%' . $appointment->service_type . '%')
+                    ->first();
+
+                if ($relatedTask) {
+                    $completedItems = $relatedTask->checklistCompletions
+                        ->where('is_completed', true)
+                        ->pluck('checklist_item_id')
+                        ->toArray();
+
+                    $appointment->checklist_completions = $completedItems;
+                    $appointment->task_id = $relatedTask->id;
+                    $appointment->task_status = $relatedTask->status;
+                } else {
+                    $appointment->checklist_completions = [];
+                    $appointment->task_id = null;
+                    $appointment->task_status = null;
+                }
+
                 return $appointment;
             });
 
@@ -135,9 +193,12 @@ class ClientAppointmentController extends Controller
             'cancelled' => $appointments->where('status', 'cancelled')->count(),
         ];
 
-        // Fetch completed appointments for rating
+        // Fetch completed appointments for rating (exclude already rated ones)
         $completedAppointments = ClientAppointment::where('client_id', $client->id)
             ->where('status', 'completed')
+            ->whereDoesntHave('clientFeedback', function ($query) use ($client) {
+                $query->where('client_id', $client->id);
+            })
             ->orderBy('service_date', 'desc')
             ->orderBy('service_time', 'desc')
             ->get();
@@ -372,6 +433,10 @@ class ClientAppointmentController extends Controller
 
             DB::commit();
 
+            // Notify all admins about the new appointment
+            $clientName = $client->first_name . ' ' . $client->last_name;
+            $this->notificationService->notifyAdminsNewAppointment($appointment, $clientName);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Appointment request submitted successfully! Waiting for admin approval.',
@@ -392,6 +457,155 @@ class ClientAppointmentController extends Controller
                 'success' => false,
                 'message' => 'Failed to book appointment. Please try again.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancel an appointment
+     */
+    public function cancel($id)
+    {
+        try {
+            $user = Auth::user();
+            $client = $user ? $user->client : null;
+
+            if (!$client) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Client not found'
+                ], 404);
+            }
+
+            $appointment = ClientAppointment::where('id', $id)
+                ->where('client_id', $client->id)
+                ->first();
+
+            if (!$appointment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Appointment not found'
+                ], 404);
+            }
+
+            if ($appointment->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only pending appointments can be cancelled'
+                ], 400);
+            }
+
+            $appointment->update(['status' => 'cancelled']);
+
+            Log::info('Appointment cancelled by client', [
+                'appointment_id' => $appointment->id,
+                'client_id' => $client->id
+            ]);
+
+            // Notify all admins about the cancellation
+            $clientName = $client->first_name . ' ' . $client->last_name;
+            $this->notificationService->notifyAdminsAppointmentCancelled($appointment, $clientName);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Appointment cancelled successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to cancel appointment', [
+                'appointment_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to cancel appointment'
+            ], 500);
+        }
+    }
+
+    /**
+     * Store feedback for a completed appointment
+     */
+    public function storeFeedback(Request $request, $id)
+    {
+        try {
+            $user = Auth::user();
+            $client = $user ? $user->client : null;
+
+            if (!$client) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Client not found'
+                ], 404);
+            }
+
+            $appointment = ClientAppointment::where('id', $id)
+                ->where('client_id', $client->id)
+                ->where('status', 'completed')
+                ->first();
+
+            if (!$appointment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Completed appointment not found'
+                ], 404);
+            }
+
+            // Check if feedback already exists for this appointment
+            $existingFeedback = Feedback::where('appointment_id', $id)
+                ->where('client_id', $client->id)
+                ->first();
+
+            if ($existingFeedback) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have already submitted feedback for this appointment'
+                ], 400);
+            }
+
+            // Validate the request
+            $validated = $request->validate([
+                'rating' => 'required|integer|min:1|max:5',
+                'keywords' => 'nullable|array',
+                'keywords.*' => 'string',
+                'feedback_text' => 'nullable|string|max:1000'
+            ]);
+
+            // Create the feedback
+            $feedback = Feedback::create([
+                'client_id' => $client->id,
+                'appointment_id' => $appointment->id,
+                'service_type' => $appointment->service_type,
+                'user_type' => 'client',
+                'rating' => $validated['rating'],
+                'overall_rating' => $validated['rating'],
+                'keywords' => $validated['keywords'] ?? [],
+                'feedback_text' => $validated['feedback_text'] ?? null,
+                'comments' => $validated['feedback_text'] ?? null,
+            ]);
+
+            Log::info('Client feedback submitted', [
+                'feedback_id' => $feedback->id,
+                'appointment_id' => $appointment->id,
+                'client_id' => $client->id,
+                'rating' => $validated['rating']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Thank you for your feedback!'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to submit feedback', [
+                'appointment_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to submit feedback. Please try again.'
             ], 500);
         }
     }

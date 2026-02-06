@@ -339,17 +339,21 @@
                         $checklistItems = $checklistTemplates[$serviceType] ?? $checklistTemplates['general_cleaning'];
                     @endphp
 
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                        This checklist shows the tasks to be completed by the assigned employee (read-only view).
+                    </p>
                     <div class="space-y-2">
                         @forelse($checklistItems as $index => $item)
-                            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <div class="flex items-start gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                                <!-- Read-only status icon -->
                                 <div class="flex items-center h-5 mt-0.5">
-                                    <input type="checkbox" id="appt-checklist-{{ $index }}"
-                                        class="appt-checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 cursor-pointer"
-                                        onchange="updateApptChecklistProgress()">
+                                    <div class="w-4 h-4 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center">
+                                        <i class="fas fa-circle text-gray-400 dark:text-gray-500 text-[5px]"></i>
+                                    </div>
                                 </div>
-                                <label for="appt-checklist-{{ $index }}" class="flex-1 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                <span class="flex-1 text-sm text-gray-700 dark:text-gray-300">
                                     {{ $item }}
-                                </label>
+                                </span>
                             </div>
                         @empty
                             <div class="text-center py-6">
@@ -362,17 +366,15 @@
                     @if(count($checklistItems) > 0)
                         <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Checklist Items</span>
                                 <span class="text-sm text-gray-500 dark:text-gray-400">
-                                    <span id="appt-checklist-completed">0</span> of
-                                    <span id="appt-checklist-total">{{ count($checklistItems) }}</span> completed
+                                    {{ count($checklistItems) }} items total
                                 </span>
                             </div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div id="appt-checklist-progress-bar"
-                                    class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                    style="width: 0%"></div>
-                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                <i class="fi fi-rr-info-circle mr-1"></i>
+                                Progress will be tracked when the employee starts the task.
+                            </p>
                         </div>
                     @endif
                 </div>
@@ -757,36 +759,5 @@
             }
         }
 
-        // Checklist progress tracking
-        function updateApptChecklistProgress() {
-            const checkboxes = document.querySelectorAll('.appt-checklist-item');
-            const total = checkboxes.length;
-            const completed = document.querySelectorAll('.appt-checklist-item:checked').length;
-            const percentage = total > 0 ? (completed / total) * 100 : 0;
-
-            // Update counter
-            const completedEl = document.getElementById('appt-checklist-completed');
-            const totalEl = document.getElementById('appt-checklist-total');
-            const progressBar = document.getElementById('appt-checklist-progress-bar');
-
-            if (completedEl) completedEl.textContent = completed;
-            if (totalEl) totalEl.textContent = total;
-            if (progressBar) {
-                progressBar.style.width = percentage + '%';
-                // Change color when complete
-                if (percentage === 100) {
-                    progressBar.classList.remove('bg-blue-600');
-                    progressBar.classList.add('bg-green-500');
-                } else {
-                    progressBar.classList.remove('bg-green-500');
-                    progressBar.classList.add('bg-blue-600');
-                }
-            }
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            updateApptChecklistProgress();
-        });
     </script>
 </x-layouts.general-employer>

@@ -31,7 +31,7 @@ class DashboardController extends Controller
             ->get();
             
         // === TASK DATA ===
-        $tasksFromDb = Task::with(['location.contractedClient', 'client.user', 'optimizationTeam.members.employee.user'])
+        $tasksFromDb = Task::with(['location.contractedClient', 'client.user', 'optimizationTeam.members.employee.user', 'checklistCompletions'])
             ->whereBetween('scheduled_date', [
                 Carbon::now()->startOfMonth(),
                 Carbon::now()->endOfMonth()
@@ -63,13 +63,27 @@ class DashboardController extends Controller
                     ->toArray();
             }
 
+            // Get checklist completions
+            $checklistCompletions = $task->checklistCompletions
+                ->where('is_completed', true)
+                ->pluck('checklist_item_id')
+                ->toArray();
+
+            // Calculate due time as started_at + estimated_duration_minutes
+            $dueTime = null;
+            if ($task->started_at && $task->estimated_duration_minutes) {
+                $dueTime = Carbon::parse($task->started_at)->addMinutes($task->estimated_duration_minutes)->format('g:i A');
+            } elseif ($task->scheduled_time) {
+                $dueTime = $task->scheduled_time;
+            }
+
             return [
                 'id' => $index,
                 'service' => $task->task_description,
                 'status' => $task->status,
                 'description' => $clientName,
                 'service_date' => $task->scheduled_date ? Carbon::parse($task->scheduled_date)->format('M d, Y') : null,
-                'service_time' => $task->scheduled_time ?? null,
+                'service_time' => $dueTime,
                 'action_onclick' => "openTaskModal({$index})",
                 'action_label' => 'View Details',
                 // Store full task details for modal
@@ -78,12 +92,14 @@ class DashboardController extends Controller
                     'client' => $clientName,
                     'service_type' => $task->task_description,
                     'service_date' => $task->scheduled_date ? Carbon::parse($task->scheduled_date)->format('M d, Y') : 'N/A',
-                    'service_time' => $task->scheduled_time ?? 'N/A',
-                    'start_date' => $task->started_at ? Carbon::parse($task->started_at)->format('M d, Y') : 'N/A',
-                    'end_date' => $task->completed_at ? Carbon::parse($task->completed_at)->format('M d, Y') : 'N/A',
+                    'service_time' => $dueTime ?? 'N/A',
+                    'estimated_duration' => $task->estimated_duration_minutes ? $task->estimated_duration_minutes . ' minutes' : 'N/A',
+                    'start_date' => $task->started_at ? Carbon::parse($task->started_at)->format('M d, Y g:i A') : 'N/A',
+                    'end_date' => $task->completed_at ? Carbon::parse($task->completed_at)->format('M d, Y g:i A') : 'N/A',
                     'team_name' => $task->optimizationTeam ? $task->optimizationTeam->team_name : 'N/A',
                     'team_members' => $teamMembers,
-                    'status' => $task->status
+                    'status' => $task->status,
+                    'checklist_completions' => $checklistCompletions
                 ]
             ];
         })->values()->toArray();

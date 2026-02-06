@@ -566,6 +566,26 @@
                 return this.getChecklistItems(serviceType);
             },
 
+            // Check if a specific checklist item is completed
+            isChecklistItemCompleted(itemIndex) {
+                if (!this.selectedActivity) return false;
+                const completions = this.selectedActivity.checklist_completions || [];
+                return completions.includes(itemIndex);
+            },
+
+            // Get checklist progress stats
+            getDrawerChecklistProgress() {
+                if (!this.selectedActivity) return { completed: 0, total: 0, percentage: 0 };
+
+                const checklistItems = this.getDrawerChecklistItems();
+                const total = checklistItems.length;
+                const completions = this.selectedActivity.checklist_completions || [];
+                const completed = completions.length;
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                return { completed, total, percentage };
+            },
+
             formatDrawerDate(dateString) {
                 if (!dateString) return '-';
                 const date = new Date(dateString);
