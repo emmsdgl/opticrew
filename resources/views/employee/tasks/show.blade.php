@@ -599,16 +599,105 @@
                                 <!-- Checklist Items -->
                                 <div class="space-y-3">
                                     @php
-                                        // CHANGE, SHOULD BE FROM THE DATABASE
-                                        $checklistItems = [
-                                            'Remove clutter and movable items',
-                                            'Wipe walls, doors, door frames, and switches',
-                                            'Vacuum sofas, chairs, and cushions',
-                                            'Deep vacuum carpets / mop hard floors',
-                                            'Clean shower area (tiles, glass, fixtures)',
-                                            'Dust and Sanitize furniture surfaces and shelves',
-                                            'Report damages or issues (if any)',
+                                        // Checklist templates organized by service type
+                                        $checklistTemplates = [
+                                            'daily_cleaning' => [
+                                                'Sweep and mop floors',
+                                                'Vacuum carpets/rugs',
+                                                'Dust furniture and surfaces',
+                                                'Wipe tables and countertops',
+                                                'Empty trash bins',
+                                                'Wipe kitchen counters',
+                                                'Clean sink',
+                                                'Wash visible dishes',
+                                                'Wipe appliance exteriors',
+                                                'Clean toilet and sink',
+                                                'Wipe mirrors',
+                                                'Mop floor',
+                                                'Organize cluttered areas',
+                                                'Light deodorizing',
+                                            ],
+                                            'snowout_cleaning' => [
+                                                'Remove mud, water, and debris',
+                                                'Clean door mats',
+                                                'Mop and dry floors',
+                                                'Deep vacuum carpets',
+                                                'Mop with disinfectant solution',
+                                                'Wipe walls near entrances',
+                                                'Dry wet surfaces',
+                                                'Check for water accumulation',
+                                                'Clean and sanitize affected areas',
+                                                'Dispose of tracked-in debris',
+                                                'Replace trash liners',
+                                            ],
+                                            'deep_cleaning' => [
+                                                'Dust high and low areas (vents, corners, baseboards)',
+                                                'Clean behind and under furniture',
+                                                'Wash walls and remove stains',
+                                                'Deep vacuum carpets',
+                                                'Clean inside microwave',
+                                                'Degrease stove and range hood',
+                                                'Clean inside refrigerator (if included)',
+                                                'Scrub tile grout',
+                                                'Remove limescale and mold buildup',
+                                                'Deep scrub tiles and grout',
+                                                'Sanitize all fixtures thoroughly',
+                                                'Clean window interiors',
+                                                'Polish handles and knobs',
+                                                'Disinfect frequently touched surfaces',
+                                            ],
+                                            'general_cleaning' => [
+                                                'Dust surfaces',
+                                                'Sweep/vacuum floors',
+                                                'Mop hard floors',
+                                                'Clean glass and mirrors',
+                                                'Wipe countertops',
+                                                'Clean sink',
+                                                'Take out trash',
+                                                'Clean toilet, sink, and mirror',
+                                                'Mop floor',
+                                                'Arrange items neatly',
+                                                'Dispose of garbage',
+                                                'Light air freshening',
+                                            ],
+                                            'hotel_cleaning' => [
+                                                'Make bed with fresh linens',
+                                                'Replace pillowcases and sheets',
+                                                'Dust all surfaces (tables, headboard, shelves)',
+                                                'Vacuum carpet / sweep & mop floor',
+                                                'Clean mirrors and glass surfaces',
+                                                'Check under bed for trash/items',
+                                                'Empty trash bins and replace liners',
+                                                'Clean and disinfect toilet',
+                                                'Scrub shower walls, tub, and floor',
+                                                'Clean sink and countertop',
+                                                'Polish fixtures',
+                                                'Replace towels, bath mat, tissue, and toiletries',
+                                                'Mop bathroom floor',
+                                                'Refill water, coffee, and room amenities',
+                                                'Replace slippers and hygiene kits',
+                                                'Check minibar (if applicable)',
+                                                'Ensure lights, AC, TV working',
+                                                'Arrange curtains neatly',
+                                                'Deodorize room',
+                                            ],
                                         ];
+
+                                        // Determine service type from task description
+                                        $taskDescription = strtolower($task->task_description ?? '');
+                                        $serviceType = 'general_cleaning'; // Default
+
+                                        if (str_contains($taskDescription, 'daily') || str_contains($taskDescription, 'routine')) {
+                                            $serviceType = 'daily_cleaning';
+                                        } elseif (str_contains($taskDescription, 'snowout') || str_contains($taskDescription, 'weather')) {
+                                            $serviceType = 'snowout_cleaning';
+                                        } elseif (str_contains($taskDescription, 'deep')) {
+                                            $serviceType = 'deep_cleaning';
+                                        } elseif (str_contains($taskDescription, 'hotel') || str_contains($taskDescription, 'room turnover')) {
+                                            $serviceType = 'hotel_cleaning';
+                                        }
+
+                                        $checklistItems = $checklistTemplates[$serviceType] ?? $checklistTemplates['general_cleaning'];
                                     @endphp
 
                                     @forelse($checklistItems as $index => $item)
@@ -772,11 +861,29 @@
                             Rooms/Units (1)
                         </label>
                         <p class="text-sm font-medium text-gray-900 dark:text-white">
-                            @if($task->location)
-                                <span
-                                    class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                                    <i class="fas fa-map-marker-alt text-blue-500 mr-1.5 text-xs"></i>
-                                    {{ $task->location->location_name }}
+                            @php
+                                // Get room/cabin name
+                                $roomName = null;
+                                if ($task->location) {
+                                    // For contracted clients - use location name
+                                    $roomName = $task->location->location_name;
+                                } else {
+                                    // For external clients - extract cabin name from task_description
+                                    // Format: "ServiceType - CabinName" e.g. "Deep Cleaning - Kelo A"
+                                    if (preg_match('/^(.+?)\s*-\s*(.+)$/', $task->task_description, $matches)) {
+                                        $roomName = trim($matches[2]);
+                                    }
+                                }
+                            @endphp
+                            @if($roomName)
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                    <i class="fas fa-door-open text-blue-500 mr-1.5 text-xs"></i>
+                                    {{ $roomName }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                    <i class="fas fa-door-open text-gray-500 mr-1.5 text-xs"></i>
+                                    No room specified
                                 </span>
                             @endif
                         </p>

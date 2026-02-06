@@ -79,6 +79,11 @@
                         label="Pending"
                         colorClass="bg-[#FFA50020] text-[#FFA500]"
                         size="text-xs" />
+                @elseif($appointment->status === 'approved')
+                    <x-badge
+                        label="Approved"
+                        colorClass="bg-[#2FBC0020] text-[#2FBC00]"
+                        size="text-xs" />
                 @elseif($appointment->status === 'confirmed')
                     <x-badge
                         label="Confirmed"
@@ -92,6 +97,11 @@
                 @elseif($appointment->status === 'cancelled')
                     <x-badge
                         label="Cancelled"
+                        colorClass="bg-[#FE1E2820] text-[#FE1E28]"
+                        size="text-xs" />
+                @elseif($appointment->status === 'rejected')
+                    <x-badge
+                        label="Rejected"
                         colorClass="bg-[#FE1E2820] text-[#FE1E28]"
                         size="text-xs" />
                 @endif
@@ -277,12 +287,16 @@
                         <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Status:</span>
                         <span x-show="selectedAppointment && selectedAppointment.status === 'pending'"
                             class="px-3 py-1 text-xs rounded-full bg-[#FFA50020] text-[#FFA500] font-semibold">Pending</span>
+                        <span x-show="selectedAppointment && selectedAppointment.status === 'approved'"
+                            class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Approved</span>
                         <span x-show="selectedAppointment && selectedAppointment.status === 'confirmed'"
                             class="px-3 py-1 text-xs rounded-full bg-[#2FBC0020] text-[#2FBC00] font-semibold">Confirmed</span>
                         <span x-show="selectedAppointment && selectedAppointment.status === 'completed'"
                             class="px-3 py-1 text-xs rounded-full bg-[#00BFFF20] text-[#00BFFF] font-semibold">Completed</span>
                         <span x-show="selectedAppointment && selectedAppointment.status === 'cancelled'"
                             class="px-3 py-1 text-xs rounded-full bg-[#FE1E2820] text-[#FE1E28] font-semibold">Cancelled</span>
+                        <span x-show="selectedAppointment && selectedAppointment.status === 'rejected'"
+                            class="px-3 py-1 text-xs rounded-full bg-[#FE1E2820] text-[#FE1E28] font-semibold">Rejected</span>
                     </div>
                 </div>
 
@@ -372,6 +386,23 @@
                         x-text="selectedAppointment?.special_requests || '-'"></p>
                 </div>
 
+                <!-- Service Checklist Section -->
+                <div class="mb-5" x-data="serviceChecklist()">
+                    <div class="py-3">
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Service Checklist</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Tasks to be performed for this service</p>
+                    </div>
+
+                    <div class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <template x-for="(item, index) in getChecklistItems(selectedAppointment?.service_type)" :key="index">
+                            <div class="flex items-center gap-2 py-1.5">
+                                <i class="fa-solid fa-check-circle text-green-500 text-xs"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" x-text="item"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
                 <!-- Total Amount -->
                 <div class="my-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div class="flex justify-between items-center">
@@ -415,6 +446,111 @@ function cancelAppointment(appointmentId) {
         alert('Appointment #' + appointmentId + ' has been cancelled');
         // Reload page to reflect changes
         // window.location.reload();
+    }
+}
+
+function serviceChecklist() {
+    return {
+        checklistTemplates: {
+            daily_cleaning: [
+                'Sweep and mop floors',
+                'Vacuum carpets/rugs',
+                'Dust furniture and surfaces',
+                'Wipe tables and countertops',
+                'Empty trash bins',
+                'Wipe kitchen counters',
+                'Clean sink',
+                'Wash visible dishes',
+                'Wipe appliance exteriors',
+                'Clean toilet and sink',
+                'Wipe mirrors',
+                'Mop floor',
+                'Organize cluttered areas',
+                'Light deodorizing',
+            ],
+            snowout_cleaning: [
+                'Remove mud, water, and debris',
+                'Clean door mats',
+                'Mop and dry floors',
+                'Deep vacuum carpets',
+                'Mop with disinfectant solution',
+                'Wipe walls near entrances',
+                'Dry wet surfaces',
+                'Check for water accumulation',
+                'Clean and sanitize affected areas',
+                'Dispose of tracked-in debris',
+                'Replace trash liners',
+            ],
+            deep_cleaning: [
+                'Dust high and low areas (vents, corners, baseboards)',
+                'Clean behind and under furniture',
+                'Wash walls and remove stains',
+                'Deep vacuum carpets',
+                'Clean inside microwave',
+                'Degrease stove and range hood',
+                'Clean inside refrigerator (if included)',
+                'Scrub tile grout',
+                'Remove limescale and mold buildup',
+                'Deep scrub tiles and grout',
+                'Sanitize all fixtures thoroughly',
+                'Clean window interiors',
+                'Polish handles and knobs',
+                'Disinfect frequently touched surfaces',
+            ],
+            general_cleaning: [
+                'Dust surfaces',
+                'Sweep/vacuum floors',
+                'Mop hard floors',
+                'Clean glass and mirrors',
+                'Wipe countertops',
+                'Clean sink',
+                'Take out trash',
+                'Clean toilet, sink, and mirror',
+                'Mop floor',
+                'Arrange items neatly',
+                'Dispose of garbage',
+                'Light air freshening',
+            ],
+            hotel_cleaning: [
+                'Make bed with fresh linens',
+                'Replace pillowcases and sheets',
+                'Dust all surfaces (tables, headboard, shelves)',
+                'Vacuum carpet / sweep & mop floor',
+                'Clean mirrors and glass surfaces',
+                'Check under bed for trash/items',
+                'Empty trash bins and replace liners',
+                'Clean and disinfect toilet',
+                'Scrub shower walls, tub, and floor',
+                'Clean sink and countertop',
+                'Polish fixtures',
+                'Replace towels, bath mat, tissue, and toiletries',
+                'Mop bathroom floor',
+                'Refill water, coffee, and room amenities',
+                'Replace slippers and hygiene kits',
+                'Check minibar (if applicable)',
+                'Ensure lights, AC, TV working',
+                'Arrange curtains neatly',
+                'Deodorize room',
+            ],
+        },
+
+        getChecklistItems(serviceType) {
+            if (!serviceType) return this.checklistTemplates.general_cleaning;
+
+            const type = serviceType.toLowerCase();
+
+            if (type.includes('daily') || type.includes('routine')) {
+                return this.checklistTemplates.daily_cleaning;
+            } else if (type.includes('snowout') || type.includes('weather')) {
+                return this.checklistTemplates.snowout_cleaning;
+            } else if (type.includes('deep')) {
+                return this.checklistTemplates.deep_cleaning;
+            } else if (type.includes('hotel') || type.includes('room turnover')) {
+                return this.checklistTemplates.hotel_cleaning;
+            }
+
+            return this.checklistTemplates.general_cleaning;
+        }
     }
 }
 </script>

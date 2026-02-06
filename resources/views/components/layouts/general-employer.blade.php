@@ -5,7 +5,7 @@
         $navOptions = [
             ['label' => 'Dashboard', 'icon' => 'fa-solid fa-house', 'href' => route('admin.dashboard')],
             ['label' => 'Accounts', 'icon' => 'fa-users', 'href' => route('admin.accounts.index')],
-            ['label' => 'Tasks', 'icon' => 'fa-solid fa-list-check', 'href' => route('admin.tasks')],
+            ['label' => 'Tasks', 'icon' => 'fa-list-check', 'href' => route('admin.tasks')],
             [
                 'label' => 'Appointments',
                 'icon' => 'fa-calendar-check',

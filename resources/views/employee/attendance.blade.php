@@ -85,7 +85,42 @@
         <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
             <x-labelwithvalue label="Summary" count="" />
 
-            <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 p-6">
+            @php
+                $shiftStart = $employee->shift_start ?? '11:00';
+                $shiftEnd = $employee->shift_end ?? '19:00';
+
+                // Calculate time values
+                $now = \Carbon\Carbon::now();
+                $shiftEndTime = \Carbon\Carbon::today()->setTimeFromTimeString($shiftEnd);
+                $shiftStartTime = \Carbon\Carbon::today()->setTimeFromTimeString($shiftStart);
+
+                // Shift Start subtitle
+                if ($now->lt($shiftStartTime)) {
+                    $startMinutes = $now->diffInMinutes($shiftStartTime);
+                    $startHours = floor($startMinutes / 60);
+                    $startMins = $startMinutes % 60;
+                    $shiftStartSubtitle = 'Starts in ' . $startHours . 'h ' . $startMins . 'm';
+                } else {
+                    $shiftStartSubtitle = 'Shift started';
+                }
+
+                // Shift End subtitle
+                if ($now->lt($shiftStartTime)) {
+                    $shiftEndSubtitle = 'Not started yet';
+                } elseif ($now->gt($shiftEndTime)) {
+                    $shiftEndSubtitle = 'Shift ended';
+                } else {
+                    $remainingMinutes = $now->diffInMinutes($shiftEndTime);
+                    $remainingHours = floor($remainingMinutes / 60);
+                    $remainingMins = $remainingMinutes % 60;
+                    $shiftEndSubtitle = $remainingHours . 'h ' . $remainingMins . 'm remaining';
+                }
+
+                $shiftStartValue = \Carbon\Carbon::createFromFormat('H:i', $shiftStart)->format('g:i A');
+                $shiftEndValue = \Carbon\Carbon::createFromFormat('H:i', $shiftEnd)->format('g:i A');
+            @endphp
+
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 p-6">
                 @foreach($stats as $stat)
                     <x-statisticscard
                         :title="$stat['title']"
@@ -101,9 +136,28 @@
                         :value-prefix="$stat['valuePrefix'] ?? ''"
                     />
                 @endforeach
+
+                <!-- Shift Start Card -->
+                <x-statisticscard
+                    title="Shift Start"
+                    :value="$shiftStartValue"
+                    :subtitle="$shiftStartSubtitle"
+                    icon="fa-solid fa-play"
+                    icon-bg="bg-blue-100 dark:bg-blue-900/30"
+                    icon-color="text-blue-600 dark:text-blue-400"
+                />
+
+                <!-- Shift End Card -->
+                <x-statisticscard
+                    title="Shift End"
+                    :value="$shiftEndValue"
+                    :subtitle="$shiftEndSubtitle"
+                    icon="fa-solid fa-stop"
+                    icon-bg="bg-blue-100 dark:bg-blue-900/30"
+                    icon-color="text-blue-600 dark:text-blue-400"
+                />
             </div>
         </div>
-
         <!-- Inner Panel - Attendance Records List -->
         <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
             <x-labelwithvalue label="Attendance Logs" count="({{ count($attendanceRecords) }})" />

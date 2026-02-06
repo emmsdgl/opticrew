@@ -37,12 +37,12 @@
             </svg>
         </div>
         <div class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
-            Time In
+            Clock In
             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M5 12a1 1 0 102 0V6.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L5 6.414V12zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"/>
             </svg>
         </div>
-        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Time Out</div>
+        <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Clock Out</div>
         <div class="text-xs font-semibold text-gray-700 dark:text-gray-300">Hours Worked</div>
         <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center">Action</div>
     </div>
@@ -72,9 +72,15 @@
                             size="text-xs" />
                 </template>
                 <template x-if="status === 'absent'">
-                        <x-badge 
-                            label="Absent" 
-                            colorClass="bg-[#FE1E2820] text-[#FE1E28]" 
+                        <x-badge
+                            label="Absent"
+                            colorClass="bg-[#FE1E2820] text-[#FE1E28]"
+                            size="text-xs" />
+                </template>
+                <template x-if="status === 'not_clocked_in'">
+                        <x-badge
+                            label="Not Clocked In"
+                            colorClass="bg-[#6B728020] text-[#6B7280]"
                             size="text-xs" />
                 </template>
             </div>
