@@ -226,7 +226,7 @@
             <!-- Inner Bottom - Appointments List -->
             <div class="flex flex-col">
                 <div class="flex flex-row justify-between">
-                    <x-labelwithvalue label="Ongoing Appointments" :count="'(' . $stats['ongoing'] . ')'" />
+                    <x-labelwithvalue label="Appointments Today" :count="'(' . $stats['ongoing'] . ')'" />
                     <div class="flex flex-row gap-2">
                         <!-- Filter by Status Dropdown -->
                         <div class="relative" x-data="{ open: false }">

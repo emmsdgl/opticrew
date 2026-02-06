@@ -41,7 +41,10 @@
              @scroll.window="openMenuId = null"
              @scroll="openMenuId = null">
             @foreach($items as $index => $item)
-            <div class="group border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+            <div class="group border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
+                 data-rate-item
+                 data-service="{{ $item['service'] ?? '' }}"
+                 data-date="{{ $item['raw_date'] ?? '' }}">
                 <div class="py-6 px-6">
                     <!-- Header Section -->
                     <div class="flex items-center justify-between">

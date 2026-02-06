@@ -15,7 +15,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Send clock in reminders every weekday morning at 7:00 AM
+        $schedule->command('notifications:clock-in-reminders')
+            ->weekdays()
+            ->at('07:00')
+            ->withoutOverlapping();
     }
 
     /**

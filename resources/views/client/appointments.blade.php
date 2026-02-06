@@ -377,6 +377,100 @@
 
             console.log('Appointments filtered by service successfully');
         }
+
+        // Filter rate list by service type
+        window.filterRateListByService = function(serviceType) {
+            console.log('Filtering rate list by service:', serviceType);
+
+            const listContainer = document.getElementById('rate-list-container');
+            if (!listContainer) {
+                console.error('Rate list container not found');
+                return;
+            }
+
+            const rateItems = Array.from(listContainer.querySelectorAll('[data-rate-item]'));
+            console.log('Found rate items:', rateItems.length);
+
+            if (rateItems.length === 0) {
+                console.log('No rate items to filter');
+                return;
+            }
+
+            rateItems.forEach(item => {
+                const service = item.getAttribute('data-service') || '';
+
+                if (serviceType === 'all') {
+                    item.style.display = '';
+                } else {
+                    if (service.toLowerCase().includes(serviceType.toLowerCase())) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+
+            console.log('Rate list filtered by service successfully');
+        }
+
+        // Sort rate list
+        window.sortRateList = function(field, direction) {
+            console.log('Sorting rate list:', field, direction);
+
+            const listContainer = document.getElementById('rate-list-container');
+            if (!listContainer) {
+                console.error('Rate list container not found');
+                return;
+            }
+
+            const rateItems = Array.from(listContainer.querySelectorAll('[data-rate-item]'));
+            console.log('Found rate items:', rateItems.length);
+
+            if (rateItems.length === 0) {
+                console.log('No rate items to sort');
+                return;
+            }
+
+            rateItems.sort((a, b) => {
+                let valueA, valueB;
+
+                switch(field) {
+                    case 'service':
+                        valueA = (a.getAttribute('data-service') || '').toLowerCase();
+                        valueB = (b.getAttribute('data-service') || '').toLowerCase();
+                        break;
+                    case 'date':
+                        valueA = a.getAttribute('data-date') || '';
+                        valueB = b.getAttribute('data-date') || '';
+                        const dateA = new Date(valueA);
+                        const dateB = new Date(valueB);
+                        return direction === 'asc' ? dateA - dateB : dateB - dateA;
+                    default:
+                        return 0;
+                }
+
+                // String comparison
+                if (direction === 'asc') {
+                    return valueA.localeCompare(valueB);
+                } else {
+                    return valueB.localeCompare(valueA);
+                }
+            });
+
+            // Get the parent container for the rate items
+            const rateParent = rateItems[0]?.parentElement;
+            if (!rateParent) {
+                console.error('Rate parent not found');
+                return;
+            }
+
+            // Re-append items in sorted order
+            rateItems.forEach(item => {
+                rateParent.appendChild(item);
+            });
+
+            console.log('Rate list sorted successfully');
+        }
         </script>
 
         <!-- Inner Panel - Appointments History -->
@@ -487,9 +581,68 @@
 
         <!-- Inner Panel - Appointments to Rate -->
         <div class="flex flex-col gap-6 rounded-lg p-8 my-8">
-            <x-labelwithvalue label="Appointments To Rate" count="({{ $completedAppointments->count() ?? 0 }})" />
+            <div class="flex flex-row justify-between w-full items-center">
+                <x-labelwithvalue label="Appointments To Rate" count="({{ $completedAppointments->count() ?? 0 }})" />
+
+                <div class="flex flex-row gap-2">
+                    <!-- Filter by Service Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-broom text-xs"></i>
+                            <span class="text-xs">Filter by Service</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="filterRateListByService('all'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    All Services
+                                </button>
+                                <button type="button" @click="filterRateListByService('Deep Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Deep Cleaning
+                                </button>
+                                <button type="button" @click="filterRateListByService('Snowout Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Snowout Cleaning
+                                </button>
+                                <button type="button" @click="filterRateListByService('Daily Room Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Daily Room Cleaning
+                                </button>
+                                <button type="button" @click="filterRateListByService('Hotel Cleaning Service'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Hotel Cleaning Service
+                                </button>
+                                <button type="button" @click="filterRateListByService('Student Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Student Cleaning
+                                </button>
+                                <button type="button" @click="filterRateListByService('Final Cleaning'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    Final Cleaning
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort by Order Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sort-amount-down text-xs"></i>
+                            <span class="text-xs">Sort by Order</span>
+                            <i class="fas fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                            <div class="py-1">
+                                <button type="button" @click="sortRateList('date', 'desc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-down text-xs w-4"></i>
+                                    Newest First
+                                </button>
+                                <button type="button" @click="sortRateList('date', 'asc'); open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-arrow-up text-xs w-4"></i>
+                                    Oldest First
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
     
-            <div class="h-64 overflow-y-auto">
+            <div id="rate-list-container" class="h-64 overflow-y-auto">
                 @php
                     // Transform completed appointments to the format expected by the component
                     $services = $completedAppointments->map(function($appointment) {
@@ -499,6 +652,7 @@
                             'status' => 'Completed',
                             'service_date' => $appointment->service_date->format('M d, Y'),
                             'service_time' => \Carbon\Carbon::parse($appointment->service_time)->format('g:i A'),
+                            'raw_date' => $appointment->service_date->format('Y-m-d'),
                             'description' => $appointment->special_requests
                                 ? $appointment->special_requests
                                 : 'Cleaning service for ' . $appointment->number_of_units . ' unit(s) at ' . $appointment->cabin_name . ' (' . $appointment->unit_size . ' m²)',
