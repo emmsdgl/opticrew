@@ -35,19 +35,14 @@
             </div>
         @else
             {{-- Warning banner when not clocked in --}}
-            <div class="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500 rounded-lg">
+            <div class="mb-4 mx-5 p-6 bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500 rounded-lg">
                 <div class="flex flex-col sm:flex-row items-start gap-3">
                     <i class="fas fa-exclamation-triangle text-orange-500 text-xl mt-0.5"></i>
                     <div class="flex-1">
                         <h4 class="font-bold text-orange-800 dark:text-orange-300 text-sm">Clock In Required</h4>
                         <p class="text-orange-700 dark:text-orange-400 text-sm mt-1">
-                            You must clock in before starting tasks. All task actions will be disabled until you clock in.
+                            You must clock in on the attendance page before starting tasks. All task actions will be disabled until you clock in.
                         </p>
-                        <a href="{{ route('employee.dashboard') }}"
-                           class="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors">
-                            <i class="fas fa-arrow-left"></i>
-                            Go to Dashboard to Clock In
-                        </a>
                     </div>
                 </div>
             </div>

@@ -239,11 +239,12 @@ class AttendanceController extends Controller
         $attendanceRecords = $attendances->map(function ($attendance) {
             $clockIn = Carbon::parse($attendance->clock_in);
             $clockOut = $attendance->clock_out ? Carbon::parse($attendance->clock_out) : null;
-            
+            $isToday = $clockIn->isToday();
+
             // Determine status
             $status = 'present';
             $scheduledTime = $clockIn->copy()->setTime(11, 0); // Example: 11:00 AM scheduled time
-            
+
             if ($clockIn->gt($scheduledTime)) {
                 $minutesLate = $clockIn->diffInMinutes($scheduledTime);
                 $status = 'late';
@@ -279,7 +280,8 @@ class AttendanceController extends Controller
                 'timeOutNote' => '',
                 'hoursWorked' => $hoursWorkedText,
                 'timedIn' => true,
-                'isTimedOut' => $clockOut !== null
+                'isTimedOut' => $clockOut !== null,
+                'isToday' => $isToday
             ];
         })->toArray();
 
@@ -312,6 +314,14 @@ class AttendanceController extends Controller
                 'iconColor' => 'text-blue-600',
             ],
         ];
+
+        // --- Check today's attendance status for clock in/out buttons ---
+        $todayAttendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('clock_in', now()->toDateString())
+            ->first();
+
+        $isClockedIn = $todayAttendance && $todayAttendance->clock_out === null;
+        $hasAttendanceToday = $todayAttendance !== null;
 
         // --- Fetch Employee Requests (exclude cancelled) ---
         $employeeRequests = EmployeeRequest::where('employee_id', $employee->id)
@@ -357,7 +367,7 @@ class AttendanceController extends Controller
             ];
         })->toArray();
 
-        return view('employee.attendance', compact('stats', 'attendanceRecords', 'requestRecords'));
+        return view('employee.attendance', compact('stats', 'attendanceRecords', 'requestRecords', 'employee', 'isClockedIn', 'hasAttendanceToday'));
     }
 
     public function clockIn(Request $request)

@@ -109,17 +109,41 @@
             <!-- Action Button -->
             <div class="flex items-center justify-center">
                 <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 mr-2">Action:</span>
-                <button
-                    @click="$dispatch('open-modal', { date: date, timedIn: timedIn, isTimedOut: isTimedOut })"
-                    :disabled="isTimedOut"
-                    class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-                    :class="isTimedOut
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
-                        : (timedIn
-                            ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                            : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600')"
-                    x-text="buttonText">
-                </button>
+
+                <!-- Clock In Form (Today, not clocked in) -->
+                <template x-if="isToday && !timedIn && !isTimedOut">
+                    <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="w-full">
+                        @csrf
+                        <button type="submit"
+                            class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                            x-text="buttonText">
+                        </button>
+                    </form>
+                </template>
+
+                <!-- Clock Out Form (Today, clocked in) -->
+                <template x-if="isToday && timedIn && !isTimedOut">
+                    <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="w-full">
+                        @csrf
+                        <button type="submit"
+                            class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                            x-text="buttonText">
+                        </button>
+                    </form>
+                </template>
+
+                <!-- View Details Button (past records or completed) -->
+                <template x-if="!isToday || isTimedOut">
+                    <button
+                        @click="$dispatch('open-modal', { date: date, timedIn: timedIn, isTimedOut: isTimedOut })"
+                        :disabled="isTimedOut"
+                        class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                        :class="isTimedOut
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'"
+                        x-text="buttonText">
+                    </button>
+                </template>
             </div>
         </div>
         @endforeach
@@ -272,13 +296,17 @@ function attendanceRow(index, record) {
         hoursWorked: record.hoursWorked || null,
         timedIn: record.timedIn || false,
         isTimedOut: record.isTimedOut || false,
+        isToday: record.isToday || false,
         isHighlighted: false,
         customButtonLabel: record.buttonLabel || null,
 
         get buttonText() {
             if (this.customButtonLabel) return this.customButtonLabel;
-            if (this.isTimedOut) return 'Timed Out';
-            return this.timedIn ? 'View Details' : 'Time In';
+            if (this.isTimedOut) return 'Completed';
+            if (this.isToday) {
+                return this.timedIn ? 'Clock Out' : 'Clock In';
+            }
+            return 'View Details';
         },
         
         handleAction() {
