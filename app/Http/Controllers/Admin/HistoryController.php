@@ -144,6 +144,7 @@ class HistoryController extends Controller
         $tasks = Task::with([
             'location',
             'client',
+            'contractedClient',
             'optimizationTeam.members.employee.user',
             'optimizationTeam.car',
         ])
@@ -184,7 +185,7 @@ class HistoryController extends Controller
             $needsRating = $task->status === 'Completed' && !$task->hasReview();
 
             // Format the activity
-            $scheduledDateTime = $task->scheduled_date;
+            $scheduledDateTime = Carbon::parse($task->scheduled_date)->format('Y-m-d');
             if ($task->scheduled_time) {
                 $scheduledDateTime .= ' ' . Carbon::parse($task->scheduled_time)->format('H:i:s');
             }
@@ -203,7 +204,7 @@ class HistoryController extends Controller
                 'serviceTime' => $task->scheduled_time ? Carbon::parse($task->scheduled_time)->format('g:i A') : 'TBD',
                 'serviceType' => $task->task_description,
                 'location' => $task->location ? ($task->location->address ?? $task->location->location_name) : 'External Client',
-                'clientName' => $task->client ? $task->client->name : ($task->contractedClient->name ?? 'Unknown'),
+                'clientName' => $task->client ? $task->client->name : ($task->contractedClient?->name ?? 'Unknown'),
                 'totalAmount' => '€' . number_format($task->estimated_duration_minutes * 2, 2),
                 'payableAmount' => '€' . number_format($task->estimated_duration_minutes * 2, 2),
                 'assignedMembers' => $assignedMembers,
@@ -228,12 +229,22 @@ class HistoryController extends Controller
             // Determine if needs rating (appointments might not have reviews implemented yet)
             $needsRating = $appointment->status === 'completed';
 
+            // Get checklist items for appointment based on service type template
+            $serviceType = $this->getServiceType($appointment->service_type);
+            $template = $this->checklistTemplates[$serviceType] ?? $this->checklistTemplates['general_cleaning'];
+            $checklistItems = collect($template)->map(function ($itemName) {
+                return [
+                    'name' => $itemName,
+                    'completed' => false,
+                ];
+            })->values()->toArray();
+
             $activities->push([
                 'id' => $appointment->id,
                 'type' => 'appointment',
                 'icon' => $this->getServiceIcon($appointment->service_type),
                 'title' => $appointment->service_type . ' - ' . ($appointment->cabin_name ?? 'Booking'),
-                'date' => Carbon::parse($appointment->service_date . ' ' . ($appointment->service_time ?? '00:00:00'))->format('d M Y, g:i a'),
+                'date' => Carbon::parse(Carbon::parse($appointment->service_date)->format('Y-m-d') . ' ' . ($appointment->service_time ? Carbon::parse($appointment->service_time)->format('H:i:s') : '00:00:00'))->format('d M Y, g:i a'),
                 'price' => '€ ' . number_format($appointment->total_amount ?? 0, 2),
                 'status' => ucfirst($appointment->status),
                 'needsRating' => $needsRating,
@@ -246,7 +257,7 @@ class HistoryController extends Controller
                 'totalAmount' => '€' . number_format($appointment->total_amount ?? 0, 2),
                 'payableAmount' => '€' . number_format($appointment->quotation ?? 0, 2),
                 'assignedMembers' => $assignedMembers,
-                'checklist' => [], // Appointments don't have checklists in the current structure
+                'checklist' => $checklistItems,
             ]);
         }
 
