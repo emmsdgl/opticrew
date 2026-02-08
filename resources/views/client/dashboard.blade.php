@@ -297,8 +297,8 @@
                         </div>
                     </div>
                 </div>
-                <!-- Remove overflow-y-auto from here and add a wrapper inside the component -->
-                <div id="dashboard-appointments-list" class="h-48 overflow-y-auto">
+                <!-- Fixed height when items exist, auto height for empty state -->
+                <div id="dashboard-appointments-list" class="{{ $appointments->count() > 0 ? 'h-48 overflow-y-auto' : '' }}">
                     <x-client-components.appointment-page.appointment-overview-list :items="$appointments->map(function ($appointment) {
                         return [
                             'id' => $appointment->id,
@@ -367,8 +367,8 @@
                         <div class="mb-2">
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                 Currently
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">2 Cleaning<br>
-                                    Services</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">{{ $stats['ongoing'] ?? 0 }} Active<br>
+                                    {{ Str::plural('Service', $stats['ongoing'] ?? 0) }}</span>
                             </p>
                             <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                                 Choose your preferred date, select your unit size, and we'll take care of the
@@ -379,9 +379,9 @@
                 </div>
             </div>
             <!-- Inner Up - Recommendation Service List -->
-            <div class="mt-3 w-full flex flex-col overflow-y-auto rounded-lg h-full sm:h-full md:h-full">
+            <div class="mt-3 w-full flex flex-col rounded-lg {{ $appointments->count() > 0 ? 'max-h-96 overflow-y-auto' : '' }}">
                 <div
-                    class="flex flex-col gap-6 overflow-y-auto snap-x snap-mandatory scroll-smooth scrollbar-custom w-full">
+                    class="flex flex-col gap-6 snap-x snap-mandatory scroll-smooth scrollbar-custom w-full">
 
                     @php
                         $finalCleaningRating = \App\Models\Feedback::averageRatingForService('Final Cleaning');
@@ -408,6 +408,74 @@
                             <x-client-components.dashboard-page.servicecard :service="$service" />
                         </div>
                     @endforeach
+                </div>
+            </div>
+
+            <!-- Services Availed Card -->
+            @php
+                $breakdown = $serviceBreakdown ?? ['completed_total' => 0, 'final_cleaning' => 0, 'deep_cleaning' => 0, 'other' => 0, 'month_change' => 0];
+                $completedTotal = $breakdown['completed_total'];
+                $allTotal = $stats['total'] ?? 0;
+                $completionRate = $allTotal > 0 ? round(($completedTotal / $allTotal) * 100) : 0;
+                $finalPct = $completedTotal > 0 ? round(($breakdown['final_cleaning'] / $completedTotal) * 100) : 0;
+                $deepPct = $completedTotal > 0 ? round(($breakdown['deep_cleaning'] / $completedTotal) * 100) : 0;
+                $otherPct = $completedTotal > 0 ? (100 - $finalPct - $deepPct) : 0;
+                $monthChange = $breakdown['month_change'];
+            @endphp
+            <div class="mt-3 w-full relative overflow-hidden rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Services Availed</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Represents completion rate of your booked services.</p>
+
+                    <!-- Percentage + Change -->
+                    <div class="flex items-end gap-3 mt-4">
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">{{ $completionRate }}%</span>
+                        <div class="flex items-center gap-1 mb-1.5">
+                            @if($monthChange > 0)
+                                <span class="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
+                                    <i class="fa-solid fa-arrow-up text-[10px]"></i> {{ $monthChange }}%
+                                </span>
+                            @elseif($monthChange < 0)
+                                <span class="text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded">
+                                    <i class="fa-solid fa-arrow-down text-[10px]"></i> {{ abs($monthChange) }}%
+                                </span>
+                            @else
+                                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                                    0%
+                                </span>
+                            @endif
+                            <span class="text-sm text-gray-500 dark:text-gray-400">since last month</span>
+                        </div>
+                    </div>
+
+                    <!-- Multi-segment Progress Bar -->
+                    <div class="flex w-full h-2.5 rounded-full overflow-hidden mt-4 bg-gray-200 dark:bg-gray-700">
+                        @if($completedTotal > 0)
+                            <div class="bg-blue-500 h-full" style="width: {{ $finalPct }}%"></div>
+                            <div class="bg-emerald-500 h-full" style="width: {{ $deepPct }}%"></div>
+                            @if($otherPct > 0)
+                                <div class="bg-amber-400 h-full" style="width: {{ $otherPct }}%"></div>
+                            @endif
+                        @endif
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="flex flex-wrap justify-between items-center gap-x-4 gap-y-1 mt-3">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block"></span>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Final Cleaning</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Deep Cleaning</span>
+                        </div>
+                        @if($breakdown['other'] > 0)
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Other</span>
+                        </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
