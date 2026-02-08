@@ -143,11 +143,12 @@
                     <button
                         @click="$dispatch('open-drawer', { date: date, timedIn: timedIn, isTimedOut: isTimedOut })"
                         :disabled="isTimedOut"
-                        class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                        class="text-sm font-medium transition-colors"
                         :class="isTimedOut
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'"
-                        x-text="buttonText">
+                            ? 'text-gray-400 cursor-not-allowed dark:text-gray-600'
+                            : 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300'">
+                        <i class="fa-regular fa-eye mr-1 text-xs"></i>
+                        <span x-text="buttonText"></span>
                     </button>
                 </template>
             </div>
