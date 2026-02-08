@@ -127,141 +127,98 @@
         <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
             <x-labelwithvalue label="Applications" count="({{ $applications->total() }})" />
 
-            <div class="w-full overflow-x-auto">
-                <!-- Table Header -->
-                <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-800
-                            border-b border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="col-span-1 flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
-                        Status
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M5 12a1 1 0 102 0V6.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L5 6.414V12zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"/>
-                        </svg>
-                    </div>
-                    <div class="col-span-1 flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
-                        ID
-                    </div>
-                    <div class="col-span-3 flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
-                        Applicant
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M5 12a1 1 0 102 0V6.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L5 6.414V12zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"/>
-                        </svg>
-                    </div>
-                    <div class="col-span-2 text-xs font-semibold text-gray-700 dark:text-gray-300">Position</div>
-                    <div class="col-span-2 text-xs font-semibold text-gray-700 dark:text-gray-300">Resume</div>
-                    <div class="col-span-2 flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
-                        Applied
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M5 12a1 1 0 102 0V6.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L5 6.414V12zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"/>
-                        </svg>
-                    </div>
-                    <div class="col-span-1 text-xs font-semibold text-gray-700 dark:text-gray-300 text-center">Action</div>
-                </div>
+            <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applicant</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Position</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Resume</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applied</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($applications as $application)
+                        <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                            <!-- Applicant -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ $application->email }}</div>
+                                @if($application->alternative_email)
+                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Alt: {{ $application->alternative_email }}</div>
+                                @endif
+                            </td>
 
-                <!-- Table Body -->
-                <div class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @forelse($applications as $application)
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 bg-white dark:bg-gray-900
-                                hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <!-- Position -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900 dark:text-gray-200">{{ $application->job_title }}</div>
+                                @if($application->job_type)
+                                <div class="text-xs text-blue-600 dark:text-blue-400">{{ ucfirst(str_replace('-', ' ', $application->job_type)) }}</div>
+                                @endif
+                            </td>
 
-                        <!-- Status Badge -->
-                        <div class="col-span-1 flex items-center gap-2 justify-start">
-                            <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400">Status:</span>
-                            @switch($application->status)
-                                @case('pending')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                                        Pending
-                                    </span>
-                                    @break
-                                @case('reviewed')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                                        Reviewed
-                                    </span>
-                                    @break
-                                @case('interview_scheduled')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                                        Interview
-                                    </span>
-                                    @break
-                                @case('hired')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                        Hired
-                                    </span>
-                                    @break
-                                @case('rejected')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                        Rejected
-                                    </span>
-                                    @break
-                                @default
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                                        {{ ucfirst($application->status) }}
-                                    </span>
-                            @endswitch
-                        </div>
+                            <!-- Resume -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <a href="{{ route('admin.recruitment.download', $application->id) }}"
+                                   class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs">
+                                    <i class="fa-solid fa-download mr-2"></i>
+                                    {{ Str::limit($application->resume_original_name, 15) }}
+                                </a>
+                            </td>
 
-                        <!-- ID -->
-                        <div class="col-span-1 flex flex-col justify-center">
-                            <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">ID:</span>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">#{{ $application->id }}</span>
-                        </div>
+                            <!-- Applied Date -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900 dark:text-gray-200">{{ $application->created_at->format('M d, Y') }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $application->created_at->format('h:i A') }}</div>
+                            </td>
 
-                        <!-- Applicant -->
-                        <div class="col-span-3 flex flex-col justify-center">
-                            <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Applicant:</span>
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ $application->email }}</span>
-                            @if($application->alternative_email)
-                            <span class="text-xs text-gray-500 dark:text-gray-400 truncate">Alt: {{ $application->alternative_email }}</span>
-                            @endif
-                        </div>
+                            <!-- Status -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @switch($application->status)
+                                    @case('pending')
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">Pending</span>
+                                        @break
+                                    @case('reviewed')
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">Reviewed</span>
+                                        @break
+                                    @case('interview_scheduled')
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">Interview</span>
+                                        @break
+                                    @case('hired')
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Hired</span>
+                                        @break
+                                    @case('rejected')
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">Rejected</span>
+                                        @break
+                                    @default
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400">{{ ucfirst($application->status) }}</span>
+                                @endswitch
+                            </td>
 
-                        <!-- Position -->
-                        <div class="col-span-2 flex flex-col justify-center">
-                            <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Position:</span>
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $application->job_title }}</span>
-                            @if($application->job_type)
-                            <span class="text-xs text-blue-600 dark:text-blue-400">{{ ucfirst(str_replace('-', ' ', $application->job_type)) }}</span>
-                            @endif
-                        </div>
-
-                        <!-- Resume -->
-                        <div class="col-span-2 flex flex-col justify-center">
-                            <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Resume:</span>
-                            <a href="{{ route('admin.recruitment.download', $application->id) }}"
-                               class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs w-fit">
-                                <i class="fa-solid fa-download mr-2"></i>
-                                {{ Str::limit($application->resume_original_name, 15) }}
-                            </a>
-                        </div>
-
-                        <!-- Applied Date -->
-                        <div class="col-span-2 flex flex-col justify-center">
-                            <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Applied:</span>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $application->created_at->format('M d, Y') }}</span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $application->created_at->format('h:i A') }}</span>
-                        </div>
-
-                        <!-- Action Button -->
-                        <div class="col-span-1 flex items-center justify-center">
-                            <span class="md:hidden text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1 mr-2">Action:</span>
-                            <a href="{{ route('admin.recruitment.show', $application->id) }}"
-                               class="w-full px-4 py-2 rounded-lg text-xs transition-all duration-200 text-center text-white dark:text-blue-500">
-                                <i class="fa-solid fa-eye mr-1"></i>View
-                            </a>
-                        </div>
-                    </div>
-                    @empty
-                    <!-- Empty State -->
-                    <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                        <i class="fa-solid fa-inbox text-4xl mb-3"></i>
-                        <p class="text-lg">No job applications found</p>
-                        <p class="text-sm mt-2">Applications submitted from the recruitment page will appear here</p>
-                    </div>
-                    @endforelse
-                </div>
+                            <!-- Action -->
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <a href="{{ route('admin.recruitment.show', $application->id) }}"
+                                   class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                                <i class="fa-solid fa-inbox text-4xl mb-3 block"></i>
+                                <p class="text-lg">No job applications found</p>
+                                <p class="text-sm mt-2">Applications submitted from the recruitment page will appear here</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
 
                 <!-- Pagination -->
                 @if($applications->hasPages())
-                <div class="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6 mt-4 rounded-lg">
+                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                     {{ $applications->links() }}
                 </div>
                 @endif
