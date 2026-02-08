@@ -2,7 +2,7 @@
     'items' => [],
     'maxHeight' => '20rem', // Default max height
     'fixedHeight' => '12rem', // h-48 = 12rem
-    'emptyTitle' => 'No appointments yet',
+    'emptyTitle' => 'No appointments today',
     'emptyMessage' => 'You don\'t have any appointments at the moment.',
 ])
 
@@ -10,12 +10,12 @@
     @if(empty($items))
         <!-- Empty State - Auto Height -->
         <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
-            <div class="w-64 h-64 mb-6 flex items-center justify-center">
+            <div class="w-48 h-48 mb-6 flex items-center justify-center">
                 <img src="{{ asset('images/icons/no-items-found.svg') }}"
                      alt="No appointments"
                      class="w-full h-full object-contain opacity-80 dark:opacity-60">
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 {{ $emptyTitle }}
             </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">

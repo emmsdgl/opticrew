@@ -49,7 +49,14 @@ class ClientAppointmentController extends Controller
                     'ongoing' => 0,
                     'completed' => 0,
                     'cancelled' => 0,
-                ]
+                ],
+                'serviceBreakdown' => [
+                    'completed_total' => 0,
+                    'final_cleaning' => 0,
+                    'deep_cleaning' => 0,
+                    'other' => 0,
+                    'month_change' => 0,
+                ],
             ]);
         }
 
@@ -94,7 +101,33 @@ class ClientAppointmentController extends Controller
             'cancelled' => $allAppointments->where('status', 'cancelled')->count(),
         ];
 
-        return view('client.dashboard', compact('client', 'holidays', 'appointments', 'stats'));
+        // Service breakdown for "Services Availed" card
+        $completedAppointments = $allAppointments->where('status', 'completed');
+        $finalCleaningCount = $completedAppointments->where('service_type', 'Final Cleaning')->count();
+        $deepCleaningCount = $completedAppointments->where('service_type', 'Deep Cleaning')->count();
+        $otherCount = $completedAppointments->whereNotIn('service_type', ['Final Cleaning', 'Deep Cleaning'])->count();
+
+        // Calculate month-over-month change
+        $thisMonthCompleted = $completedAppointments->filter(function ($a) {
+            return Carbon::parse($a->service_date)->isCurrentMonth();
+        })->count();
+        $lastMonthCompleted = $completedAppointments->filter(function ($a) {
+            return Carbon::parse($a->service_date)->month === now()->subMonth()->month
+                && Carbon::parse($a->service_date)->year === now()->subMonth()->year;
+        })->count();
+        $monthChange = $lastMonthCompleted > 0
+            ? round((($thisMonthCompleted - $lastMonthCompleted) / $lastMonthCompleted) * 100)
+            : ($thisMonthCompleted > 0 ? 100 : 0);
+
+        $serviceBreakdown = [
+            'completed_total' => $completedAppointments->count(),
+            'final_cleaning' => $finalCleaningCount,
+            'deep_cleaning' => $deepCleaningCount,
+            'other' => $otherCount,
+            'month_change' => $monthChange,
+        ];
+
+        return view('client.dashboard', compact('client', 'holidays', 'appointments', 'stats', 'serviceBreakdown'));
     }
 
     /**
