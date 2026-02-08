@@ -40,11 +40,82 @@ class QuotationController extends Controller
     }
 
     // Show quotation details
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $quotation = Quotation::with(['reviewedBy', 'quotedBy', 'convertedBy', 'appointment'])->findOrFail($id);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'quotation' => $this->formatQuotationForDrawer($quotation),
+            ]);
+        }
+
         return view('admin.quotations.show', compact('quotation'));
+    }
+
+    private function formatQuotationForDrawer($quotation)
+    {
+        return [
+            'id' => $quotation->id,
+            'status' => $quotation->status,
+            'status_label' => str_replace('_', ' ', ucwords($quotation->status)),
+            'created_at' => $quotation->created_at->format('M d, Y \a\t g:i A'),
+
+            'contact' => [
+                'company_name' => $quotation->company_name,
+                'client_name' => $quotation->client_name,
+                'email' => $quotation->email,
+                'phone_number' => $quotation->phone_number,
+                'booking_type' => $quotation->booking_type,
+            ],
+
+            'service' => [
+                'cleaning_services' => $quotation->cleaning_services ?? [],
+                'date_of_service' => $quotation->date_of_service ? $quotation->date_of_service->format('M d, Y') : null,
+                'duration_of_service' => $quotation->duration_of_service,
+                'type_of_urgency' => $quotation->type_of_urgency ? str_replace('_', ' ', ucwords($quotation->type_of_urgency)) : null,
+            ],
+
+            'property' => [
+                'property_type' => $quotation->property_type,
+                'floors' => $quotation->floors,
+                'rooms' => $quotation->rooms,
+                'people_per_room' => $quotation->people_per_room,
+                'floor_area' => $quotation->floor_area,
+                'area_unit' => $quotation->area_unit,
+            ],
+
+            'location' => [
+                'street_address' => $quotation->street_address,
+                'postal_code' => $quotation->postal_code,
+                'city' => $quotation->city,
+                'district' => $quotation->district,
+                'latitude' => $quotation->latitude,
+                'longitude' => $quotation->longitude,
+            ],
+
+            'pricing' => [
+                'estimated_price' => $quotation->estimated_price ? number_format($quotation->estimated_price, 2) : null,
+                'vat_amount' => $quotation->vat_amount ? number_format($quotation->vat_amount, 2) : null,
+                'total_price' => $quotation->total_price ? number_format($quotation->total_price, 2) : null,
+                'pricing_notes' => $quotation->pricing_notes,
+            ],
+
+            'activity' => [
+                'reviewed_by' => $quotation->reviewedBy ? $quotation->reviewedBy->name : null,
+                'reviewed_at' => $quotation->reviewed_at ? $quotation->reviewed_at->format('M d, Y g:i A') : null,
+                'quoted_by' => $quotation->quotedBy ? $quotation->quotedBy->name : null,
+                'quoted_at' => $quotation->quoted_at ? $quotation->quoted_at->format('M d, Y g:i A') : null,
+                'converted_by' => $quotation->convertedBy ? $quotation->convertedBy->name : null,
+                'converted_at' => $quotation->converted_at ? $quotation->converted_at->format('M d, Y g:i A') : null,
+            ],
+
+            'notes' => [
+                'admin_notes' => $quotation->admin_notes,
+                'rejection_reason' => $quotation->rejection_reason,
+            ],
+        ];
     }
 
     // Handle form submission from landing page
