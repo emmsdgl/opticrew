@@ -35,9 +35,7 @@
 
                     <!-- Success Message -->
                     @if(session('success'))
-                        <div class="mb-4 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded-lg">
-                            {{ session('success') }}
-                        </div>
+                        <x-alert type="success">{{ session('success') }}</x-alert>
                     @endif
 
                     <x-profilecard :name="$employee['full_name']" greeting="Welcome Back,"
