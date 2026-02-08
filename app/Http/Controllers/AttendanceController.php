@@ -34,17 +34,39 @@ class AttendanceController extends Controller
             $clockIn = Carbon::parse($attendance->clock_in);
             $clockOut = $attendance->clock_out ? Carbon::parse($attendance->clock_out) : null;
 
-            // Determine status
-            $status = 'present';
-            $scheduledTime = $clockIn->copy()->setTime(11, 0);
+            $empShiftStart = $attendance->employee->shift_start ?? '11:00';
+            $empShiftEnd = $attendance->employee->shift_end ?? '19:00';
 
-            if ($clockIn->gt($scheduledTime)) {
-                $minutesLate = $clockIn->diffInMinutes($scheduledTime);
+            // Determine clock-in status note
+            $status = 'present';
+            $scheduledStartTime = $clockIn->copy()->setTimeFromTimeString($empShiftStart);
+
+            if ($clockIn->gt($scheduledStartTime)) {
+                $minutesLate = $clockIn->diffInMinutes($scheduledStartTime);
                 $status = 'late';
                 $timeInNote = $minutesLate . ' m late';
             } else {
-                $minutesEarly = $scheduledTime->diffInMinutes($clockIn);
+                $minutesEarly = $scheduledStartTime->diffInMinutes($clockIn);
                 $timeInNote = $minutesEarly . ' m early';
+            }
+
+            // Determine clock-out status note
+            $timeOutNote = '';
+            if ($clockOut) {
+                // Check if clock-out was auto-closed at end of day (forgotten)
+                $endOfDay = $clockIn->copy()->endOfDay();
+                if ($clockOut->eq($endOfDay) || $clockOut->format('H:i:s') === '23:59:59') {
+                    $timeOutNote = 'Forgotten';
+                } else {
+                    $scheduledEndTime = $clockIn->copy()->setTimeFromTimeString($empShiftEnd);
+                    $minutesDiff = $clockOut->diffInMinutes($scheduledEndTime);
+
+                    if ($clockOut->gt($scheduledEndTime)) {
+                        $timeOutNote = $minutesDiff . ' m late';
+                    } else {
+                        $timeOutNote = $minutesDiff . ' m early';
+                    }
+                }
             }
 
             // Calculate hours worked
@@ -72,7 +94,7 @@ class AttendanceController extends Controller
                 'timeIn' => $clockIn->format('g:i a'),
                 'timeInNote' => $timeInNote ?? '',
                 'timeOut' => $clockOut ? $clockOut->format('g:i a') : null,
-                'timeOutNote' => '',
+                'timeOutNote' => $timeOutNote,
                 'hoursWorked' => $hoursWorkedText,
                 'timedIn' => true,
                 'isTimedOut' => $clockOut !== null
@@ -236,22 +258,44 @@ class AttendanceController extends Controller
         }
 
         // Format attendance records for display
-        $attendanceRecords = $attendances->map(function ($attendance) {
+        $shiftStart = $employee->shift_start ?? '11:00';
+        $shiftEnd = $employee->shift_end ?? '19:00';
+
+        $attendanceRecords = $attendances->map(function ($attendance) use ($shiftStart, $shiftEnd) {
             $clockIn = Carbon::parse($attendance->clock_in);
             $clockOut = $attendance->clock_out ? Carbon::parse($attendance->clock_out) : null;
             $isToday = $clockIn->isToday();
 
-            // Determine status
+            // Determine clock-in status note
             $status = 'present';
-            $scheduledTime = $clockIn->copy()->setTime(11, 0); // Example: 11:00 AM scheduled time
+            $scheduledStartTime = $clockIn->copy()->setTimeFromTimeString($shiftStart);
 
-            if ($clockIn->gt($scheduledTime)) {
-                $minutesLate = $clockIn->diffInMinutes($scheduledTime);
+            if ($clockIn->gt($scheduledStartTime)) {
+                $minutesLate = $clockIn->diffInMinutes($scheduledStartTime);
                 $status = 'late';
                 $timeInNote = $minutesLate . ' m late';
             } else {
-                $minutesEarly = $scheduledTime->diffInMinutes($clockIn);
+                $minutesEarly = $scheduledStartTime->diffInMinutes($clockIn);
                 $timeInNote = $minutesEarly . ' m early';
+            }
+
+            // Determine clock-out status note
+            $timeOutNote = '';
+            if ($clockOut) {
+                // Check if clock-out was auto-closed at end of day (forgotten)
+                $endOfDay = $clockIn->copy()->endOfDay();
+                if ($clockOut->eq($endOfDay) || $clockOut->format('H:i:s') === '23:59:59') {
+                    $timeOutNote = 'Forgotten';
+                } else {
+                    $scheduledEndTime = $clockIn->copy()->setTimeFromTimeString($shiftEnd);
+                    $minutesDiff = $clockOut->diffInMinutes($scheduledEndTime);
+
+                    if ($clockOut->gt($scheduledEndTime)) {
+                        $timeOutNote = $minutesDiff . ' m late';
+                    } else {
+                        $timeOutNote = $minutesDiff . ' m early';
+                    }
+                }
             }
 
             // Calculate hours worked
@@ -277,7 +321,7 @@ class AttendanceController extends Controller
                 'timeIn' => $clockIn->format('g:i a'),
                 'timeInNote' => $timeInNote ?? '',
                 'timeOut' => $clockOut ? $clockOut->format('g:i a') : null,
-                'timeOutNote' => '',
+                'timeOutNote' => $timeOutNote,
                 'hoursWorked' => $hoursWorkedText,
                 'timedIn' => true,
                 'isTimedOut' => $clockOut !== null,
@@ -422,20 +466,23 @@ class AttendanceController extends Controller
             return redirect()->back()->with('error', 'You have already clocked in today');
         }
 
-        // Check 2: Is there an active clock-in without clock-out (from previous day)?
+        // Check 2: Is there an active clock-in without clock-out (from a previous day)?
+        // Auto-close stale records so the employee isn't stuck
         $activeClockIn = Attendance::where('employee_id', $employee->id)
             ->whereNull('clock_out')
+            ->whereDate('clock_in', '<', now()->toDateString())
             ->first();
 
         if ($activeClockIn) {
-            // There's an unclosed attendance from a previous day
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You have an unclosed clock-in from ' . Carbon::parse($activeClockIn->clock_in)->format('F d, Y')
-                ], 400);
-            }
-            return redirect()->back()->with('error', 'You have an unclosed clock-in from ' . Carbon::parse($activeClockIn->clock_in)->format('F d, Y'));
+            // Auto-close the stale record at end of that day (11:59 PM)
+            $staleDate = Carbon::parse($activeClockIn->clock_in);
+            $autoClockOut = $staleDate->copy()->endOfDay();
+            $totalMinutes = $autoClockOut->diffInMinutes($staleDate);
+
+            $activeClockIn->update([
+                'clock_out' => $autoClockOut,
+                'total_minutes_worked' => $totalMinutes,
+            ]);
         }
 
         // Check 3: Validate employee exists
@@ -482,20 +529,28 @@ class AttendanceController extends Controller
             return redirect()->back()->with('error', 'Employee profile not found');
         }
 
-        // Check 2: Find today's attendance without clock out
+        // Check 2: Find active attendance without clock out (today first, then any day)
         $attendance = Attendance::where('employee_id', $employee->id)
             ->whereDate('clock_in', now()->toDateString())
             ->whereNull('clock_out')
             ->first();
 
         if (!$attendance) {
+            // Check for unclosed records from previous days
+            $attendance = Attendance::where('employee_id', $employee->id)
+                ->whereNull('clock_out')
+                ->latest('clock_in')
+                ->first();
+        }
+
+        if (!$attendance) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No active clock-in found for today'
+                    'message' => 'No active clock-in found'
                 ], 400);
             }
-            return redirect()->back()->with('error', 'No active clock-in found for today');
+            return redirect()->back()->with('error', 'No active clock-in found');
         }
 
         // Check 3: Verify clock-in already exists and hasn't been clocked out

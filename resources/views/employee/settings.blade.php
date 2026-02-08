@@ -9,20 +9,18 @@
 
             <!-- Success Message -->
             @if(session('success'))
-                <div class="mb-6 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded-lg">
-                    {{ session('success') }}
-                </div>
+                <x-alert type="success">{{ session('success') }}</x-alert>
             @endif
 
             <!-- Error Messages -->
             @if ($errors->any())
-                <div class="mb-6 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
+                <x-alert type="error">
                     <ul class="list-disc list-inside">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
-                </div>
+                </x-alert>
             @endif
 
             <!--Section 1: Account Information-->

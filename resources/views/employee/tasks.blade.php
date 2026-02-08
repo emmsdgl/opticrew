@@ -11,17 +11,11 @@
 
         <!-- Flash Messages (session based) -->
         @if(session()->has('success'))
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-6" role="alert">
-                <p class="font-semibold">Success!</p>
-                <p>{{ session('success') }}</p>
-            </div>
+            <x-alert type="success">{{ session('success') }}</x-alert>
         @endif
 
         @if(session()->has('error'))
-            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6" role="alert">
-                <p class="font-semibold">Error!</p>
-                <p>{{ session('error') }}</p>
-            </div>
+            <x-alert type="error">{{ session('error') }}</x-alert>
         @endif
 
         <!-- Compact Clock In/Out Status Indicator -->

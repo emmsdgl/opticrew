@@ -3,29 +3,11 @@
 
     {{-- Success/Error Messages --}}
     @if(session('success'))
-        <div x-data="{ show: true }"
-             x-show="show"
-             x-init="setTimeout(() => show = false, 5000)"
-             x-transition
-             class="p-4 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 rounded-lg">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-lg"></i>
-                <p class="text-sm font-medium text-green-800 dark:text-green-300">{{ session('success') }}</p>
-            </div>
-        </div>
+        <x-alert type="success">{{ session('success') }}</x-alert>
     @endif
 
     @if(session('error'))
-        <div x-data="{ show: true }"
-             x-show="show"
-             x-init="setTimeout(() => show = false, 5000)"
-             x-transition
-             class="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-lg"></i>
-                <p class="text-sm font-medium text-red-800 dark:text-red-300">{{ session('error') }}</p>
-            </div>
-        </div>
+        <x-alert type="error">{{ session('error') }}</x-alert>
     @endif
 
     {{-- Page Header --}}

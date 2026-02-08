@@ -70,15 +70,11 @@
 
         <!-- Success/Error Messages -->
         @if(session('success'))
-            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                {{ session('success') }}
-            </div>
+            <x-alert type="success">{{ session('success') }}</x-alert>
         @endif
 
         @if(session('error'))
-            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                {{ session('error') }}
-            </div>
+            <x-alert type="error">{{ session('error') }}</x-alert>
         @endif
 
         <!-- Inner Panel - Summary Cards Container -->
