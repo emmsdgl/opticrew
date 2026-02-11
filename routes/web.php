@@ -28,6 +28,14 @@ use App\Http\Controllers\EmployeeRequestsController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Livewire\Admin\EmployeeAnalytics;
 
+// Manager Controllers
+use App\Http\Controllers\Manager\ManagerDashboardController;
+use App\Http\Controllers\Manager\ManagerScheduleController;
+use App\Http\Controllers\Manager\ManagerEmployeesController;
+use App\Http\Controllers\Manager\ManagerReportsController;
+use App\Http\Controllers\Manager\ManagerActivityController;
+use App\Http\Controllers\Manager\ManagerHistoryController;
+
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
 // --- LANDING PAGE ROUTES (Public) ---
@@ -42,6 +50,8 @@ Route::get('/', function () {
             return redirect()->route('employee.dashboard');
         } elseif ($role === 'external_client') {
             return redirect()->route('client.dashboard');
+        } elseif ($role === 'company') {
+            return redirect()->route('manager.dashboard');
         }
     }
 
@@ -399,6 +409,39 @@ Route::middleware(['auth', 'client'])->group(function () {
     Route::get('/client/settings', [ProfileController::class, 'settings'])->name('client.settings');
     Route::get('/client/help-center', [ProfileController::class, 'helpcenter'])->name('client.helpcenter');
     Route::post('/client/settings/update-password', [ProfileController::class, 'updatePassword'])->name('client.settings.update-password');
+});
+
+// --- MANAGER (CONTRACTED CLIENT) ROUTES ---
+Route::middleware(['auth', 'manager'])->prefix('manager')->name('manager.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
+
+    // Schedule
+    Route::get('/schedule', [ManagerScheduleController::class, 'index'])->name('schedule');
+    Route::get('/schedule/tasks', [ManagerScheduleController::class, 'getTasks'])->name('schedule.tasks');
+    Route::get('/schedule/locations', [ManagerScheduleController::class, 'getLocations'])->name('schedule.locations');
+    Route::post('/schedule/tasks', [ManagerScheduleController::class, 'storeTask'])->name('schedule.tasks.store');
+
+    // Employees
+    Route::get('/employees', [ManagerEmployeesController::class, 'index'])->name('employees');
+
+    // Reports
+    Route::get('/reports', [ManagerReportsController::class, 'index'])->name('reports');
+
+    // Activity
+    Route::get('/activity', [ManagerActivityController::class, 'index'])->name('activity');
+
+    // History
+    Route::get('/history', [ManagerHistoryController::class, 'index'])->name('history');
+
+    // Profile routes
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('profile.upload-picture');
+    Route::get('/settings', [ProfileController::class, 'settings'])->name('settings');
+    Route::get('/help-center', [ProfileController::class, 'helpcenter'])->name('helpcenter');
+    Route::post('/settings/update-password', [ProfileController::class, 'updatePassword'])->name('settings.update-password');
 });
 
 // Geofencing API endpoint (needs web session authentication)
