@@ -213,8 +213,8 @@
 
             <!-- Inner Up - Dashboard Header -->
             <div
-                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
-                <x-herocard :headerName="$client->first_name ?? 'Client'" :headerDesc="'Welcome to the dashboard. What needs cleaning today?'" :headerIcon="'hero-client'" />
+                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-40 sm:h-44 md:h-48 flex items-center">
+                    <x-herocard :headerName="$client->first_name ?? 'Client'" :headerDesc="'Welcome to the dashboard. What needs cleaning today?'" :headerIcon="'hero-client'" />
             </div>
 
             <!-- Inner Middle - Calendar -->
