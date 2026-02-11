@@ -95,7 +95,7 @@
                 </div>
 
                 {{-- Job Cards Grid --}}
-                <div id="jobList" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div id="jobList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                     @forelse($jobPostings ?? [] as $job)
                     @php
                         $iconBgClass = match($job->icon_color) {
@@ -121,84 +121,50 @@
                     <div class="job-item cursor-pointer" data-job-id="{{ $job->id }}" data-type="{{ $job->type }}"
                         onclick="selectJob({{ $job->id }})">
                         <div
-                            class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-start justify-between mb-4">
+                            class="job-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-800 flex flex-col h-full">
+                            <div class="flex items-start justify-between mb-6">
                                 <div class="w-12 h-12 {{ $iconBgClass }} rounded-xl flex items-center justify-center">
-                                    <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-xl"></i>
+                                    <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-lg"></i>
                                 </div>
+
                                 <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
                                     <i class="far fa-heart text-xl"></i>
                                 </button>
                             </div>
-                            <span class="inline-block px-2 py-1 {{ $typeBadgeClass }} text-xs font-semibold rounded mb-2">
+                            <span class="inline-block self-start px-2 py-1 {{ $typeBadgeClass }} text-xs font-medium rounded mb-3">
                                 {{ $job->type_badge }}
                             </span>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">{{ $job->title }}</h3>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">{{ $job->title }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 line-clamp-3 flex-1">
                                 {{ $job->description }}
                             </p>
-                            <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    {{ $job->location }}
-                                </span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $job->salary }}</span>
+                            <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $job->salary }}</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                                    <span class="flex items-center gap-1">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ $job->location }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     @empty
                     <div class="col-span-2 text-center py-12">
                         <i class="fas fa-briefcase text-gray-400 text-5xl mb-4"></i>
-                        <p class="text-gray-500 dark:text-gray-400">No job openings available at the moment.</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-base font-medium">No job openings available at the moment.</p>
                         <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Please check back later for new opportunities.</p>
                     </div>
                     @endforelse
-                </div>
-
-                {{-- Applied Vacancies Section --}}
-                <div class="mt-8">
-                    <h3 class="text-base font-medium text-gray-900 dark:text-white mb-4">Applied Vacancies</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="job-item cursor-pointer">
-                            <div
-                                class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div
-                                        class="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
-                                        <i class="fas fa-users text-orange-600 dark:text-orange-400 text-xl"></i>
-                                    </div>
-                                    <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                        <i class="far fa-heart text-xl"></i>
-                                    </button>
-                                </div>
-                                <span class="inline-block px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-xs font-semibold rounded mb-2">
-                                    Pending
-                                </span>
-                                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">HR Recruitment Officer</h3>
-                                <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                    Conduct strong onboarding processes that engage new hires from day one.
-                                </p>
-                                <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                    <span class="flex items-center gap-1">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        Manila, NCR
-                                    </span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white">$30 - $40/hr</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             {{-- Right Side - Job Details --}}
             <div class="xl:col-span-1">
                 <div id="jobDetailPanel"
-                    class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 sticky top-6 shadow-xl border border-blue-100 dark:border-gray-700"
+                    class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 sticky top-6 border border-blue-100 dark:border-gray-700"
                     style="display: none;">
 
                     {{-- Job Type Badge --}}
@@ -725,7 +691,7 @@
         // Notification function
         function showNotification(type, message) {
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-[100] max-w-sm p-4 rounded-xl shadow-lg transform transition-all duration-300 ${
+            notification.className = `fixed top-8 right-4 z-[100] max-w-sm p-4 rounded-xl shadow-lg transform transition-all duration-300 ${
                 type === 'success'
                     ? 'bg-green-500 text-white'
                     : 'bg-red-500 text-white'

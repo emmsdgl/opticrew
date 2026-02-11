@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobApplication;
 use App\Models\JobPosting;
+use App\Services\Notification\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -38,9 +39,12 @@ class JobApplicationController extends Controller
             'status' => 'pending',
         ]);
 
+        // Notify all admins of the new application
+        app(NotificationService::class)->notifyAdminsNewJobApplication($application);
+
         return response()->json([
             'success' => true,
-            'message' => 'Your application has been submitted successfully! We will contact you soon.',
+            'message' => 'Your application has been submitted successfully! We will contact you soon through the email provided.',
             'application_id' => $application->id,
         ]);
     }
@@ -69,7 +73,12 @@ class JobApplicationController extends Controller
         $applications = $query->orderBy('created_at', 'desc')->paginate(15);
         $jobPostings = JobPosting::orderBy('created_at', 'desc')->get();
 
-        return view('admin.recruitment.index', compact('applications', 'jobPostings'));
+        // Get applicant counts per job title
+        $applicantCounts = JobApplication::selectRaw('job_title, COUNT(*) as count')
+            ->groupBy('job_title')
+            ->pluck('count', 'job_title');
+
+        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts'));
     }
 
     /**
@@ -97,6 +106,10 @@ class JobApplicationController extends Controller
             'admin_notes' => $validated['admin_notes'] ?? $application->admin_notes,
             'reviewed_at' => now(),
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Application status updated successfully.']);
+        }
 
         return redirect()->back()->with('success', 'Application status updated successfully.');
     }

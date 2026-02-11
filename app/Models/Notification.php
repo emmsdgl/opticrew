@@ -45,6 +45,7 @@ class Notification extends Model
     const TYPE_TASK_DECLINED = 'task_declined';
     const TYPE_TASK_STARTED_ADMIN = 'task_started_admin';
     const TYPE_TASK_PROGRESS_ADMIN = 'task_progress_admin';
+    const TYPE_JOB_APPLICATION_SUBMITTED = 'job_application_submitted';
 
     protected $fillable = [
         'user_id',

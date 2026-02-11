@@ -887,4 +887,28 @@ class NotificationService
             ]
         );
     }
+
+    /**
+     * Notify all admins when a new job application is submitted.
+     */
+    public function notifyAdminsNewJobApplication($application): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_JOB_APPLICATION_SUBMITTED,
+            'New Job Application',
+            "{$application->email} has applied for the {$application->job_title} position.",
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'email' => $application->email,
+                'icon' => 'user-plus',
+                'color' => 'blue',
+                'action_url' => route('admin.recruitment.index'),
+                'action_text' => 'View Applications'
+            ]
+        );
+    }
 }
