@@ -66,4 +66,19 @@ class Employee extends Model
     {
         return $this->user ? $this->user->name : 'Unknown Employee';
     }
+
+    /**
+     * Get tasks assigned to this employee through optimization teams
+     */
+    public function tasks()
+    {
+        return $this->hasManyThrough(
+            Task::class,
+            OptimizationTeamMember::class,
+            'employee_id',          // Foreign key on optimization_team_members table
+            'assigned_team_id',     // Foreign key on tasks table
+            'id',                   // Local key on employees table
+            'optimization_team_id'  // Local key on optimization_team_members table
+        );
+    }
 }

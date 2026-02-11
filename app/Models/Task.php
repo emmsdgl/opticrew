@@ -158,4 +158,19 @@ class Task extends Model
     {
         return $this->belongsTo(User::class, 'completed_by');
     }
+
+    /**
+     * Get assigned employees through optimization team
+     */
+    public function assignedEmployees()
+    {
+        return $this->hasManyThrough(
+            Employee::class,
+            OptimizationTeamMember::class,
+            'optimization_team_id', // Foreign key on optimization_team_members table
+            'id',                   // Foreign key on employees table
+            'assigned_team_id',     // Local key on tasks table
+            'employee_id'           // Local key on optimization_team_members table
+        );
+    }
 }

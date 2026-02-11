@@ -37,4 +37,12 @@ class Location extends Model
     {
         return $this->hasMany(Task::class, 'location_id');
     }
+
+    /**
+     * Get the location name (accessor for consistency)
+     */
+    public function getNameAttribute()
+    {
+        return $this->location_name;
+    }
 }
