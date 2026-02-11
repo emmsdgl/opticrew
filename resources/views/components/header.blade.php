@@ -68,6 +68,7 @@
                                     'calendar-times' => 'fi-rr-calendar',
                                     'user-clock' => 'fi-rr-clock',
                                     'tasks' => 'fi-rr-ballot-check',
+                                    'user-plus' => 'fi-rr-user-add',
                                     'info' => 'fi-rr-info',
                                 ];
                                 $iconClass = $iconMap[$icon] ?? 'fi-rr-info';
