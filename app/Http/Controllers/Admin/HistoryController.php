@@ -182,20 +182,36 @@ class HistoryController extends Controller
                 })->toArray();
             }
 
-            // Get employee feedback for this task
-            $employeeFeedback = Feedback::where('task_id', $task->id)
+            // Get ALL employee feedback for this task (multiple employees per team)
+            $employeeFeedbacks = Feedback::where('task_id', $task->id)
                 ->where('user_type', 'employee')
                 ->with('employee.user')
-                ->first();
+                ->get();
 
             $employeeRating = null;
-            if ($employeeFeedback) {
+            if ($employeeFeedbacks->isNotEmpty()) {
+                // Calculate average rating from all employee feedback
+                $averageRating = round($employeeFeedbacks->avg('rating'), 1);
+
+                // Collect all unique tags from all employee feedback
+                $allTags = $employeeFeedbacks->pluck('keywords')->filter()->flatten()->unique()->values()->toArray();
+
+                // Build individual feedback entries
+                $individualFeedbacks = $employeeFeedbacks->map(function ($fb) {
+                    return [
+                        'rating' => $fb->rating,
+                        'tags' => $fb->keywords ?? [],
+                        'comment' => $fb->feedback_text ?? $fb->comments,
+                        'employeeName' => $fb->employee?->user?->name ?? 'Employee',
+                        'submittedAt' => $fb->created_at?->format('d M Y, g:i A'),
+                    ];
+                })->toArray();
+
                 $employeeRating = [
-                    'rating' => $employeeFeedback->rating,
-                    'tags' => $employeeFeedback->keywords ?? [],
-                    'comment' => $employeeFeedback->feedback_text ?? $employeeFeedback->comments,
-                    'employeeName' => $employeeFeedback->employee?->user?->name ?? 'Employee',
-                    'submittedAt' => $employeeFeedback->created_at?->format('d M Y, g:i A'),
+                    'averageRating' => $averageRating,
+                    'totalResponses' => $employeeFeedbacks->count(),
+                    'tags' => $allTags,
+                    'feedbacks' => $individualFeedbacks,
                 ];
             }
 
@@ -216,8 +232,8 @@ class HistoryController extends Controller
                 ];
             }
 
-            // Determine if needs rating (completed tasks without review)
-            $needsRating = $task->status === 'Completed' && !$employeeFeedback && !$clientFeedback;
+            // Determine if needs rating (completed tasks without any review)
+            $needsRating = $task->status === 'Completed' && $employeeFeedbacks->isEmpty() && !$clientFeedback;
 
             // Format the activity
             $scheduledDateTime = Carbon::parse($task->scheduled_date)->format('Y-m-d');

@@ -404,54 +404,83 @@
                                         <p class="text-sm text-gray-500 dark:text-gray-400" x-text="getSelectedActivity()?.date"></p>
                                     </div>
 
-                                    <!-- Employee Rating Section -->
-                                    <div class="mb-6">
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Overall Rating</h4>
-                                        <div class="flex items-center gap-2 mb-2">
-                                            <template x-for="star in 5" :key="'emp-star-' + star">
-                                                <i class="text-xl"
-                                                    :class="star <= (getSelectedActivity()?.employeeRating?.rating || 0)
-                                                        ? 'fa-solid fa-star text-yellow-400'
-                                                        : 'fa-regular fa-star text-gray-300 dark:text-gray-600'"></i>
-                                            </template>
-                                            <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                x-text="(getSelectedActivity()?.employeeRating?.rating || 0) + '/5'"></span>
-                                        </div>
-                                    </div>
+                                    <!-- Average Rating Summary -->
+                                    <template x-if="getSelectedActivity()?.employeeRating">
+                                        <div>
+                                            <div class="mb-6">
+                                                <div class="flex items-center justify-between mb-3">
+                                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Average Rating</h4>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400"
+                                                        x-text="(getSelectedActivity()?.employeeRating?.totalResponses || 0) + ' response(s)'"></span>
+                                                </div>
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <template x-for="star in 5" :key="'avg-star-' + star">
+                                                        <i class="text-xl"
+                                                            :class="star <= Math.round(getSelectedActivity()?.employeeRating?.averageRating || 0)
+                                                                ? 'fa-solid fa-star text-yellow-400'
+                                                                : 'fa-regular fa-star text-gray-300 dark:text-gray-600'"></i>
+                                                    </template>
+                                                    <span class="ml-2 text-sm font-bold text-gray-700 dark:text-gray-300"
+                                                        x-text="(getSelectedActivity()?.employeeRating?.averageRating || 0) + '/5'"></span>
+                                                </div>
+                                            </div>
 
-                                    <!-- Employee Feedback Tags -->
-                                    <div class="mb-6" x-show="getSelectedActivity()?.employeeRating?.tags?.length > 0">
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Feedback Tags</h4>
-                                        <div class="flex flex-wrap gap-2">
-                                            <template x-for="(tag, idx) in (getSelectedActivity()?.employeeRating?.tags || [])" :key="'emp-tag-' + idx">
-                                                <span class="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-full font-medium"
-                                                    x-text="tag"></span>
-                                            </template>
-                                        </div>
-                                    </div>
+                                            <!-- All Feedback Tags -->
+                                            <div class="mb-6" x-show="getSelectedActivity()?.employeeRating?.tags?.length > 0">
+                                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Feedback Tags</h4>
+                                                <div class="flex flex-wrap gap-2">
+                                                    <template x-for="(tag, idx) in (getSelectedActivity()?.employeeRating?.tags || [])" :key="'emp-tag-' + idx">
+                                                        <span class="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-full font-medium"
+                                                            x-text="tag"></span>
+                                                    </template>
+                                                </div>
+                                            </div>
 
-                                    <!-- Employee Comments -->
-                                    <div class="mb-6">
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Employee Comments</h4>
-                                        <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                                            <p class="text-sm text-gray-700 dark:text-gray-300 italic"
-                                                x-text="getSelectedActivity()?.employeeRating?.comment || 'No comments provided'"></p>
-                                        </div>
-                                    </div>
+                                            <!-- Individual Employee Feedbacks -->
+                                            <div class="mb-4">
+                                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Individual Responses</h4>
+                                                <div class="space-y-4">
+                                                    <template x-for="(fb, fbIdx) in (getSelectedActivity()?.employeeRating?.feedbacks || [])" :key="'emp-fb-' + fbIdx">
+                                                        <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                                            <!-- Employee Header -->
+                                                            <div class="flex items-center gap-3 mb-3">
+                                                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                                                                    x-text="(fb.employeeName || 'E').charAt(0).toUpperCase()"></div>
+                                                                <div class="flex-1">
+                                                                    <p class="text-sm font-medium text-gray-900 dark:text-white"
+                                                                        x-text="fb.employeeName || 'Employee'"></p>
+                                                                    <p class="text-xs text-gray-500 dark:text-gray-400"
+                                                                        x-text="fb.submittedAt || 'N/A'"></p>
+                                                                </div>
+                                                                <!-- Individual star rating -->
+                                                                <div class="flex items-center gap-0.5">
+                                                                    <template x-for="star in 5" :key="'fb-' + fbIdx + '-star-' + star">
+                                                                        <i class="text-sm"
+                                                                            :class="star <= (fb.rating || 0)
+                                                                                ? 'fa-solid fa-star text-yellow-400'
+                                                                                : 'fa-regular fa-star text-gray-300 dark:text-gray-600'"></i>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
 
-                                    <!-- Submitted By -->
-                                    <div class="mb-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-                                                x-text="(getSelectedActivity()?.employeeRating?.employeeName || 'E').charAt(0).toUpperCase()"></div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900 dark:text-white"
-                                                    x-text="getSelectedActivity()?.employeeRating?.employeeName || 'Employee'"></p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400"
-                                                    x-text="'Submitted: ' + (getSelectedActivity()?.employeeRating?.submittedAt || 'N/A')"></p>
+                                                            <!-- Individual Tags -->
+                                                            <div class="flex flex-wrap gap-1.5 mb-2" x-show="fb.tags?.length > 0">
+                                                                <template x-for="(tag, tIdx) in (fb.tags || [])" :key="'fb-' + fbIdx + '-tag-' + tIdx">
+                                                                    <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs rounded-full"
+                                                                        x-text="tag"></span>
+                                                                </template>
+                                                            </div>
+
+                                                            <!-- Individual Comment -->
+                                                            <p class="text-sm text-gray-600 dark:text-gray-400 italic" x-show="fb.comment"
+                                                                x-text="fb.comment"></p>
+                                                            <p class="text-sm text-gray-400 dark:text-gray-500 italic" x-show="!fb.comment">No comment</p>
+                                                        </div>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </template>
 
                                     <!-- No Rating Message -->
                                     <template x-if="!getSelectedActivity()?.employeeRating">
