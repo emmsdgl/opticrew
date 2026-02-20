@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\ClientAppointment;
 use App\Models\TaskChecklistCompletion;
+use App\Models\Feedback;
 use Carbon\Carbon;
 
 class HistoryController extends Controller
@@ -181,8 +182,42 @@ class HistoryController extends Controller
                 })->toArray();
             }
 
+            // Get employee feedback for this task
+            $employeeFeedback = Feedback::where('task_id', $task->id)
+                ->where('user_type', 'employee')
+                ->with('employee.user')
+                ->first();
+
+            $employeeRating = null;
+            if ($employeeFeedback) {
+                $employeeRating = [
+                    'rating' => $employeeFeedback->rating,
+                    'tags' => $employeeFeedback->keywords ?? [],
+                    'comment' => $employeeFeedback->feedback_text ?? $employeeFeedback->comments,
+                    'employeeName' => $employeeFeedback->employee?->user?->name ?? 'Employee',
+                    'submittedAt' => $employeeFeedback->created_at?->format('d M Y, g:i A'),
+                ];
+            }
+
+            // Get client feedback for this task
+            $clientFeedback = Feedback::where('task_id', $task->id)
+                ->where('user_type', 'client')
+                ->with('client.user')
+                ->first();
+
+            $clientRating = null;
+            if ($clientFeedback) {
+                $clientRating = [
+                    'rating' => $clientFeedback->rating ?? $clientFeedback->overall_rating,
+                    'tags' => $clientFeedback->keywords ?? [],
+                    'comment' => $clientFeedback->feedback_text ?? $clientFeedback->comments,
+                    'clientName' => $clientFeedback->client?->user?->name ?? 'Client',
+                    'submittedAt' => $clientFeedback->created_at?->format('d M Y, g:i A'),
+                ];
+            }
+
             // Determine if needs rating (completed tasks without review)
-            $needsRating = $task->status === 'Completed' && !$task->hasReview();
+            $needsRating = $task->status === 'Completed' && !$employeeFeedback && !$clientFeedback;
 
             // Format the activity
             $scheduledDateTime = Carbon::parse($task->scheduled_date)->format('Y-m-d');
@@ -209,6 +244,8 @@ class HistoryController extends Controller
                 'payableAmount' => '€' . number_format($task->estimated_duration_minutes * 2, 2),
                 'assignedMembers' => $assignedMembers,
                 'checklist' => $checklistItems,
+                'employeeRating' => $employeeRating,
+                'clientRating' => $clientRating,
             ]);
         }
 

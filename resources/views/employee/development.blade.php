@@ -44,109 +44,55 @@
 
             {{-- Course List - Scrollable --}}
             <div id="courseList" class="space-y-4 px-6 pb-6 flex-1 overflow-y-auto scrollbar-custom">
-                {{-- Course Card 1 - Pending --}}
-                <div class="course-item cursor-pointer group" data-course-id="1" data-status="pending"
-                    onclick="selectCourse(1)">
-                    <div
-                        class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                @foreach($videosByCategory as $category => $videos)
+                    {{-- Category Header --}}
+                    <div class="pt-2 pb-1">
+                        <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                            {{ $categoryInfo[$category]['title'] ?? ucfirst(str_replace('_', ' ', $category)) }}
+                        </h4>
+                    </div>
 
-                        <div class="flex-1 min-w-0">
-                            <h3
-                                class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                Deep Cleaning Fundamentals</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Master the essential
-                                techniques of deep cleaning for residential and commercial spaces. Learn proper
-                                sanitization methods, equipment usage, and time-saving strategies for thorough cleaning.
-                            </p>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (66)</span>
+                    @foreach($videos as $index => $video)
+                        @php
+                            $isFirst = $loop->parent->first && $loop->first;
+                            $isWatched = in_array($video->id, $watchedVideoIds);
+                            $status = $isWatched ? 'completed' : 'pending';
+                        @endphp
+                        <div class="course-item cursor-pointer group {{ $isFirst ? 'active' : '' }}"
+                            data-course-id="{{ $video->id }}"
+                            data-status="{{ $status }}"
+                            data-category="{{ $category }}"
+                            onclick="selectCourse({{ $video->id }})">
+                            <div class="flex gap-4 p-4 rounded-xl {{ $isFirst ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-500' : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 border-transparent hover:border-blue-200 dark:hover:border-blue-800' }} transition-all border-2">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                            {{ $video->title }}
+                                        </h3>
+                                        @if($video->required)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                                                Required
+                                            </span>
+                                        @endif
+                                        @if($isWatched)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                                <i class="fas fa-check mr-1"></i>Done
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                                        {{ $video->description }}
+                                    </p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            <i class="fas fa-clock mr-1"></i>{{ $video->duration }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {{-- Course Card 2 - Pending & Selected --}}
-                <div class="course-item cursor-pointer group active" data-course-id="2" data-status="pending"
-                    onclick="selectCourse(2)">
-                    <div
-                        class="flex gap-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 transition-all border-2 border-blue-500 dark:border-blue-500">
-
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Professional Window Cleaning
-                                Techniques</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Learn advanced window
-                                cleaning methods for both residential and high-rise buildings. This course covers safety
-                                protocols, streak-free techniques, and proper use of squeegees and cleaning solutions.
-                            </p>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (93)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Course Card 3 - Pending --}}
-                <div class="course-item cursor-pointer group" data-course-id="3" data-status="pending"
-                    onclick="selectCourse(3)">
-                    <div
-                        class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
-
-                        <div class="flex-1 min-w-0">
-                            <h3
-                                class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                Eco-Friendly Cleaning Solutions</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Discover sustainable
-                                and environmentally safe cleaning methods. Learn how to create effective green cleaning
-                                solutions, reduce chemical usage, and implement eco-friendly practices in your cleaning
-                                routine.</p>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">5/5 (124)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Course Card 4 - Pending --}}
-                <div class="course-item cursor-pointer group" data-course-id="4" data-status="pending"
-                    onclick="selectCourse(4)">
-                    <div
-                        class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
-
-                        <div class="flex-1 min-w-0">
-                            <h3
-                                class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                Industrial Floor Care & Maintenance</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Master the art of
-                                maintaining various floor types including hardwood, tile, carpet, and vinyl. Learn
-                                buffing, stripping, waxing techniques, and proper maintenance schedules for commercial
-                                spaces.</p>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">4/5 (78)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Course Card 5 - Pending --}}
-                <div class="course-item cursor-pointer group" data-course-id="5" data-status="pending"
-                    onclick="selectCourse(5)">
-                    <div
-                        class="flex gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800">
-
-                        <div class="flex-1 min-w-0">
-                            <h3
-                                class="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                Sanitization & Disinfection Protocols</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">Learn
-                                industry-standard sanitization practices for healthcare facilities, food service, and
-                                high-traffic areas. Understand proper disinfectant usage, cross-contamination
-                                prevention, and compliance with health regulations.</p>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">5/5 (142)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    @endforeach
+                @endforeach
             </div>
         </div>
 
@@ -216,17 +162,23 @@
 
                     {{-- Statistics --}}
                     <div class="flex items-center gap-3 mt-4 flex-wrap">
-                        <span id="courseRating" class="text-sm text-gray-600 dark:text-gray-400">4/5 (93 employees completed this)</span>
+                        <span id="courseCategory" class="text-sm text-blue-600 dark:text-blue-400">
+                            {{ $categoryInfo[$trainingVideos->first()?->category ?? 'cleaning_techniques']['title'] ?? 'Cleaning Techniques' }}
+                        </span>
                         <span class="text-sm text-gray-400 dark:text-gray-500">•</span>
-                        <span id="courseLevel" class="text-sm text-blue-600 dark:text-blue-400">Intermediate</span>
-                        <span class="text-sm text-gray-400 dark:text-gray-500">•</span>
-                        <span id="courseDuration" class="text-sm text-gray-600 dark:text-gray-400">12 lectures • 2 hours</span>
+                        <span id="courseDuration" class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-clock mr-1"></i>{{ $trainingVideos->first()?->duration ?? '5:00' }}
+                        </span>
+                        <span id="courseRequired" class="text-sm {{ ($trainingVideos->first()?->required ?? false) ? '' : 'hidden' }}">
+                            <span class="text-sm text-gray-400 dark:text-gray-500 mr-3">•</span>
+                            <span class="text-red-600 dark:text-red-400"><i class="fas fa-exclamation-circle mr-1"></i>Required</span>
+                        </span>
                     </div>
                 </div>
 
                 {{-- Course Title --}}
                 <h1 class="course-title text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                    Professional Window Cleaning Techniques
+                    {{ $trainingVideos->first()?->title ?? 'Select a Course' }}
                 </h1>
                 
                 <!-- Tags Section -->
@@ -244,10 +196,7 @@
                 {{-- Course Description --}}
                 <div class="mb-3">
                     <p class="course-description text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        Learn advanced window cleaning methods for both residential and high-rise buildings. This course
-                        covers safety protocols, streak-free techniques, and proper use of squeegees and cleaning
-                        solutions. You'll gain the skills needed to clean windows efficiently and professionally in any
-                        setting.
+                        {{ $trainingVideos->first()?->description ?? 'Select a course from the list to view its description.' }}
                     </p>
                 </div>
             </div>
@@ -307,62 +256,28 @@
         {{-- YouTube IFrame API --}}
         <script src="https://www.youtube.com/iframe_api"></script>
         <script>
+            // Courses loaded from database
             const courses = {
-                1: {
-                    title: "Deep Cleaning Fundamentals",
-                    description: "Master the essential techniques of deep cleaning for residential and commercial spaces. Learn proper sanitization methods, equipment usage, and time-saving strategies for thorough cleaning. This comprehensive course covers everything from basic cleaning principles to advanced deep cleaning techniques.",
-                    rating: 4,
-                    reviews: 66,
-                    level: "Beginner",
-                    duration: "8 lectures • 1.5 hours",
-                    status: "pending",
-                    videoId: "Rx2Bh9n6VKc"  // Deep cleaning tutorial
+                @foreach($trainingVideos as $video)
+                {{ $video->id }}: {
+                    title: @json($video->title),
+                    description: @json($video->description),
+                    category: @json($video->category),
+                    duration: @json($video->duration),
+                    required: {{ $video->required ? 'true' : 'false' }},
+                    status: @json(in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending'),
+                    videoId: @json($video->video_id)
                 },
-                2: {
-                    title: "Professional Window Cleaning Techniques",
-                    description: "Learn advanced window cleaning methods for both residential and high-rise buildings. This course covers safety protocols, streak-free techniques, and proper use of squeegees and cleaning solutions. You'll gain the skills needed to clean windows efficiently and professionally in any setting.",
-                    rating: 4,
-                    reviews: 93,
-                    level: "Intermediate",
-                    duration: "12 lectures • 2 hours",
-                    status: "pending",
-                    videoId: "B5s4uYNIM24"  // Window cleaning techniques
-                },
-                3: {
-                    title: "Eco-Friendly Cleaning Solutions",
-                    description: "Discover sustainable and environmentally safe cleaning methods. Learn how to create effective green cleaning solutions, reduce chemical usage, and implement eco-friendly practices in your cleaning routine. This course emphasizes the importance of environmental responsibility in professional cleaning.",
-                    rating: 5,
-                    reviews: 124,
-                    level: "All levels",
-                    duration: "10 lectures • 1.5 hours",
-                    status: "pending",
-                    videoId: "rcBPZs9mOe4"  // Natural cleaning products
-                },
-                4: {
-                    title: "Industrial Floor Care & Maintenance",
-                    description: "Master the art of maintaining various floor types including hardwood, tile, carpet, and vinyl. Learn buffing, stripping, waxing techniques, and proper maintenance schedules for commercial spaces. This advanced course prepares you for professional floor care in any environment.",
-                    rating: 4,
-                    reviews: 78,
-                    level: "Advanced",
-                    duration: "15 lectures • 3 hours",
-                    status: "pending",
-                    videoId: "P6HGlnSI7jo"  // Floor care maintenance
-                },
-                5: {
-                    title: "Sanitization & Disinfection Protocols",
-                    description: "Learn industry-standard sanitization practices for healthcare facilities, food service, and high-traffic areas. Understand proper disinfectant usage, cross-contamination prevention, and compliance with health regulations. This course is essential for anyone working in environments requiring strict hygiene standards.",
-                    rating: 5,
-                    reviews: 142,
-                    level: "Intermediate",
-                    duration: "14 lectures • 2.5 hours",
-                    status: "pending",
-                    videoId: "MbEmFGIkoZU"  // Sanitization protocols
-                }
+                @endforeach
             };
+
+            // Watched video IDs from database
+            const watchedVideoIds = @json($watchedVideoIds);
 
             let currentFilter = 'all';
             let player = null;
-            let currentCourseId = 2; // Default course
+            // Get first video ID from database
+            let currentCourseId = {{ $trainingVideos->first()?->id ?? 1 }};
             let progressInterval = null;
             let watchedSeconds = new Set(); // Track unique seconds watched
             let videoDuration = 0;
@@ -666,6 +581,9 @@
                 }
             }
 
+            // Category display names
+            const categoryNames = @json($categoryInfo);
+
             function updateCourseDetails(course) {
                 // Update title
                 document.querySelector('.course-title').textContent = course.title;
@@ -695,20 +613,26 @@
                 }
                 // If pending, the initializePlayer already reset everything to 0%
 
-                // Update statistics
-                const courseRating = document.getElementById('courseRating');
-                if (courseRating) {
-                    courseRating.textContent = `${course.rating}/5 (${course.reviews} employees completed this)`;
+                // Update category
+                const courseCategory = document.getElementById('courseCategory');
+                if (courseCategory && course.category && categoryNames[course.category]) {
+                    courseCategory.textContent = categoryNames[course.category].title;
                 }
 
-                const courseLevel = document.getElementById('courseLevel');
-                if (courseLevel) {
-                    courseLevel.textContent = course.level;
-                }
-
+                // Update duration
                 const courseDuration = document.getElementById('courseDuration');
                 if (courseDuration) {
-                    courseDuration.textContent = course.duration;
+                    courseDuration.innerHTML = `<i class="fas fa-clock mr-1"></i>${course.duration}`;
+                }
+
+                // Update required badge
+                const courseRequired = document.getElementById('courseRequired');
+                if (courseRequired) {
+                    if (course.required) {
+                        courseRequired.classList.remove('hidden');
+                    } else {
+                        courseRequired.classList.add('hidden');
+                    }
                 }
 
                 // Update status tag
