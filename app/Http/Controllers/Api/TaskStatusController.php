@@ -495,7 +495,7 @@ class TaskStatusController extends Controller
                 ->with(['location.contractedClient', 'optimizationTeam.members.employee.user'])
                 ->orderBy('scheduled_time')
                 ->get()
-                ->map(function($task) {
+                ->map(function($task) use ($employeeId) {
                     // Format time (remove seconds)
                     $startTime = $task->scheduled_time
                         ? Carbon::parse($task->scheduled_time)->format('H:i')
@@ -525,6 +525,12 @@ class TaskStatusController extends Controller
                         ? $task->location->contractedClient->name
                         : null;
 
+                    // Check if this employee has already rated this task
+                    $hasRated = Feedback::where('task_id', $task->id)
+                        ->where('employee_id', $employeeId)
+                        ->where('user_type', 'employee')
+                        ->exists();
+
                     return [
                         'id' => $task->id,
                         'title' => $task->task_description,
@@ -543,6 +549,7 @@ class TaskStatusController extends Controller
                         'team' => $employeeNames,
                         'companions' => $companionsCount,
                         'arrival_status' => $task->arrival_status,
+                        'has_rated' => $hasRated,
                     ];
                 });
 
