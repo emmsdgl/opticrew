@@ -190,6 +190,10 @@ Route::prefix('tasks')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
     // Toggle checklist item completion
     Route::post('/{taskId}/checklist/{itemId}/toggle', [TaskStatusController::class, 'toggleChecklistItem'])
         ->name('api.tasks.checklist.toggle');
+
+    // Submit employee feedback for a completed task
+    Route::post('/{taskId}/feedback', [TaskStatusController::class, 'submitTaskFeedback'])
+        ->name('api.tasks.feedback');
 });
 
 /*

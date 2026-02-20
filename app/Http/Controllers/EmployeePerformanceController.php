@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Task;
 use App\Models\Attendance;
 use App\Models\DayOff;
+use App\Models\TrainingVideo;
 use Carbon\Carbon;
 use Illuminate\View\View;
 
@@ -144,34 +145,55 @@ class EmployeePerformanceController extends Controller
         $newlessons = collect();
 
         if ($role === 'employee') {
-            // Placeholder data using a Collection of objects
-            $newlessons = collect([
-                (object) [
-                    'id' => 1,
-                    'title' => 'Stain Removal',
-                    'duration_formatted' => '40 mins',
-                    'description' => 'This course includes the different methods of stain removal',
-                    'pivot' => (object) ['progress' => 0]
+            // Fetch training videos from database grouped by category
+            $trainingVideos = TrainingVideo::where('is_active', true)
+                ->orderBy('category')
+                ->orderBy('sort_order')
+                ->get();
+
+            // Get watched videos for this user
+            $watchedVideoIds = DB::table('employee_watched_videos')
+                ->where('user_id', $user->id)
+                ->pluck('training_video_id')
+                ->toArray();
+
+            // Group videos by category for the view
+            $videosByCategory = $trainingVideos->groupBy('category');
+
+            // Category display info
+            $categoryInfo = [
+                'cleaning_techniques' => [
+                    'title' => 'Cleaning Techniques',
+                    'titleFi' => 'Siivoustekniikat',
+                    'icon' => 'broom',
+                    'color' => '#3b82f6',
                 ],
-                (object) [
-                    'id' => 2,
-                    'title' => 'Mop Handling',
-                    'duration_formatted' => '1hr 40 mins',
-                    'description' => 'This course includes the different methods of using a mop',
-                    'pivot' => (object) ['progress' => 45]
+                'body_safety' => [
+                    'title' => 'Body Safety',
+                    'titleFi' => 'Kehon turvallisuus',
+                    'icon' => 'shield-account',
+                    'color' => '#10b981',
                 ],
-                (object) [
-                    'id' => 3,
-                    'title' => 'Safety Protocols',
-                    'duration_formatted' => '25 mins',
-                    'description' => 'Basic safety guidelines for handling cleaning chemicals',
-                    'pivot' => (object) ['progress' => 0]
+                'hazard_prevention' => [
+                    'title' => 'Hazard Prevention',
+                    'titleFi' => 'Vaarojen ehkäisy',
+                    'icon' => 'alert-circle',
+                    'color' => '#f59e0b',
                 ],
-            ]);
+                'chemical_safety' => [
+                    'title' => 'Chemical Safety',
+                    'titleFi' => 'Kemikaaliturvallisuus',
+                    'icon' => 'flask',
+                    'color' => '#8b5cf6',
+                ],
+            ];
 
             return view('employee.development', [
                 'user' => $user,
-                'newlessons' => $newlessons
+                'trainingVideos' => $trainingVideos,
+                'videosByCategory' => $videosByCategory,
+                'categoryInfo' => $categoryInfo,
+                'watchedVideoIds' => $watchedVideoIds,
             ]);
         }
 

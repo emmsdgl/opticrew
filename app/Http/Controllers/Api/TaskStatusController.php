@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\PerformanceFlag;
 use App\Models\Attendance;
+use App\Models\Feedback;
 use App\Services\Alert\AlertService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -777,6 +778,109 @@ class TaskStatusController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update checklist item'
+            ], 500);
+        }
+    }
+
+    /**
+     * Submit employee feedback for a completed task
+     *
+     * POST /api/tasks/{taskId}/feedback
+     * Body: {
+     *   "rating": 5,
+     *   "tags": ["Task clarity", "Enough Time"],
+     *   "report_type": "Equipment Issue" (optional),
+     *   "comment": "Detailed review text" (optional)
+     * }
+     *
+     * @param Request $request
+     * @param int $taskId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function submitTaskFeedback(Request $request, $taskId)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string',
+            'report_type' => 'nullable|string|max:100',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $task = Task::findOrFail($taskId);
+            $user = $request->user();
+
+            // Ensure task is completed
+            if ($task->status !== 'Completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feedback can only be submitted for completed tasks'
+                ], 400);
+            }
+
+            // Get employee record
+            $employee = $user->employee;
+            if (!$employee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Employee record not found'
+                ], 403);
+            }
+
+            // Check if feedback already exists for this task by this employee
+            $existingFeedback = Feedback::where('task_id', $taskId)
+                ->where('employee_id', $employee->id)
+                ->where('user_type', 'employee')
+                ->first();
+
+            if ($existingFeedback) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have already submitted feedback for this task'
+                ], 409);
+            }
+
+            // Create feedback record using the new modal feedback fields
+            $feedback = Feedback::create([
+                'task_id' => $taskId,
+                'employee_id' => $employee->id,
+                'user_type' => 'employee',
+                'rating' => $request->rating,
+                'keywords' => $request->tags ?? [],
+                'feedback_text' => $request->comment,
+                'service_type' => $request->report_type, // Store report type if provided
+            ]);
+
+            Log::info("Employee task feedback submitted", [
+                'task_id' => $taskId,
+                'employee_id' => $employee->id,
+                'rating' => $request->rating,
+                'tags' => $request->tags,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Feedback submitted successfully',
+                'data' => [
+                    'feedback_id' => $feedback->id,
+                    'task_id' => $taskId,
+                    'rating' => $feedback->rating,
+                    'tags' => $feedback->keywords,
+                    'comment' => $feedback->feedback_text,
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to submit task feedback", [
+                'task_id' => $taskId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to submit feedback: ' . $e->getMessage()
             ], 500);
         }
     }
