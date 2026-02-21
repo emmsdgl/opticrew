@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Task;
 use App\Models\Attendance;
 use App\Models\DayOff;
+use App\Models\UserCourseProgress;
 use Carbon\Carbon;
 use Illuminate\View\View;
 
@@ -144,34 +145,18 @@ class EmployeePerformanceController extends Controller
         $newlessons = collect();
 
         if ($role === 'employee') {
-            // Placeholder data using a Collection of objects
-            $newlessons = collect([
-                (object) [
-                    'id' => 1,
-                    'title' => 'Stain Removal',
-                    'duration_formatted' => '40 mins',
-                    'description' => 'This course includes the different methods of stain removal',
-                    'pivot' => (object) ['progress' => 0]
-                ],
-                (object) [
-                    'id' => 2,
-                    'title' => 'Mop Handling',
-                    'duration_formatted' => '1hr 40 mins',
-                    'description' => 'This course includes the different methods of using a mop',
-                    'pivot' => (object) ['progress' => 45]
-                ],
-                (object) [
-                    'id' => 3,
-                    'title' => 'Safety Protocols',
-                    'duration_formatted' => '25 mins',
-                    'description' => 'Basic safety guidelines for handling cleaning chemicals',
-                    'pivot' => (object) ['progress' => 0]
-                ],
-            ]);
+            $courseProgress = UserCourseProgress::where('user_id', $user->id)
+                ->pluck('progress', 'course_id')
+                ->toArray();
+
+            $courseStatuses = UserCourseProgress::where('user_id', $user->id)
+                ->pluck('status', 'course_id')
+                ->toArray();
 
             return view('employee.development', [
                 'user' => $user,
-                'newlessons' => $newlessons
+                'courseProgress' => $courseProgress,
+                'courseStatuses' => $courseStatuses,
             ]);
         }
 
@@ -375,5 +360,27 @@ class EmployeePerformanceController extends Controller
     {
         $colors = ['#3B82F6', '#9333EA', '#EC4899', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
         return $colors[array_rand($colors)];
+    }
+
+    public function saveCourseProgress(Request $request)
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|min:1|max:10',
+            'progress' => 'required|integer|min:0|max:100',
+            'status' => 'required|in:pending,in_progress,completed',
+        ]);
+
+        UserCourseProgress::updateOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'course_id' => $validated['course_id'],
+            ],
+            [
+                'progress' => $validated['progress'],
+                'status' => $validated['status'],
+            ]
+        );
+
+        return response()->json(['success' => true]);
     }
 }

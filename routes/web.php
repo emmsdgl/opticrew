@@ -243,6 +243,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/payroll', [ReportController::class, 'employeePayroll'])->name('payroll');
         Route::get('/payroll/{employeeId}', [ReportController::class, 'employeeDetail'])->name('employee-detail');
         Route::get('/payroll/export/csv', [ReportController::class, 'exportPayrollReport'])->name('payroll.export');
+
+        // Service Performance Reports
+        Route::get('/service', [ReportController::class, 'servicePerformance'])->name('service');
     });
 
     // --- ADMIN ACCOUNT ROUTES ---
@@ -350,6 +353,8 @@ Route::middleware(['auth', 'employee'])->group(function () {
         ->name('employee.performance');
     Route::get('/employee/development', [App\Http\Controllers\EmployeePerformanceController::class, 'development'])
         ->name('employee.development');
+    Route::post('/employee/development/save-progress', [App\Http\Controllers\EmployeePerformanceController::class, 'saveCourseProgress'])
+        ->name('employee.development.save-progress');
 
     Route::get('/employee/profile', [ProfileController::class, 'show'])->name('employee.profile');
 

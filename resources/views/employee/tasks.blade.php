@@ -18,30 +18,6 @@
             <x-alert type="error">{{ session('error') }}</x-alert>
         @endif
 
-        <!-- Compact Clock In/Out Status Indicator -->
-        @if($isClockedIn)
-            {{-- Compact status indicator when clocked in --}}
-            <div class="flex items-center gap-2 p-6 mb-4 mx-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
-                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span class="text-sm font-medium text-green-800 dark:text-green-300">
-                    <i class="fas fa-check-circle"></i> You're Present Today, Clocked in at {{ $clockInTime }}
-                </span>
-            </div>
-        @else
-            {{-- Warning banner when not clocked in --}}
-            <div class="mb-4 mx-5 p-6 bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500 rounded-lg">
-                <div class="flex flex-col sm:flex-row items-start gap-3">
-                    <i class="fas fa-exclamation-triangle text-orange-500 text-xl mt-0.5"></i>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-orange-800 dark:text-orange-300 text-sm">Clock In Required</h4>
-                        <p class="text-orange-700 dark:text-orange-400 text-sm mt-1">
-                            You must clock in on the attendance page before starting tasks. All task actions will be disabled until you clock in.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
-
         <!-- Tasks Calendar Section -->
         <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
             <x-labelwithvalue label="Task Calendar" count="" />

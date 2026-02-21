@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Holiday;
 use App\Models\EmployeeRequest;
+use App\Models\UserCourseProgress;
 use Carbon\Carbon;
 
 class EmployeeDashboardController extends Controller
@@ -139,16 +140,46 @@ class EmployeeDashboardController extends Controller
                 ];
             })->toArray();
 
+        // --- Lessons: Get course progress for the logged-in user ---
+        $courseInfo = [
+            1 => ['title' => 'Deep Cleaning Fundamentals', 'description' => 'Master the essential techniques of deep cleaning for residential and commercial spaces', 'duration' => '8 lectures • 1.5 hours'],
+            2 => ['title' => 'Professional Window Cleaning', 'description' => 'Learn advanced window cleaning methods and safety protocols', 'duration' => '12 lectures • 2 hours'],
+            3 => ['title' => 'Eco-Friendly Cleaning Solutions', 'description' => 'Discover sustainable and environmentally safe cleaning methods', 'duration' => '10 lectures • 1.5 hours'],
+            4 => ['title' => 'Industrial Floor Care & Maintenance', 'description' => 'Master the art of maintaining various floor types', 'duration' => '15 lectures • 3 hours'],
+            5 => ['title' => 'Sanitization & Disinfection Protocols', 'description' => 'Learn industry-standard sanitization practices', 'duration' => '14 lectures • 2.5 hours'],
+        ];
+
+        $watchedLessons = UserCourseProgress::where('user_id', $user->id)
+            ->where('status', '!=', 'pending')
+            ->get()
+            ->map(function ($record) use ($courseInfo) {
+                $info = $courseInfo[$record->course_id] ?? null;
+                if (!$info) return null;
+
+                return [
+                    'course_id' => $record->course_id,
+                    'title' => $info['title'],
+                    'description' => $info['description'],
+                    'duration' => $info['duration'],
+                    'progress' => $record->progress,
+                    'status' => $record->status,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->toArray();
+
         return view('employee.dashboard', [
             'employee' => $employee,
             'dailySchedule' => $dailySchedule,
             'todoList' => $todoList,
             'tasksSummary' => (array) $tasksSummary,
-            'period' => $period, // Pass the current period back to the view
-            'holidays' => $holidays, // Pass holidays to the view
-            'isClockedIn' => $isClockedIn, // Pass clock in status (for button label)
-            'hasAttendanceToday' => $hasAttendanceToday, // Pass attendance check (for preventing duplicates)
-            'employeeRequests' => $employeeRequests, // Pass employee requests
+            'period' => $period,
+            'holidays' => $holidays,
+            'isClockedIn' => $isClockedIn,
+            'hasAttendanceToday' => $hasAttendanceToday,
+            'employeeRequests' => $employeeRequests,
+            'watchedLessons' => $watchedLessons,
         ]);
     }
 }

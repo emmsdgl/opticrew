@@ -911,4 +911,55 @@ class NotificationService
             ]
         );
     }
+
+    /**
+     * Notify all admins when an employee submits an absence/leave request (web form).
+     */
+    public function notifyAdminsEmployeeRequest($employeeRequest, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $absenceDate = $employeeRequest->absence_date->format('M d, Y');
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LEAVE_REQUEST,
+            'New Leave Request',
+            "{$employeeName} has submitted a {$employeeRequest->absence_type} leave request for {$absenceDate}.",
+            [
+                'leave_request_id' => $employeeRequest->id,
+                'employee_name' => $employeeName,
+                'leave_type' => $employeeRequest->absence_type,
+                'start_date' => $absenceDate,
+                'reason' => $employeeRequest->reason,
+                'icon' => 'user-clock',
+                'color' => 'yellow',
+                'action_url' => route('admin.attendance'),
+            ]
+        );
+    }
+
+    /**
+     * Notify all admins when an employee cancels a leave request.
+     */
+    public function notifyAdminsEmployeeRequestCancelled($employeeRequest, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $absenceDate = $employeeRequest->absence_date->format('M d, Y');
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LEAVE_REQUEST_CANCELLED,
+            'Leave Request Cancelled',
+            "{$employeeName} has cancelled their {$employeeRequest->absence_type} leave request for {$absenceDate}.",
+            [
+                'leave_request_id' => $employeeRequest->id,
+                'employee_name' => $employeeName,
+                'leave_type' => $employeeRequest->absence_type,
+                'start_date' => $absenceDate,
+                'icon' => 'calendar-times',
+                'color' => 'red',
+                'action_url' => route('admin.attendance'),
+            ]
+        );
+    }
 }

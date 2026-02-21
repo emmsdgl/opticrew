@@ -16,17 +16,13 @@
     <div class="flex items-center gap-2 sm:gap-4 md:gap-6 flex-shrink-0">       
 
         <!-- Notification Dropdown -->
-        <div class="relative" x-data="{ open: false }">
+        <div class="relative" x-data="notificationDropdown()" x-init="init()">
             <button @click="open = !open"
                     class="relative bg-blue-100 dark:bg-blue-900/30 px-3 py-2 rounded-full transition hover:bg-gray-300 dark:hover:bg-gray-700">
                 <i class="fi fi-rr-bell text-blue-600 dark:text-blue-300 text-base"></i>
 
                 <!-- Notification Badge -->
-                @if(count($notifications) > 0)
-                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                    {{ count($notifications) > 9 ? '9+' : count($notifications) }}
-                </span>
-                @endif
+                <span x-show="unreadCount > 0" x-cloak class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center" x-text="unreadCount > 9 ? '9+' : unreadCount"></span>
             </button>
 
             <!-- Notification Dropdown Panel -->
@@ -44,73 +40,41 @@
                 <!-- Header -->
                 <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
-                    @if(count($notifications) > 0)
-                    <button class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Mark all as read</button>
-                    @endif
+                    <button x-show="unreadCount > 0" @click="markAllAsRead()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Mark all as read</button>
                 </div>
 
                 <!-- Notification List -->
                 <div class="max-h-80 overflow-y-auto">
-                    @forelse($notifications as $notification)
-                    <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
-                        <div class="flex items-start gap-3">
-                            @php
-                                $icon = $notification['data']['icon'] ?? 'info';
-                                $iconMap = [
-                                    'star' => 'fi-rr-star',
-                                    'check-circle' => 'fi-rr-checkbox',
-                                    'times-circle' => 'fi-rr-cross-circle',
-                                    'play-circle' => 'fi-rr-play',
-                                    'clipboard-check' => 'fi-rr-checklist',
-                                    'clipboard-list' => 'fi-rr-list',
-                                    'users' => 'fi-rr-users',
-                                    'calendar-plus' => 'fi-rr-calendar',
-                                    'calendar-times' => 'fi-rr-calendar',
-                                    'user-clock' => 'fi-rr-clock',
-                                    'tasks' => 'fi-rr-ballot-check',
-                                    'user-plus' => 'fi-rr-user-add',
-                                    'info' => 'fi-rr-info',
-                                ];
-                                $iconClass = $iconMap[$icon] ?? 'fi-rr-info';
-                                $color = $notification['data']['color'] ?? 'blue';
-                                $colorClasses = [
-                                    'blue' => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-                                    'green' => 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-                                    'yellow' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
-                                    'red' => 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-                                ];
-                                $bgColorClass = $colorClasses[$color] ?? $colorClasses['blue'];
-                            @endphp
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full {{ $bgColorClass }} flex items-center justify-center">
-                                <i class="fi {{ $iconClass }} text-sm"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                    {{ $notification['title'] ?? 'Notification' }}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
-                                    {{ $notification['message'] ?? '' }}
-                                </p>
-                                <div class="flex items-center justify-between mt-1">
-                                    <p class="text-xs text-gray-400 dark:text-gray-500">
-                                        {{ $notification['time'] ?? 'Just now' }}
-                                    </p>
-                                    @if(isset($notification['data']['action_url']))
-                                    <a href="{{ $notification['data']['action_url'] }}"
-                                       class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">
-                                        {{ $notification['data']['action_text'] ?? 'View' }}
-                                    </a>
-                                    @endif
+                    <template x-if="notifications.length > 0">
+                        <template x-for="notif in notifications" :key="notif.id">
+                            <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors cursor-pointer"
+                                 :class="{ 'opacity-60': notif.read }"
+                                 @click="markAsRead(notif)">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                                         :class="notif.colorClass">
+                                        <i class="fi text-sm" :class="notif.iconClass"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate" x-text="notif.title"></p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2" x-text="notif.message"></p>
+                                        <div class="flex items-center justify-between mt-1">
+                                            <p class="text-xs text-gray-400 dark:text-gray-500" x-text="notif.time"></p>
+                                            <a x-show="notif.actionUrl" :href="notif.actionUrl"
+                                               class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                                               x-text="notif.actionText" @click.stop="markAsRead(notif)"></a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        </template>
+                    </template>
+                    <template x-if="notifications.length === 0">
+                        <div class="px-4 py-8 text-center">
+                            <i class="fi fi-rr-bell-slash text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">No notifications</p>
                         </div>
-                    </div>
-                    @empty
-                    <div class="px-4 py-8 text-center">
-                        <i class="fi fi-rr-bell-slash text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No notifications</p>
-                    </div>
-                    @endforelse
+                    </template>
                 </div>
 
                 <!-- Footer -->
@@ -234,3 +198,98 @@
         </div>
     </div>
 </header>
+
+@once
+<script>
+function notificationDropdown() {
+    const iconMap = {
+        'star': 'fi-rr-star',
+        'check-circle': 'fi-rr-checkbox',
+        'times-circle': 'fi-rr-cross-circle',
+        'play-circle': 'fi-rr-play',
+        'clipboard-check': 'fi-rr-checklist',
+        'clipboard-list': 'fi-rr-list',
+        'users': 'fi-rr-users',
+        'calendar-plus': 'fi-rr-calendar',
+        'calendar-times': 'fi-rr-calendar',
+        'user-clock': 'fi-rr-clock',
+        'tasks': 'fi-rr-ballot-check',
+        'user-plus': 'fi-rr-user-add',
+        'info': 'fi-rr-info',
+    };
+
+    const colorMap = {
+        'blue': 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+        'green': 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+        'yellow': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
+        'red': 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+    };
+
+    return {
+        open: false,
+        notifications: [],
+        unreadCount: 0,
+
+        init() {
+            const raw = @json($notifications);
+            this.notifications = raw.map(n => ({
+                id: n.id,
+                title: n.title || 'Notification',
+                message: n.message || '',
+                time: n.time || 'Just now',
+                read: n.read || false,
+                iconClass: iconMap[n.data?.icon] || 'fi-rr-info',
+                colorClass: colorMap[n.data?.color] || colorMap['blue'],
+                actionUrl: n.data?.action_url || null,
+                actionText: n.data?.action_text || 'View',
+            }));
+            this.updateUnreadCount();
+        },
+
+        updateUnreadCount() {
+            this.unreadCount = this.notifications.filter(n => !n.read).length;
+        },
+
+        async markAsRead(notif) {
+            if (notif.read) return;
+
+            try {
+                const res = await fetch(`/notifications/${notif.id}/mark-as-read`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (res.ok) {
+                    notif.read = true;
+                    this.updateUnreadCount();
+                }
+            } catch (e) {
+                console.error('Failed to mark notification as read:', e);
+            }
+        },
+
+        async markAllAsRead() {
+            try {
+                const res = await fetch('/notifications/mark-all-as-read', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (res.ok) {
+                    this.notifications.forEach(n => n.read = true);
+                    this.unreadCount = 0;
+                }
+            } catch (e) {
+                console.error('Failed to mark all as read:', e);
+            }
+        }
+    };
+}
+</script>
+@endonce

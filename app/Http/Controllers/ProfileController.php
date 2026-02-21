@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\UserActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -124,7 +125,16 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
+        $changedFields = $user->getDirty();
         $user->save();
+
+        UserActivityLog::log(
+            $user->id,
+            UserActivityLog::TYPE_PROFILE_UPDATED,
+            'Profile information updated',
+            ['changed_fields' => array_keys($changedFields)],
+            $request->ip()
+        );
 
         // Redirect back to profile page based on role
         $role = $user->role;

@@ -258,19 +258,27 @@
                         Fin-noys</p>
                 </div>
 
-                <!-- Display Validation Errors -->
+                <!-- Floating Validation Errors -->
                 @if ($errors->any())
-                    <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                        @foreach ($errors->all() as $error)
-                            <p>{{ $error }}</p>
-                        @endforeach
+                    <div id="floating-alert"
+                         class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 bg-red-500 text-white rounded-lg shadow-lg text-sm transition-all duration-300 opacity-0 -translate-y-4"
+                         style="min-width: 300px; max-width: 90vw;">
+                        <i class="fa-solid fa-circle-exclamation text-lg flex-shrink-0"></i>
+                        <div class="flex-1">
+                            @foreach ($errors->all() as $error)
+                                <p>{{ $error }}</p>
+                            @endforeach
+                        </div>
+                        <button onclick="dismissAlert()" class="flex-shrink-0 ml-2 hover:text-red-200 transition-colors">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
                 @endif
 
                 <!-- LOGIN FIELD -->
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon"></i>
-                    <input type="text" id="input-username" name="login" class="bg-gray-100">
+                    <input type="text" id="input-username" name="login" class="bg-gray-100" autocomplete="username">
                     <label for="input-username" class="text-[#07185788] text-sm font-sans">Email / Username</label>
                 </div>
 
@@ -312,7 +320,7 @@
                 </div>
 
                 <label id="terms-container" class="flex items-center space-x-2">
-                    <input type="checkbox" name="terms">
+                    <input type="checkbox" name="terms" id="terms-checkbox" disabled class="border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
                     <span class="text-xs italic text-justify text-[#868282]">
                         <p id="text-1">
                             By signing in to your account, you acknowledge that you have read and understood the
@@ -339,7 +347,7 @@
                     <i class="fa-solid fa-times text-2xl"></i>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="termsModalBody">
                 <div class="space-y-4 text-gray-700">
                     <p class="text-sm text-gray-500 font-medium">Last Updated: November 5, 2025</p>
 
@@ -475,7 +483,7 @@
                     <i class="fa-solid fa-times text-2xl"></i>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="privacyModalBody">
                 <div class="space-y-4 text-gray-700">
                     <p class="text-sm text-gray-500">Last updated: January 2024</p>
 
@@ -532,6 +540,27 @@
     </div>
 
     <script>
+        // Floating alert
+        function dismissAlert() {
+            const alert = document.getElementById('floating-alert');
+            if (alert) {
+                alert.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => alert.remove(), 300);
+            }
+        }
+
+        (function () {
+            const alert = document.getElementById('floating-alert');
+            if (alert) {
+                // Animate in
+                requestAnimationFrame(() => {
+                    alert.classList.remove('opacity-0', '-translate-y-4');
+                });
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => dismissAlert(), 5000);
+            }
+        })();
+
         document.addEventListener('DOMContentLoaded', () => {
             const inputs = document.querySelectorAll('.input-group input');
 
@@ -563,15 +592,62 @@
             });
         });
 
+        // Track whether user has scrolled to bottom of each modal
+        let termsRead = false;
+        let privacyRead = false;
+
+        function updateTermsCheckbox() {
+            const checkbox = document.getElementById('terms-checkbox');
+            if (termsRead && privacyRead) {
+                checkbox.disabled = false;
+            }
+        }
+
+        function setupScrollTracking(modalBodyId, onComplete) {
+            const body = document.getElementById(modalBodyId);
+            if (!body) return;
+            body.addEventListener('scroll', function () {
+                // Check if scrolled to bottom (with a small threshold)
+                const atBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 20;
+                if (atBottom) {
+                    onComplete();
+                }
+            });
+        }
+
+        // Set up scroll listeners once DOM is ready
+        document.addEventListener('DOMContentLoaded', function () {
+            setupScrollTracking('termsModalBody', function () {
+                termsRead = true;
+                updateTermsCheckbox();
+            });
+            setupScrollTracking('privacyModalBody', function () {
+                privacyRead = true;
+                updateTermsCheckbox();
+            });
+
+        });
+
         // Modal Functions
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            document.body.style.overflow = 'hidden';
+
+            // Check if content is short enough that no scrolling is needed
+            setTimeout(function () {
+                const bodyId = modalId === 'termsModal' ? 'termsModalBody' : 'privacyModalBody';
+                const body = document.getElementById(bodyId);
+                if (body && body.scrollHeight <= body.clientHeight + 20) {
+                    if (modalId === 'termsModal') { termsRead = true; }
+                    else { privacyRead = true; }
+                    updateTermsCheckbox();
+                }
+            }, 100);
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = 'auto'; // Re-enable scrolling
+            document.body.style.overflow = 'auto';
         }
 
         // Close modal when clicking outside of it

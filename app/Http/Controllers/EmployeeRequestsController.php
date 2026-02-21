@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Services\Notification\NotificationService;
 
 class EmployeeRequestsController extends Controller
 {
@@ -52,6 +53,11 @@ class EmployeeRequestsController extends Controller
             'status' => 'Pending', // Default status
         ]);
 
+        // Notify all admins about the new leave request
+        $notificationService = app(NotificationService::class);
+        $employeeName = Auth::user()->name;
+        $notificationService->notifyAdminsEmployeeRequest($employeeRequest, $employeeName);
+
         return response()->json([
             'success' => true,
             'message' => 'Your absence request has been submitted successfully!',
@@ -87,6 +93,11 @@ class EmployeeRequestsController extends Controller
         $employeeRequest->update([
             'status' => 'Cancelled'
         ]);
+
+        // Notify all admins about the cancelled leave request
+        $notificationService = app(NotificationService::class);
+        $employeeName = Auth::user()->name;
+        $notificationService->notifyAdminsEmployeeRequestCancelled($employeeRequest, $employeeName);
 
         return response()->json([
             'success' => true,

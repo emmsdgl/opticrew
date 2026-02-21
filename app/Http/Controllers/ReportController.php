@@ -7,6 +7,8 @@ use App\Models\Client;
 use App\Models\ClientAppointment;
 use App\Models\Employee;
 use App\Models\Attendance;
+use App\Models\Feedback;
+use App\Models\UserCourseProgress;
 use App\Models\User;
 use App\Models\Task;
 use App\Models\Location;
@@ -385,13 +387,37 @@ class ReportController extends Controller
             ];
         });
 
+        // Course progress data
+        $courseInfo = [
+            1 => ['title' => 'Deep Cleaning Fundamentals', 'duration' => '8 lectures • 1.5 hours'],
+            2 => ['title' => 'Professional Window Cleaning', 'duration' => '12 lectures • 2 hours'],
+            3 => ['title' => 'Eco-Friendly Cleaning Solutions', 'duration' => '10 lectures • 1.5 hours'],
+            4 => ['title' => 'Industrial Floor Care & Maintenance', 'duration' => '15 lectures • 3 hours'],
+            5 => ['title' => 'Sanitization & Disinfection Protocols', 'duration' => '14 lectures • 2.5 hours'],
+        ];
+
+        $courseProgressRecords = UserCourseProgress::where('user_id', $employee->user->id)->get()->keyBy('course_id');
+
+        $courses = collect($courseInfo)->map(function ($info, $courseId) use ($courseProgressRecords) {
+            $progress = $courseProgressRecords->get($courseId);
+            return [
+                'id' => $courseId,
+                'title' => $info['title'],
+                'duration' => $info['duration'],
+                'progress' => $progress ? $progress->progress : 0,
+                'status' => $progress ? $progress->status : 'pending',
+                'updated_at' => $progress ? $progress->updated_at : null,
+            ];
+        });
+
         return view('admin.reports.employee-detail', compact(
             'employee',
             'attendances',
             'stats',
             'dailyBreakdown',
             'startDate',
-            'endDate'
+            'endDate',
+            'courses'
         ));
     }
 
@@ -738,5 +764,54 @@ class ReportController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Show service performance report with client and employee feedback
+     */
+    public function servicePerformance(Request $request)
+    {
+        // Date range filtering
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
+
+        // Client feedback (where client_id is set)
+        $clientFeedback = Feedback::with(['client', 'appointment'])
+            ->whereNotNull('client_id')
+            ->whereBetween('created_at', [$startDate, Carbon::parse($endDate)->endOfDay()])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Employee feedback (where employee_id is set)
+        $employeeFeedback = Feedback::with(['employee', 'task'])
+            ->whereNotNull('employee_id')
+            ->whereBetween('created_at', [$startDate, Carbon::parse($endDate)->endOfDay()])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Summary stats
+        $totalFeedback = $clientFeedback->count() + $employeeFeedback->count();
+
+        $clientAvgRating = $clientFeedback->avg(fn ($f) => $f->rating ?? $f->overall_rating) ?: 0;
+        $employeeAvgRating = $employeeFeedback->avg(fn ($f) => $f->rating ?? $f->overall_rating) ?: 0;
+        $overallAvgRating = $totalFeedback > 0
+            ? ($clientFeedback->merge($employeeFeedback)->avg(fn ($f) => $f->rating ?? $f->overall_rating) ?: 0)
+            : 0;
+
+        $recommendRate = $clientFeedback->count() > 0
+            ? round(($clientFeedback->where('would_recommend', true)->count() / $clientFeedback->count()) * 100, 1)
+            : 0;
+
+        return view('admin.reports.service-performance', compact(
+            'startDate',
+            'endDate',
+            'clientFeedback',
+            'employeeFeedback',
+            'totalFeedback',
+            'clientAvgRating',
+            'employeeAvgRating',
+            'overallAvgRating',
+            'recommendRate'
+        ));
     }
 }

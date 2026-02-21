@@ -62,6 +62,15 @@
                                 <i class="fi fi-rr-download text-green-600 dark:text-green-400"></i>
                                 <span>Export Payroll Report (CSV)</span>
                             </a>
+
+                            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+
+                            <!-- Service Performance Report -->
+                            <a href="{{ route('admin.reports.service') }}"
+                               class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fi fi-rr-chart-pie-alt text-orange-600 dark:text-orange-400"></i>
+                                <span>Service Performance Report</span>
+                            </a>
                         </div>
                     </div>
                 </div>

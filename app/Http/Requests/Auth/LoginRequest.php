@@ -29,6 +29,14 @@ class LoginRequest extends FormRequest
         return [
             'login' => ['required', 'string'], // Changed 'email' to 'login' and removed 'email' rule
             'password' => ['required', 'string'],
+            'terms' => ['accepted'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'terms.accepted' => 'Please open and read both the Terms and Conditions and Privacy Policy before proceeding.',
         ];
     }
 
