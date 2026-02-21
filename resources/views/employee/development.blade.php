@@ -360,6 +360,20 @@
                 }
             };
 
+            // Load saved progress from server
+            const savedProgress = @json($courseProgress ?? new \stdClass);
+            const savedStatuses = @json($courseStatuses ?? new \stdClass);
+
+            // Apply saved progress to courses
+            Object.keys(courses).forEach(id => {
+                if (savedStatuses[id]) {
+                    courses[id].status = savedStatuses[id];
+                }
+                if (savedProgress[id] !== undefined) {
+                    courses[id].savedProgress = parseInt(savedProgress[id]);
+                }
+            });
+
             let currentFilter = 'all';
             let player = null;
             let currentCourseId = 2; // Default course
@@ -368,6 +382,46 @@
             let videoDuration = 0;
             let isCompleted = false;
             const COMPLETION_THRESHOLD = 90; // Must watch 90% to complete
+            let saveTimeout = null;
+
+            // Save progress to server
+            function saveProgressToServer(courseId, progress, status) {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    fetch('{{ route("employee.development.save-progress") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            course_id: courseId,
+                            progress: Math.min(100, Math.max(0, progress)),
+                            status: status,
+                        })
+                    }).catch(e => console.error('Failed to save progress:', e));
+                }, 1000);
+            }
+
+            // Save on page leave
+            window.addEventListener('beforeunload', function() {
+                if (currentCourseId && courses[currentCourseId]) {
+                    const progress = calculateWatchedPercentage();
+                    const status = courses[currentCourseId].status;
+                    if (status !== 'pending') {
+                        navigator.sendBeacon(
+                            '{{ route("employee.development.save-progress") }}',
+                            new Blob([JSON.stringify({
+                                _token: document.querySelector('meta[name="csrf-token"]').content,
+                                course_id: currentCourseId,
+                                progress: Math.min(100, Math.max(0, progress)),
+                                status: status,
+                            })], { type: 'application/json' })
+                        );
+                    }
+                }
+            });
 
             // YouTube API ready callback
             function onYouTubeIframeAPIReady() {
@@ -448,6 +502,7 @@
                     if (courses[currentCourseId].status === 'pending') {
                         courses[currentCourseId].status = 'in_progress';
                         updateCourseStatusTag('in_progress');
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), 'in_progress');
 
                         // Update sidebar course item
                         const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
@@ -469,6 +524,7 @@
                 document.getElementById('videoFallback').classList.remove('hidden');
             }
 
+            let saveCounter = 0;
             function startProgressTracking() {
                 if (progressInterval) return;
 
@@ -479,6 +535,12 @@
 
                         const watchedPercentage = calculateWatchedPercentage();
                         updateProgressUI(player.getCurrentTime(), videoDuration, watchedPercentage);
+
+                        // Save to server every 10 seconds
+                        saveCounter++;
+                        if (saveCounter % 10 === 0) {
+                            saveProgressToServer(currentCourseId, watchedPercentage, courses[currentCourseId].status);
+                        }
 
                         // Check for completion
                         if (watchedPercentage >= COMPLETION_THRESHOLD && !isCompleted) {
@@ -492,6 +554,11 @@
                 if (progressInterval) {
                     clearInterval(progressInterval);
                     progressInterval = null;
+
+                    // Save current progress when tracking stops
+                    if (currentCourseId && courses[currentCourseId] && courses[currentCourseId].status !== 'pending') {
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), courses[currentCourseId].status);
+                    }
                 }
             }
 
@@ -565,8 +632,8 @@
                         courseItem.setAttribute('data-status', 'completed');
                     }
 
-                    // Here you could also save completion to database via AJAX
-                    // saveCompletionToDatabase(currentCourseId);
+                    // Save completion to database
+                    saveProgressToServer(currentCourseId, 100, 'completed');
                 }
             }
 
@@ -618,15 +685,21 @@
 
             // Check for course parameter in URL and auto-select on page load
             document.addEventListener('DOMContentLoaded', function() {
+                // Apply saved statuses to sidebar course items
+                Object.keys(courses).forEach(id => {
+                    const courseItem = document.querySelector(`[data-course-id="${id}"]`);
+                    if (courseItem && courses[id].status !== 'pending') {
+                        courseItem.setAttribute('data-status', courses[id].status);
+                    }
+                });
+
                 const urlParams = new URLSearchParams(window.location.search);
                 const courseId = urlParams.get('course');
 
                 if (courseId && courses[courseId]) {
                     currentCourseId = parseInt(courseId);
-                    // Select the course from URL parameter
                     selectCourse(currentCourseId);
 
-                    // Scroll to the selected course card (optional)
                     const selectedCourseCard = document.querySelector(`[data-course-id="${courseId}"]`);
                     if (selectedCourseCard) {
                         selectedCourseCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -682,15 +755,16 @@
                     initializePlayer(course.videoId);
                 }
 
-                // Update UI based on course status (after player init which resets everything)
+                // Update UI based on course status and saved progress
                 if (course.status === 'completed') {
-                    // Course was already completed - show completed state
                     isCompleted = true;
-                    updateProgressUI(0, 0, 100); // Show 100% progress
+                    updateProgressUI(0, 0, 100);
                     updateProgressStatus('completed');
                     document.getElementById('completionBadge').classList.remove('hidden');
+                } else if (course.status === 'in_progress' && course.savedProgress > 0) {
+                    updateProgressUI(0, 0, course.savedProgress);
+                    updateProgressStatus('paused');
                 } else if (course.status === 'in_progress') {
-                    // Course was started but not completed - show in progress state
                     updateProgressStatus('paused');
                 }
                 // If pending, the initializePlayer already reset everything to 0%

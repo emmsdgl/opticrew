@@ -77,6 +77,32 @@
             <x-alert type="error">{{ session('error') }}</x-alert>
         @endif
 
+        <!-- Clock In Status Banner -->
+        @if($isClockedIn)
+            @php
+                $todayAttendanceRecord = \App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first();
+                $clockInTimeFormatted = $todayAttendanceRecord ? \Carbon\Carbon::parse($todayAttendanceRecord->clock_in)->format('g:i A') : '';
+            @endphp
+            <div class="flex items-center gap-2 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-sm font-medium text-green-800 dark:text-green-300">
+                    <i class="fas fa-check-circle"></i> You're Present Today, Clocked in at {{ $clockInTimeFormatted }}
+                </span>
+            </div>
+        @elseif(!$hasAttendanceToday)
+            <div class="p-4 bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-exclamation-triangle text-orange-500 text-xl mt-0.5"></i>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-orange-800 dark:text-orange-300 text-sm">Clock In Required</h4>
+                        <p class="text-orange-700 dark:text-orange-400 text-sm mt-1">
+                            You haven't clocked in yet today. Use the attendance drawer to clock in.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Inner Panel - Summary Cards Container -->
         <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
             <x-labelwithvalue label="Summary" count="" />
@@ -254,8 +280,8 @@
                                 <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 mr-2">Action:</span>
                                 <button
                                     @click="openRequestModal({{ $index }})"
-                                    class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-                                    View
+                                    class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                                    <i class="fa-regular fa-eye mr-1 text-xs"></i> View
                                 </button>
                             </div>
                         </div>
@@ -270,113 +296,174 @@
             @endif
         </div>
 
-        <!-- Request Details Modal -->
-        <div x-show="showRequestModal" x-cloak @click="closeRequestModal()"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 sm:p-8"
-            style="display: none;">
-            <div @click.stop
-                class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700"
-                x-show="showRequestModal" x-transition>
+        <!-- Request Details Slide-in Drawer -->
+        <div x-show="showRequestModal" x-cloak class="fixed inset-0 z-50 overflow-hidden" style="display: none;">
+            <!-- Backdrop -->
+            <div x-show="showRequestModal"
+                 x-transition:enter="transition-opacity ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition-opacity ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click="closeRequestModal()"
+                 class="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
 
-                <!-- Close button -->
-                <button type="button" @click="closeRequestModal()"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none rounded-lg p-1 z-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+            <!-- Drawer Panel -->
+            <div class="fixed inset-y-0 right-0 flex max-w-full">
+                <div x-show="showRequestModal"
+                     x-transition:enter="transform transition ease-in-out duration-300"
+                     x-transition:enter-start="translate-x-full"
+                     x-transition:enter-end="translate-x-0"
+                     x-transition:leave="transform transition ease-in-out duration-200"
+                     x-transition:leave-start="translate-x-0"
+                     x-transition:leave-end="translate-x-full"
+                     @click.stop
+                     class="relative w-screen max-w-sm">
 
-                <!-- Modal Body -->
-                <div class="p-6 sm:p-8">
-                    <!-- Header -->
-                    <div class="py-4 text-center">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                            Request Details
-                        </h3>
-                        <!-- Status Badge -->
-                        <div class="flex items-center justify-center gap-2 mt-3">
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Status:</span>
-                            <span class="px-3 py-1 text-xs rounded-full font-semibold"
-                                :class="{
-                                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400': selectedRequest?.requestStatus === 'Pending',
-                                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': selectedRequest?.requestStatus === 'Approved',
-                                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': selectedRequest?.requestStatus === 'Rejected'
-                                }"
-                                x-text="selectedRequest?.requestStatus"></span>
-                        </div>
-                    </div>
-
-                    <!-- Request Information -->
-                    <div class="space-y-4 text-sm py-4 border-t border-gray-200 dark:border-gray-700">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500 dark:text-gray-400">Request Type</span>
-                            <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.requestType"></span>
-                        </div>
-
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500 dark:text-gray-400">Date</span>
-                            <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.requestDate"></span>
-                        </div>
-
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500 dark:text-gray-400">Time Range</span>
-                            <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.requestTimeRange"></span>
-                        </div>
-
-                        <template x-if="selectedRequest?.requestFromTime && selectedRequest?.requestToTime">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-500 dark:text-gray-400">Custom Hours</span>
-                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.requestFromTime + ' - ' + selectedRequest?.requestToTime"></span>
-                            </div>
-                        </template>
-
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500 dark:text-gray-400">Reason</span>
-                            <span class="font-medium text-gray-900 dark:text-white" x-text="selectedRequest?.requestReason"></span>
-                        </div>
-
-                        <template x-if="selectedRequest?.requestDescription">
-                            <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <span class="text-gray-500 dark:text-gray-400 block mb-2">Description</span>
-                                <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg" x-text="selectedRequest?.requestDescription"></p>
-                            </div>
-                        </template>
-
-                        <template x-if="selectedRequest?.requestProofDocument">
-                            <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <span class="text-gray-500 dark:text-gray-400">Proof Document</span>
-                                <a :href="'/storage/' + selectedRequest?.requestProofDocument" target="_blank"
-                                    class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
-                                    View Document
-                                </a>
-                            </div>
-                        </template>
-
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <span class="text-gray-500 dark:text-gray-400">Submitted On</span>
-                            <span class="font-medium text-gray-900 dark:text-white text-sm" x-text="selectedRequest?.requestCreatedAt"></span>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="mt-4 space-y-3">
-                        <!-- Cancel Button (only for pending requests) -->
-                        <template x-if="selectedRequest?.requestStatus === 'Pending'">
-                            <button @click="cancelRequest()"
-                                :disabled="isCancelling"
-                                class="w-full px-6 py-3 text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                                :class="isCancelling ? 'bg-red-400 text-white cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white'">
-                                <i class="fa-solid fa-ban"></i>
-                                <span x-text="isCancelling ? 'Cancelling...' : 'Cancel Request'"></span>
+                    <!-- Drawer Content -->
+                    <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
+                        <!-- Drawer Header -->
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-slate-800/50">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Request Details</h2>
+                            <button type="button" @click="closeRequestModal()"
+                                class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
-                        </template>
+                        </div>
 
-                        <!-- Close Button -->
-                        <button @click="closeRequestModal()"
-                            class="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors duration-200">
-                            Close
-                        </button>
+                        <!-- Drawer Body (Scrollable) -->
+                        <div class="flex-1 overflow-y-auto p-6" x-show="selectedRequest">
+                            <!-- Subtitle -->
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                View your leave request details
+                            </p>
+
+                            <!-- Request Information -->
+                            <template x-if="selectedRequest">
+                                <div class="space-y-0 mb-6">
+                                    <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
+                                        <span class="text-sm font-semibold px-2 py-1 rounded-full"
+                                            :class="{
+                                                'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400': selectedRequest.requestStatus === 'Pending',
+                                                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': selectedRequest.requestStatus === 'Approved',
+                                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': selectedRequest.requestStatus === 'Rejected'
+                                            }"
+                                            x-text="selectedRequest.requestStatus"></span>
+                                    </div>
+
+                                    <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">Request Type</span>
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.requestType"></span>
+                                    </div>
+
+                                    <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">Date</span>
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.requestDate"></span>
+                                    </div>
+
+                                    <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">Time Range</span>
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.requestTimeRange"></span>
+                                    </div>
+
+                                    <template x-if="selectedRequest.requestFromTime && selectedRequest.requestToTime">
+                                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Custom Hours</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.requestFromTime + ' - ' + selectedRequest.requestToTime"></span>
+                                        </div>
+                                    </template>
+
+                                    <div class="py-3 border-b border-gray-200 dark:border-gray-700">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400 block mb-2">Reason</span>
+                                        <p class="text-sm text-gray-900 dark:text-white" x-text="selectedRequest.requestReason"></p>
+                                    </div>
+
+                                    <template x-if="selectedRequest.requestDescription">
+                                        <div class="py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400 block mb-2">Description</span>
+                                            <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg" x-text="selectedRequest.requestDescription"></p>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="selectedRequest.requestProofDocument">
+                                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Proof Document</span>
+                                            <a :href="'/storage/' + selectedRequest.requestProofDocument" target="_blank"
+                                                class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
+                                                View Document
+                                            </a>
+                                        </div>
+                                    </template>
+
+                                    <div class="flex justify-between items-center py-3">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">Submitted</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400" x-text="selectedRequest.requestCreatedAt"></span>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Status Messages -->
+                            <template x-if="selectedRequest && selectedRequest.requestStatus === 'Approved'">
+                                <div class="flex items-center justify-center gap-2 py-3 px-4 mb-6 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                    <i class="fa-solid fa-circle-check text-green-600 dark:text-green-400"></i>
+                                    <span class="text-sm font-medium text-green-700 dark:text-green-400">This request has been approved</span>
+                                </div>
+                            </template>
+
+                            <template x-if="selectedRequest && selectedRequest.requestStatus === 'Rejected'">
+                                <div class="flex items-center justify-center gap-2 py-3 px-4 mb-6 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                    <i class="fa-solid fa-circle-xmark text-red-600 dark:text-red-400"></i>
+                                    <span class="text-sm font-medium text-red-700 dark:text-red-400">This request has been declined</span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Drawer Footer (Sticky) -->
+                        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
+                            <div class="flex gap-3">
+                                <!-- Cancel Button (only for pending requests) -->
+                                <template x-if="selectedRequest && selectedRequest.requestStatus === 'Pending'">
+                                    <button @click="cancelRequest()"
+                                        :disabled="isCancelling"
+                                        class="flex-1 px-4 py-2.5 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                                        :class="isCancelling ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'">
+                                        <i class="fa-solid fa-ban"></i>
+                                        <span x-text="isCancelling ? 'Cancelling...' : 'Cancel Request'"></span>
+                                    </button>
+                                </template>
+
+                                <!-- Status indicator for non-pending requests -->
+                                <template x-if="selectedRequest && selectedRequest.requestStatus !== 'Pending'">
+                                    <div class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border"
+                                        :class="{
+                                            'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': selectedRequest.requestStatus === 'Approved',
+                                            'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': selectedRequest.requestStatus === 'Rejected'
+                                        }">
+                                        <i class="fa-solid"
+                                            :class="{
+                                                'fa-circle-check text-green-600 dark:text-green-400': selectedRequest.requestStatus === 'Approved',
+                                                'fa-circle-xmark text-red-600 dark:text-red-400': selectedRequest.requestStatus === 'Rejected'
+                                            }"></i>
+                                        <span class="text-sm font-medium"
+                                            :class="{
+                                                'text-green-700 dark:text-green-400': selectedRequest.requestStatus === 'Approved',
+                                                'text-red-700 dark:text-red-400': selectedRequest.requestStatus === 'Rejected'
+                                            }"
+                                            x-text="selectedRequest.requestStatus"></span>
+                                    </div>
+                                </template>
+
+                                <button @click="closeRequestModal()"
+                                    class="flex-1 text-sm px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

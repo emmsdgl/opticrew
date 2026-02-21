@@ -29,6 +29,73 @@
         $backUrl = $backNav['route'];
     @endphp
 
+    <script>
+        var __feedbackStoreUrl = @json(route('employee.tasks.feedback.store', $task->id));
+
+        function feedbackModal() {
+            return {
+                showFeedbackModal: false,
+                selectedRating: 0,
+                selectedKeywords: [],
+                feedbackText: '',
+
+                closeFeedbackModal() {
+                    this.showFeedbackModal = false;
+                    this.selectedRating = 0;
+                    this.selectedKeywords = [];
+                    this.feedbackText = '';
+                },
+
+                toggleKeyword(keyword) {
+                    const index = this.selectedKeywords.indexOf(keyword);
+                    if (index > -1) {
+                        this.selectedKeywords.splice(index, 1);
+                    } else {
+                        this.selectedKeywords.push(keyword);
+                    }
+                },
+
+                isKeywordSelected(keyword) {
+                    return this.selectedKeywords.includes(keyword);
+                },
+
+                async submitFeedback() {
+                    if (this.selectedRating === 0) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(__feedbackStoreUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                rating: this.selectedRating,
+                                keywords: this.selectedKeywords,
+                                comment: this.feedbackText
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.closeFeedbackModal();
+                            alert('Thank you for your feedback!');
+                        } else {
+                            alert('Error submitting feedback. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error submitting feedback. Please try again.');
+                    }
+                }
+            }
+        }
+    </script>
+
     <div x-data="feedbackModal()">
 
         {{-- MOBILE LAYOUT (< 1024px) --}} <section role="status"
@@ -257,6 +324,15 @@
                         <p class="text-xs text-red-600 dark:text-red-400 mt-1">You have declined this task</p>
                     </div>
                 @endif
+
+                {{-- Rate this task (mobile) --}}
+                <div class="my-6 text-center">
+                    <button @click="showFeedbackModal = true" type="button"
+                        class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                        <i class="fas fa-star"></i>
+                        <span class="font-medium text-sm">Rate this task</span>
+                    </button>
+                </div>
             </div>
             </div>
             </section>
@@ -1066,9 +1142,10 @@
                 </div>
             </section>
 
-            <!-- Feedback Modal -->
+            <!-- Feedback Modal (teleported to body to avoid CSS containment issues) -->
+            <template x-teleport="body">
             <div x-show="showFeedbackModal" x-cloak @click="closeFeedbackModal()"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 p-4"
+                class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 dark:bg-black/70 p-4"
                 style="display: none;">
                 <div @click.stop
                     class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-100 dark:border-gray-800 overflow-hidden"
@@ -1183,75 +1260,10 @@
                     </div>
                 </div>
             </div>
+            </template>
 
             @push('scripts')
                 <script>
-                    function feedbackModal() {
-                        return {
-                            showFeedbackModal: false,
-                            selectedRating: 0,
-                            selectedKeywords: [],
-                            feedbackText: '',
-
-                            closeFeedbackModal() {
-                                this.showFeedbackModal = false;
-                                // Reset form data
-                                this.selectedRating = 0;
-                                this.selectedKeywords = [];
-                                this.feedbackText = '';
-                            },
-
-                            toggleKeyword(keyword) {
-                                const index = this.selectedKeywords.indexOf(keyword);
-                                if (index > -1) {
-                                    this.selectedKeywords.splice(index, 1);
-                                } else {
-                                    this.selectedKeywords.push(keyword);
-                                }
-                            },
-
-                            isKeywordSelected(keyword) {
-                                return this.selectedKeywords.includes(keyword);
-                            },
-
-                            async submitFeedback() {
-                                if (this.selectedRating === 0) {
-                                    return;
-                                }
-
-                                try {
-                                    const response = await fetch('{{ route("employee.tasks.feedback.store", $task->id) }}', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                            'Accept': 'application/json'
-                                        },
-                                        body: JSON.stringify({
-                                            rating: this.selectedRating,
-                                            keywords: this.selectedKeywords,
-                                            comment: this.feedbackText
-                                        })
-                                    });
-
-                                    const data = await response.json();
-
-                                    if (response.ok) {
-                                        // Success - close modal and show success message
-                                        this.closeFeedbackModal();
-                                        alert('Thank you for your feedback!');
-                                        // Or use a better notification system
-                                    } else {
-                                        alert('Error submitting feedback. Please try again.');
-                                    }
-                                } catch (error) {
-                                    console.error('Error:', error);
-                                    alert('Error submitting feedback. Please try again.');
-                                }
-                            }
-                        }
-                    }
-
                     // Task tab switching functionality
                     function switchTaskTab(tabName) {
                         // Hide all tab contents

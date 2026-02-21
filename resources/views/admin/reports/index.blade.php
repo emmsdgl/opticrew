@@ -86,22 +86,27 @@
                 </p>
             </div>
 
-            <!-- Future: Service Performance (Placeholder) -->
-            <div class="bg-gray-100 dark:bg-gray-700/50 rounded-lg shadow p-6 border-2 border-dashed border-gray-300 dark:border-gray-600">
+            <!-- Service Performance Report -->
+            <a href="{{ route('admin.reports.service') }}" class="group bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all p-6 border-2 border-transparent hover:border-orange-500">
                 <div class="flex items-start justify-between mb-4">
-                    <div class="p-3 bg-gray-200 dark:bg-gray-600 rounded-lg opacity-50">
-                        <i class="fi fi-rr-chart-pie-alt text-gray-500 text-2xl"></i>
+                    <div class="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                        <i class="fi fi-rr-chart-pie-alt text-orange-600 dark:text-orange-400 text-2xl"></i>
                     </div>
-                    <span class="text-xs bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">Coming Soon</span>
+                    <i class="fi fi-rr-arrow-right text-gray-400 group-hover:text-orange-600 transition-colors"></i>
                 </div>
 
-                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Service Performance
                 </h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Compare service types and identify top performers
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    View client and employee feedback, ratings, and service quality
                 </p>
-            </div>
+
+                <div class="mt-4 flex items-center gap-2 text-orange-600 dark:text-orange-400 font-medium text-sm">
+                    View Report
+                    <i class="fi fi-rr-angle-right text-xs"></i>
+                </div>
+            </a>
 
             <!-- Future: Attendance Summary (Placeholder) -->
             <div class="bg-gray-100 dark:bg-gray-700/50 rounded-lg shadow p-6 border-2 border-dashed border-gray-300 dark:border-gray-600">
