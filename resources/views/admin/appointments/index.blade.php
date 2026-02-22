@@ -127,7 +127,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">{{ $appointment->cabin_name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">€{{ number_format($appointment->total_amount, 2) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <button @click="openDrawer({{ $appointment->id }})" class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                <button @click="openDrawer({{ $appointment->id }})" class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
                                     <i class="fa-regular fa-eye mr-1 text-xs"></i> View
                                 </button>
                             </td>
@@ -262,7 +262,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <button @click="openDrawer({{ $appointment->id }})" class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                <button @click="openDrawer({{ $appointment->id }})" class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
                                     <i class="fa-regular fa-eye mr-1 text-xs"></i> View
                                 </button>
                             </td>

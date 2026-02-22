@@ -106,12 +106,10 @@
 
     <div class="grid grid-cols-7 mt-2">
         <template x-for="(date, index) in dates" :key="`${currentYear}-${currentMonth}-${index}`">
-            <div @click="date.date ? openModal(date) : null"
+            <div
                 :class="{
                     'bg-blue-100 dark:bg-blue-900/30 border-blue-400 dark:border-blue-600': date.date && isToday(date),
                     'bg-gray-100 dark:bg-gray-800 opacity-60': date.date && isPastDate(date) && !isToday(date),
-                    'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900': date.date && (!isPastDate(date) || isToday(date)),
-                    'cursor-not-allowed': date.date && isPastDate(date) && !isToday(date),
                     'bg-gray-50 dark:bg-gray-900': !date.date
                 }"
                 class="h-32 p-2 border border-gray-200 dark:border-gray-700 transition relative">

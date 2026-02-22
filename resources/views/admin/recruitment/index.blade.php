@@ -7,69 +7,26 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
-            <x-labelwithvalue label="Summary" count="" />
-
-            <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 px-2">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
-                            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ $applications->where('status', 'pending')->count() }}</p>
-                        </div>
-                        <div class="p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-full">
-                            <i class="fa-solid fa-clock text-yellow-600 dark:text-yellow-400 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Reviewed</p>
-                            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $applications->where('status', 'reviewed')->count() }}</p>
-                        </div>
-                        <div class="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
-                            <i class="fa-solid fa-eye text-blue-600 dark:text-blue-400 text-sm"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Interview</p>
-                            <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ $applications->where('status', 'interview_scheduled')->count() }}</p>
-                        </div>
-                        <div class="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
-                            <i class="fa-solid fa-calendar-check text-purple-600 dark:text-purple-400 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Hired</p>
-                            <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $applications->where('status', 'hired')->count() }}</p>
-                        </div>
-                        <div class="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
-                            <i class="fa-solid fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $applications->total() }}</p>
-                        </div>
-                        <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-full">
-                            <i class="fa-solid fa-users text-gray-600 dark:text-gray-300 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-px bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Pending</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->where('status', 'pending')->count() }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Reviewed</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->where('status', 'reviewed')->count() }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Interview</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->where('status', 'interview_scheduled')->count() }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Hired</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->where('status', 'hired')->count() }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Total applications</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->total() }}</p>
             </div>
         </div>
 
@@ -209,8 +166,8 @@
                             <!-- Action -->
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <button @click="openDrawer({{ $application->id }})"
-                                   class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                    View Details
+                                   class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                                    <i class="fa-regular fa-eye mr-1 text-xs"></i> View
                                 </button>
                             </td>
                         </tr>
