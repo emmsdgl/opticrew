@@ -11,7 +11,7 @@
                     <div class="flex items-center gap-4 mb-6">
                         <div
                             class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                            <i class="fa-regular fa-clock-rotate-left text-blue-600 dark:text-blue-400 text-xl"></i>
+                            <i class="fa-solid fa-clock-rotate-left text-blue-600 dark:text-blue-400 text-xl"></i>
                         </div>
                         <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                             Activity History
@@ -50,6 +50,14 @@
                                 :class="activeTab === 'ratings' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'">
                                 Ratings
                                 <span x-show="activeTab === 'ratings'" x-transition
+                                    class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></span>
+                            </button>
+
+                            <button @click="activeTab = 'account'"
+                                class="relative pb-4 text-sm font-medium transition-colors duration-200"
+                                :class="activeTab === 'account' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'">
+                                Account
+                                <span x-show="activeTab === 'account'" x-transition
                                     class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></span>
                             </button>
                         </nav>
@@ -111,6 +119,7 @@
                                             <div class="text-sm font-medium"
                                                 :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
                                                         activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
+                                                        activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
                                                         'text-orange-600 dark:text-orange-400'"
                                                 x-text="activity.status"></div>
                                         </div>
@@ -149,6 +158,7 @@
                                             <div class="text-sm font-medium"
                                                 :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
                                                         activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
+                                                        activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
                                                         'text-orange-600 dark:text-orange-400'"
                                                 x-text="activity.status"></div>
                                         </div>
@@ -253,6 +263,67 @@
                                 <div class="text-center py-12 text-gray-500 dark:text-gray-400">
                                     <i class="fa-regular fa-star text-4xl mb-3"></i>
                                     <p>No ratings submitted yet</p>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Account Activity Tab Content --}}
+                        <div x-show="activeTab === 'account'" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 transform translate-y-2"
+                            x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
+
+                            <template x-for="(log, index) in accountLogs" :key="'log-' + index">
+                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                                    <div class="flex items-start gap-4">
+                                        <!-- Icon -->
+                                        <div class="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center"
+                                             :class="log.type === 'login' ? 'bg-green-100 dark:bg-green-900/30' :
+                                                     log.type === 'logout' ? 'bg-red-100 dark:bg-red-900/30' :
+                                                     'bg-blue-100 dark:bg-blue-900/30'">
+                                            <i class="text-xl"
+                                               :class="log.type === 'login' ? 'fa-solid fa-right-to-bracket text-green-600 dark:text-green-400' :
+                                                       log.type === 'logout' ? 'fa-solid fa-right-from-bracket text-red-600 dark:text-red-400' :
+                                                       'fa-solid fa-user-pen text-blue-600 dark:text-blue-400'"></i>
+                                        </div>
+
+                                        <!-- Content -->
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1"
+                                                x-text="log.type === 'login' ? 'Logged In' :
+                                                        log.type === 'logout' ? 'Logged Out' :
+                                                        'Profile Updated'"></h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1" x-text="log.description"></p>
+                                            <template x-if="log.data && log.data.changed_fields && log.data.changed_fields.length > 0">
+                                                <p class="text-xs text-gray-400 dark:text-gray-500">
+                                                    Changed: <span x-text="log.data.changed_fields.join(', ')"></span>
+                                                </p>
+                                            </template>
+                                            <template x-if="log.ip_address">
+                                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                    IP: <span x-text="log.ip_address"></span>
+                                                </p>
+                                            </template>
+                                        </div>
+
+                                        <!-- Timestamp & Status -->
+                                        <div class="flex-shrink-0 text-right">
+                                            <div class="text-sm font-medium"
+                                                 :class="log.type === 'login' ? 'text-green-600 dark:text-green-400' :
+                                                         log.type === 'logout' ? 'text-red-600 dark:text-red-400' :
+                                                         'text-blue-600 dark:text-blue-400'"
+                                                 x-text="log.type === 'login' ? 'Login' :
+                                                         log.type === 'logout' ? 'Logout' :
+                                                         'Edited'"></div>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1" x-text="log.created_at"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template x-if="accountLogs.length === 0">
+                                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                                    <i class="fa-regular fa-clock text-4xl mb-3"></i>
+                                    <p>No account activity yet</p>
                                 </div>
                             </template>
                         </div>
@@ -428,6 +499,7 @@
             ratingActivityIndex: null,
             activities: @json($activities ?? []),
             ratings: @json($ratings ?? []),
+            accountLogs: @json($accountLogs ?? []),
 
             // Checklist templates for different service types
             checklistTemplates: {

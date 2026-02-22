@@ -8,7 +8,7 @@
                     <i class="fa-solid fa-arrow-left text-gray-600 dark:text-gray-300"></i>
                 </a>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Application #{{ $application->id }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Application #  {{ $application->id }}</h1>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Applied on {{ $application->created_at->format('F d, Y \a\t h:i A') }}</p>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                 <!-- Applicant Information -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-user-circle text-blue-600 dark:text-blue-400 mr-2"></i>
+                        <i class="fa-solid fa-user-circle text-gray-600 dark:text-gray-400 mr-2"></i>
                         Applicant Information
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -65,7 +65,7 @@
                 <!-- Job Information -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-briefcase text-green-600 dark:text-green-400 mr-2"></i>
+                        <i class="fa-solid fa-briefcase text-gray-600 dark:text-gray-400 mr-2"></i>
                         Position Applied For
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -89,11 +89,11 @@
                 <!-- Resume Preview -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-file-pdf text-red-600 dark:text-red-400 mr-2"></i>
+                        <i class="fa-solid fa-file-pdf text-gray-600 dark:text-gray-400 mr-2"></i>
                         Resume / Documents
                     </h2>
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-                        <i class="fa-solid fa-file-pdf text-red-500 text-4xl mb-3"></i>
+                        <i class="fa-solid fa-file-pdf text-gray-500 text-4xl mb-3"></i>
                         <p class="text-gray-900 dark:text-white font-medium">{{ $application->resume_original_name }}</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">PDF Document</p>
                         <a href="{{ route('admin.recruitment.download', $application->id) }}"
@@ -110,7 +110,7 @@
                 <!-- Status Update -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-sliders text-purple-600 dark:text-purple-400 mr-2"></i>
+                        <i class="fa-solid fa-sliders text-gray-600 dark:text-gray-400 mr-2"></i>
                         Update Status
                     </h2>
                     <form action="{{ route('admin.recruitment.update-status', $application->id) }}" method="POST">
@@ -149,7 +149,7 @@
                 <!-- Timeline -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-clock-rotate-left text-orange-600 dark:text-orange-400 mr-2"></i>
+                        <i class="fa-solid fa-clock-rotate-left text-gray-600 dark:text-gray-400 mr-2"></i>
                         Timeline
                     </h2>
                     <div class="space-y-4">
@@ -175,16 +175,16 @@
                 <!-- Quick Actions -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                        <i class="fa-solid fa-bolt text-yellow-600 dark:text-yellow-400 mr-2"></i>
+                        <i class="fa-solid fa-bolt text-gray-600 dark:text-gray-400 mr-2"></i>
                         Quick Actions
                     </h2>
                     <div class="space-y-3">
                         <a href="mailto:{{ $application->email }}" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                            <i class="fa-solid fa-envelope text-blue-600 dark:text-blue-400"></i>
+                            <i class="fa-solid fa-envelope text-gray-600 dark:text-gray-400"></i>
                             <span class="text-sm text-gray-700 dark:text-gray-300">Send Email</span>
                         </a>
                         <a href="{{ route('admin.recruitment.download', $application->id) }}" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                            <i class="fa-solid fa-download text-green-600 dark:text-green-400"></i>
+                            <i class="fa-solid fa-download text-gray-600 dark:text-gray-400"></i>
                             <span class="text-sm text-gray-700 dark:text-gray-300">Download Resume</span>
                         </a>
                     </div>

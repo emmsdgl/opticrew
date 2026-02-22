@@ -11,7 +11,7 @@
                     <div class="flex items-center gap-4 mb-6">
                         <div
                             class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                            <i class="fas fa-clock-rotate-left text-blue-600 dark:text-blue-400 text-xl"></i>
+                            <i class="fa-solid fa-clock-rotate-left text-blue-600 dark:text-blue-400 text-xl"></i>
                         </div>
                         <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                             Activity History
@@ -106,6 +106,7 @@
                                             <div class="text-xs font-medium"
                                                 :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
                                                         activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
+                                                        activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
                                                         'text-orange-600 dark:text-orange-400'"
                                                 x-text="activity.status"></div>
                                         </div>
@@ -147,6 +148,7 @@
                                             <div class="text-xs font-medium"
                                                 :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
                                                         activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
+                                                        activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
                                                         'text-orange-600 dark:text-orange-400'"
                                                 x-text="activity.status"></div>
                                         </div>
@@ -189,7 +191,11 @@
                                             </div>
                                         </div>
                                         <div class="flex-shrink-0 text-right">
-                                            <div class="text-xs font-medium text-green-600 dark:text-green-400"
+                                            <div class="text-xs font-medium"
+                                                :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
+                                                        activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
+                                                        activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
+                                                        'text-orange-600 dark:text-orange-400'"
                                                 x-text="activity.status"></div>
                                         </div>
                                     </div>

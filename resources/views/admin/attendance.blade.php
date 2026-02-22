@@ -93,6 +93,7 @@
                         adminNotes: record.requestAdminNotes,
                         durationDays: record.requestDurationDays,
                         createdAt: record.requestCreatedAt,
+                        tasks: record.employeeTasks || [],
                     };
                     this.adminNotes = record.requestAdminNotes || '';
                     this.rejectionReason = '';
@@ -206,206 +207,307 @@
                 </div>
             @endif
 
-            <!-- Request Details Modal -->
-            <div x-show="showRequestModal"
-                x-cloak
-                @click="closeRequestModal()"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4"
-                style="display: none;">
-                <div @click.stop
-                    class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700"
-                    x-show="showRequestModal"
-                    x-transition>
+            <!-- Request Details Slide-in Drawer -->
+            <div x-show="showRequestModal" x-cloak class="fixed inset-0 z-50 overflow-hidden" style="display: none;">
+                <!-- Backdrop -->
+                <div x-show="showRequestModal"
+                     x-transition:enter="transition-opacity ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition-opacity ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     @click="closeRequestModal()"
+                     class="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
 
-                    <!-- Close Button -->
-                    <button type="button"
-                        @click="closeRequestModal()"
-                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none z-10">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                <!-- Drawer Panel -->
+                <div class="fixed inset-y-0 right-0 flex max-w-full">
+                    <div x-show="showRequestModal"
+                         x-transition:enter="transform transition ease-in-out duration-300"
+                         x-transition:enter-start="translate-x-full"
+                         x-transition:enter-end="translate-x-0"
+                         x-transition:leave="transform transition ease-in-out duration-200"
+                         x-transition:leave-start="translate-x-0"
+                         x-transition:leave-end="translate-x-full"
+                         @click.stop
+                         class="relative w-screen max-w-sm">
 
-                    <!-- Modal Content -->
-                    <div class="px-6 py-8">
-                        <!-- Header -->
-                        <div class="text-center mb-6">
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                                Request Details
-                            </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Review and manage this leave request
-                            </p>
-                        </div>
-
-                        <!-- Request Information -->
-                        <template x-if="selectedRequest">
-                            <div class="space-y-0 mb-6">
-                                <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Employee</span>
-                                    <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.employeeName"></span>
-                                </div>
-
-                                <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Request Type</span>
-                                    <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.type"></span>
-                                </div>
-
-                                <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
-                                    <span class="text-sm font-semibold px-2 py-1 rounded-full"
-                                        :class="getStatusBadge(selectedRequest.status)"
-                                        x-text="selectedRequest.status.charAt(0).toUpperCase() + selectedRequest.status.slice(1)"></span>
-                                </div>
-
-                                <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Date</span>
-                                    <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.date"></span>
-                                </div>
-
-                                <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Time Range</span>
-                                    <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.timeRange"></span>
-                                </div>
-
-                                <template x-if="selectedRequest.fromTime && selectedRequest.toTime">
-                                    <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">Custom Hours</span>
-                                        <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.fromTime + ' - ' + selectedRequest.toTime"></span>
-                                    </div>
-                                </template>
-
-                                <div class="py-3 border-b border-gray-200 dark:border-gray-700">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400 block mb-2">Reason</span>
-                                    <p class="text-sm text-gray-900 dark:text-white" x-text="selectedRequest.reason"></p>
-                                </div>
-
-                                <template x-if="selectedRequest.description">
-                                    <div class="py-3 border-b border-gray-200 dark:border-gray-700">
-                                        <span class="text-sm text-gray-500 dark:text-gray-400 block mb-2">Description</span>
-                                        <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg" x-text="selectedRequest.description"></p>
-                                    </div>
-                                </template>
-
-                                <template x-if="selectedRequest.proofDocument">
-                                    <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">Proof Document</span>
-                                        <a :href="'/storage/' + selectedRequest.proofDocument" target="_blank"
-                                            class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
-                                            View Document
-                                        </a>
-                                    </div>
-                                </template>
-
-                                <div class="flex justify-between items-center py-3">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Submitted</span>
-                                    <span class="text-sm text-gray-600 dark:text-gray-400" x-text="selectedRequest.createdAt"></span>
-                                </div>
+                        <!-- Drawer Content -->
+                        <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
+                            <!-- Drawer Header -->
+                            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-slate-800/50">
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Request Details</h2>
+                                <button type="button" @click="closeRequestModal()"
+                                    class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                        stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
                             </div>
-                        </template>
 
-                        <!-- Rejection Form (shown only after clicking Decline) -->
-                        <template x-if="selectedRequest && selectedRequest.status === 'pending' && showRejectionForm">
-                            <div class="mb-6 space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
-                                    <span class="text-sm font-medium text-red-700 dark:text-red-400">Decline Request</span>
-                                </div>
-                                <!-- Rejection Reason Dropdown -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Rejection Reason <span class="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        x-model="rejectionReason"
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                                        <option value="">Select a reason...</option>
-                                        <template x-for="reason in rejectionReasons" :key="reason">
-                                            <option :value="reason" x-text="reason"></option>
+                            <!-- Drawer Body (Scrollable) -->
+                            <div class="flex-1 overflow-y-auto p-6" x-show="selectedRequest">
+                                <!-- Subtitle -->
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                    Review and manage this leave request
+                                </p>
+
+                                <!-- Request Information -->
+                                <template x-if="selectedRequest">
+                                    <div class="space-y-0 mb-6">
+                                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Employee</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.employeeName"></span>
+                                        </div>
+
+                                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Request Type</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.type"></span>
+                                        </div>
+
+                                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
+                                            <span class="text-sm font-semibold px-2 py-1 rounded-full"
+                                                :class="getStatusBadge(selectedRequest.status)"
+                                                x-text="selectedRequest.status.charAt(0).toUpperCase() + selectedRequest.status.slice(1)"></span>
+                                        </div>
+
+                                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Date</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.date"></span>
+                                        </div>
+
+                                        <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Time Range</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.timeRange"></span>
+                                        </div>
+
+                                        <template x-if="selectedRequest.fromTime && selectedRequest.toTime">
+                                            <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                                <span class="text-sm text-gray-500 dark:text-gray-400">Custom Hours</span>
+                                                <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedRequest.fromTime + ' - ' + selectedRequest.toTime"></span>
+                                            </div>
                                         </template>
-                                    </select>
+
+                                        <div class="py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400 block mb-2">Reason</span>
+                                            <p class="text-sm text-gray-900 dark:text-white" x-text="selectedRequest.reason"></p>
+                                        </div>
+
+                                        <template x-if="selectedRequest.description">
+                                            <div class="py-3 border-b border-gray-200 dark:border-gray-700">
+                                                <span class="text-sm text-gray-500 dark:text-gray-400 block mb-2">Description</span>
+                                                <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg" x-text="selectedRequest.description"></p>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="selectedRequest.proofDocument">
+                                            <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                                                <span class="text-sm text-gray-500 dark:text-gray-400">Proof Document</span>
+                                                <a :href="'/storage/' + selectedRequest.proofDocument" target="_blank"
+                                                    class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
+                                                    View Document
+                                                </a>
+                                            </div>
+                                        </template>
+
+                                        <div class="flex justify-between items-center py-3">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Submitted</span>
+                                            <span class="text-sm text-gray-600 dark:text-gray-400" x-text="selectedRequest.createdAt"></span>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Existing Admin Notes (for processed requests) -->
+                                <template x-if="selectedRequest && selectedRequest.status !== 'pending' && selectedRequest.adminNotes">
+                                    <div class="mb-6 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 block mb-1">Admin Notes</span>
+                                        <p class="text-sm text-gray-900 dark:text-white" x-text="selectedRequest.adminNotes"></p>
+                                    </div>
+                                </template>
+
+                                <!-- Status Messages -->
+                                <template x-if="selectedRequest && selectedRequest.status === 'rejected'">
+                                    <div class="flex items-center justify-center gap-2 py-3 px-4 mb-6 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                        <i class="fa-solid fa-circle-xmark text-red-600 dark:text-red-400"></i>
+                                        <span class="text-sm font-medium text-red-700 dark:text-red-400">This request has been declined</span>
+                                    </div>
+                                </template>
+
+                                <template x-if="selectedRequest && selectedRequest.status === 'approved'">
+                                    <div class="flex items-center justify-center gap-2 py-3 px-4 mb-6 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                        <i class="fa-solid fa-circle-check text-green-600 dark:text-green-400"></i>
+                                        <span class="text-sm font-medium text-green-700 dark:text-green-400">This request has been approved</span>
+                                    </div>
+                                </template>
+
+                                <template x-if="selectedRequest && selectedRequest.status === 'cancelled'">
+                                    <div class="flex items-center justify-center gap-2 py-3 px-4 mb-6 bg-gray-50 dark:bg-gray-700/20 rounded-lg border border-gray-200 dark:border-gray-600">
+                                        <i class="fa-solid fa-ban text-gray-500 dark:text-gray-400"></i>
+                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">This request was cancelled by the employee</span>
+                                    </div>
+                                </template>
+
+                                <!-- Rejection Form (shown only after clicking Decline) -->
+                                <template x-if="selectedRequest && selectedRequest.status === 'pending' && showRejectionForm">
+                                    <div class="mb-6 space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
+                                            <span class="text-sm font-medium text-red-700 dark:text-red-400">Decline Request</span>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Rejection Reason <span class="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                x-model="rejectionReason"
+                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                                <option value="">Select a reason...</option>
+                                                <template x-for="reason in rejectionReasons" :key="reason">
+                                                    <option :value="reason" x-text="reason"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Additional Notes <span class="text-gray-400">(optional)</span>
+                                            </label>
+                                            <textarea
+                                                x-model="adminNotes"
+                                                rows="2"
+                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                                placeholder="Add additional notes..."></textarea>
+                                        </div>
+                                        <button @click="showRejectionForm = false; rejectionReason = ''; adminNotes = '';"
+                                            class="w-full px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </template>
+
+                                <!-- Employee Tasks Section -->
+                                <template x-if="selectedRequest && selectedRequest.tasks && selectedRequest.tasks.length > 0">
+                                    <div class="mt-6">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <i class="fa-solid fa-list-check text-blue-600 dark:text-blue-400"></i>
+                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Employee Tasks</h3>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400" x-text="'(' + selectedRequest.tasks.length + ')'"></span>
+                                        </div>
+                                        <div class="space-y-3">
+                                            <template x-for="(task, idx) in selectedRequest.tasks" :key="idx">
+                                                <div class="p-3 border-b border-gray-200 dark:border-gray-600 py-4">
+                                                    <div class="flex items-start justify-between gap-2 mb-2">
+                                                        <p class="text-sm font-medium text-gray-900 dark:text-white flex-1" x-text="task.description"></p>
+                                                        <span class="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
+                                                            :class="{
+                                                                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': task.status === 'Completed',
+                                                                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': task.status === 'In Progress' || task.status === 'In-Progress',
+                                                                'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400': task.status === 'Pending' || task.status === 'Scheduled'
+                                                            }"
+                                                            x-text="task.status"></span>
+                                                    </div>
+                                                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                                        <span class="flex items-center gap-1">
+                                                            <i class="fa-regular fa-calendar"></i>
+                                                            <span x-text="task.date"></span>
+                                                        </span>
+                                                        <span class="flex items-center gap-1">
+                                                            <i class="fa-regular fa-clock"></i>
+                                                            <span x-text="task.duration + ' min'"></span>
+                                                        </span>
+                                                        <span class="flex items-center gap-1">
+                                                            <i class="fa-regular fa-building"></i>
+                                                            <span x-text="task.client"></span>
+                                                        </span>
+                                                    </div>
+                                                    <template x-if="task.location">
+                                                        <div class="mt-1 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                                                            <i class="fa-solid fa-location-dot"></i>
+                                                            <span x-text="task.location"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- No Tasks Message -->
+                                <template x-if="selectedRequest && (!selectedRequest.tasks || selectedRequest.tasks.length === 0)">
+                                    <div class="mt-6">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <i class="fa-solid fa-list-check text-blue-600 dark:text-blue-400"></i>
+                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Employee Tasks</h3>
+                                        </div>
+                                        <div class="text-center py-4 text-gray-400 dark:text-gray-500">
+                                            <i class="fa-regular fa-folder-open text-2xl mb-2"></i>
+                                            <p class="text-sm">No tasks assigned</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Drawer Footer (Sticky) -->
+                            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
+                                <div class="flex gap-3">
+                                    <!-- Action Buttons (only for pending requests) -->
+                                    <template x-if="selectedRequest && selectedRequest.status === 'pending'">
+                                        <div class="flex gap-3 flex-1">
+                                            <button @click="handleDeclineClick()"
+                                                :disabled="isSubmitting || (showRejectionForm && !rejectionReason)"
+                                                class="flex-1 px-4 py-2.5 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                                                :class="{
+                                                    'bg-red-600 hover:bg-red-700': !isSubmitting && (!showRejectionForm || rejectionReason),
+                                                    'bg-red-400 cursor-not-allowed': isSubmitting || (showRejectionForm && !rejectionReason)
+                                                }">
+                                                <i class="fa-solid fa-xmark"></i>
+                                                <span x-text="isSubmitting ? 'Processing...' : (showRejectionForm ? 'Confirm Decline' : 'Decline')"></span>
+                                            </button>
+                                            <button @click="approveRequest()"
+                                                :disabled="isSubmitting || showRejectionForm"
+                                                class="flex-1 px-4 py-2.5 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                                                :class="{
+                                                    'bg-green-600 hover:bg-green-700': !isSubmitting && !showRejectionForm,
+                                                    'bg-green-400 cursor-not-allowed': isSubmitting || showRejectionForm
+                                                }">
+                                                <i class="fa-solid fa-check"></i>
+                                                <span x-text="isSubmitting ? 'Processing...' : 'Approve'"></span>
+                                            </button>
+                                        </div>
+                                    </template>
+
+                                    <!-- Status indicator for non-pending requests -->
+                                    <template x-if="selectedRequest && selectedRequest.status !== 'pending'">
+                                        <div class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border"
+                                            :class="{
+                                                'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': selectedRequest.status === 'approved',
+                                                'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': selectedRequest.status === 'rejected',
+                                                'bg-gray-50 dark:bg-gray-700/20 border-gray-200 dark:border-gray-600': selectedRequest.status === 'cancelled'
+                                            }">
+                                            <i class="fa-solid"
+                                                :class="{
+                                                    'fa-circle-check text-green-600 dark:text-green-400': selectedRequest.status === 'approved',
+                                                    'fa-circle-xmark text-red-600 dark:text-red-400': selectedRequest.status === 'rejected',
+                                                    'fa-ban text-gray-500 dark:text-gray-400': selectedRequest.status === 'cancelled'
+                                                }"></i>
+                                            <span class="text-sm font-medium"
+                                                :class="{
+                                                    'text-green-700 dark:text-green-400': selectedRequest.status === 'approved',
+                                                    'text-red-700 dark:text-red-400': selectedRequest.status === 'rejected',
+                                                    'text-gray-600 dark:text-gray-400': selectedRequest.status === 'cancelled'
+                                                }"
+                                                x-text="selectedRequest.status === 'approved' ? 'Approved' : (selectedRequest.status === 'rejected' ? 'Declined' : 'Cancelled')"></span>
+                                        </div>
+                                    </template>
+
+                                    <button @click="closeRequestModal()"
+                                        class="flex-1 text-sm px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium">
+                                        Close
+                                    </button>
                                 </div>
-
-                                <!-- Additional Notes -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Additional Notes <span class="text-gray-400">(optional)</span>
-                                    </label>
-                                    <textarea
-                                        x-model="adminNotes"
-                                        rows="2"
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                        placeholder="Add additional notes..."></textarea>
-                                </div>
-
-                                <!-- Cancel Rejection Button -->
-                                <button @click="showRejectionForm = false; rejectionReason = ''; adminNotes = '';"
-                                    class="w-full px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                                    Cancel
-                                </button>
                             </div>
-                        </template>
-
-                        <!-- Existing Admin Notes (for processed requests) -->
-                        <template x-if="selectedRequest && selectedRequest.status !== 'pending' && selectedRequest.adminNotes">
-                            <div class="mb-6 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400 block mb-1">Admin Notes</span>
-                                <p class="text-sm text-gray-900 dark:text-white" x-text="selectedRequest.adminNotes"></p>
-                            </div>
-                        </template>
-
-                        <!-- Action Buttons (only for pending requests) -->
-                        <template x-if="selectedRequest && selectedRequest.status === 'pending'">
-                            <div class="flex gap-3">
-                                <!-- Decline Button -->
-                                <button @click="handleDeclineClick()"
-                                    :disabled="isSubmitting || (showRejectionForm && !rejectionReason)"
-                                    class="flex-1 px-4 py-3 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                                    :class="{
-                                        'bg-red-600 hover:bg-red-700': !isSubmitting && (!showRejectionForm || rejectionReason),
-                                        'bg-red-400 cursor-not-allowed': isSubmitting || (showRejectionForm && !rejectionReason)
-                                    }">
-                                    <i class="fa-solid fa-xmark"></i>
-                                    <span x-text="isSubmitting ? 'Processing...' : (showRejectionForm ? 'Confirm Decline' : 'Decline')"></span>
-                                </button>
-                                <!-- Approve Button -->
-                                <button @click="approveRequest()"
-                                    :disabled="isSubmitting || showRejectionForm"
-                                    class="flex-1 px-4 py-3 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                                    :class="{
-                                        'bg-green-600 hover:bg-green-700': !isSubmitting && !showRejectionForm,
-                                        'bg-green-400 cursor-not-allowed': isSubmitting || showRejectionForm
-                                    }">
-                                    <i class="fa-solid fa-check"></i>
-                                    <span x-text="isSubmitting ? 'Processing...' : 'Approve'"></span>
-                                </button>
-                            </div>
-                        </template>
-
-                        <!-- Rejected Status Message -->
-                        <template x-if="selectedRequest && selectedRequest.status === 'rejected'">
-                            <div class="flex items-center justify-center gap-2 py-3 px-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                                <i class="fa-solid fa-circle-xmark text-red-600 dark:text-red-400"></i>
-                                <span class="text-sm font-medium text-red-700 dark:text-red-400">This request has been declined</span>
-                            </div>
-                        </template>
-
-                        <!-- Approved Status Message -->
-                        <template x-if="selectedRequest && selectedRequest.status === 'approved'">
-                            <div class="flex items-center justify-center gap-2 py-3 px-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                                <i class="fa-solid fa-circle-check text-green-600 dark:text-green-400"></i>
-                                <span class="text-sm font-medium text-green-700 dark:text-green-400">This request has been approved</span>
-                            </div>
-                        </template>
-
-                        <!-- Cancelled Status Message -->
-                        <template x-if="selectedRequest && selectedRequest.status === 'cancelled'">
-                            <div class="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 dark:bg-gray-700/20 rounded-lg border border-gray-200 dark:border-gray-600">
-                                <i class="fa-solid fa-ban text-gray-500 dark:text-gray-400"></i>
-                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">This request was cancelled by the employee</span>
-                            </div>
-                        </template>
+                        </div>
                     </div>
                 </div>
             </div>

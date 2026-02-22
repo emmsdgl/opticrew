@@ -57,13 +57,18 @@ class AnalyticsController extends Controller
             ? (($totalTasksThisMonth - $totalTasksLastMonth) / $totalTasksLastMonth) * 100
             : 0;
 
-        // Customer rating average
-        $averageRating = Feedback::avg('overall_rating');
+        // Customer rating average (from client feedback submissions)
+        // Uses COALESCE to handle both modal feedback (rating) and form feedback (overall_rating)
+        $averageRating = Feedback::whereNotNull('client_id')
+            ->selectRaw('AVG(COALESCE(rating, overall_rating)) as avg_rating')
+            ->value('avg_rating');
         $averageRating = $averageRating ? round($averageRating, 1) : 0;
 
         // Previous month average rating
-        $previousMonthRating = Feedback::where('created_at', '<', Carbon::now()->subMonth())
-            ->avg('overall_rating');
+        $previousMonthRating = Feedback::whereNotNull('client_id')
+            ->where('created_at', '<', Carbon::now()->startOfMonth())
+            ->selectRaw('AVG(COALESCE(rating, overall_rating)) as avg_rating')
+            ->value('avg_rating');
         $previousMonthRating = $previousMonthRating ? round($previousMonthRating, 1) : 0;
 
         $ratingChange = $previousMonthRating > 0
@@ -93,7 +98,7 @@ class AnalyticsController extends Controller
             [
                 'icon' => '<i class="fi fi-rr-star"></i>',
                 'iconColor' => '#8b5cf6',
-                'label' => 'Customer Rating',
+                'label' => 'Client Rating',
                 'amount' => $averageRating > 0 ? $averageRating : 'N/A',
                 'description' => $averageRating > 0 ? 'Average score' : 'No feedback yet',
                 'percentage' => $averageRating > 0 ? ($ratingChange >= 0 ? '+' : '') . $ratingChange : '--',
