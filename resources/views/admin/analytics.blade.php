@@ -198,7 +198,7 @@
                     chartId="serviceDemandChart" />
             </div>
             <!-- Customer Transactions - Scrollable -->
-            <x-labelwithvalue label="Customer Transactions" count="({{ count($tableData) }})" />
+            <x-labelwithvalue label="Client Transactions" count="({{ count($tableData) }})" />
 
             <div class="rounded-lg h-52 overflow-y-auto">
                 {{-- Customer Transactions Table from Database --}}
