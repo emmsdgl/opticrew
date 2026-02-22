@@ -98,7 +98,7 @@ class AnalyticsController extends Controller
             [
                 'icon' => '<i class="fi fi-rr-star"></i>',
                 'iconColor' => '#8b5cf6',
-                'label' => 'Customer Rating',
+                'label' => 'Client Rating',
                 'amount' => $averageRating > 0 ? $averageRating : 'N/A',
                 'description' => $averageRating > 0 ? 'Average score' : 'No feedback yet',
                 'percentage' => $averageRating > 0 ? ($ratingChange >= 0 ? '+' : '') . $ratingChange : '--',
