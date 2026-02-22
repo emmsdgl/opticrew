@@ -258,21 +258,71 @@
         <script>
             // Courses loaded from database
             const courses = {
-                @foreach($trainingVideos as $video)
-                {{ $video->id }}: {
-                    title: @json($video->title),
-                    description: @json($video->description),
-                    category: @json($video->category),
-                    duration: @json($video->duration),
-                    required: {{ $video->required ? 'true' : 'false' }},
-                    status: @json(in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending'),
-                    videoId: @json($video->video_id)
+                1: {
+                    title: "Deep Cleaning Fundamentals",
+                    description: "Master the essential techniques of deep cleaning for residential and commercial spaces. Learn proper sanitization methods, equipment usage, and time-saving strategies for thorough cleaning. This comprehensive course covers everything from basic cleaning principles to advanced deep cleaning techniques.",
+                    rating: 4,
+                    reviews: 66,
+                    level: "Beginner",
+                    duration: "8 lectures • 1.5 hours",
+                    status: "pending",
+                    videoId: "Rx2Bh9n6VKc"  // Deep cleaning tutorial
                 },
-                @endforeach
+                2: {
+                    title: "Professional Window Cleaning Techniques",
+                    description: "Learn advanced window cleaning methods for both residential and high-rise buildings. This course covers safety protocols, streak-free techniques, and proper use of squeegees and cleaning solutions. You'll gain the skills needed to clean windows efficiently and professionally in any setting.",
+                    rating: 4,
+                    reviews: 93,
+                    level: "Intermediate",
+                    duration: "12 lectures • 2 hours",
+                    status: "pending",
+                    videoId: "B5s4uYNIM24"  // Window cleaning techniques
+                },
+                3: {
+                    title: "Eco-Friendly Cleaning Solutions",
+                    description: "Discover sustainable and environmentally safe cleaning methods. Learn how to create effective green cleaning solutions, reduce chemical usage, and implement eco-friendly practices in your cleaning routine. This course emphasizes the importance of environmental responsibility in professional cleaning.",
+                    rating: 5,
+                    reviews: 124,
+                    level: "All levels",
+                    duration: "10 lectures • 1.5 hours",
+                    status: "pending",
+                    videoId: "rcBPZs9mOe4"  // Natural cleaning products
+                },
+                4: {
+                    title: "Industrial Floor Care & Maintenance",
+                    description: "Master the art of maintaining various floor types including hardwood, tile, carpet, and vinyl. Learn buffing, stripping, waxing techniques, and proper maintenance schedules for commercial spaces. This advanced course prepares you for professional floor care in any environment.",
+                    rating: 4,
+                    reviews: 78,
+                    level: "Advanced",
+                    duration: "15 lectures • 3 hours",
+                    status: "pending",
+                    videoId: "P6HGlnSI7jo"  // Floor care maintenance
+                },
+                5: {
+                    title: "Sanitization & Disinfection Protocols",
+                    description: "Learn industry-standard sanitization practices for healthcare facilities, food service, and high-traffic areas. Understand proper disinfectant usage, cross-contamination prevention, and compliance with health regulations. This course is essential for anyone working in environments requiring strict hygiene standards.",
+                    rating: 5,
+                    reviews: 142,
+                    level: "Intermediate",
+                    duration: "14 lectures • 2.5 hours",
+                    status: "pending",
+                    videoId: "MbEmFGIkoZU"  // Sanitization protocols
+                }
             };
 
-            // Watched video IDs from database
-            const watchedVideoIds = @json($watchedVideoIds);
+            // Load saved progress from server
+            const savedProgress = @json($courseProgress ?? new \stdClass);
+            const savedStatuses = @json($courseStatuses ?? new \stdClass);
+
+            // Apply saved progress to courses
+            Object.keys(courses).forEach(id => {
+                if (savedStatuses[id]) {
+                    courses[id].status = savedStatuses[id];
+                }
+                if (savedProgress[id] !== undefined) {
+                    courses[id].savedProgress = parseInt(savedProgress[id]);
+                }
+            });
 
             let currentFilter = 'all';
             let player = null;
@@ -283,6 +333,46 @@
             let videoDuration = 0;
             let isCompleted = false;
             const COMPLETION_THRESHOLD = 90; // Must watch 90% to complete
+            let saveTimeout = null;
+
+            // Save progress to server
+            function saveProgressToServer(courseId, progress, status) {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    fetch('{{ route("employee.development.save-progress") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            course_id: courseId,
+                            progress: Math.min(100, Math.max(0, progress)),
+                            status: status,
+                        })
+                    }).catch(e => console.error('Failed to save progress:', e));
+                }, 1000);
+            }
+
+            // Save on page leave
+            window.addEventListener('beforeunload', function() {
+                if (currentCourseId && courses[currentCourseId]) {
+                    const progress = calculateWatchedPercentage();
+                    const status = courses[currentCourseId].status;
+                    if (status !== 'pending') {
+                        navigator.sendBeacon(
+                            '{{ route("employee.development.save-progress") }}',
+                            new Blob([JSON.stringify({
+                                _token: document.querySelector('meta[name="csrf-token"]').content,
+                                course_id: currentCourseId,
+                                progress: Math.min(100, Math.max(0, progress)),
+                                status: status,
+                            })], { type: 'application/json' })
+                        );
+                    }
+                }
+            });
 
             // YouTube API ready callback
             function onYouTubeIframeAPIReady() {
@@ -363,6 +453,7 @@
                     if (courses[currentCourseId].status === 'pending') {
                         courses[currentCourseId].status = 'in_progress';
                         updateCourseStatusTag('in_progress');
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), 'in_progress');
 
                         // Update sidebar course item
                         const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
@@ -384,6 +475,7 @@
                 document.getElementById('videoFallback').classList.remove('hidden');
             }
 
+            let saveCounter = 0;
             function startProgressTracking() {
                 if (progressInterval) return;
 
@@ -394,6 +486,12 @@
 
                         const watchedPercentage = calculateWatchedPercentage();
                         updateProgressUI(player.getCurrentTime(), videoDuration, watchedPercentage);
+
+                        // Save to server every 10 seconds
+                        saveCounter++;
+                        if (saveCounter % 10 === 0) {
+                            saveProgressToServer(currentCourseId, watchedPercentage, courses[currentCourseId].status);
+                        }
 
                         // Check for completion
                         if (watchedPercentage >= COMPLETION_THRESHOLD && !isCompleted) {
@@ -407,6 +505,11 @@
                 if (progressInterval) {
                     clearInterval(progressInterval);
                     progressInterval = null;
+
+                    // Save current progress when tracking stops
+                    if (currentCourseId && courses[currentCourseId] && courses[currentCourseId].status !== 'pending') {
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), courses[currentCourseId].status);
+                    }
                 }
             }
 
@@ -480,8 +583,8 @@
                         courseItem.setAttribute('data-status', 'completed');
                     }
 
-                    // Here you could also save completion to database via AJAX
-                    // saveCompletionToDatabase(currentCourseId);
+                    // Save completion to database
+                    saveProgressToServer(currentCourseId, 100, 'completed');
                 }
             }
 
@@ -533,15 +636,21 @@
 
             // Check for course parameter in URL and auto-select on page load
             document.addEventListener('DOMContentLoaded', function() {
+                // Apply saved statuses to sidebar course items
+                Object.keys(courses).forEach(id => {
+                    const courseItem = document.querySelector(`[data-course-id="${id}"]`);
+                    if (courseItem && courses[id].status !== 'pending') {
+                        courseItem.setAttribute('data-status', courses[id].status);
+                    }
+                });
+
                 const urlParams = new URLSearchParams(window.location.search);
                 const courseId = urlParams.get('course');
 
                 if (courseId && courses[courseId]) {
                     currentCourseId = parseInt(courseId);
-                    // Select the course from URL parameter
                     selectCourse(currentCourseId);
 
-                    // Scroll to the selected course card (optional)
                     const selectedCourseCard = document.querySelector(`[data-course-id="${courseId}"]`);
                     if (selectedCourseCard) {
                         selectedCourseCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -600,15 +709,16 @@
                     initializePlayer(course.videoId);
                 }
 
-                // Update UI based on course status (after player init which resets everything)
+                // Update UI based on course status and saved progress
                 if (course.status === 'completed') {
-                    // Course was already completed - show completed state
                     isCompleted = true;
-                    updateProgressUI(0, 0, 100); // Show 100% progress
+                    updateProgressUI(0, 0, 100);
                     updateProgressStatus('completed');
                     document.getElementById('completionBadge').classList.remove('hidden');
+                } else if (course.status === 'in_progress' && course.savedProgress > 0) {
+                    updateProgressUI(0, 0, course.savedProgress);
+                    updateProgressStatus('paused');
                 } else if (course.status === 'in_progress') {
-                    // Course was started but not completed - show in progress state
                     updateProgressStatus('paused');
                 }
                 // If pending, the initializePlayer already reset everything to 0%

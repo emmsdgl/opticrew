@@ -69,29 +69,49 @@
         </div>
 
         <!-- Service Type Breakdown -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div class="overflow-hidden">
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Service Type Breakdown</h2>
             </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @forelse($serviceBreakdown as $service)
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                            <h4 class="font-semibold text-gray-900 dark:text-white">{{ $service->service_type }}</h4>
-                            <div class="mt-2 flex items-center justify-between text-sm">
-                                <span class="text-gray-600 dark:text-gray-400">{{ $service->count }} bookings</span>
-                                <span class="font-bold text-green-600 dark:text-green-400">€{{ number_format($service->revenue, 2) }}</span>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-gray-500 dark:text-gray-400 col-span-3">No service data available for this period.</p>
-                    @endforelse
-                </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Service Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Bookings</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @forelse($serviceBreakdown as $service)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $service->service_type }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ $service->count }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600 dark:text-green-400">
+                                    €{{ number_format($service->revenue, 2) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-12 text-center">
+                                    <div class="text-gray-500 dark:text-gray-400">
+                                        <i class="fi fi-rr-inbox text-4xl mb-2"></i>
+                                        <p>No service data available for this period.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
 
         <!-- Client List Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="overflow-hidden">
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Client Details</h2>
             </div>
@@ -108,7 +128,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($clients as $client)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                 <td class="px-6 py-4 whitespace-nowrap">

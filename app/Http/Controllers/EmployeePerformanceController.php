@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Task;
 use App\Models\Attendance;
 use App\Models\DayOff;
+use App\Models\UserCourseProgress;
 use App\Models\TrainingVideo;
 use Carbon\Carbon;
 use Illuminate\View\View;
@@ -145,6 +146,13 @@ class EmployeePerformanceController extends Controller
         $newlessons = collect();
 
         if ($role === 'employee') {
+            $courseProgress = UserCourseProgress::where('user_id', $user->id)
+                ->pluck('progress', 'course_id')
+                ->toArray();
+
+            $courseStatuses = UserCourseProgress::where('user_id', $user->id)
+                ->pluck('status', 'course_id')
+                ->toArray();
             // Fetch training videos from database grouped by category
             $trainingVideos = TrainingVideo::where('is_active', true)
                 ->orderBy('category')
@@ -190,10 +198,7 @@ class EmployeePerformanceController extends Controller
 
             return view('employee.development', [
                 'user' => $user,
-                'trainingVideos' => $trainingVideos,
-                'videosByCategory' => $videosByCategory,
-                'categoryInfo' => $categoryInfo,
-                'watchedVideoIds' => $watchedVideoIds,
+                'newlessons' => $newlessons
             ]);
         }
 
@@ -397,5 +402,27 @@ class EmployeePerformanceController extends Controller
     {
         $colors = ['#3B82F6', '#9333EA', '#EC4899', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
         return $colors[array_rand($colors)];
+    }
+
+    public function saveCourseProgress(Request $request)
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|min:1|max:10',
+            'progress' => 'required|integer|min:0|max:100',
+            'status' => 'required|in:pending,in_progress,completed',
+        ]);
+
+        UserCourseProgress::updateOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'course_id' => $validated['course_id'],
+            ],
+            [
+                'progress' => $validated['progress'],
+                'status' => $validated['status'],
+            ]
+        );
+
+        return response()->json(['success' => true]);
     }
 }

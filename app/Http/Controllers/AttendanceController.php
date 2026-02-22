@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\EmployeeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -161,9 +162,10 @@ class AttendanceController extends Controller
             ->take(50)
             ->get();
 
-        // Format request records for display (table format + modal data)
+        // Format request records for display (table format + drawer data)
         $requestRecords = $employeeRequests->map(function ($request, $index) {
             $employeeName = $request->employee?->fullName ?? 'Unknown';
+            $employeeId = $request->employee?->id;
             $date = Carbon::parse($request->absence_date);
 
             // Map status to display format for badge colors
@@ -173,6 +175,42 @@ class AttendanceController extends Controller
                 'Rejected' => 'absent',    // Red color
                 'Cancelled' => 'archived'  // Gray color
             ];
+
+            // Fetch tasks assigned to this employee on the leave request date
+            $employeeTasks = [];
+            if ($employeeId) {
+                $employeeTasks = DB::table('tasks')
+                    ->leftJoin('locations', 'tasks.location_id', '=', 'locations.id')
+                    ->leftJoin('contracted_clients', 'locations.contracted_client_id', '=', 'contracted_clients.id')
+                    ->leftJoin('clients', 'tasks.client_id', '=', 'clients.id')
+                    ->join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
+                    ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
+                    ->where('optimization_team_members.employee_id', $employeeId)
+                    ->whereDate('tasks.scheduled_date', $date->toDateString())
+                    ->select(
+                        'tasks.id',
+                        'tasks.task_description',
+                        'tasks.scheduled_date',
+                        'tasks.status',
+                        'tasks.estimated_duration_minutes',
+                        DB::raw("COALESCE(contracted_clients.name, CONCAT(clients.first_name, ' ', clients.last_name), 'No Client') as client_name"),
+                        'locations.location_name'
+                    )
+                    ->orderBy('tasks.scheduled_date', 'asc')
+                    ->get()
+                    ->map(function ($task) {
+                        return [
+                            'id' => $task->id,
+                            'description' => $task->task_description,
+                            'date' => Carbon::parse($task->scheduled_date)->format('M d, Y'),
+                            'status' => $task->status,
+                            'duration' => $task->estimated_duration_minutes,
+                            'client' => $task->client_name,
+                            'location' => $task->location_name,
+                        ];
+                    })
+                    ->toArray();
+            }
 
             return [
                 // Table display fields
@@ -187,7 +225,7 @@ class AttendanceController extends Controller
                 'timedIn' => true,
                 'isTimedOut' => false,
                 'buttonLabel' => 'View',
-                // Modal data fields
+                // Drawer data fields
                 'requestIndex' => $index,
                 'requestId' => $request->id,
                 'requestEmployeeName' => $employeeName,
@@ -204,6 +242,7 @@ class AttendanceController extends Controller
                 'requestAdminNotes' => $request->admin_notes ?? '',
                 'requestDurationDays' => 1,
                 'requestCreatedAt' => $request->created_at->format('M d, Y h:i A'),
+                'employeeTasks' => $employeeTasks,
             ];
         })->toArray();
 

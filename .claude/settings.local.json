@@ -13,7 +13,8 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git pull:*)",
-      "Bash(/c/xampp/mysql/bin/mysql:*)"
+      "Bash(/c/xampp/mysql/bin/mysql:*)",
+      "Bash(ls -la \"d:\\\\xampp\\\\htdocs\\\\opticrew\\\\app\\\\Models\"\" | find \"d:xampphtdocsopticrewappModels\" -maxdepth 1 -type f -name \"*.php \")"
     ],
     "deny": [],
     "ask": []

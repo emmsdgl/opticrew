@@ -7,6 +7,7 @@ use App\Models\ClientAppointment;
 use App\Models\Feedback;
 use App\Models\Client;
 use App\Models\Task;
+use App\Models\UserActivityLog;
 use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -27,10 +28,26 @@ class HistoryController extends Controller
         $user = Auth::user();
         $client = Client::where('user_id', $user->id)->first();
 
+        // Fetch account activity logs
+        $accountLogs = UserActivityLog::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'id' => $log->id,
+                    'type' => $log->type,
+                    'description' => $log->description,
+                    'data' => $log->data,
+                    'ip_address' => $log->ip_address,
+                    'created_at' => Carbon::parse($log->created_at)->format('d M Y, g:i a'),
+                ];
+            })->toArray();
+
         if (!$client) {
             return view('client.history', [
                 'activities' => [],
-                'ratings' => []
+                'ratings' => [],
+                'accountLogs' => $accountLogs,
             ]);
         }
 
@@ -125,7 +142,8 @@ class HistoryController extends Controller
 
         return view('client.history', [
             'activities' => $activities->toArray(),
-            'ratings' => $ratings->toArray()
+            'ratings' => $ratings->toArray(),
+            'accountLogs' => $accountLogs,
         ]);
     }
 
