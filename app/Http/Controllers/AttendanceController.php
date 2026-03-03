@@ -539,6 +539,8 @@ class AttendanceController extends Controller
         $attendance = Attendance::create([
             'employee_id' => $employee->id,
             'clock_in' => now(),
+            'clock_in_latitude' => $request->input('latitude'),
+            'clock_in_longitude' => $request->input('longitude'),
         ]);
 
         if ($request->expectsJson()) {
@@ -624,6 +626,8 @@ class AttendanceController extends Controller
         $attendance->update([
             'clock_out' => $clockOut,
             'total_minutes_worked' => $totalMinutes,
+            'clock_out_latitude' => $request->input('latitude'),
+            'clock_out_longitude' => $request->input('longitude'),
         ]);
 
         if ($request->expectsJson()) {

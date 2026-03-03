@@ -419,8 +419,10 @@
                             <div class="flex gap-3">
                                 @if (!$hasAttendanceToday)
                                     <form action="{{ route('employee.attendance.clockin') }}" method="POST"
-                                        class="flex-1">
+                                        class="flex-1" onsubmit="return populateGeoFields(this)">
                                         @csrf
+                                        <input type="hidden" name="latitude" class="geo-latitude">
+                                        <input type="hidden" name="longitude" class="geo-longitude">
                                         <button type="submit"
                                             class="w-full text-sm px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
                                             <i class="fi fi-rr-play text-sm"></i>
@@ -429,8 +431,10 @@
                                     </form>
                                 @elseif($isClockedIn)
                                     <form action="{{ route('employee.attendance.clockout') }}" method="POST"
-                                        class="flex-1">
+                                        class="flex-1" onsubmit="return populateGeoFields(this)">
                                         @csrf
+                                        <input type="hidden" name="latitude" class="geo-latitude">
+                                        <input type="hidden" name="longitude" class="geo-longitude">
                                         <button type="submit"
                                             class="w-full text-sm px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
                                             <i class="fi fi-rr-stop text-sm"></i>
@@ -645,25 +649,80 @@
             </div>
         </div>
     </section>
-</x-layouts.general-employee>
 
 @push('scripts')
+    @once
+    <script src="{{ asset('js/geofencing.js') }}"></script>
+    @endonce
+    <script>
+        // Eagerly track user position as soon as page loads
+        if (!window._cachedPosition) {
+            window._cachedPosition = null;
+            window._geoWatchId = null;
+
+            (function() {
+                if (!navigator.geolocation) return;
+                window._geoWatchId = navigator.geolocation.watchPosition(
+                    function(position) {
+                        window._cachedPosition = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                    },
+                    function(error) {
+                        console.warn('Geolocation error:', error.message);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+                );
+            })();
+        }
+
+        // Populate hidden lat/lng fields before form submission
+        window.populateGeoFields = window.populateGeoFields || function(form) {
+            var latField = form.querySelector('.geo-latitude');
+            var lngField = form.querySelector('.geo-longitude');
+
+            // Source 1: Geofencing instance (already tracking for range check)
+            if (window.geofencing && window.geofencing.getUserLocation()) {
+                var loc = window.geofencing.getUserLocation();
+                latField.value = loc.lat;
+                lngField.value = loc.lng;
+                return true;
+            }
+
+            // Source 2: Eagerly cached position from watchPosition
+            if (window._cachedPosition) {
+                latField.value = window._cachedPosition.lat;
+                lngField.value = window._cachedPosition.lng;
+                return true;
+            }
+
+            // Source 3: Last resort - fetch position now and submit async
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    latField.value = position.coords.latitude;
+                    lngField.value = position.coords.longitude;
+                    form.submit();
+                }, function() {
+                    form.submit();
+                }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 });
+                return false;
+            }
+
+            return true;
+        };
+    </script>
     <script>
         // This script handles the Tasks Summary filter dropdown.
         document.addEventListener('DOMContentLoaded', function() {
-            // Find the button that triggers the dropdown. We assume it has a 'data-dropdown-toggle' attribute.
             const dropdownButton = document.querySelector('[data-dropdown-toggle="dropdown-time"]');
             const dropdownMenu = document.getElementById('dropdown-time');
 
             if (dropdownButton && dropdownMenu) {
-                // Listen for clicks on the entire dropdown menu.
                 dropdownMenu.addEventListener('click', function(event) {
-
-                    // Find the specific item that was clicked (could be a link or any other element).
-                    const target = event.target.closest('a, button, li'); // Make it flexible
+                    const target = event.target.closest('a, button, li');
 
                     if (target) {
-                        // Get the text content of the clicked item.
                         const selectedPeriod = target.textContent.trim();
 
                         if (selectedPeriod) {
@@ -677,3 +736,4 @@
         });
     </script>
 @endpush
+</x-layouts.general-employee>
