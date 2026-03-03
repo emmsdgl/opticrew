@@ -107,18 +107,19 @@ class AttendanceController extends Controller
             'clock_out_longitude' => $request->longitude,
         ]);
 
-        // Calculate total hours worked
+        // Calculate total hours and minutes worked
         $clockIn = Carbon::parse($attendance->clock_in);
         $clockOut = Carbon::parse($attendance->clock_out);
-        $hoursWorked = $clockOut->diffInHours($clockIn, true);
+        $totalMinutes = $clockOut->diffInMinutes($clockIn, true);
 
-        $attendance->hours_worked = round($hoursWorked, 2);
+        $attendance->total_minutes_worked = $totalMinutes;
+        $attendance->hours_worked = round($totalMinutes / 60, 2);
         $attendance->save();
 
         return response()->json([
             'message' => 'Clocked out successfully',
             'attendance' => $attendance,
-            'hours_worked' => $hoursWorked
+            'hours_worked' => $attendance->hours_worked
         ]);
     }
 
@@ -162,14 +163,30 @@ class AttendanceController extends Controller
         }
 
         $today = Carbon::today();
-        $attendance = Attendance::where('employee_id', $employee->id)
+
+        // First check for active (not clocked out) record
+        $activeAttendance = Attendance::where('employee_id', $employee->id)
             ->whereDate('clock_in', $today)
             ->whereNull('clock_out')
             ->first();
 
+        if ($activeAttendance) {
+            return response()->json([
+                'is_clocked_in' => true,
+                'attendance' => $activeAttendance
+            ]);
+        }
+
+        // If no active record, get the most recent completed record for today
+        $completedAttendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('clock_in', $today)
+            ->whereNotNull('clock_out')
+            ->orderBy('clock_out', 'desc')
+            ->first();
+
         return response()->json([
-            'is_clocked_in' => $attendance !== null,
-            'attendance' => $attendance
+            'is_clocked_in' => false,
+            'attendance' => $completedAttendance
         ]);
     }
 }

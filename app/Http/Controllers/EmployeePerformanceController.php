@@ -198,7 +198,13 @@ class EmployeePerformanceController extends Controller
 
             return view('employee.development', [
                 'user' => $user,
-                'newlessons' => $newlessons
+                'newlessons' => $newlessons,
+                'videosByCategory' => $videosByCategory,
+                'watchedVideoIds' => $watchedVideoIds,
+                'categoryInfo' => $categoryInfo,
+                'courseProgress' => $courseProgress,
+                'courseStatuses' => $courseStatuses,
+                'trainingVideos' => $trainingVideos,
             ]);
         }
 
