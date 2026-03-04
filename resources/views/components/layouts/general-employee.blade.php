@@ -35,7 +35,17 @@
             ]
         ];
 
-        $teams = ['HR Team', 'Research Team'];
+        $employee = \App\Models\Employee::where('user_id', auth()->id())->first();
+        $teams = [];
+        if ($employee) {
+            $teams = \App\Models\OptimizationTeam::whereDate('service_date', today())
+                ->whereHas('members', function ($q) use ($employee) {
+                    $q->where('employee_id', $employee->id);
+                })
+                ->get()
+                ->map(fn ($t) => 'Team ' . $t->team_index)
+                ->toArray();
+        }
     @endphp
     <x-sidebar :navOptions="$navOptions" :teams="$teams" />
     @endslot

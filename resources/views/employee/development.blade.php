@@ -56,7 +56,7 @@
                         @php
                             $isFirst = $loop->parent->first && $loop->first;
                             $isWatched = in_array($video->id, $watchedVideoIds);
-                            $status = $isWatched ? 'completed' : 'pending';
+                            $status = $courseStatuses[$video->id] ?? ($isWatched ? 'completed' : 'pending');
                         @endphp
                         <div class="course-item cursor-pointer group {{ $isFirst ? 'active' : '' }}"
                             data-course-id="{{ $video->id }}"
@@ -74,9 +74,13 @@
                                                 Required
                                             </span>
                                         @endif
-                                        @if($isWatched)
+                                        @if($status === 'completed')
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
                                                 <i class="fas fa-check mr-1"></i>Done
+                                            </span>
+                                        @elseif($status === 'in_progress')
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                                <i class="fas fa-play mr-1 text-[10px]"></i>In Progress
                                             </span>
                                         @endif
                                     </div>
@@ -258,71 +262,20 @@
         <script>
             // Courses loaded from database
             const courses = {
-                1: {
-                    title: "Deep Cleaning Fundamentals",
-                    description: "Master the essential techniques of deep cleaning for residential and commercial spaces. Learn proper sanitization methods, equipment usage, and time-saving strategies for thorough cleaning. This comprehensive course covers everything from basic cleaning principles to advanced deep cleaning techniques.",
-                    rating: 4,
-                    reviews: 66,
-                    level: "Beginner",
-                    duration: "8 lectures • 1.5 hours",
-                    status: "pending",
-                    videoId: "Rx2Bh9n6VKc"  // Deep cleaning tutorial
+                @foreach($trainingVideos as $video)
+                {{ $video->id }}: {
+                    title: @json($video->title),
+                    description: @json($video->description),
+                    category: @json($video->category),
+                    duration: @json($video->duration),
+                    required: {{ $video->required ? 'true' : 'false' }},
+                    status: @json($courseStatuses[$video->id] ?? (in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending')),
+                    savedProgress: {{ $courseProgress[$video->id] ?? 0 }},
+                    lastPosition: {{ $courseLastPositions[$video->id] ?? 0 }},
+                    videoId: @json($video->video_id)
                 },
-                2: {
-                    title: "Professional Window Cleaning Techniques",
-                    description: "Learn advanced window cleaning methods for both residential and high-rise buildings. This course covers safety protocols, streak-free techniques, and proper use of squeegees and cleaning solutions. You'll gain the skills needed to clean windows efficiently and professionally in any setting.",
-                    rating: 4,
-                    reviews: 93,
-                    level: "Intermediate",
-                    duration: "12 lectures • 2 hours",
-                    status: "pending",
-                    videoId: "B5s4uYNIM24"  // Window cleaning techniques
-                },
-                3: {
-                    title: "Eco-Friendly Cleaning Solutions",
-                    description: "Discover sustainable and environmentally safe cleaning methods. Learn how to create effective green cleaning solutions, reduce chemical usage, and implement eco-friendly practices in your cleaning routine. This course emphasizes the importance of environmental responsibility in professional cleaning.",
-                    rating: 5,
-                    reviews: 124,
-                    level: "All levels",
-                    duration: "10 lectures • 1.5 hours",
-                    status: "pending",
-                    videoId: "rcBPZs9mOe4"  // Natural cleaning products
-                },
-                4: {
-                    title: "Industrial Floor Care & Maintenance",
-                    description: "Master the art of maintaining various floor types including hardwood, tile, carpet, and vinyl. Learn buffing, stripping, waxing techniques, and proper maintenance schedules for commercial spaces. This advanced course prepares you for professional floor care in any environment.",
-                    rating: 4,
-                    reviews: 78,
-                    level: "Advanced",
-                    duration: "15 lectures • 3 hours",
-                    status: "pending",
-                    videoId: "P6HGlnSI7jo"  // Floor care maintenance
-                },
-                5: {
-                    title: "Sanitization & Disinfection Protocols",
-                    description: "Learn industry-standard sanitization practices for healthcare facilities, food service, and high-traffic areas. Understand proper disinfectant usage, cross-contamination prevention, and compliance with health regulations. This course is essential for anyone working in environments requiring strict hygiene standards.",
-                    rating: 5,
-                    reviews: 142,
-                    level: "Intermediate",
-                    duration: "14 lectures • 2.5 hours",
-                    status: "pending",
-                    videoId: "MbEmFGIkoZU"  // Sanitization protocols
-                }
+                @endforeach
             };
-
-            // Load saved progress from server
-            const savedProgress = @json($courseProgress ?? new \stdClass);
-            const savedStatuses = @json($courseStatuses ?? new \stdClass);
-
-            // Apply saved progress to courses
-            Object.keys(courses).forEach(id => {
-                if (savedStatuses[id]) {
-                    courses[id].status = savedStatuses[id];
-                }
-                if (savedProgress[id] !== undefined) {
-                    courses[id].savedProgress = parseInt(savedProgress[id]);
-                }
-            });
 
             let currentFilter = 'all';
             let player = null;
@@ -336,9 +289,10 @@
             let saveTimeout = null;
 
             // Save progress to server
-            function saveProgressToServer(courseId, progress, status) {
+            function saveProgressToServer(courseId, progress) {
                 clearTimeout(saveTimeout);
                 saveTimeout = setTimeout(() => {
+                    const lastPosition = (player && player.getCurrentTime) ? Math.floor(player.getCurrentTime()) : 0;
                     fetch('{{ route("employee.development.save-progress") }}', {
                         method: 'POST',
                         headers: {
@@ -349,7 +303,7 @@
                         body: JSON.stringify({
                             course_id: courseId,
                             progress: Math.min(100, Math.max(0, progress)),
-                            status: status,
+                            last_position: lastPosition,
                         })
                     }).catch(e => console.error('Failed to save progress:', e));
                 }, 1000);
@@ -360,6 +314,7 @@
                 if (currentCourseId && courses[currentCourseId]) {
                     const progress = calculateWatchedPercentage();
                     const status = courses[currentCourseId].status;
+                    const lastPosition = (player && player.getCurrentTime) ? Math.floor(player.getCurrentTime()) : 0;
                     if (status !== 'pending') {
                         navigator.sendBeacon(
                             '{{ route("employee.development.save-progress") }}',
@@ -367,7 +322,7 @@
                                 _token: document.querySelector('meta[name="csrf-token"]').content,
                                 course_id: currentCourseId,
                                 progress: Math.min(100, Math.max(0, progress)),
-                                status: status,
+                                last_position: lastPosition,
                             })], { type: 'application/json' })
                         );
                     }
@@ -440,7 +395,17 @@
 
             function onPlayerReady(event) {
                 videoDuration = player.getDuration();
-                updateProgressUI(0, videoDuration, 0);
+                const course = courses[currentCourseId];
+
+                // Restore saved progress and position
+                if (course && course.lastPosition > 0 && course.status !== 'completed') {
+                    player.seekTo(course.lastPosition, true);
+                    updateProgressUI(course.lastPosition, videoDuration, course.savedProgress || 0);
+                } else if (course && course.status === 'completed') {
+                    updateProgressUI(0, videoDuration, 100);
+                } else {
+                    updateProgressUI(0, videoDuration, 0);
+                }
             }
 
             function onPlayerStateChange(event) {
@@ -453,7 +418,7 @@
                     if (courses[currentCourseId].status === 'pending') {
                         courses[currentCourseId].status = 'in_progress';
                         updateCourseStatusTag('in_progress');
-                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), 'in_progress');
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage());
 
                         // Update sidebar course item
                         const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
@@ -490,7 +455,7 @@
                         // Save to server every 10 seconds
                         saveCounter++;
                         if (saveCounter % 10 === 0) {
-                            saveProgressToServer(currentCourseId, watchedPercentage, courses[currentCourseId].status);
+                            saveProgressToServer(currentCourseId, watchedPercentage);
                         }
 
                         // Check for completion
@@ -508,7 +473,7 @@
 
                     // Save current progress when tracking stops
                     if (currentCourseId && courses[currentCourseId] && courses[currentCourseId].status !== 'pending') {
-                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), courses[currentCourseId].status);
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage());
                     }
                 }
             }
@@ -584,7 +549,7 @@
                     }
 
                     // Save completion to database
-                    saveProgressToServer(currentCourseId, 100, 'completed');
+                    saveProgressToServer(currentCourseId, 100);
                 }
             }
 

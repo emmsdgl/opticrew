@@ -287,6 +287,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
 
+    Route::get('/admin/courses', [\App\Http\Controllers\EmployeePerformanceController::class, 'development'])->name('admin.courses');
+
     Route::get('/admin/profile', [ProfileController::class, 'show'])->name('admin.profile');
 
     Route::get('/admin/profile/edit', [ProfileController::class, 'edit'])->name('admin.profile.edit');
