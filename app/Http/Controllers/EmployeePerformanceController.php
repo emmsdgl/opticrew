@@ -413,7 +413,7 @@ class EmployeePerformanceController extends Controller
     public function saveCourseProgress(Request $request)
     {
         $validated = $request->validate([
-            'course_id' => 'required|integer|min:1|max:10',
+            'course_id' => 'required|integer|exists:training_videos,id',
             'progress' => 'required|integer|min:0|max:100',
             'status' => 'required|in:pending,in_progress,completed',
         ]);
@@ -428,6 +428,24 @@ class EmployeePerformanceController extends Controller
                 'status' => $validated['status'],
             ]
         );
+
+        // When completed, also mark in employee_watched_videos for the "Done" badge
+        if ($validated['status'] === 'completed') {
+            $exists = DB::table('employee_watched_videos')
+                ->where('user_id', Auth::id())
+                ->where('training_video_id', $validated['course_id'])
+                ->exists();
+
+            if (!$exists) {
+                DB::table('employee_watched_videos')->insert([
+                    'user_id' => Auth::id(),
+                    'training_video_id' => $validated['course_id'],
+                    'watched_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
 
         return response()->json(['success' => true]);
     }

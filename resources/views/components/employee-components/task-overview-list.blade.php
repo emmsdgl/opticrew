@@ -23,9 +23,9 @@
             </p>
         </div>
     @else
-        <!-- Scrollable container with fixed height (only when items exist) -->
+        <!-- Scrollable container (only when items exist) -->
         <div class="overflow-y-auto"
-             style="height: {{ $fixedHeight }}; max-height: {{ $maxHeight }};"
+             style="{{ $fixedHeight !== 'auto' ? 'height: ' . $fixedHeight . ';' : '' }} max-height: {{ $maxHeight }};"
              @scroll.window="openMenuId = null"
              @scroll="openMenuId = null">
             @foreach($items as $index => $item)

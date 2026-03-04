@@ -222,7 +222,7 @@ class AccountController extends Controller
      */
     public function edit($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with('contractedClient')->findOrFail($id);
 
         // Prevent editing admin accounts
         if ($user->role === 'admin') {
@@ -237,20 +237,30 @@ class AccountController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with('contractedClient')->findOrFail($id);
 
         // Prevent updating admin accounts
         if ($user->role === 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
-        $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $id],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $id],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['nullable', 'confirmed', Password::min(8)],
-        ]);
+        ];
+
+        // Add company detail validation if contracted client exists
+        if ($user->contractedClient) {
+            $rules['latitude'] = ['required', 'numeric', 'between:-90,90'];
+            $rules['longitude'] = ['required', 'numeric', 'between:-180,180'];
+            $rules['address'] = ['nullable', 'string', 'max:500'];
+            $rules['business_id'] = ['nullable', 'string', 'max:50'];
+        }
+
+        $request->validate($rules);
 
         $user->update([
             'name' => $request->name,
@@ -266,7 +276,17 @@ class AccountController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.accounts.index')
+        // Update company details if contracted client exists
+        if ($user->contractedClient) {
+            $user->contractedClient->update([
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'address' => $request->address,
+                'business_id' => $request->business_id,
+            ]);
+        }
+
+        return redirect()->route('admin.accounts.show', $user->id)
             ->with('success', 'Account updated successfully.');
     }
 

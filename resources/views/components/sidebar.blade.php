@@ -1,6 +1,5 @@
 @props([
     'navOptions' => [], // Default to an empty array
-    'teams' => []       // Default to an empty array
 ])
 
 <!-- Mobile Overlay Backdrop -->
@@ -117,32 +116,6 @@
                     @endif
                 @endforeach
 
-                @php
-                    // Filter out empty teams
-                    $validTeams = array_filter($teams, function($team) {
-                        return !empty(trim($team));
-                    });
-                @endphp
-
-                @if(count($validTeams) > 0)
-                <div class="flex flex-col mt-6 gap-0">
-                    <!-- Teams heading -->
-                    <div class="mt-6 space-y-1">
-                        <div class="mb-6 px-3 text-xs text-gray-400 dark:text-gray-500 uppercase">
-                            <span class="nav-label">Your Teams</span>
-                        </div>
-                        @foreach($validTeams as $team)
-                            <a href="#"
-                            class="flex items-center px-3 py-2 text-sm rounded-md hover:bg-[#2A6DFA] dark:hover:bg-[#2A6DFA]">
-                                <span class="bg-gray-200 dark:bg-gray-700 w-6 h-6 flex items-center justify-center rounded-full text-xs">
-                                    {{ strtoupper(substr($team, 0, 1)) }}
-                                </span>
-                                <span class="nav-label ml-8">{{ $team }}</span>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
         </nav>
     </div>
 </aside>

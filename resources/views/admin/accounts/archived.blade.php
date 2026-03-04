@@ -2,16 +2,15 @@
     <section class="flex flex-col gap-6 p-4 md:p-6 flex-1">
 
         <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Archived Accounts</h1>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">View and restore soft-deleted user accounts</p>
+        <div class="flex flex-col gap-2">
+            <div class="my-6">
+                <x-employer-components.breadcrumb :items="[
+                    ['label' => 'Accounts', 'url' => route('admin.accounts.index')],
+                    ['label' => 'Archived Accounts'],
+                ]" />
             </div>
-            <a href="{{ route('admin.accounts.index') }}"
-               class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Back to Active Accounts
-            </a>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Archived Accounts</h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400">View and restore soft-deleted user accounts.</p>
         </div>
 
         <!-- Success Message -->

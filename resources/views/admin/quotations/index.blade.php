@@ -84,6 +84,7 @@
                     @endif
                 </div>
             </div>
+        @if($quotations->count() > 0)
         <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="w-full">
                 <thead>
@@ -99,7 +100,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($quotations as $quotation)
+                    @foreach($quotations as $quotation)
                     <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#{{ $quotation->id }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -147,13 +148,7 @@
                             </button>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                            No quotation requests found.
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
 
@@ -164,6 +159,13 @@
             </div>
             @endif
         </div>
+        @else
+        <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+            <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+            <p class="text-base font-medium text-gray-500 dark:text-gray-400">No quotation requests found</p>
+            <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Quotation requests will appear here once clients submit them.</p>
+        </div>
+        @endif
         </div>
 
         <!-- Quotation Details Slide-in Drawer -->

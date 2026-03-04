@@ -90,6 +90,7 @@
         <!-- Applications List -->
         <div class="flex flex-col gap-6 w-full rounded-lg p-4" x-data="applicationDrawerData()">
 
+            @if($applications->count() > 0)
             <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table class="w-full">
                     <thead>
@@ -103,7 +104,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($applications as $application)
+                        @foreach($applications as $application)
                         <tr class="even:bg-gray-50 dark:even:bg-gray-800/50"
                             data-email="{{ strtolower($application->email) }}"
                             data-job="{{ strtolower($application->job_title) }}"
@@ -171,15 +172,7 @@
                                 </button>
                             </td>
                         </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                                <i class="fa-solid fa-inbox text-3xl mb-3 block w-full"></i>
-                                <p class="text-base font-medium">No job applications found</p>
-                                <p class="text-xs mt-2">Applications submitted from the recruitment page will appear here</p>
-                            </td>
-                        </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
 
@@ -190,6 +183,13 @@
                 </div>
                 @endif
             </div>
+            @else
+            <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+                <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                <p class="text-base font-medium text-gray-500 dark:text-gray-400">No job applications found</p>
+                <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Applications submitted from the recruitment page will appear here</p>
+            </div>
+            @endif
 
             <!-- Application Details Slide-in Drawer -->
             <div x-show="showDrawer" x-cloak class="fixed inset-0 z-50 overflow-hidden">
@@ -410,7 +410,7 @@
             </div>
 
             <!-- Job Postings Table -->
-            <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+            <div x-show="jobPostings.length > 0" class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-700">
@@ -490,15 +490,16 @@
                     </tbody>
                 </table>
 
-                <!-- Empty State -->
-                <template x-if="jobPostings.length === 0">
-                    <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                        <i class="fa-solid fa-briefcase text-3xl mb-3"></i>
-                        <p class="text-base font-medium">No job postings yet</p>
-                        <p class="text-xs mt-2">Click "Add Job Posting" to create your first job listing</p>
-                    </div>
-                </template>
             </div>
+
+            <!-- Empty State -->
+            <template x-if="jobPostings.length === 0">
+                <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+                    <i class="fa-solid fa-briefcase text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                    <p class="text-base font-medium text-gray-500 dark:text-gray-400">No job postings yet</p>
+                    <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Click "Add Job Posting" to create your first job listing</p>
+                </div>
+            </template>
 
             <!-- Job Posting Modal -->
             <div x-show="showModal" x-cloak
@@ -532,7 +533,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description *</label>
                             <textarea x-model="formData.description" rows="3" required
                                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                placeholder="Brief description of the job position..."></textarea>
+                                placeholder="Atleast 180 characters"></textarea>
                         </div>
 
                         <!-- Two Column Layout -->
@@ -660,6 +661,13 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Success Dialog -->
+            <x-employer-components.success-dialog
+                title="Success"
+                message=""
+                buttonText="Back to Recruitment" />
+
         </div>
 
     </section>
@@ -837,6 +845,10 @@
 
         return {
             showModal: false,
+            showSuccess: false,
+            successTitle: '',
+            successMessage: '',
+            successButtonText: 'Back to Recruitment',
             editingIndex: null,
             isSubmitting: false,
             formData: {
@@ -926,6 +938,9 @@
                     const data = await response.json();
                     if (data.success) {
                         this.jobPostings.splice(index, 1);
+                        this.successTitle = 'Job Posting Deleted';
+                        this.successMessage = 'The job posting has been removed successfully.';
+                        this.showSuccess = true;
                     } else {
                         alert(data.message || 'Failed to delete job posting.');
                     }
@@ -1006,12 +1021,18 @@
                             requiredDocs: data.data.required_docs || []
                         };
 
-                        if (this.editingIndex !== null) {
+                        const wasEditing = this.editingIndex !== null;
+                        if (wasEditing) {
                             this.jobPostings[this.editingIndex] = savedJob;
                         } else {
                             this.jobPostings.unshift(savedJob);
                         }
                         this.closeModal();
+                        this.successTitle = wasEditing ? 'Job Posting Updated' : 'Job Posting Created';
+                        this.successMessage = wasEditing
+                            ? 'The job posting has been updated successfully.'
+                            : 'The job posting has been created and is now visible to applicants.';
+                        this.showSuccess = true;
                     } else {
                         alert(data.message || 'Failed to save job posting.');
                     }

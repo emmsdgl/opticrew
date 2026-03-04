@@ -233,6 +233,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/{id}', [\App\Http\Controllers\Admin\JobPostingController::class, 'destroy'])->name('destroy');
     });
 
+    // --- ADMIN TRAINING VIDEO ROUTES ---
+    Route::prefix('admin/training-videos')->name('admin.training-videos.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TrainingVideoController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\TrainingVideoController::class, 'store'])->name('store');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\TrainingVideoController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\TrainingVideoController::class, 'destroy'])->name('destroy');
+    });
+
     // --- ADMIN HOLIDAY ROUTES ---
     Route::prefix('admin/holidays')->name('admin.holidays.')->group(function () {
         Route::post('/', [\App\Http\Controllers\Admin\HolidayController::class, 'store'])->name('store');

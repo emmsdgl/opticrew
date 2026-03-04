@@ -68,24 +68,23 @@
         }">
         <!-- Left Panel - Dashboard Content -->
         <div
-            class="flex flex-col gap-6 flex-1 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+            class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
             <!-- Inner Up - Dashboard Header -->
             <div
-                class="w-full mt-6 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
+                class="w-full mt-6 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
                 <x-herocard :headerName="$employee->user->name ?? 'Employee'" :headerDesc="'Welcome to the employee dashboard. Track tasks and manage them'" :headerIcon="'hero-employee'" />
             </div>
             <!-- Inner Middle - Calendar -->
             <x-labelwithvalue label="My Calendar" count="" />
             <div
-                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
+                class="w-full rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
                 <x-calendar :holidays="$holidays" calendar-id="desktop" />
             </div>
 
             <!-- Inner Down - Tasks Particulars -->
             <div class="w-full rounded-lg h-56 sm:h-56 md:h-auto">
                 <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
-                <div
-                    class="{{ $todoList->count() > 0 ? 'h-96 overflow-y-auto' : '' }} border border-dashed border-gray-400 dark:border-gray-700 rounded-lg my-6">
+                <div class="rounded-lg my-6">
 
                     @php
                         // Transform tasks to the format expected by task-overview-list component
@@ -110,7 +109,7 @@
                             ->toArray();
                     @endphp
 
-                    <x-employee-components.task-overview-list :items="$tasks" fixedHeight="20rem" maxHeight="30rem"
+                    <x-employee-components.task-overview-list :items="$tasks" fixedHeight="auto" maxHeight="16.5rem"
                         emptyTitle="No tasks assigned yet"
                         emptyMessage="You don't have any tasks at the moment. New tasks will appear here once assigned." />
                 </div>
@@ -127,7 +126,7 @@
                 </div>
 
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 rounded-lg">
                     @forelse($watchedLessons as $lesson)
                         <x-employee-components.lesson-card :duration="$lesson['duration']" :title="$lesson['title']" :description="$lesson['description']"
                             :progress="$lesson['progress']" :buttonText="$lesson['progress'] >= 100
@@ -152,7 +151,7 @@
 
         <!-- Right Panel - Tasks Details -->
         <div
-            class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+            class="flex flex-col gap-6 w-full lg:w-1/3 rounded-lg p-4">
 
             <!-- Inner Up - Tasks Summary (OPTIMIZED) -->
             <div class="flex flex-row justify-between items-center w-full">
@@ -234,7 +233,7 @@
             </div>
             <!-- Inner Up - Recent Requests (OPTIMIZED) -->
             <div class="flex flex-row justify-between items-center w-full">
-                <div class="flex flex-row items-center w-full justify-between">
+                <div class="flex flex-row items-center w-full justify-between ">
                     <x-labelwithvalue label="Recent Requests" count="" />
                     <a href="{{ route('employee.requests.create') }}"
                         class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
@@ -245,8 +244,8 @@
                     </a>
                 </div>
             </div>
-            <div class="w-full rounded-lg overflow-hidden flex-shrink-0">
-                <div class="space-y-4">
+            <div class="w-full rounded-lg overflow-hidden flex-1 border border-dashed border-gray-400 dark:border-gray-700 flex flex-col">
+                <div class="space-y-4 flex-1 flex flex-col">
                     @if (count($employeeRequests) > 0)
                         @foreach ($employeeRequests as $index => $request)
                             <div @click="openRequestModal({{ $index }})">
@@ -255,7 +254,7 @@
                             </div>
                         @endforeach
                     @else
-                        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <div class="text-center py-8 text-gray-500 dark:text-gray-400 flex-1 flex flex-col items-center justify-center">
                             <i class="fa-solid fa-clipboard-list text-3xl mb-3 opacity-50"></i>
                             <p class="text-sm">No requests yet</p>
                         </div>

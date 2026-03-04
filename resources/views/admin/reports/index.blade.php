@@ -2,6 +2,12 @@
     <section class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <!-- Header -->
         <div class="flex flex-col gap-2">
+            <div class ="breadcrumb-component my-4 items-start w-full">
+                <x-employer-components.breadcrumb :items="[
+                    ['label' => 'Analytics', 'url' => route('admin.analytics')],
+                    ['label' => 'Reports'],
+                ]" />
+            </div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Reports</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">Generate and view business reports</p>
         </div>
@@ -126,7 +132,7 @@
             </div>
         </div>
 
-        <!-- Quick Stats Overview -->
+        {{-- <!-- Quick Stats Overview -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Overview (Current Month)</h2>
 
@@ -156,6 +162,6 @@
                     <p class="text-xs text-orange-500 dark:text-orange-400 mt-1">View in Payroll Reports</p>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </section>
 </x-layouts.general-employer>

@@ -2,14 +2,17 @@
     <section class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <!-- Header -->
         <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-2">
-                <a href="{{ route('admin.reports.clients') }}" class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                    <i class="fi fi-rr-arrow-left"></i>
-                </a>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {{ $client->company_name ?: $client->full_name }}
-                </h1>
+            <div class="my-6">
+                <x-employer-components.breadcrumb :items="[
+                    ['label' => 'Analytics', 'url' => route('admin.analytics')],
+                    ['label' => 'Reports', 'url' => route('admin.reports.index')],
+                    ['label' => 'Client Reports', 'url' => route('admin.reports.clients')],
+                    ['label' => $client->company_name ?: $client->full_name],
+                ]" />
             </div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                {{ $client->company_name ?: $client->full_name }}
+            </h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">
                 {{ ucfirst($client->client_type) }} client - Detailed report
             </p>
@@ -76,6 +79,7 @@
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Appointment History</h2>
             </div>
+            @if($appointments->count() > 0)
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -88,7 +92,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                        @forelse($appointments as $appointment)
+                        @foreach($appointments as $appointment)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                     {{ \Carbon\Carbon::parse($appointment->service_date)->format('M d, Y') }}
@@ -115,19 +119,16 @@
                                     €{{ number_format($appointment->total_amount, 2) }}
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-12 text-center">
-                                    <div class="text-gray-500 dark:text-gray-400">
-                                        <i class="fi fi-rr-inbox text-4xl mb-2"></i>
-                                        <p>No appointments found for this period.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
+            @else
+            <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+                <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                <p class="text-base font-medium text-gray-500 dark:text-gray-400">No appointments found for this period</p>
+            </div>
+            @endif
         </div>
     </section>
 </x-layouts.general-employer>
