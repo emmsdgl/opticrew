@@ -47,22 +47,6 @@
                     </button>
                 </div>
 
-                @php
-                    $publishedFormatted = $publishedVideos->map(function($video) use ($categoryInfo, $watchedCounts, $totalEmployees) {
-                        $completedCount = $watchedCounts[$video->id] ?? 0;
-                        $categoryTitle = $categoryInfo[$video->category]['title'] ?? ucfirst(str_replace('_', ' ', $video->category));
-                        return [
-                            'service' => $video->title,
-                            'status' => $video->required ? 'Required' : 'Optional',
-                            'service_date' => $video->duration,
-                            'description' => $categoryTitle . ' · ' . $completedCount . '/' . $totalEmployees . ' completed',
-                            'action_url' => 'https://www.youtube.com/watch?v=' . $video->video_id,
-                            'action_label' => 'Preview',
-                            'menu_items' => []
-                        ];
-                    })->toArray();
-                @endphp
-
                 <div class="max-h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                     @if(count($publishedFormatted) > 0)
                         <x-employee-components.task-overview-list
@@ -93,21 +77,6 @@
                         <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{ $draftVideos->count() }})</span>
                     </h3>
                 </div>
-
-                @php
-                    $draftsFormatted = $draftVideos->map(function($video) use ($categoryInfo) {
-                        $categoryTitle = $categoryInfo[$video->category]['title'] ?? ucfirst(str_replace('_', ' ', $video->category));
-                        return [
-                            'service' => $video->title,
-                            'status' => 'Draft',
-                            'service_date' => $video->duration,
-                            'description' => $categoryTitle . ($video->required ? ' · Required' : ''),
-                            'action_url' => 'https://www.youtube.com/watch?v=' . $video->video_id,
-                            'action_label' => 'Preview',
-                            'menu_items' => []
-                        ];
-                    })->toArray();
-                @endphp
 
                 <div class="max-h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                     @if(count($draftsFormatted) > 0)
