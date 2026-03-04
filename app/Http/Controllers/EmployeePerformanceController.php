@@ -238,13 +238,42 @@ class EmployeePerformanceController extends Controller
                 ->pluck('count', 'training_video_id')
                 ->toArray();
 
+            // Format published courses for the list component
+            $publishedFormatted = $publishedVideos->map(function($video) use ($categoryInfo, $watchedCounts, $totalEmployees) {
+                $completedCount = $watchedCounts[$video->id] ?? 0;
+                $categoryTitle = $categoryInfo[$video->category]['title'] ?? ucfirst(str_replace('_', ' ', $video->category));
+                return [
+                    'service' => $video->title,
+                    'status' => $video->required ? 'Required' : 'Optional',
+                    'service_date' => $video->duration,
+                    'description' => $categoryTitle . ' · ' . $completedCount . '/' . $totalEmployees . ' completed',
+                    'action_url' => 'https://www.youtube.com/watch?v=' . $video->video_id,
+                    'action_label' => 'Preview',
+                    'menu_items' => []
+                ];
+            })->values()->toArray();
+
+            // Format draft courses for the list component
+            $draftsFormatted = $draftVideos->map(function($video) use ($categoryInfo) {
+                $categoryTitle = $categoryInfo[$video->category]['title'] ?? ucfirst(str_replace('_', ' ', $video->category));
+                return [
+                    'service' => $video->title,
+                    'status' => 'Draft',
+                    'service_date' => $video->duration,
+                    'description' => $categoryTitle . ($video->required ? ' · Required' : ''),
+                    'action_url' => 'https://www.youtube.com/watch?v=' . $video->video_id,
+                    'action_label' => 'Preview',
+                    'menu_items' => []
+                ];
+            })->values()->toArray();
+
             return view('admin.development', [
                 'user' => $user,
                 'publishedVideos' => $publishedVideos,
                 'draftVideos' => $draftVideos,
-                'categoryInfo' => $categoryInfo,
                 'totalEmployees' => $totalEmployees,
-                'watchedCounts' => $watchedCounts,
+                'publishedFormatted' => $publishedFormatted,
+                'draftsFormatted' => $draftsFormatted,
             ]);
         }
 
