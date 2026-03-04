@@ -105,6 +105,9 @@
                         {{-- YouTube Video Player (will be replaced by API) --}}
                         <div id="courseVideo" class="w-full h-full"></div>
 
+                        {{-- Uploaded Video Player (hidden by default, shown for uploaded videos) --}}
+                        <video id="uploadedVideo" class="absolute inset-0 w-full h-full hidden" controls style="object-fit: contain;"></video>
+
                         {{-- Fallback Placeholder (hidden by default, shown if video fails) --}}
                         <div id="videoFallback" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
                             <div class="text-center p-8">
@@ -257,58 +260,20 @@
         <script src="https://www.youtube.com/iframe_api"></script>
         <script>
             // Courses loaded from database
-            const courses = {
-                1: {
-                    title: "Deep Cleaning Fundamentals",
-                    description: "Master the essential techniques of deep cleaning for residential and commercial spaces. Learn proper sanitization methods, equipment usage, and time-saving strategies for thorough cleaning. This comprehensive course covers everything from basic cleaning principles to advanced deep cleaning techniques.",
-                    rating: 4,
-                    reviews: 66,
-                    level: "Beginner",
-                    duration: "8 lectures • 1.5 hours",
-                    status: "pending",
-                    videoId: "Rx2Bh9n6VKc"  // Deep cleaning tutorial
-                },
-                2: {
-                    title: "Professional Window Cleaning Techniques",
-                    description: "Learn advanced window cleaning methods for both residential and high-rise buildings. This course covers safety protocols, streak-free techniques, and proper use of squeegees and cleaning solutions. You'll gain the skills needed to clean windows efficiently and professionally in any setting.",
-                    rating: 4,
-                    reviews: 93,
-                    level: "Intermediate",
-                    duration: "12 lectures • 2 hours",
-                    status: "pending",
-                    videoId: "B5s4uYNIM24"  // Window cleaning techniques
-                },
-                3: {
-                    title: "Eco-Friendly Cleaning Solutions",
-                    description: "Discover sustainable and environmentally safe cleaning methods. Learn how to create effective green cleaning solutions, reduce chemical usage, and implement eco-friendly practices in your cleaning routine. This course emphasizes the importance of environmental responsibility in professional cleaning.",
-                    rating: 5,
-                    reviews: 124,
-                    level: "All levels",
-                    duration: "10 lectures • 1.5 hours",
-                    status: "pending",
-                    videoId: "rcBPZs9mOe4"  // Natural cleaning products
-                },
-                4: {
-                    title: "Industrial Floor Care & Maintenance",
-                    description: "Master the art of maintaining various floor types including hardwood, tile, carpet, and vinyl. Learn buffing, stripping, waxing techniques, and proper maintenance schedules for commercial spaces. This advanced course prepares you for professional floor care in any environment.",
-                    rating: 4,
-                    reviews: 78,
-                    level: "Advanced",
-                    duration: "15 lectures • 3 hours",
-                    status: "pending",
-                    videoId: "P6HGlnSI7jo"  // Floor care maintenance
-                },
-                5: {
-                    title: "Sanitization & Disinfection Protocols",
-                    description: "Learn industry-standard sanitization practices for healthcare facilities, food service, and high-traffic areas. Understand proper disinfectant usage, cross-contamination prevention, and compliance with health regulations. This course is essential for anyone working in environments requiring strict hygiene standards.",
-                    rating: 5,
-                    reviews: 142,
-                    level: "Intermediate",
-                    duration: "14 lectures • 2.5 hours",
-                    status: "pending",
-                    videoId: "MbEmFGIkoZU"  // Sanitization protocols
-                }
+            const courses = {};
+            @foreach($trainingVideos as $video)
+            courses[{{ $video->id }}] = {
+                title: @json($video->title),
+                description: @json($video->description),
+                category: @json($video->category),
+                duration: @json($video->duration ?? ''),
+                required: {{ $video->required ? 'true' : 'false' }},
+                status: "{{ in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending' }}",
+                platform: @json($video->platform ?? 'youtube'),
+                videoId: @json($video->video_id ?? ''),
+                videoPath: @json($video->video_path ? asset('storage/' . $video->video_path) : ''),
             };
+            @endforeach
 
             // Load saved progress from server
             const savedProgress = @json($courseProgress ?? new \stdClass);
@@ -376,33 +341,65 @@
 
             // YouTube API ready callback
             function onYouTubeIframeAPIReady() {
-                initializePlayer(courses[currentCourseId].videoId);
+                const course = courses[currentCourseId];
+                if (course) {
+                    if (course.platform === 'upload' && course.videoPath) {
+                        initializeUploadedPlayer(course.videoPath);
+                    } else if (course.videoId) {
+                        initializePlayer(course.videoId);
+                    }
+                    // Apply saved progress for the initially loaded course
+                    applyRestoredProgress(course);
+                }
+            }
+
+            function applyRestoredProgress(course) {
+                if (course.status === 'completed') {
+                    isCompleted = true;
+                    updateProgressUI(0, 0, 100);
+                    updateProgressStatus('completed');
+                    document.getElementById('completionBadge').classList.remove('hidden');
+                    updateCourseStatusTag('completed');
+                } else if (course.status === 'in_progress' && course.savedProgress > 0) {
+                    updateProgressUI(0, 0, course.savedProgress);
+                    updateProgressStatus('paused');
+                    updateCourseStatusTag('in_progress');
+                } else if (course.status === 'in_progress') {
+                    updateProgressStatus('paused');
+                    updateCourseStatusTag('in_progress');
+                }
             }
 
             function initializePlayer(videoId) {
                 // Stop any existing progress tracking first
                 stopProgressTracking();
 
-                // Destroy existing player if any
+                // Clean up uploaded player if exists
+                if (uploadedPlayer) {
+                    uploadedPlayer.pause();
+                    uploadedPlayer.removeAttribute('src');
+                    uploadedPlayer = null;
+                }
+
+                // Hide uploaded video, show YouTube div
+                document.getElementById('uploadedVideo').classList.add('hidden');
+
+                // Destroy existing YouTube player if any
                 if (player) {
                     player.destroy();
                     player = null;
-
-                    // Recreate the div element since YouTube API removes it when destroying
-                    const container = document.getElementById('videoContainer');
-                    const existingVideo = document.getElementById('courseVideo');
-
-                    // Remove old element if it exists (might be an iframe now)
-                    if (existingVideo) {
-                        existingVideo.remove();
-                    }
-
-                    // Create new div for the player
-                    const newDiv = document.createElement('div');
-                    newDiv.id = 'courseVideo';
-                    newDiv.className = 'w-full h-full';
-                    container.insertBefore(newDiv, container.firstChild);
                 }
+
+                // Recreate the YouTube div
+                const container = document.getElementById('videoContainer');
+                const existingVideo = document.getElementById('courseVideo');
+                if (existingVideo) {
+                    existingVideo.remove();
+                }
+                const newDiv = document.createElement('div');
+                newDiv.id = 'courseVideo';
+                newDiv.className = 'w-full h-full';
+                container.insertBefore(newDiv, container.firstChild);
 
                 // Reset all progress tracking state
                 watchedSeconds = new Set();
@@ -435,6 +432,70 @@
                         'onStateChange': onPlayerStateChange,
                         'onError': onPlayerError
                     }
+                });
+            }
+
+            let uploadedPlayer = null; // Reference for HTML5 video element
+
+            function initializeUploadedPlayer(videoPath) {
+                stopProgressTracking();
+
+                // Destroy YouTube player if exists
+                if (player) {
+                    player.destroy();
+                    player = null;
+                }
+
+                // Reset progress state
+                watchedSeconds = new Set();
+                videoDuration = 0;
+                isCompleted = false;
+                updateProgressUI(0, 0, 0);
+                hideCompletionOverlay();
+                updateProgressStatus('default');
+
+                const completionBadge = document.getElementById('completionBadge');
+                if (completionBadge) completionBadge.classList.add('hidden');
+                document.getElementById('videoFallback').classList.add('hidden');
+
+                // Hide YouTube div, show uploaded video element
+                document.getElementById('courseVideo').classList.add('hidden');
+                const videoEl = document.getElementById('uploadedVideo');
+                videoEl.classList.remove('hidden');
+                videoEl.src = videoPath;
+
+                uploadedPlayer = videoEl;
+
+                videoEl.addEventListener('loadedmetadata', function() {
+                    videoDuration = videoEl.duration;
+                    updateProgressUI(0, videoDuration, 0);
+                });
+
+                videoEl.addEventListener('play', function() {
+                    startProgressTracking();
+                    updateProgressStatus('watching');
+
+                    if (courses[currentCourseId].status === 'pending') {
+                        courses[currentCourseId].status = 'in_progress';
+                        updateCourseStatusTag('in_progress');
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), 'in_progress');
+                        const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
+                        if (courseItem) courseItem.setAttribute('data-status', 'in_progress');
+                    }
+                });
+
+                videoEl.addEventListener('pause', function() {
+                    stopProgressTracking();
+                    updateProgressStatus('paused');
+                });
+
+                videoEl.addEventListener('ended', function() {
+                    stopProgressTracking();
+                    checkCompletion(true);
+                });
+
+                videoEl.addEventListener('error', function() {
+                    document.getElementById('videoFallback').classList.remove('hidden');
                 });
             }
 
@@ -476,16 +537,23 @@
             }
 
             let saveCounter = 0;
+            function getCurrentTime() {
+                if (player && player.getCurrentTime) return player.getCurrentTime();
+                if (uploadedPlayer && !uploadedPlayer.paused) return uploadedPlayer.currentTime;
+                if (uploadedPlayer) return uploadedPlayer.currentTime;
+                return 0;
+            }
+
             function startProgressTracking() {
                 if (progressInterval) return;
 
                 progressInterval = setInterval(() => {
-                    if (player && player.getCurrentTime) {
-                        const currentTime = Math.floor(player.getCurrentTime());
-                        watchedSeconds.add(currentTime);
+                    const currentTime = getCurrentTime();
+                    if (currentTime > 0) {
+                        watchedSeconds.add(Math.floor(currentTime));
 
                         const watchedPercentage = calculateWatchedPercentage();
-                        updateProgressUI(player.getCurrentTime(), videoDuration, watchedPercentage);
+                        updateProgressUI(currentTime, videoDuration, watchedPercentage);
 
                         // Save to server every 10 seconds
                         saveCounter++;
@@ -607,6 +675,9 @@
                 if (player) {
                     player.seekTo(0);
                     player.playVideo();
+                } else if (uploadedPlayer) {
+                    uploadedPlayer.currentTime = 0;
+                    uploadedPlayer.play();
                 }
             }
 
@@ -705,23 +776,14 @@
                 if (fallbackTitle) fallbackTitle.textContent = course.title;
 
                 // Initialize new video player (this resets all progress tracking to 0)
-                if (course.videoId) {
+                if (course.platform === 'upload' && course.videoPath) {
+                    initializeUploadedPlayer(course.videoPath);
+                } else if (course.videoId) {
                     initializePlayer(course.videoId);
                 }
 
-                // Update UI based on course status and saved progress
-                if (course.status === 'completed') {
-                    isCompleted = true;
-                    updateProgressUI(0, 0, 100);
-                    updateProgressStatus('completed');
-                    document.getElementById('completionBadge').classList.remove('hidden');
-                } else if (course.status === 'in_progress' && course.savedProgress > 0) {
-                    updateProgressUI(0, 0, course.savedProgress);
-                    updateProgressStatus('paused');
-                } else if (course.status === 'in_progress') {
-                    updateProgressStatus('paused');
-                }
-                // If pending, the initializePlayer already reset everything to 0%
+                // Restore saved progress/status after player init resets to 0
+                applyRestoredProgress(course);
 
                 // Update category
                 const courseCategory = document.getElementById('courseCategory');

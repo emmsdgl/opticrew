@@ -16,6 +16,7 @@ class TrainingVideo extends Model
         'description',
         'description_fi',
         'video_id',
+        'video_path',
         'platform',
         'duration',
         'required',
