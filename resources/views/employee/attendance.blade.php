@@ -394,8 +394,8 @@
                                         <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
                                             <span class="text-sm text-gray-500 dark:text-gray-400">Proof Document</span>
                                             <a :href="'/storage/' + selectedRequest.requestProofDocument" target="_blank"
-                                                class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
-                                                View Document
+                                                class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium max-w-[180px] truncate inline-block"
+                                                x-text="selectedRequest.requestProofDocument.split('/').pop()">
                                             </a>
                                         </div>
                                     </template>
