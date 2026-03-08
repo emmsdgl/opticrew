@@ -136,7 +136,7 @@ Route::post('/api/language/switch', [LanguageController::class, 'switchApi'])->n
 // --- AUTHENTICATED ROUTES ---
 
 // --- NOTIFICATION ROUTES (Available to all authenticated users) ---
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'terms.accepted'])->group(function () {
     // View all notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
@@ -157,7 +157,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // --- ADMIN ROUTES ---
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('/admin/history', [\App\Http\Controllers\Admin\HistoryController::class, 'index'])->name('admin.history');
@@ -326,7 +326,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 
 // --- EMPLOYEE ROUTES ---
-Route::middleware(['auth', 'employee'])->group(function () {
+Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
         ->name('employee.dashboard');
 
@@ -392,7 +392,7 @@ Route::middleware(['auth', 'employee'])->group(function () {
 });
 
 // --- CLIENT ROUTES ---
-Route::middleware(['auth', 'client'])->group(function () {
+Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     Route::get('/client/dashboard', [ClientAppointmentController::class, 'dashboard'])->name('client.dashboard');
 
     // Client Appointment/Booking Routes
@@ -425,7 +425,7 @@ Route::middleware(['auth', 'client'])->group(function () {
 });
 
 // --- MANAGER (CONTRACTED CLIENT) ROUTES ---
-Route::middleware(['auth', 'manager'])->prefix('manager')->name('manager.')->group(function () {
+Route::middleware(['auth', 'terms.accepted', 'manager'])->prefix('manager')->name('manager.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
 
@@ -459,12 +459,12 @@ Route::middleware(['auth', 'manager'])->prefix('manager')->name('manager.')->gro
 
 // Geofencing API endpoint (needs web session authentication)
 Route::get('/api/company-settings', [App\Http\Controllers\Api\CompanySettingsController::class, 'index'])
-    ->middleware('auth')
+    ->middleware(['auth', 'terms.accepted'])
     ->name('api.company-settings');
 
 //ALL ROUTES FOR BUTTONS
 Route::get('/signup', function () {
-    return view('auth.signup');
+    return view('auth.signup', ['cscApiKey' => env('CSC_API_KEY', '')]);
 })->middleware('guest')->name('signup');
 
 // ADD THIS NEW POST ROUTE to handle the form submission
