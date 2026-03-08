@@ -30,8 +30,8 @@ class ClientRegistrationController extends Controller
             // Account type is always personal (company signup removed)
             $accountType = 'personal';
 
-            // Calculate date 18 years ago from today
-            $eighteenYearsAgo = Carbon::now()->subYears(18)->format('m-d-Y');
+            // Birthdate must be on or before December 31, 2008
+            $maxBirthdate = '12-31-2008';
 
             // Validation rules for personal account registration
             $rules = [
@@ -52,13 +52,12 @@ class ClientRegistrationController extends Controller
                 'first_name' => ['required', 'string', 'max:255'],
                 'last_name' => ['required', 'string', 'max:255'],
                 'middle_initial' => ['nullable', 'string', 'max:5'],
-                'birthdate' => ['required', 'date_format:m-d-Y', 'before_or_equal:' . $eighteenYearsAgo],
+                'birthdate' => ['required', 'date_format:m-d-Y', 'before_or_equal:' . $maxBirthdate],
                 'phone_number' => ['required', 'string', 'min:7'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
                 'street_address' => ['required', 'string', 'max:255'],
-                'postal_code' => ['required', 'string', 'size:5'],
+                'state' => ['required', 'string', 'max:100'],
                 'city' => ['required', 'string', 'max:100'],
-                'district' => ['required', 'string', 'max:100'],
             ];
 
             // 3. Validate the data
@@ -73,9 +72,8 @@ class ClientRegistrationController extends Controller
                 'password.mixed_case' => 'Password must contain at least one uppercase and one lowercase letter.',
                 'password.numbers' => 'Password must contain at least one number.',
                 'password.symbols' => 'Password must contain at least one special character (!@#$%^&*).',
-                'postal_code.size' => 'Postal code must be exactly 5 digits.',
                 'middle_initial.max' => 'Middle initial must not exceed 5 characters.',
-                'birthdate.before_or_equal' => 'You must be at least 18 years old to create an account.',
+                'birthdate.before_or_equal' => 'You must be born in 2008 or earlier to create an account.',
             ]);
 
             // Use a transaction to ensure everything saves or nothing does
@@ -87,8 +85,8 @@ class ClientRegistrationController extends Controller
 
                 // Apply Title Case to address fields
                 $streetAddress = $this->formatTitleCase($request->street_address);
+                $state = $this->formatTitleCase($request->state);
                 $city = $this->formatTitleCase($request->city);
-                $district = $this->formatTitleCase($request->district);
 
                 // Create User record (always personal account)
                 // Email is already verified via OTP in Step 2, so always set email_verified_at
@@ -104,9 +102,8 @@ class ClientRegistrationController extends Controller
 
                 // Create the associated Client profile record
                 $fullAddress = $streetAddress . ', ' .
-                              $request->postal_code . ' ' .
                               $city . ', ' .
-                              $district;
+                              $state . ', Finland';
 
                 $user->client()->create([
                     'client_type' => 'personal',
@@ -115,9 +112,8 @@ class ClientRegistrationController extends Controller
                     'middle_initial' => $middleInitial,
                     'birthdate' => Carbon::createFromFormat('m-d-Y', $request->birthdate)->format('Y-m-d'),
                     'street_address' => $streetAddress,
-                    'postal_code' => $request->postal_code,
+                    'state' => $state,
                     'city' => $city,
-                    'district' => $district,
                     'address' => $fullAddress,
                     'billing_address' => $fullAddress,
                     'is_active' => true,
