@@ -384,6 +384,7 @@
     </script>
     @stack('scripts')
     @livewireScripts
+    <x-global-dialogs />
 </body>
 
 </html>

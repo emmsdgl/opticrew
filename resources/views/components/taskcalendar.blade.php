@@ -863,7 +863,7 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
 
             // Check if trying to select a past date
             if (ENABLE_PAST_DATE_VALIDATION && this.isPastDate(date)) {
-                alert('⚠️ You cannot create tasks for previous dates.\n\nPlease select today or a future date.');
+                window.showErrorDialog('Invalid Date', 'You cannot create tasks for previous dates. Please select today or a future date.');
                 return; // Stop execution - do not open modal
             }
 
@@ -927,11 +927,11 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
         toggleCabin(cabin) {
             // Validate that service type and cabin type are selected
             if (!this.formData.serviceType) {
-                alert('Please select a Service Type first');
+                window.showErrorDialog('Missing Selection', 'Please select a Service Type first.');
                 return;
             }
             if (!this.formData.selectedCabinType) {
-                alert('Please select a Cabin Type first');
+                window.showErrorDialog('Missing Selection', 'Please select a Cabin Type first.');
                 return;
             }
 
@@ -1141,14 +1141,14 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                         // Show success message and close modal
                         this.optimizationLoading = false;
                         this.closeOptimizationModal();
-                        alert('Tasks created and optimized successfully! Please click "Save Schedule" to save this optimization.');
+                        window.showSuccessDialog('Tasks Optimized', 'Tasks created and optimized successfully! Please click "Save Schedule" to save this optimization.');
 
                         // Reload the page to show new tasks on calendar
                         window.location.reload();
                     } else {
                         this.optimizationLoading = false;
                         this.closeOptimizationModal();
-                        alert('Task created successfully! Message: ' + data.message);
+                        window.showSuccessDialog('Task Created', 'Task created successfully! ' + data.message);
                         window.location.reload();
                     }
                 } else {
@@ -1161,16 +1161,16 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                         const errorMessages = Object.entries(data.errors)
                             .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
                             .join('\n');
-                        alert('Validation errors:\n' + errorMessages);
+                        window.showErrorDialog('Validation Error', errorMessages);
                     } else {
-                        alert('Error: ' + (data.message || JSON.stringify(data)));
+                        window.showErrorDialog('Error', data.message || JSON.stringify(data));
                     }
                 }
             } catch (error) {
                 this.optimizationLoading = false;
                 this.closeOptimizationModal();
                 console.error('Error:', error);
-                alert('Failed to create task: ' + error.message);
+                window.showErrorDialog('Task Creation Failed', 'Failed to create task: ' + error.message);
             }
         },
 
@@ -1339,7 +1339,7 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
 
         async confirmAddHoliday() {
             if (!this.holidayName.trim()) {
-                alert('Please enter a holiday name');
+                window.showErrorDialog('Missing Information', 'Please enter a holiday name.');
                 return;
             }
 
@@ -1379,14 +1379,14 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                     // Refresh calendar to show the holiday
                     this.renderCalendar();
 
-                    alert('✅ Holiday added successfully!');
+                    window.showSuccessDialog('Holiday Added', 'Holiday added successfully!');
                     this.closeHolidayModals();
                 } else {
-                    alert('❌ Error: ' + (data.message || 'Failed to add holiday'));
+                    window.showErrorDialog('Holiday Error', data.message || 'Failed to add holiday.');
                 }
             } catch (error) {
                 console.error('Error adding holiday:', error);
-                alert('❌ Error adding holiday. Please try again.');
+                window.showErrorDialog('Holiday Error', 'Error adding holiday. Please try again.');
             }
         },
 
@@ -1417,14 +1417,14 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                     // Refresh calendar to hide the holiday
                     this.renderCalendar();
 
-                    alert('✅ Holiday deleted successfully!');
+                    window.showSuccessDialog('Holiday Deleted', 'Holiday deleted successfully!');
                     this.closeHolidayModals();
                 } else {
-                    alert('❌ Error: ' + (data.message || 'Failed to delete holiday'));
+                    window.showErrorDialog('Delete Failed', data.message || 'Failed to delete holiday.');
                 }
             } catch (error) {
                 console.error('Error deleting holiday:', error);
-                alert('❌ Error deleting holiday. Please try again.');
+                window.showErrorDialog('Delete Failed', 'Error deleting holiday. Please try again.');
             }
         },
 

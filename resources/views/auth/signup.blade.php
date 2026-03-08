@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <link rel="stylesheet"
         href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
@@ -16,6 +17,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/datepicker.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         @font-face {
@@ -427,6 +432,19 @@
             animation-name: onAutoFillStart;
             animation-duration: 0.001s;
         }
+
+        /* Hide the native date picker icon so clicking anywhere on the input opens the picker */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -548,7 +566,7 @@
                                             <input type="text" id="input-mname" placeholder=" " maxlength="5"
                                                 class="input-field w-full pl-12 pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                                 name="middle_initial">
-                                            <label for="input-mname">M.I.</label>
+                                            <label for="input-mname" class="line-clamp-1">M.I.(Optional)</label>
                                         </div>
                                     </div>
                                 </div>
@@ -560,12 +578,10 @@
                                         <i
                                             class="fas fa-calendar-day absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                     </div>
-                                    <input datepicker datepicker-format="mm-dd-yyyy"
-                                        datepicker-max-date="12/31/2008"
-                                        id="datepicker" name="birthdate"
-                                        type="text"
+                                    <input id="datepicker" name="birthdate" type="date"
+                                        max="2008-12-31"
                                         class="input-field w-full text-sm pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                                        placeholder="mm - dd - yyyy" required>
+                                        required autocomplete="off">
                                     <label for="datepicker">Birthdate</label>
                                     <div id="age-error" class="text-red-500 text-sm mt-1 hidden">
                                         <i class="fas fa-exclamation-circle mr-1 text-sm"></i>
@@ -1206,16 +1222,16 @@
             const birthdateInput = document.getElementById('datepicker');
 
             if (birthdateInput) {
-                birthdateInput.addEventListener('focus', () => {
-                    birthdateInput.type = 'text';
-                });
-
-                birthdateInput.addEventListener('blur', () => {
-                    if (!birthdateInput.value) {
-                        birthdateInput.type = 'text';
-                    }
-                });
-            }
+            // Listen for date selection
+            birthdateInput.addEventListener('change', () => {
+                if (birthdateInput.value.trim() !== '') {
+                    birthdateInput.classList.add('has-value');
+                } else {
+                    birthdateInput.classList.remove('has-value');
+                }
+                checkFormCompletion();
+            });
+        }
 
             // No need to store original icons with new design
 
@@ -1226,7 +1242,7 @@
                     currentStep = 2;
                     isStep3Completed = false;
                     updateStepper
-                (); // Only need to reset isStep3Completed as isStep2Completed reset is not needed when moving from 3 to 2
+                        (); // Only need to reset isStep3Completed as isStep2Completed reset is not needed when moving from 3 to 2
                 }
             });
             document.getElementById('back2-btn').addEventListener('click', (e) => {
@@ -1279,16 +1295,6 @@
                 }
             });
 
-            // Birthdate input behavior (Existing code remains)
-            birthdateInput.addEventListener('focus', () => {
-                birthdateInput.type = 'text';
-            });
-
-            birthdateInput.addEventListener('blur', () => {
-                if (!birthdateInput.value) {
-                    birthdateInput.type = 'text';
-                }
-            });
 
             // STEP 3 SCRIPT
             const dropdownButtons = document.querySelectorAll('.security-question-btn1, .security-question-btn2');
@@ -1526,26 +1532,43 @@
                 if (bDate && bDate.value.trim() !== "") {
                     isBDateComplete = true;
 
-                    // Parse date in mm-dd-yyyy format
-                    const dateParts = bDate.value.trim().split(/[-/]/);
+                    // Parse date - native date input uses yyyy-mm-dd format
+                    const dateParts = bDate.value.trim().split('-');
                     if (dateParts.length === 3) {
-                        const month = parseInt(dateParts[0], 10);
-                        const day = parseInt(dateParts[1], 10);
-                        const year = parseInt(dateParts[2], 10);
+                        const year = parseInt(dateParts[0], 10);
+                        const month = parseInt(dateParts[1], 10);
+                        const day = parseInt(dateParts[2], 10);
 
-                        // Create date object (month is 0-indexed in JavaScript)
-                        const birthDate = new Date(year, month - 1, day);
+                        // Validate that the parsed values are valid numbers
+                        if (!isNaN(month) && !isNaN(day) && !isNaN(year)) {
+                            // Create date object (month is 0-indexed in JavaScript)
+                            const birthDate = new Date(year, month - 1, day);
 
-                        // Birthdate must be on or before December 31, 2008
-                        const maxDate = new Date(2008, 11, 31); // Dec 31, 2008
-                        isAgeValid = birthDate <= maxDate;
+                            // Birthdate must be on or before December 31, 2008
+                            const maxDate = new Date(2008, 11, 31); // Dec 31, 2008
 
-                        // Show/hide age error message
-                        if (ageErrorElement) {
-                            if (isAgeValid) {
-                                ageErrorElement.classList.add('hidden');
-                            } else {
+                            // Also check if birthDate is a valid date
+                            const isValidDate = birthDate instanceof Date && !isNaN(birthDate);
+                            isAgeValid = isValidDate && birthDate <= maxDate;
+
+                            // Show/hide age error message
+                            if (ageErrorElement) {
+                                if (isAgeValid) {
+                                    ageErrorElement.classList.add('hidden');
+                                    bDate.classList.remove('ring-red-500');
+                                    bDate.classList.add('ring-green-500');
+                                } else {
+                                    ageErrorElement.classList.remove('hidden');
+                                    bDate.classList.remove('ring-green-500');
+                                    bDate.classList.add('ring-red-500');
+                                }
+                            }
+                        } else {
+                            // Invalid numeric values
+                            isAgeValid = false;
+                            if (ageErrorElement) {
                                 ageErrorElement.classList.remove('hidden');
+                                bDate.classList.add('ring-red-500');
                             }
                         }
                     } else {
@@ -1553,6 +1576,7 @@
                         isAgeValid = false;
                         if (ageErrorElement) {
                             ageErrorElement.classList.remove('hidden');
+                            bDate.classList.add('ring-red-500');
                         }
                     }
                 } else {
@@ -1560,6 +1584,7 @@
                     if (ageErrorElement) {
                         ageErrorElement.classList.add('hidden');
                     }
+                    bDate.classList.remove('ring-red-500', 'ring-green-500');
                 }
 
                 const isEmailValid = email && email.value.trim() !== "" && email.value.includes('@') && email.value
@@ -1740,7 +1765,7 @@
                 input.addEventListener('blur', checkFormCompletion);
                 input.addEventListener('change', checkFormCompletion); // Added for auto-fill support
                 input.addEventListener('focus',
-                checkFormCompletion); // Check when user clicks on auto-filled field
+                    checkFormCompletion); // Check when user clicks on auto-filled field
 
                 // Detect Chrome/Edge auto-fill using animationstart event
                 input.addEventListener('animationstart', (e) => {
@@ -1809,7 +1834,7 @@
                 // It's very similar to the next-1 button's logic
 
                 // Optional: show a sending state
-                alert('Sending a new OTP...');
+                window.showSuccessDialog('Sending OTP', 'Sending a new OTP to your email...', 'OK');
 
                 const email = document.getElementById('input-email').value;
 
@@ -1829,11 +1854,11 @@
                         return response.json();
                     })
                     .then(data => {
-                        alert('A new OTP has been sent to your email.');
+                        window.showSuccessDialog('OTP Sent', 'A new OTP has been sent to your email.');
                         startResendTimer(); // Restart the timer
                     })
                     .catch(error => {
-                        alert(error.message);
+                        window.showErrorDialog('Failed to Send OTP', error.message);
                     });
             }
 
@@ -1888,9 +1913,7 @@
                             }
 
                             // Display error in a more visible way
-                            alert('❌ ' + errorMessage +
-                                '\n\nPlease use a different email address or log in if you already have an account.'
-                                );
+                            window.showErrorDialog('Email Error', errorMessage + ' Please use a different email address or log in if you already have an account.');
 
                             // Also log to console for debugging
                             console.error('OTP sending failed:', error);
@@ -1902,7 +1925,7 @@
                         });
 
                 } else {
-                    alert("Please complete all required fields for Basic Details correctly.");
+                    window.showErrorDialog('Incomplete Form', 'Please complete all required fields for Basic Details correctly.');
                 }
             });
 
@@ -1950,7 +1973,7 @@
                             updateStepper();
                         })
                         .catch(error => {
-                            alert(error.message || "Invalid OTP. Please try again.");
+                            window.showErrorDialog('Verification Failed', error.message || 'Invalid OTP. Please try again.');
                         })
                         .finally(() => {
                             e.target.textContent = 'Verify OTP';
@@ -1958,7 +1981,7 @@
                         });
 
                 } else {
-                    alert("Please enter the complete 6-digit OTP.");
+                    window.showErrorDialog('Incomplete OTP', 'Please enter the complete 6-digit OTP.');
                 }
             });
 
@@ -1979,7 +2002,7 @@
                     // If the form is NOT complete, prevent the submission and show an alert.
                     if (!isForm3Complete) {
                         e.preventDefault();
-                        alert("Please complete all required fields for Account Setup correctly.");
+                        window.showErrorDialog('Incomplete Form', 'Please complete all required fields for Account Setup correctly.');
                     }
                 });
             }
@@ -2050,7 +2073,7 @@
                 if (toggleButton && passwordInput) {
                     toggleButton.addEventListener('click', function() {
                         const type = passwordInput.getAttribute('type') === 'password' ? 'text' :
-                        'password';
+                            'password';
                         passwordInput.setAttribute('type', type);
                         this.classList.toggle('fa-eye');
                         this.classList.toggle('fa-eye-slash');
@@ -2064,6 +2087,7 @@
             updateStepper();
         });
     </script>
+    <x-global-dialogs />
 </body>
 
 </html>

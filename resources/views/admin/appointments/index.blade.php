@@ -999,14 +999,14 @@
                         });
                         const data = await response.json();
                         if (response.ok && data.success) {
-                            alert(data.message);
+                            window.showSuccessDialog('Appointment Approved', data.message);
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Failed to approve appointment');
+                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve appointment');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('An error occurred while approving the appointment');
+                        window.showErrorDialog('Approval Failed', 'An error occurred while approving the appointment');
                     } finally {
                         this.approving = false;
                     }
@@ -1030,14 +1030,14 @@
                         });
                         const data = await response.json();
                         if (response.ok && data.success) {
-                            alert(data.message);
+                            window.showSuccessDialog('Appointment Rejected', data.message);
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Failed to reject appointment');
+                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject appointment');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('An error occurred while rejecting the appointment');
+                        window.showErrorDialog('Rejection Failed', 'An error occurred while rejecting the appointment');
                     } finally {
                         this.rejecting = false;
                     }

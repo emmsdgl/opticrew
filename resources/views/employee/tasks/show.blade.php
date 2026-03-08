@@ -83,13 +83,13 @@
 
                         if (response.ok) {
                             this.closeFeedbackModal();
-                            alert('Thank you for your feedback!');
+                            window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!');
                         } else {
-                            alert('Error submitting feedback. Please try again.');
+                            window.showErrorDialog('Submission Failed', 'Error submitting feedback. Please try again.');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('Error submitting feedback. Please try again.');
+                        window.showErrorDialog('Submission Failed', 'Error submitting feedback. Please try again.');
                     }
                 }
             }
@@ -1333,14 +1333,14 @@
                                 // Revert checkbox state on error
                                 checkbox.checked = !isCompleted;
                                 updateChecklistProgress();
-                                alert(data.error || 'Failed to update checklist item');
+                                window.showErrorDialog('Update Failed', data.error || 'Failed to update checklist item');
                             }
                         } catch (error) {
                             console.error('Error:', error);
                             // Revert checkbox state on error
                             checkbox.checked = !isCompleted;
                             updateChecklistProgress();
-                            alert('Error updating checklist item. Please try again.');
+                            window.showErrorDialog('Update Failed', 'Error updating checklist item. Please try again.');
                         }
                     }
 

@@ -310,7 +310,7 @@ function appointmentRateList(items) {
 
         async submitFeedback() {
             if (!this.selectedItem || !this.selectedItem.id) {
-                alert('Error: No appointment selected');
+                window.showErrorDialog('No Appointment Selected', 'Please select an appointment to provide feedback.');
                 return;
             }
 
@@ -332,15 +332,15 @@ function appointmentRateList(items) {
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    alert('Thank you for your feedback!');
+                    window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!');
                     this.closeFeedbackModal();
                     window.location.reload();
                 } else {
-                    alert(data.message || 'Failed to submit feedback. Please try again.');
+                    window.showErrorDialog('Submission Failed', data.message || 'Failed to submit feedback. Please try again.');
                 }
             } catch (error) {
                 console.error('Error submitting feedback:', error);
-                alert('An error occurred. Please try again.');
+                window.showErrorDialog('Error', 'An error occurred. Please try again.');
             }
         }
     };

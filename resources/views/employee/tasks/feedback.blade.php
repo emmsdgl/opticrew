@@ -223,7 +223,7 @@
 
                 async submitFeedback() {
                     if (!this.isFormValid) {
-                        alert('Please select a service, provide an overall rating, and write at least 10 characters in your comments.');
+                        window.showErrorDialog('Incomplete Form', 'Please select a service, provide an overall rating, and write at least 10 characters in your comments.');
                         return;
                     }
 
@@ -251,12 +251,12 @@
                             // Reset form
                             this.resetForm();
                         } else {
-                            alert(data.message || 'Failed to submit feedback. Please try again.');
+                            window.showErrorDialog('Submission Failed', data.message || 'Failed to submit feedback. Please try again.');
                         }
 
                     } catch (error) {
                         console.error('Error submitting feedback:', error);
-                        alert('Failed to submit feedback. Please try again.');
+                        window.showErrorDialog('Submission Failed', 'Failed to submit feedback. Please try again.');
                     } finally {
                         this.submitting = false;
                     }

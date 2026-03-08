@@ -311,14 +311,12 @@
         const declineBtn = document.querySelector('.btn-decline');
 
         agreeBtn.addEventListener('click', function() {
-            alert('Thank you for accepting the Terms and Conditions');
+            window.showSuccessDialog('Terms Accepted', 'Thank you for accepting the Terms and Conditions.');
             // ADD VERIFICATION LOGIC HERE
         });
         
         declineBtn.addEventListener('click', function() {
-            if(confirm('You must accept the Terms and Conditions to continue using the platform.')) {
-                // ADD DISAGREEMENT CONSEQUENCE LOGIC HERE
-            }
+            window.showErrorDialog('Login Failed', 'Please read and accept the terms and conditions.', 'Back to login', '/login');
         });
     });
 </script>

@@ -812,11 +812,11 @@
                         // Reload to reflect changes in table
                         window.location.reload();
                     } else {
-                        alert('Failed to update status. Please try again.');
+                        window.showErrorDialog('Update Failed', 'Failed to update status. Please try again.');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('An error occurred while updating the status.');
+                    window.showErrorDialog('Update Failed', 'An error occurred while updating the status.');
                 } finally {
                     this.isUpdating = false;
                 }
@@ -942,17 +942,17 @@
                         this.successMessage = 'The job posting has been removed successfully.';
                         this.showSuccess = true;
                     } else {
-                        alert(data.message || 'Failed to delete job posting.');
+                        window.showErrorDialog('Delete Failed', data.message || 'Failed to delete job posting.');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('An error occurred while deleting the job posting.');
+                    window.showErrorDialog('Delete Failed', 'An error occurred while deleting the job posting.');
                 }
             },
 
             async saveJob() {
                 if (!this.formData.title || !this.formData.description || !this.formData.location || !this.formData.salary) {
-                    alert('Please fill in all required fields.');
+                    window.showErrorDialog('Validation Error', 'Please fill in all required fields.');
                     return;
                 }
 
@@ -1034,11 +1034,11 @@
                             : 'The job posting has been created and is now visible to applicants.';
                         this.showSuccess = true;
                     } else {
-                        alert(data.message || 'Failed to save job posting.');
+                        window.showErrorDialog('Save Failed', data.message || 'Failed to save job posting.');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('An error occurred while saving the job posting.');
+                    window.showErrorDialog('Save Failed', 'An error occurred while saving the job posting.');
                 } finally {
                     this.isSubmitting = false;
                 }

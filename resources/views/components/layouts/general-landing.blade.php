@@ -496,6 +496,7 @@
             }
         });
     </script>
+    <x-global-dialogs />
 </body>
 
 </html>

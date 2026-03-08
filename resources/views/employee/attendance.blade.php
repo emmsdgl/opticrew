@@ -58,10 +58,10 @@
                         this.closeRequestModal();
                         window.location.reload();
                     } else {
-                        alert(data.message || 'Failed to cancel request');
+                        window.showErrorDialog('Request Failed', data.message || 'Failed to cancel request');
                     }
                 } catch (error) {
-                    alert('An error occurred. Please try again.');
+                    window.showErrorDialog('Request Failed', 'An error occurred. Please try again.');
                 } finally {
                     this.isCancelling = false;
                 }

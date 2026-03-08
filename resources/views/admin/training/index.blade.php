@@ -594,29 +594,29 @@
                                     'The training video has been removed and is no longer visible to employees.';
                                 this.showSuccess = true;
                             } else {
-                                alert(data.message || 'Failed to delete training video.');
+                                window.showErrorDialog('Delete Failed', data.message || 'Failed to delete training video.');
                             }
                         } catch (error) {
                             console.error('Error:', error);
-                            alert('An error occurred while deleting the training video.');
+                            window.showErrorDialog('Delete Failed', 'An error occurred while deleting the training video.');
                         }
                     },
 
                     async saveVideo() {
                         if (!this.formData.title || !this.formData.description || !this.formData.category) {
-                            alert('Please fill in all required fields.');
+                            window.showErrorDialog('Validation Error', 'Please fill in all required fields.');
                             return;
                         }
                         if (this.formData.description.length < 180) {
-                            alert('Description must be at least 180 characters.');
+                            window.showErrorDialog('Validation Error', 'Description must be at least 180 characters.');
                             return;
                         }
                         if (this.formData.platform === 'youtube' && !this.formData.video_id) {
-                            alert('Please enter a YouTube Video ID.');
+                            window.showErrorDialog('Validation Error', 'Please enter a YouTube Video ID.');
                             return;
                         }
                         if (this.formData.platform === 'upload' && !this.formData.video_file && !this.formData.video_path) {
-                            alert('Please select a video file to upload.');
+                            window.showErrorDialog('Validation Error', 'Please select a video file to upload.');
                             return;
                         }
                         this.isSubmitting = true;
@@ -688,11 +688,11 @@
                                     'The training video has been added and is now available to employees.';
                                 this.showSuccess = true;
                             } else {
-                                alert(data.message || 'Failed to save training video.');
+                                window.showErrorDialog('Save Failed', data.message || 'Failed to save training video.');
                             }
                         } catch (error) {
                             console.error('Error:', error);
-                            alert('An error occurred while saving the training video.');
+                            window.showErrorDialog('Save Failed', 'An error occurred while saving the training video.');
                         } finally {
                             this.isSubmitting = false;
                         }

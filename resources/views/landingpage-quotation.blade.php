@@ -947,7 +947,7 @@
                 confirmLocation() {
                     // Check if location is selected
                     if (!this.formData.propertyLocation) {
-                        alert('Please select a location on the map first.');
+                        window.showErrorDialog('Location Required', 'Please select a location on the map first.');
                         return;
                     }
 
@@ -1019,16 +1019,16 @@
                                             });
                                         });
 
-                                        alert('Location found! Address fields have been auto-filled.');
+                                        window.showSuccessDialog('Location Found', 'Address fields have been auto-filled.');
                                     } else {
                                         this.formData.propertyLocation = originalText;
                                         console.error('Geocoder failed:', status);
-                                        alert('Unable to get address from coordinates. Please try again.');
+                                        window.showErrorDialog('Geocoding Failed', 'Unable to get address from coordinates. Please try again.');
                                     }
                                 });
                             } else {
                                 this.formData.propertyLocation = originalText;
-                                alert('Geocoder not initialized. Please try again.');
+                                window.showErrorDialog('Geocoder Error', 'Geocoder not initialized. Please try again.');
                             }
                         }, (error) => {
                             console.error('Error getting location:', error);
@@ -1048,23 +1048,23 @@
                                     errorMessage += 'An unknown error occurred.';
                             }
 
-                            alert(errorMessage);
+                            window.showErrorDialog('Location Error', errorMessage);
                         });
                     } else {
-                        alert('Geolocation is not supported by your browser.');
+                        window.showErrorDialog('Not Supported', 'Geolocation is not supported by your browser.');
                     }
                 },
 
                 async submitForm() {
                     // Basic validation
                     if (!this.formData.bookingType) {
-                        alert('Please select a booking type (Personal or Company)');
+                        window.showErrorDialog('Booking Type Required', 'Please select a booking type (Personal or Company).');
                         scrollToSection('step-1');
                         return;
                     }
 
                     if (!this.formData.clientName || !this.formData.phoneNumber || !this.formData.email) {
-                        alert('Please fill in all required contact information');
+                        window.showErrorDialog('Missing Information', 'Please fill in all required contact information.');
                         scrollToSection('step-3');
                         return;
                     }
@@ -1222,7 +1222,7 @@
 
                         if (response.ok) {
                             // Success!
-                            alert('✅ ' + (result.message || 'Your quotation request has been submitted successfully! We will contact you soon.'));
+                            window.showSuccessDialog('Quotation Submitted', result.message || 'Your quotation request has been submitted successfully! We will contact you soon.');
 
                             // Reset the HTML form to clear all inputs
                             const form = document.getElementById('quotation-form');
@@ -1281,14 +1281,14 @@
                             // Handle validation errors
                             if (result.errors) {
                                 const errorMessages = Object.values(result.errors).flat().join('\n');
-                                alert('❌ Please fix the following errors:\n\n' + errorMessages);
+                                window.showErrorDialog('Validation Errors', 'Please fix the following errors: ' + errorMessages);
                             } else {
-                                alert('❌ ' + (result.message || 'Failed to submit quotation. Please try again.'));
+                                window.showErrorDialog('Submission Failed', result.message || 'Failed to submit quotation. Please try again.');
                             }
                         }
                     } catch (error) {
                         console.error('Submission error:', error);
-                        alert('❌ An error occurred while submitting your request. Please check your internet connection and try again.');
+                        window.showErrorDialog('Submission Error', 'An error occurred while submitting your request. Please check your internet connection and try again.');
                     } finally {
                         // Restore button state
                         submitButton.disabled = false;

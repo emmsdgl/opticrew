@@ -261,14 +261,14 @@ async function cancelAppointment(appointmentId) {
             const data = await response.json();
 
             if (data.success) {
-                alert('Appointment cancelled successfully');
+                window.showSuccessDialog('Appointment Cancelled', 'Your appointment has been cancelled successfully.');
                 window.location.reload();
             } else {
-                alert(data.message || 'Failed to cancel appointment');
+                window.showErrorDialog('Cancellation Failed', data.message || 'Failed to cancel the appointment. Please try again.');
             }
         } catch (error) {
             console.error('Error cancelling appointment:', error);
-            alert('An error occurred while cancelling the appointment');
+            window.showErrorDialog('Error', 'An error occurred while cancelling the appointment.');
         }
     }
 }
