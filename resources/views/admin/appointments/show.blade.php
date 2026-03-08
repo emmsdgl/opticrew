@@ -630,14 +630,14 @@
                         const data = await response.json();
 
                         if (response.ok && data.success) {
-                            alert('✅ ' + data.message);
+                            window.showSuccessDialog('Appointment Approved', data.message);
                             window.location.reload();
                         } else {
-                            alert('❌ ' + (data.message || 'Failed to approve appointment'));
+                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve appointment');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('❌ An error occurred while approving the appointment');
+                        window.showErrorDialog('Approval Failed', 'An error occurred while approving the appointment');
                     } finally {
                         this.approving = false;
                     }
@@ -645,7 +645,7 @@
 
                 async rejectAppointment() {
                     if (!this.rejectionReason.trim()) {
-                        alert('Please provide a rejection reason');
+                        window.showErrorDialog('Validation Error', 'Please provide a rejection reason');
                         return;
                     }
 
@@ -667,14 +667,14 @@
                         const data = await response.json();
 
                         if (response.ok && data.success) {
-                            alert('✅ ' + data.message);
+                            window.showSuccessDialog('Appointment Rejected', data.message);
                             window.location.reload();
                         } else {
-                            alert('❌ ' + (data.message || 'Failed to reject appointment'));
+                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject appointment');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('❌ An error occurred while rejecting the appointment');
+                        window.showErrorDialog('Rejection Failed', 'An error occurred while rejecting the appointment');
                     } finally {
                         this.rejecting = false;
                     }
@@ -682,7 +682,7 @@
 
                 async assignExistingTeam() {
                     if (!this.selectedTeamId) {
-                        alert('Please select a team');
+                        window.showErrorDialog('Validation Error', 'Please select a team');
                         return;
                     }
 
@@ -708,14 +708,14 @@
                         const data = await response.json();
 
                         if (response.ok && data.success) {
-                            alert('✅ ' + data.message);
+                            window.showSuccessDialog('Team Assigned', data.message);
                             window.location.reload();
                         } else {
-                            alert('❌ ' + (data.message || 'Failed to assign team'));
+                            window.showErrorDialog('Assignment Failed', data.message || 'Failed to assign team');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('❌ An error occurred while assigning the team');
+                        window.showErrorDialog('Assignment Failed', 'An error occurred while assigning the team');
                     } finally {
                         this.assigning = false;
                     }
@@ -744,14 +744,14 @@
                         const data = await response.json();
 
                         if (response.ok && data.success) {
-                            alert('✅ ' + data.message);
+                            window.showSuccessDialog('Team Created', data.message);
                             window.location.reload();
                         } else {
-                            alert('❌ ' + (data.message || 'Failed to create team'));
+                            window.showErrorDialog('Team Creation Failed', data.message || 'Failed to create team');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('❌ An error occurred while creating teams');
+                        window.showErrorDialog('Team Creation Failed', 'An error occurred while creating teams');
                     } finally {
                         this.assigning = false;
                     }

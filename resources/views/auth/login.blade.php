@@ -7,8 +7,10 @@
     <title>Log In</title>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
     <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
@@ -109,15 +111,6 @@
         }
 
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                fontFamily: {
-                    'sans': ['Familjen Grotesk', 'system-ui', 'sans-serif'],
-                }
-            }
-        }
-    </script>
 </head>
 
 <body class="font-normal font-sans">
@@ -155,21 +148,13 @@
                         Fin-noys</p>
                 </div>
 
-                <!-- Floating Validation Errors -->
+                <!-- Validation Errors via Dialog -->
                 @if ($errors->any())
-                    <div id="floating-alert"
-                         class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 bg-red-500 text-white rounded-lg shadow-lg text-sm transition-all duration-300 opacity-0 -translate-y-4"
-                         style="min-width: 300px; max-width: 90vw;">
-                        <i class="fa-solid fa-circle-exclamation text-lg flex-shrink-0"></i>
-                        <div class="flex-1">
-                            @foreach ($errors->all() as $error)
-                                <p>{{ $error }}</p>
-                            @endforeach
-                        </div>
-                        <button onclick="dismissAlert()" class="flex-shrink-0 ml-2 hover:text-red-200 transition-colors">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            window.showErrorDialog('Almost there!', 'Please enter your email address and password to continue.');
+                        });
+                    </script>
                 @endif
 
                 <!-- LOGIN FIELD -->
@@ -205,6 +190,18 @@
                 <input type="submit" id="btn-login"
                     class="text-sm font-sans font-semibold hover:bg-blue-800 focus:outline-white" value="Login">
 
+                <!-- Sign in with Google -->
+                <button type="button" id="btn-google"
+                    class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-full bg-white hover:bg-gray-50 transition-colors duration-200 mt-3">
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    <span class="text-sm font-semibold text-gray-600">Sign in with Google</span>
+                </button>
+
                 <div id="container-2-3" class="text-center p-3 text-sm">
                     <p id="donthaveacct" class="text-[#07185788]">
                         Don't have an account?
@@ -222,27 +219,6 @@
 
 
     <script>
-        // Floating alert
-        function dismissAlert() {
-            const alert = document.getElementById('floating-alert');
-            if (alert) {
-                alert.classList.add('opacity-0', '-translate-y-4');
-                setTimeout(() => alert.remove(), 300);
-            }
-        }
-
-        (function () {
-            const alert = document.getElementById('floating-alert');
-            if (alert) {
-                // Animate in
-                requestAnimationFrame(() => {
-                    alert.classList.remove('opacity-0', '-translate-y-4');
-                });
-                // Auto-dismiss after 5 seconds
-                setTimeout(() => dismissAlert(), 5000);
-            }
-        })();
-
         document.addEventListener('DOMContentLoaded', () => {
             const inputs = document.querySelectorAll('.input-group input');
 
@@ -275,6 +251,7 @@
         });
 
     </script>
+    <x-global-dialogs />
 </body>
 
 </html>

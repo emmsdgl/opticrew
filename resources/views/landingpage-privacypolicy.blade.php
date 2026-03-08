@@ -363,7 +363,7 @@
         const declineBtn = document.querySelector('.btn-decline');
 
         agreeBtn.addEventListener('click', function() {
-            alert('Thank you for accepting the Privacy Policy');
+            window.showSuccessDialog('Policy Accepted', 'Thank you for accepting the Privacy Policy.');
         });
 
         declineBtn.addEventListener('click', function() {

@@ -179,10 +179,10 @@
                             this.closeRequestModal();
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Failed to approve request');
+                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve request');
                         }
                     } catch (error) {
-                        alert('An error occurred. Please try again.');
+                        window.showErrorDialog('Approval Failed', 'An error occurred. Please try again.');
                     } finally {
                         this.isSubmitting = false;
                     }
@@ -199,7 +199,7 @@
                 async rejectRequest() {
                     if (this.isSubmitting || !this.selectedRequest) return;
                     if (!this.rejectionReason) {
-                        alert('Please select a reason for rejection');
+                        window.showErrorDialog('Validation Error', 'Please select a reason for rejection');
                         return;
                     }
                     this.isSubmitting = true;
@@ -223,10 +223,10 @@
                             this.closeRequestModal();
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Failed to reject request');
+                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject request');
                         }
                     } catch (error) {
-                        alert('An error occurred. Please try again.');
+                        window.showErrorDialog('Rejection Failed', 'An error occurred. Please try again.');
                     } finally {
                         this.isSubmitting = false;
                     }

@@ -14,7 +14,8 @@
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <style>
         body {
             min-height: 100vh;
@@ -210,7 +211,7 @@
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             if (!csrfToken) {
                 console.error("❌ CSRF token not found!");
-                alert("Configuration error: CSRF token missing. Please refresh the page.");
+                window.showErrorDialog('Configuration Error', 'CSRF token missing. Please refresh the page.');
                 return;
             }
             console.log("🔐 CSRF Token found:", csrfToken.substring(0, 10) + "...");
@@ -238,12 +239,12 @@
             }
 
             function showError(message) {
-                alert(message);
+                window.showErrorDialog('Error', message);
                 console.error("❌ Error:", message);
             }
 
             function showSuccess(message) {
-                alert(message);
+                window.showSuccessDialog('Success', message);
                 console.log("✅ Success:", message);
             }
 
@@ -541,5 +542,6 @@
     </script>
     <!-- @endpush -->
     @stack('scripts')
+    <x-global-dialogs />
 </body>
 </html>

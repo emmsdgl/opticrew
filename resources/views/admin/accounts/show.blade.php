@@ -324,10 +324,10 @@
                         if (data.success) {
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Error saving cabin type');
+                            window.showErrorDialog('Save Failed', data.message || 'Error saving cabin type');
                         }
                     } catch (error) {
-                        alert('Error saving cabin type');
+                        window.showErrorDialog('Save Failed', 'Error saving cabin type');
                         console.error(error);
                     }
                 },
@@ -347,12 +347,12 @@
 
                         if (data.success) {
                             this.cabinTypes = this.cabinTypes.filter(ct => ct.location_type !== locationType);
-                            alert(data.message);
+                            window.showSuccessDialog('Cabin Type Deleted', data.message);
                         } else {
-                            alert(data.message || 'Error deleting cabin type');
+                            window.showErrorDialog('Delete Failed', data.message || 'Error deleting cabin type');
                         }
                     } catch (error) {
-                        alert('Error deleting cabin type');
+                        window.showErrorDialog('Delete Failed', 'Error deleting cabin type');
                         console.error(error);
                     }
                 }
