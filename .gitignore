@@ -9,6 +9,7 @@ ocr-env/
 venv/
 __pycache__/
 *.pyc
+uploads/
 .env
 .env.backup
 .env.production
