@@ -58,10 +58,10 @@
                         this.closeRequestModal();
                         window.location.reload();
                     } else {
-                        alert(data.message || 'Failed to cancel request');
+                        window.showErrorDialog('Request Failed', data.message || 'Failed to cancel request');
                     }
                 } catch (error) {
-                    alert('An error occurred. Please try again.');
+                    window.showErrorDialog('Request Failed', 'An error occurred. Please try again.');
                 } finally {
                     this.isCancelling = false;
                 }
@@ -585,8 +585,10 @@
                         <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
                             <div class="flex gap-3">
                                 @if(!$hasAttendanceToday)
-                                    <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1">
+                                    <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1" onsubmit="return populateGeoFields(this)">
                                         @csrf
+                                        <input type="hidden" name="latitude" class="geo-latitude">
+                                        <input type="hidden" name="longitude" class="geo-longitude">
                                         <button type="submit"
                                             class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
                                             <i class="fa-solid fa-play"></i>
@@ -594,8 +596,10 @@
                                         </button>
                                     </form>
                                 @elseif($isClockedIn)
-                                    <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1">
+                                    <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1" onsubmit="return populateGeoFields(this)">
                                         @csrf
+                                        <input type="hidden" name="latitude" class="geo-latitude">
+                                        <input type="hidden" name="longitude" class="geo-longitude">
                                         <button type="submit"
                                             class="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
                                             <i class="fa-solid fa-stop"></i>
@@ -615,4 +619,56 @@
         </div>
 
     </section>
+
+@push('scripts')
+@once
+<script src="{{ asset('js/geofencing.js') }}"></script>
+@endonce
+<script>
+    // Initialize geofencing for desktop attendance page
+    (function() {
+        const hasAttendanceToday = {{ ($hasAttendanceToday && !$isClockedIn) ? 'true' : 'false' }};
+        if (hasAttendanceToday) return; // Already completed, no need for geofencing
+
+        if (window.geofencingInitialized) return;
+        window.geofencingInitialized = true;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const timestamp = new Date().getTime();
+            fetch(`/api/company-settings?_=${timestamp}`, {
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!window.geofencing) {
+                    window.geofencing = new Geofencing({
+                        officeLatitude: data.office_latitude,
+                        officeLongitude: data.office_longitude,
+                        radius: data.geofence_radius,
+                        locationName: data.location_name,
+                        locationType: data.location_type,
+                        message: data.message,
+                        buttonId: 'desktop-clock-button',
+                        statusElementId: 'desktop-geofence-status',
+                        distanceElementId: 'desktop-geofence-distance'
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching task location:', error));
+        });
+    })();
+
+    window.addEventListener('beforeunload', function() {
+        if (window.geofencing) {
+            window.geofencing.stopWatching();
+        }
+    });
+</script>
+@endpush
 </x-layouts.general-employee>

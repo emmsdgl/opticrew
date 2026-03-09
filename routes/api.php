@@ -179,6 +179,10 @@ Route::prefix('tasks')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
     Route::post('/{taskId}/complete', [TaskStatusController::class, 'completeTask'])
         ->name('api.tasks.complete');
 
+    // Reject task (employee declines an assigned task)
+    Route::post('/{taskId}/reject', [TaskStatusController::class, 'rejectTask'])
+        ->name('api.tasks.reject');
+
     // Upload task photo (before/after)
     Route::post('/{taskId}/photo', [TaskStatusController::class, 'uploadTaskPhoto'])
         ->name('api.tasks.photo');

@@ -118,8 +118,10 @@
 
                 <!-- Clock In Form (Today, not clocked in) -->
                 <template x-if="isToday && !timedIn && !isTimedOut">
-                    <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="w-full">
+                    <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="w-full" onsubmit="return populateGeoFields(this)">
                         @csrf
+                        <input type="hidden" name="latitude" class="geo-latitude">
+                        <input type="hidden" name="longitude" class="geo-longitude">
                         <button type="submit"
                             class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                             x-text="buttonText">
@@ -129,8 +131,10 @@
 
                 <!-- Clock Out Form (Today, clocked in) -->
                 <template x-if="isToday && timedIn && !isTimedOut">
-                    <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="w-full">
+                    <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="w-full" onsubmit="return populateGeoFields(this)">
                         @csrf
+                        <input type="hidden" name="latitude" class="geo-latitude">
+                        <input type="hidden" name="longitude" class="geo-longitude">
                         <button type="submit"
                             class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
                             x-text="buttonText">
@@ -280,8 +284,10 @@
                     <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
                         <div class="flex gap-3">
                             <template x-if="selectedRecord && !selectedRecord.timedIn">
-                                <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1">
+                                <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1" onsubmit="return populateGeoFields(this)">
                                     @csrf
+                                    <input type="hidden" name="latitude" class="geo-latitude">
+                                    <input type="hidden" name="longitude" class="geo-longitude">
                                     <button type="submit"
                                         class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-play"></i>
@@ -290,8 +296,10 @@
                                 </form>
                             </template>
                             <template x-if="selectedRecord && selectedRecord.timedIn && !selectedRecord.isTimedOut">
-                                <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1">
+                                <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1" onsubmit="return populateGeoFields(this)">
                                     @csrf
+                                    <input type="hidden" name="latitude" class="geo-latitude">
+                                    <input type="hidden" name="longitude" class="geo-longitude">
                                     <button type="submit"
                                         class="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-stop"></i>
@@ -318,6 +326,64 @@
 </div>
 @push('scripts')
 <script>
+// Eagerly track user position as soon as page loads
+window._cachedPosition = null;
+window._geoWatchId = null;
+
+(function() {
+    if (!navigator.geolocation) return;
+
+    // Start watching position immediately so it's cached when the user clicks Clock In/Out
+    window._geoWatchId = navigator.geolocation.watchPosition(
+        function(position) {
+            window._cachedPosition = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+        },
+        function(error) {
+            console.warn('Geolocation error:', error.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+})();
+
+// Populate hidden lat/lng fields before form submission
+function populateGeoFields(form) {
+    var latField = form.querySelector('.geo-latitude');
+    var lngField = form.querySelector('.geo-longitude');
+
+    // Source 1: Geofencing instance (already tracking for range check)
+    if (window.geofencing && window.geofencing.getUserLocation()) {
+        var loc = window.geofencing.getUserLocation();
+        latField.value = loc.lat;
+        lngField.value = loc.lng;
+        return true;
+    }
+
+    // Source 2: Eagerly cached position from watchPosition above
+    if (window._cachedPosition) {
+        latField.value = window._cachedPosition.lat;
+        lngField.value = window._cachedPosition.lng;
+        return true;
+    }
+
+    // Source 3: Last resort - fetch position now and submit async
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            latField.value = position.coords.latitude;
+            lngField.value = position.coords.longitude;
+            form.submit();
+        }, function() {
+            // Geolocation failed - submit without coordinates
+            form.submit();
+        }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 });
+        return false; // Prevent default submit, will submit in callback
+    }
+
+    return true; // No geolocation support
+}
+
 function attendanceRow(index, record) {
     return {
         status: record.status || 'absent',

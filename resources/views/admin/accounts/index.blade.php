@@ -9,7 +9,7 @@
             <div class="flex gap-2 flex-wrap">
                 <!-- View Archived Button -->
                 <a href="{{ route('admin.accounts.archived') }}"
-                    class="inline-flex items-center justify-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium rounded-lg transition duration-150 ease-in-out whitespace-nowrap">
+                    class="inline-flex items-center justify-center px-4 py-2 bg-gray-200 text-blue-950 hover:bg-gray-200 hover:text-blue-600 dark:text-white dark:bg-gray-800 text-xs font-medium rounded-lg transition duration-150 ease-in-out whitespace-nowrap">
                     <i class="fas fa-archive mr-2"></i>
                     View Archived
                 </a>
@@ -27,34 +27,24 @@
             </div>
         </div>
 
-        <!-- Success Message -->
+        <!-- Success Dialog -->
         @if(session('success'))
-            <div class="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                <i class="fas fa-check-circle mr-2"></i>
-                {{ session('success') }}
+            <div x-data="{ showSuccess: true, successTitle: '', successMessage: '', successButtonText: '' }">
+                <x-employer-components.success-dialog
+                    title="Action Completed"
+                    message="{{ session('success') }}"
+                    buttonText="Continue"
+                    buttonUrl="{{ route('admin.accounts.index') }}" />
             </div>
         @endif
 
         <!-- KPI Statistics -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <x-statisticscard
-                title="All Accounts"
-                :value="$employeesCount + $contractedCompanyCount + $companyCount + $personalCount"
-                trend="up"
-                trendValue="+ 3.4 %"
-                trendLabel="users growth vs last month" />
-
-            <x-statisticscard
-                title="Active Accounts"
-                :value="$users->where('email_verified_at', '!=', null)->count()"
-                trend="up"
-                trendValue="+ 3.4 %"
-                trendLabel="activity growth vs last month" />
-
-            <x-statisticscard
-                title="Archived Accounts"
-                :value="0"
-                subtitle="Deleted accounts that are no longer..." />
+        <div class="py-6">
+            <x-employer-components.stats-cards :stats="[
+                ['label' => 'All Accounts', 'value' => $employeesCount + $contractedCompanyCount + $companyCount + $personalCount, 'subtitle' => 'users growth vs last month', 'icon' => 'fi fi-rr-users-alt', 'iconColor' => '#3b82f6'],
+                ['label' => 'Active Accounts', 'value' => $users->where('email_verified_at', '!=', null)->count(), 'subtitle' => 'activity growth vs last month', 'icon' => 'fi fi-rr-check-circle', 'iconColor' => '#22c55e'],
+                ['label' => 'Archived Accounts', 'value' => 0, 'subtitle' => 'Deleted accounts that are no longer active', 'icon' => 'fi fi-rr-archive', 'iconColor' => '#f59e0b'],
+            ]" />
         </div>
 
         <!-- Users Section Header with Filters -->

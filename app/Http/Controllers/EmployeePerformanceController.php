@@ -203,6 +203,7 @@ class EmployeePerformanceController extends Controller
 
             return view('employee.development', [
                 'user' => $user,
+<<<<<<< HEAD
                 'trainingVideos' => $trainingVideos,
                 'videosByCategory' => $videosByCategory,
                 'categoryInfo' => $categoryInfo,
@@ -210,6 +211,15 @@ class EmployeePerformanceController extends Controller
                 'courseProgress' => $courseProgress,
                 'courseStatuses' => $courseStatuses,
                 'courseLastPositions' => $courseLastPositions,
+=======
+                'newlessons' => $newlessons,
+                'videosByCategory' => $videosByCategory,
+                'watchedVideoIds' => $watchedVideoIds,
+                'categoryInfo' => $categoryInfo,
+                'courseProgress' => $courseProgress,
+                'courseStatuses' => $courseStatuses,
+                'trainingVideos' => $trainingVideos,
+>>>>>>> 22e73c40d8ca7ff6d4ea2c0949804bdf13e0a151
             ]);
         }
 
@@ -498,8 +508,13 @@ class EmployeePerformanceController extends Controller
             ]
         );
 
+<<<<<<< HEAD
         // Mark as watched in employee_watched_videos when completed
         if ($status === 'completed') {
+=======
+        // When completed, also mark in employee_watched_videos for the "Done" badge
+        if ($validated['status'] === 'completed') {
+>>>>>>> 22e73c40d8ca7ff6d4ea2c0949804bdf13e0a151
             $exists = DB::table('employee_watched_videos')
                 ->where('user_id', Auth::id())
                 ->where('training_video_id', $validated['course_id'])

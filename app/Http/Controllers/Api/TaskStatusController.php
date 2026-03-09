@@ -125,6 +125,63 @@ class TaskStatusController extends Controller
     }
 
     /**
+     * Reject a task (employee declines an assigned task)
+     *
+     * POST /api/tasks/{taskId}/reject
+     * Body: { "reason": "Optional rejection reason" }
+     *
+     * @param Request $request
+     * @param int $taskId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function rejectTask(Request $request, $taskId)
+    {
+        try {
+            $task = Task::findOrFail($taskId);
+
+            // Only allow rejecting tasks that are Scheduled or Pending
+            if (!in_array($task->status, ['Scheduled', 'Pending'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only pending or scheduled tasks can be rejected'
+                ], 400);
+            }
+
+            $task->update([
+                'status' => 'Rejected',
+                'employee_approved' => false,
+                'employee_approved_at' => now(),
+            ]);
+
+            Log::info("Task rejected by employee", [
+                'task_id' => $task->id,
+                'rejected_by' => $request->user()->id ?? null,
+                'reason' => $request->reason,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Task rejected successfully',
+                'data' => [
+                    'task_id' => $task->id,
+                    'status' => $task->status,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to reject task", [
+                'task_id' => $taskId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to reject task: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Put task on hold with reason
      * Triggers alert if delay > 30 minutes
      *

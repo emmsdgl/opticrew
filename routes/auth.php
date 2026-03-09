@@ -36,6 +36,12 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('accept-terms', [AuthenticatedSessionController::class, 'showTerms'])
+                ->name('terms.accept');
+
+    Route::post('accept-terms', [AuthenticatedSessionController::class, 'acceptTerms'])
+                ->name('terms.store');
+
     Route::get('verify-email', EmailVerificationPromptController::class)
                 ->name('verification.notice');
 

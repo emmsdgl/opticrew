@@ -76,12 +76,12 @@
                 </div>
             </div>
 
-            <div class="w-full rounded-lg h-fit sm:h-fit md:h-fit lg:h-fit">
-                <!-- Inner Up - Performance KPI Cards Summary -->
-                <div class="w-full rounded-lg p-3 md:p-4 flex-none h-fit sm:h-fit md:h-fit lg:h-fit">
-                    {{-- KPI Cards from Database --}}
-                    <x-kpicardcontainer :cards="$kpiCards" columns="3" />
-                </div>
+            <div class="py-6">
+                <x-employer-components.stats-cards :stats="[
+                    ['label' => 'Active Employees', 'value' => $kpiCards[0]['amount'], 'subtitle' => $kpiCards[0]['description'], 'icon' => 'fi fi-rr-users-alt', 'iconColor' => '#3b82f6'],
+                    ['label' => 'Total Tasks', 'value' => $kpiCards[1]['amount'], 'subtitle' => $kpiCards[1]['description'], 'icon' => 'fi fi-rr-shopping-cart', 'iconColor' => '#f59e0b'],
+                    ['label' => 'Client Rating', 'value' => $kpiCards[2]['amount'], 'subtitle' => $kpiCards[2]['description'], 'icon' => 'fi fi-rr-star', 'iconColor' => '#8b5cf6'],
+                ]" />
             </div>
 
             <!-- Productivity Rate Section with Filter -->

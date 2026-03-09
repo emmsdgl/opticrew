@@ -15,6 +15,7 @@
                 ]
             ],
             ['label' => 'Recruitment', 'icon' => 'fa-user-plus', 'href' => route('admin.recruitment.index')],
+            ['label' => 'Training', 'icon' => 'fa-video', 'href' => route('admin.training-videos.index')],
             ['label' => 'Attendance', 'icon' => 'fa-solid fa-calendar-check', 'href' => route('admin.attendance')],
             ['label' => 'Courses', 'icon' => 'fa-solid fa-book-open', 'href' => route('admin.courses')],
             ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('admin.history')],
@@ -22,13 +23,13 @@
         ];
 
         // Only show Optimization Result in local development environment
-        if (app()->environment('local')) {
-            $navOptions[] = ['label' => 'Optimization Result', 'icon' => 'fa-file-lines', 'href' => route('optimization.result')];
-        }
+        // Hidden: Optimization Result nav item
+        // if (app()->environment('local')) {
+        //     $navOptions[] = ['label' => 'Optimization Result', 'icon' => 'fa-file-lines', 'href' => route('optimization.result')];
+        // }
 
-        $teams = ['HR Team', 'Research Team'];
     @endphp
-    <x-sidebar :navOptions="$navOptions" :teams="$teams" />
+    <x-sidebar :navOptions="$navOptions" />
     @endslot
 
     <section class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 flex-1">

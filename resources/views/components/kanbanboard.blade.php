@@ -266,7 +266,7 @@
                 } catch (error) {
                     console.error('Error updating task status:', error);
                     task.status = oldStatus;
-                    alert('Failed to update task status. Please try again.');
+                    window.showErrorDialog('Update Failed', 'Failed to update task status. Please try again.');
                 }
 
                 this.draggedTaskId = null;

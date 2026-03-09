@@ -74,5 +74,6 @@ class Kernel extends HttpKernel
         'employee' => \App\Http\Middleware\CheckEmployee::class,
         'client' => \App\Http\Middleware\CheckClient::class,
         'manager' => \App\Http\Middleware\CheckManager::class,
+        'terms.accepted' => \App\Http\Middleware\EnsureTermsAccepted::class,
     ];
 }

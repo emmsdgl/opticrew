@@ -78,7 +78,9 @@ class JobApplicationController extends Controller
             ->groupBy('job_title')
             ->pluck('count', 'job_title');
 
-        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts'));
+        $cscApiKey = env('CSC_API_KEY', '');
+
+        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts', 'cscApiKey'));
     }
 
     /**

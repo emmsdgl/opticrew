@@ -379,7 +379,12 @@
                     ? '{{ route("employee.attendance.clockout") }}'
                     : '{{ route("employee.attendance.clockin") }}';
 
-                // Submit POST request
+                // Get current GPS coordinates from geofencing or cached position
+                const userLocation = (window.geofencing && window.geofencing.getUserLocation())
+                    ? window.geofencing.getUserLocation()
+                    : window._cachedPosition || null;
+
+                // Submit POST request with coordinates
                 fetch(url, {
                     method: 'POST',
                     headers: {
@@ -387,7 +392,11 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     },
-                    credentials: 'same-origin'
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        latitude: userLocation ? userLocation.lat : null,
+                        longitude: userLocation ? userLocation.lng : null
+                    })
                 })
                 .then(response => {
                     // Check if response is ok (status 200-299)

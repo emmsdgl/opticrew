@@ -303,13 +303,13 @@ window.handleUploadFileSelect = function(formId, input) {
     if (file) {
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            alert('Please select an image file');
+            window.showErrorDialog('Invalid File', 'Please select an image file.');
             return;
         }
 
         // Validate file size (2MB)
         if (file.size > 2 * 1024 * 1024) {
-            alert('File size must be less than 2MB');
+            window.showErrorDialog('File Too Large', 'File size must be less than 2MB.');
             return;
         }
 

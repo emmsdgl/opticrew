@@ -7,8 +7,10 @@
     <title>Log In</title>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
     <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
@@ -108,119 +110,7 @@
             transform: translate(-50%, -50%);
         }
 
-        #terms-container input[type="checkbox"] {
-            flex-shrink: 0;
-            width: 20px;
-            height: 20px;
-            margin-top: 2px;
-        }
-
-        #terms-container span {
-            text-align: justify;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow: hidden;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal-header {
-            padding: 24px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-body {
-            padding: 24px;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        /* Scrollbar styling for modal body */
-        .modal-body::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .modal-body::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .modal-body::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        .modal-body::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                fontFamily: {
-                    'sans': ['Familjen Grotesk', 'system-ui', 'sans-serif'],
-                }
-            }
-        }
-    </script>
 </head>
 
 <body class="font-normal font-sans">
@@ -258,21 +148,13 @@
                         Fin-noys</p>
                 </div>
 
-                <!-- Floating Validation Errors -->
+                <!-- Validation Errors via Dialog -->
                 @if ($errors->any())
-                    <div id="floating-alert"
-                         class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 bg-red-500 text-white rounded-lg shadow-lg text-sm transition-all duration-300 opacity-0 -translate-y-4"
-                         style="min-width: 300px; max-width: 90vw;">
-                        <i class="fa-solid fa-circle-exclamation text-lg flex-shrink-0"></i>
-                        <div class="flex-1">
-                            @foreach ($errors->all() as $error)
-                                <p>{{ $error }}</p>
-                            @endforeach
-                        </div>
-                        <button onclick="dismissAlert()" class="flex-shrink-0 ml-2 hover:text-red-200 transition-colors">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            window.showErrorDialog('Almost there!', 'Please enter your email address and password to continue.');
+                        });
+                    </script>
                 @endif
 
                 <!-- LOGIN FIELD -->
@@ -308,6 +190,18 @@
                 <input type="submit" id="btn-login"
                     class="text-sm font-sans font-semibold hover:bg-blue-800 focus:outline-white" value="Login">
 
+                <!-- Sign in with Google -->
+                <button type="button" id="btn-google"
+                    class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-full bg-white hover:bg-gray-50 transition-colors duration-200 mt-3">
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    <span class="text-sm font-semibold text-gray-600">Sign in with Google</span>
+                </button>
+
                 <div id="container-2-3" class="text-center p-3 text-sm">
                     <p id="donthaveacct" class="text-[#07185788]">
                         Don't have an account?
@@ -319,248 +213,12 @@
                     </p>
                 </div>
 
-                <label id="terms-container" class="flex items-center space-x-2">
-                    <input type="checkbox" name="terms" id="terms-checkbox" disabled class="border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span class="text-xs italic text-justify text-[#868282]">
-                        <p id="text-1">
-                            By signing in to your account, you acknowledge that you have read and understood the
-                            website's
-                            <a id="terms-label" href="#" onclick="openModal('termsModal'); return false;"
-                                class="text-blue-600 hover:underline ml-1">Terms and
-                                Conditions</a> and
-                            <a id="privacy-label" href="#" onclick="openModal('privacyModal'); return false;"
-                                class="text-blue-600 hover:underline ml-1">Privacy
-                                Policy</a>.
-                        </p>
-                    </span>
-                </label>
             </form>
         </div>
     </div>
 
-    <!-- Terms and Conditions Modal -->
-    <div id="termsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="text-2xl font-bold text-gray-900">OptiCrew Terms & Conditions</h2>
-                <button onclick="closeModal('termsModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fa-solid fa-times text-2xl"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="termsModalBody">
-                <div class="space-y-4 text-gray-700">
-                    <p class="text-sm text-gray-500 font-medium">Last Updated: November 5, 2025</p>
-
-                    <h3 class="text-lg font-bold text-gray-900 mt-6">1. Acceptance of Terms</h3>
-                    <p class="text-sm leading-relaxed">
-                        By accessing or using the OptiCrew workforce management and scheduling platform (the "System"),
-                        you ("User") agree to comply with and be bound by these Terms and Conditions. These Terms govern
-                        the automated allocation of tasks, scheduling, and employee management functions within the
-                        System.
-                    </p>
-                    <p class="text-sm leading-relaxed">
-                        If you do not agree with any part of these Terms, you must refrain from using the System.
-                    </p>
-
-                    <h3 class="text-lg font-bold text-gray-900 mt-6">2. System Operations and Allocation Rules</h3>
-
-                    <h4 class="text-base font-semibold text-gray-900 mt-4">2.1 Workforce Allocation</h4>
-                    <p class="text-sm leading-relaxed">
-                        OptiCrew automatically determines the optimal number of employees required for each task based
-                        on an analysis of:
-                    </p>
-                    <ul class="list-disc list-inside text-sm space-y-1 ml-4">
-                        <li>Employee availability (excluding those on scheduled leave or days off).</li>
-                        <li>Pending workload and task specifications.</li>
-                        <li>Budget and resource constraints.</li>
-                        <li>Utilization targets designed to maximize operational efficiency.</li>
-                    </ul>
-
-                    <h4 class="text-base font-semibold text-gray-900 mt-4">2.2 Team Composition and Driver Requirement
-                    </h4>
-                    <p class="text-sm leading-relaxed">
-                        For mobility between client locations, each assigned team (pair or trio) must include at least
-                        one employee registered in the system as having valid driving skills.
-                    </p>
-
-                    <h4 class="text-base font-semibold text-gray-900 mt-4">2.3 Task Prioritization</h4>
-                    <p class="text-sm leading-relaxed">
-                        Tasks labeled with an "Arrival Status" are assigned the highest scheduling priority. This
-                        designation indicates immediate service needs due to a client or guest arrival and will take
-                        precedence over other pending tasks.
-                    </p>
-
-                    <h4 class="text-base font-semibold text-gray-900 mt-4">2.4 Schedule Generation and Re-Optimization
-                    </h4>
-                    <ul class="list-disc list-inside text-sm space-y-1 ml-4">
-                        <li>Schedules are generated automatically by the System.</li>
-                        <li>If a new task is added before a daily schedule is officially saved and finalized, the System
-                            will delete the unsaved version and generate a new optimized schedule that includes the new
-                            task.</li>
-                        <li>Re-optimization occurs independently within each client or company entity (e.g., Company A,
-                            Company K).</li>
-                    </ul>
-
-                    <h4 class="text-base font-semibold text-gray-900 mt-4">2.5 Employee Utilization and Fair
-                        Distribution</h4>
-                    <p class="text-sm leading-relaxed">The System is designed to:</p>
-                    <ul class="list-disc list-inside text-sm space-y-1 ml-4">
-                        <li>Maximize employee utilization by assigning all available employees to at least one task
-                            whenever possible.</li>
-                        <li>Ensure equitable task distribution among available staff to maintain a balanced workload.
-                        </li>
-                    </ul>
-
-                    <h4 class="text-base font-semibold text-gray-900 mt-4">2.6 Working Hours Compliance</h4>
-                    <p class="text-sm leading-relaxed">
-                        To comply with Finnish labor standards, the System enforces a maximum of 12 working hours per
-                        day for any individual employee. This limit is applied automatically during scheduling and task
-                        allocation.
-                    </p>
-
-                    <h4 class="text-base font-semibold text-gray-900 mt-4">2.7 Real-Time Task Additions</h4>
-                    <p class="text-sm leading-relaxed">For the current operational day:</p>
-                    <ul class="list-disc list-inside text-sm space-y-1 ml-4">
-                        <li>Once a schedule is finalized, adding a new task will not modify existing team assignments.
-                        </li>
-                        <li>The System will only allocate the newly added task, assigning it to one of the existing
-                            teams without altering prior allocations.</li>
-                    </ul>
-
-                    <h4 class="text-base font-semibold text-gray-900 mt-4">2.8 Team Stability and Contingency
-                        ("What-If") Scenarios</h4>
-                    <ul class="list-disc list-inside text-sm space-y-1 ml-4">
-                        <li>Once teams are formed for a given day, their composition remains stable under normal
-                            circumstances.</li>
-                        <li>In the event of a "What-If" scenario (e.g., an employee's sudden absence or sickness), the
-                            System will automatically reassign or supplement team members as needed.</li>
-                        <li>All teams are required to consist of two (2) or three (3) members. No team will exceed three
-                            members under any condition.</li>
-                    </ul>
-
-                    <h3 class="text-lg font-bold text-gray-900 mt-6">3. System Authority and Finality</h3>
-                    <p class="text-sm leading-relaxed">
-                        You acknowledge that all task assignments and schedules are the outcome of automated, rule-based
-                        optimization performed by OptiCrew. The System's allocations are deemed final and binding for
-                        operational purposes, except in cases involving verified technical errors or the invocation of a
-                        "What-If" scenario.
-                    </p>
-
-                    <h3 class="text-lg font-bold text-gray-900 mt-6">4. Modifications to System Rules</h3>
-                    <p class="text-sm leading-relaxed">
-                        OptiCrew and its parent company, Fin-noys, reserve the right to modify or update these Terms and
-                        operational rules at any time to reflect evolving business or regulatory requirements. Continued
-                        use of the System following any such updates constitutes your acceptance of the revised Terms.
-                    </p>
-
-                    <h3 class="text-lg font-bold text-gray-900 mt-6">5. Contact Information</h3>
-                    <p class="text-sm leading-relaxed">
-                        For inquiries or clarifications regarding these Terms & Conditions, please contact:
-                    </p>
-                    <div class="bg-gray-50 p-4 rounded-lg mt-2">
-                        <p class="text-sm font-semibold text-gray-900">OptiCrew Support</p>
-                        <p class="text-sm text-gray-700 mt-1">📧 opticrewhelpcenter@gmail.com</p>
-                        <p class="text-sm text-gray-700">📍 Philippines, Makati City</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closeModal('termsModal')"
-                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Privacy Policy Modal -->
-    <div id="privacyModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="text-2xl font-bold text-gray-900">Privacy Policy</h2>
-                <button onclick="closeModal('privacyModal')"
-                    class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fa-solid fa-times text-2xl"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="privacyModalBody">
-                <div class="space-y-4 text-gray-700">
-                    <p class="text-sm text-gray-500">Last updated: January 2024</p>
-
-                    <h3 class="text-lg font-semibold text-gray-900 mt-4">1. Information We Collect</h3>
-                    <p class="text-sm leading-relaxed">
-                        We collect information you provide directly to us, including your name, email address, phone
-                        number, payment information, and service preferences. We also collect information about your use
-                        of our services.
-                    </p>
-
-                    <h3 class="text-lg font-semibold text-gray-900 mt-4">2. How We Use Your Information</h3>
-                    <p class="text-sm leading-relaxed">
-                        We use the information we collect to provide, maintain, and improve our services, to process
-                        your bookings, to communicate with you, and to personalize your experience.
-                    </p>
-
-                    <h3 class="text-lg font-semibold text-gray-900 mt-4">3. Information Sharing</h3>
-                    <p class="text-sm leading-relaxed">
-                        We do not sell or rent your personal information to third parties. We may share your information
-                        with service providers who assist us in operating our platform and providing services to you.
-                    </p>
-
-                    <h3 class="text-lg font-semibold text-gray-900 mt-4">4. Data Security</h3>
-                    <p class="text-sm leading-relaxed">
-                        We implement appropriate technical and organizational measures to protect your personal
-                        information against unauthorized access, alteration, disclosure, or destruction.
-                    </p>
-
-                    <h3 class="text-lg font-semibold text-gray-900 mt-4">5. Your Rights</h3>
-                    <p class="text-sm leading-relaxed">
-                        You have the right to access, update, or delete your personal information. You may also opt-out
-                        of receiving promotional communications from us at any time.
-                    </p>
-
-                    <h3 class="text-lg font-semibold text-gray-900 mt-4">6. Cookies and Tracking</h3>
-                    <p class="text-sm leading-relaxed">
-                        We use cookies and similar tracking technologies to collect information about your browsing
-                        activities and to improve our services. You can control cookies through your browser settings.
-                    </p>
-
-                    <h3 class="text-lg font-semibold text-gray-900 mt-4">7. Contact Us</h3>
-                    <p class="text-sm leading-relaxed">
-                        If you have any questions about this Privacy Policy, please contact us at privacy@finnoys.com.
-                    </p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closeModal('privacyModal')"
-                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
 
     <script>
-        // Floating alert
-        function dismissAlert() {
-            const alert = document.getElementById('floating-alert');
-            if (alert) {
-                alert.classList.add('opacity-0', '-translate-y-4');
-                setTimeout(() => alert.remove(), 300);
-            }
-        }
-
-        (function () {
-            const alert = document.getElementById('floating-alert');
-            if (alert) {
-                // Animate in
-                requestAnimationFrame(() => {
-                    alert.classList.remove('opacity-0', '-translate-y-4');
-                });
-                // Auto-dismiss after 5 seconds
-                setTimeout(() => dismissAlert(), 5000);
-            }
-        })();
-
         document.addEventListener('DOMContentLoaded', () => {
             const inputs = document.querySelectorAll('.input-group input');
 
@@ -592,84 +250,8 @@
             });
         });
 
-        // Track whether user has scrolled to bottom of each modal
-        let termsRead = false;
-        let privacyRead = false;
-
-        function updateTermsCheckbox() {
-            const checkbox = document.getElementById('terms-checkbox');
-            if (termsRead && privacyRead) {
-                checkbox.disabled = false;
-            }
-        }
-
-        function setupScrollTracking(modalBodyId, onComplete) {
-            const body = document.getElementById(modalBodyId);
-            if (!body) return;
-            body.addEventListener('scroll', function () {
-                // Check if scrolled to bottom (with a small threshold)
-                const atBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 20;
-                if (atBottom) {
-                    onComplete();
-                }
-            });
-        }
-
-        // Set up scroll listeners once DOM is ready
-        document.addEventListener('DOMContentLoaded', function () {
-            setupScrollTracking('termsModalBody', function () {
-                termsRead = true;
-                updateTermsCheckbox();
-            });
-            setupScrollTracking('privacyModalBody', function () {
-                privacyRead = true;
-                updateTermsCheckbox();
-            });
-
-        });
-
-        // Modal Functions
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden';
-
-            // Check if content is short enough that no scrolling is needed
-            setTimeout(function () {
-                const bodyId = modalId === 'termsModal' ? 'termsModalBody' : 'privacyModalBody';
-                const body = document.getElementById(bodyId);
-                if (body && body.scrollHeight <= body.clientHeight + 20) {
-                    if (modalId === 'termsModal') { termsRead = true; }
-                    else { privacyRead = true; }
-                    updateTermsCheckbox();
-                }
-            }, 100);
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modal when clicking outside of it
-        window.onclick = function (event) {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                if (event.target === modal) {
-                    closeModal(modal.id);
-                }
-            });
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') {
-                const modals = document.querySelectorAll('.modal.active');
-                modals.forEach(modal => {
-                    closeModal(modal.id);
-                });
-            }
-        });
     </script>
+    <x-global-dialogs />
 </body>
 
 </html>

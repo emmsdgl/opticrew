@@ -45,17 +45,16 @@
 
         <!-- Main Content Area (Left Side - 70%) -->
         <div class="flex-1 px-12 overflow-y-auto">
-            <!-- Back Button -->
-            <div class="mb-6">
-                <a href="{{ $backUrl }}"
-                    class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                    <i class="fas fa-arrow-left"></i>
-                    <span class="font-medium text-sm">Back to {{ $backLabel }}</span>
-                </a>
+            <!-- Breadcrumb -->
+            <div class="breadcrumb-component my-4 items-start w-full">
+                <x-employer-components.breadcrumb :items="[
+                    ['label' => $backLabel, 'url' => $backUrl],
+                    ['label' => 'Task Details'],
+                ]" />
             </div>
 
             <!-- Task Title and Meta -->
-            <div class="mb-6">
+            <div class="my-12">
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 mt-6">
                     {{ $task->task_description }}
                 </h1>
@@ -119,7 +118,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 
                         <!-- Client Card -->
-                        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="rounded-xl p-5 shadow-sm">
                             <div class="flex items-start gap-3">
                                 <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                                     <i class="fas fa-building text-blue-600 dark:text-blue-400"></i>
@@ -143,7 +142,7 @@
                         </div>
 
                         <!-- Location Card -->
-                        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="rounded-xl p-5 shadow-sm">
                             <div class="flex items-start gap-3">
                                 <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                                     <i class="fas fa-map-marker-alt text-purple-600 dark:text-purple-400"></i>
@@ -168,7 +167,7 @@
 
                         <!-- Duration Card -->
                         @if($task->estimated_duration_minutes)
-                            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div class="rounded-xl p-5 shadow-sm">
                                 <div class="flex items-start gap-3">
                                     <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <i class="fas fa-clock text-green-600 dark:text-green-400"></i>
@@ -187,7 +186,7 @@
                         @endif
 
                         <!-- Schedule Card -->
-                        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="rounded-xl p-5 shadow-sm">
                             <div class="flex items-start gap-3">
                                 <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                                     <i class="fas fa-calendar text-blue-600 dark:text-blue-400"></i>

@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Carbon\Carbon;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -37,18 +38,55 @@ class AuthenticatedSessionController extends Controller
             $request->ip()
         );
 
-        $url = '';
-        $role = Auth::user()->role;
-            
-        if ($role === 'admin') {
-            $url = '/admin/dashboard';
-        } elseif ($role === 'employee') {
-            $url = '/employee/dashboard';
-        } elseif ($role === 'external_client') {
-            $url = '/client/dashboard';
+        return redirect()->intended($this->dashboardUrl());
+    }
+
+    /**
+     * Show the terms acceptance page.
+     */
+    public function showTerms(): View|RedirectResponse
+    {
+        if (Auth::user()->terms_accepted_at) {
+            return redirect()->intended($this->dashboardUrl());
         }
 
-        return redirect()->intended($url);
+        return view('auth.accept-terms');
+    }
+
+    /**
+     * Handle terms acceptance.
+     */
+    public function acceptTerms(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'terms' => ['accepted'],
+        ], [
+            'terms.accepted' => 'You must accept the Terms & Conditions and Privacy Policy to continue.',
+        ]);
+
+        Auth::user()->update([
+            'terms_accepted_at' => Carbon::now(),
+        ]);
+
+        return redirect()->intended($this->dashboardUrl());
+    }
+
+    /**
+     * Get dashboard URL based on user role.
+     */
+    private function dashboardUrl(): string
+    {
+        $role = Auth::user()->role;
+
+        if ($role === 'admin') {
+            return '/admin/dashboard';
+        } elseif ($role === 'employee') {
+            return '/employee/dashboard';
+        } elseif ($role === 'external_client') {
+            return '/client/dashboard';
+        }
+
+        return '/';
     }
 
     /**

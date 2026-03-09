@@ -15,45 +15,93 @@
             </div>
         @endif
 
-        <!-- Inner Panel - Summary Cards Container -->
-        <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+        <!-- Summary Cards -->
+        <div class="flex flex-col gap-4 w-full">
             <x-labelwithvalue label="Summary" count="" />
 
-            <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 p-6">
-                @foreach($stats as $stat)
-                    <x-statisticscard
-                        :title="$stat['title']"
-                        :value="$stat['value']"
-                        :subtitle="$stat['subtitle'] ?? ''"
-                        :trend="$stat['trend'] ?? null"
-                        :trend-value="$stat['trendValue'] ?? null"
-                        :trend-label="$stat['trendLabel'] ?? 'vs last month'"
-                        :icon="$stat['icon'] ?? null"
-                        :icon-bg="$stat['iconBg'] ?? 'bg-gray-100'"
-                        :icon-color="$stat['iconColor'] ?? 'text-gray-600'"
-                        :value-suffix="$stat['valueSuffix'] ?? ''"
-                        :value-prefix="$stat['valuePrefix'] ?? ''"
-                    />
-                @endforeach
+            <div class="py-6">
+                <x-employer-components.stats-cards :stats="[
+                    ['label' => $stats[0]['title'], 'value' => $stats[0]['value'], 'subtitle' => $stats[0]['subtitle'], 'icon' => $stats[0]['icon'], 'iconColor' => '#16a34a'],
+                    ['label' => $stats[1]['title'], 'value' => $stats[1]['value'], 'subtitle' => $stats[1]['subtitle'], 'icon' => $stats[1]['icon'], 'iconColor' => '#dc2626'],
+                    ['label' => $stats[2]['title'], 'value' => $stats[2]['value'], 'subtitle' => $stats[2]['subtitle'], 'icon' => $stats[2]['icon'], 'iconColor' => '#2563eb'],
+                ]" />
             </div>
         </div>
 
-        <!-- Inner Panel - Attendance Records List -->
-        <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+        <!-- Attendance Records Table -->
+        <div class="flex flex-col gap-4 w-full">
             <x-labelwithvalue label="Attendance Logs" count="({{ isset($attendanceRecords) ? count($attendanceRecords) : 0 }})" />
 
             @if(isset($attendanceRecords) && count($attendanceRecords) > 0)
-                <x-attendancelistitem :records="$attendanceRecords" :show-header="true" />
+                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Employee</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Date</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Clock In</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Clock Out</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Hours Worked</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($attendanceRecords as $record)
+                                @php
+                                    $dateParts = explode(' - ', $record['date'], 2);
+                                    $recordDate = $dateParts[0] ?? '';
+                                    $employeeName = $dateParts[1] ?? '';
+                                @endphp
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $employeeName }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-900 dark:text-white">{{ $recordDate }}</span>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $record['dayOfWeek'] }}</p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($record['status'] === 'present')
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Present</span>
+                                        @elseif($record['status'] === 'late')
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">Late</span>
+                                        @elseif($record['status'] === 'absent')
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Absent</span>
+                                        @else
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400">{{ ucfirst($record['status']) }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-900 dark:text-white">{{ $record['timeIn'] ?? '-' }}</span>
+                                        @if(!empty($record['timeInNote']))
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $record['timeInNote'] }}</p>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-900 dark:text-white">{{ $record['timeOut'] ?? '-' }}</span>
+                                        @if(!empty($record['timeOutNote']))
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $record['timeOutNote'] }}</p>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm font-semibold text-blue-600 dark:text-blue-400">{{ $record['hoursWorked'] ?? '-' }}</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fa-solid fa-calendar-xmark text-4xl mb-4"></i>
-                    <p>No attendance records found.</p>
+                <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+                    <i class="fa-solid fa-calendar-xmark text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                    <p class="text-base font-medium text-gray-500 dark:text-gray-400">No records found</p>
+                    <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">There are no attendance logs available for the selected date range.</p>
                 </div>
             @endif
         </div>
 
-        <!-- Inner Panel - Request Records List -->
-        <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4"
+        <!-- Request Records Table -->
+        <div class="flex flex-col gap-4 w-full"
             x-data="{
                 showRequestModal: false,
                 selectedRequest: null,
@@ -131,10 +179,10 @@
                             this.closeRequestModal();
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Failed to approve request');
+                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve request');
                         }
                     } catch (error) {
-                        alert('An error occurred. Please try again.');
+                        window.showErrorDialog('Approval Failed', 'An error occurred. Please try again.');
                     } finally {
                         this.isSubmitting = false;
                     }
@@ -151,7 +199,7 @@
                 async rejectRequest() {
                     if (this.isSubmitting || !this.selectedRequest) return;
                     if (!this.rejectionReason) {
-                        alert('Please select a reason for rejection');
+                        window.showErrorDialog('Validation Error', 'Please select a reason for rejection');
                         return;
                     }
                     this.isSubmitting = true;
@@ -175,10 +223,10 @@
                             this.closeRequestModal();
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Failed to reject request');
+                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject request');
                         }
                     } catch (error) {
-                        alert('An error occurred. Please try again.');
+                        window.showErrorDialog('Rejection Failed', 'An error occurred. Please try again.');
                     } finally {
                         this.isSubmitting = false;
                     }
@@ -199,11 +247,65 @@
             <x-labelwithvalue label="Request Logs" count="({{ isset($requestRecords) ? count($requestRecords) : 0 }})" />
 
             @if(isset($requestRecords) && count($requestRecords) > 0)
-                <x-admin-request-list-item :records="$requestRecords" :show-header="true" />
+                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Employee</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Date</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Type</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Time Range</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Reason</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($requestRecords as $index => $record)
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $record['requestEmployeeName'] ?? 'Unknown' }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-900 dark:text-white">{{ $record['requestDate'] ?? '-' }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-900 dark:text-white">{{ $record['requestType'] ?? '-' }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($record['requestStatus'] === 'approved')
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Approved</span>
+                                        @elseif($record['requestStatus'] === 'pending')
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">Pending</span>
+                                        @elseif($record['requestStatus'] === 'rejected')
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Rejected</span>
+                                        @else
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400">{{ ucfirst($record['requestStatus'] ?? 'unknown') }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-900 dark:text-white">{{ $record['requestTimeRange'] ?? '-' }}</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-[200px] truncate" title="{{ $record['requestReason'] ?? '' }}">{{ Str::limit($record['requestReason'] ?? '-', 30) }}</p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <button
+                                            @click="$dispatch('open-request-modal', { index: {{ $index }} })"
+                                            class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fa-solid fa-calendar-xmark text-4xl mb-4"></i>
-                    <p>No request records found.</p>
+                <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+                    <i class="fa-solid fa-file-circle-xmark text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                    <p class="text-base font-medium text-gray-500 dark:text-gray-400">No request records found</p>
+                    <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Employee leave requests will appear here.</p>
                 </div>
             @endif
 

@@ -10,9 +10,8 @@
             ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('client.history')]
         ];
 
-        $teams = []; // No teams for client sidebar
     @endphp
-    <x-sidebar :navOptions="$navOptions" :teams="$teams" />
+    <x-sidebar :navOptions="$navOptions" />
     @endslot
 
     <section class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 flex-1">

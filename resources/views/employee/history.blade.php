@@ -535,13 +535,13 @@
 
             async submitFeedback() {
                 if (this.selectedRating === 0) {
-                    alert('Please select a rating');
+                    window.showErrorDialog('Rating Required', 'Please select a rating');
                     return;
                 }
 
                 const activity = this.ratingActivityIndex !== null ? this.activities[this.ratingActivityIndex] : null;
                 if (!activity) {
-                    alert('No activity selected');
+                    window.showErrorDialog('Selection Required', 'No activity selected');
                     return;
                 }
 
@@ -568,7 +568,7 @@
                     if (!response.ok) {
                         const errorText = await response.text();
                         console.error('Error response:', errorText);
-                        alert('Server error: ' + response.status + '\n' + errorText.substring(0, 200));
+                        window.showErrorDialog('Server Error', 'Server error: ' + response.status + ' - ' + errorText.substring(0, 200));
                         return;
                     }
 
@@ -580,16 +580,16 @@
                         this.activities[this.ratingActivityIndex].needsRating = false;
 
                         this.closeFeedbackModal();
-                        alert('Thank you for your feedback!');
+                        window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!');
 
                         // Reload the page to refresh the ratings list
                         window.location.reload();
                     } else {
-                        alert(data.message || 'Failed to submit feedback');
+                        window.showErrorDialog('Submission Failed', data.message || 'Failed to submit feedback');
                     }
                 } catch (error) {
                     console.error('Error submitting feedback:', error);
-                    alert('An error occurred while submitting feedback: ' + error.message);
+                    window.showErrorDialog('Submission Failed', 'An error occurred while submitting feedback: ' + error.message);
                 }
             }
         };

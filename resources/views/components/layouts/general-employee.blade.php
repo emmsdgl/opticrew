@@ -35,6 +35,7 @@
             ]
         ];
 
+<<<<<<< HEAD
         $employee = \App\Models\Employee::where('user_id', auth()->id())->first();
         $teams = [];
         if ($employee) {
@@ -46,8 +47,10 @@
                 ->map(fn ($t) => 'Team ' . $t->team_index)
                 ->toArray();
         }
+=======
+>>>>>>> 22e73c40d8ca7ff6d4ea2c0949804bdf13e0a151
     @endphp
-    <x-sidebar :navOptions="$navOptions" :teams="$teams" />
+    <x-sidebar :navOptions="$navOptions" />
     @endslot
 
     <section class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 flex-1">

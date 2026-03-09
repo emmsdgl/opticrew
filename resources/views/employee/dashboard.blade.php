@@ -57,10 +57,10 @@
                         this.closeRequestModal();
                         window.location.reload();
                     } else {
-                        alert(data.message || 'Failed to cancel request');
+                        window.showErrorDialog('Request Failed', data.message || 'Failed to cancel request');
                     }
                 } catch (error) {
-                    alert('An error occurred. Please try again.');
+                    window.showErrorDialog('Request Failed', 'An error occurred. Please try again.');
                 } finally {
                     this.isCancelling = false;
                 }
@@ -68,24 +68,23 @@
         }">
         <!-- Left Panel - Dashboard Content -->
         <div
-            class="flex flex-col gap-6 flex-1 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+            class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
             <!-- Inner Up - Dashboard Header -->
             <div
-                class="w-full mt-6 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
+                class="w-full mt-6 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
                 <x-herocard :headerName="$employee->user->name ?? 'Employee'" :headerDesc="'Welcome to the employee dashboard. Track tasks and manage them'" :headerIcon="'hero-employee'" />
             </div>
             <!-- Inner Middle - Calendar -->
             <x-labelwithvalue label="My Calendar" count="" />
             <div
-                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
+                class="w-full rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
                 <x-calendar :holidays="$holidays" calendar-id="desktop" />
             </div>
 
             <!-- Inner Down - Tasks Particulars -->
             <div class="w-full rounded-lg h-56 sm:h-56 md:h-auto">
                 <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
-                <div
-                    class="{{ $todoList->count() > 0 ? 'h-96 overflow-y-auto' : '' }} border border-dashed border-gray-400 dark:border-gray-700 rounded-lg my-6">
+                <div class="rounded-lg my-6">
 
                     @php
                         // Transform tasks to the format expected by task-overview-list component
@@ -110,7 +109,7 @@
                             ->toArray();
                     @endphp
 
-                    <x-employee-components.task-overview-list :items="$tasks" fixedHeight="20rem" maxHeight="30rem"
+                    <x-employee-components.task-overview-list :items="$tasks" fixedHeight="auto" maxHeight="16.5rem"
                         emptyTitle="No tasks assigned yet"
                         emptyMessage="You don't have any tasks at the moment. New tasks will appear here once assigned." />
                 </div>
@@ -127,7 +126,7 @@
                 </div>
 
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 rounded-lg">
                     @forelse($watchedLessons as $lesson)
                         <x-employee-components.lesson-card :duration="$lesson['duration']" :title="$lesson['title']" :description="$lesson['description']"
                             :progress="$lesson['progress']" :buttonText="$lesson['progress'] >= 100
@@ -152,7 +151,7 @@
 
         <!-- Right Panel - Tasks Details -->
         <div
-            class="flex flex-col gap-6 w-full lg:w-1/3 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+            class="flex flex-col gap-6 w-full lg:w-1/3 rounded-lg p-4">
 
             <!-- Inner Up - Tasks Summary (OPTIMIZED) -->
             <div class="flex flex-row justify-between items-center w-full">
@@ -234,7 +233,7 @@
             </div>
             <!-- Inner Up - Recent Requests (OPTIMIZED) -->
             <div class="flex flex-row justify-between items-center w-full">
-                <div class="flex flex-row items-center w-full justify-between">
+                <div class="flex flex-row items-center w-full justify-between ">
                     <x-labelwithvalue label="Recent Requests" count="" />
                     <a href="{{ route('employee.requests.create') }}"
                         class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
@@ -245,8 +244,8 @@
                     </a>
                 </div>
             </div>
-            <div class="w-full rounded-lg overflow-hidden flex-shrink-0">
-                <div class="space-y-4">
+            <div class="w-full rounded-lg overflow-hidden flex-1 border border-dashed border-gray-400 dark:border-gray-700 flex flex-col">
+                <div class="space-y-4 flex-1 flex flex-col">
                     @if (count($employeeRequests) > 0)
                         @foreach ($employeeRequests as $index => $request)
                             <div @click="openRequestModal({{ $index }})">
@@ -255,7 +254,7 @@
                             </div>
                         @endforeach
                     @else
-                        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <div class="text-center py-8 text-gray-500 dark:text-gray-400 flex-1 flex flex-col items-center justify-center">
                             <i class="fa-solid fa-clipboard-list text-3xl mb-3 opacity-50"></i>
                             <p class="text-sm">No requests yet</p>
                         </div>
@@ -419,8 +418,10 @@
                             <div class="flex gap-3">
                                 @if (!$hasAttendanceToday)
                                     <form action="{{ route('employee.attendance.clockin') }}" method="POST"
-                                        class="flex-1">
+                                        class="flex-1" onsubmit="return populateGeoFields(this)">
                                         @csrf
+                                        <input type="hidden" name="latitude" class="geo-latitude">
+                                        <input type="hidden" name="longitude" class="geo-longitude">
                                         <button type="submit"
                                             class="w-full text-sm px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
                                             <i class="fi fi-rr-play text-sm"></i>
@@ -429,8 +430,10 @@
                                     </form>
                                 @elseif($isClockedIn)
                                     <form action="{{ route('employee.attendance.clockout') }}" method="POST"
-                                        class="flex-1">
+                                        class="flex-1" onsubmit="return populateGeoFields(this)">
                                         @csrf
+                                        <input type="hidden" name="latitude" class="geo-latitude">
+                                        <input type="hidden" name="longitude" class="geo-longitude">
                                         <button type="submit"
                                             class="w-full text-sm px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
                                             <i class="fi fi-rr-stop text-sm"></i>
@@ -645,25 +648,80 @@
             </div>
         </div>
     </section>
-</x-layouts.general-employee>
 
 @push('scripts')
+    @once
+    <script src="{{ asset('js/geofencing.js') }}"></script>
+    @endonce
+    <script>
+        // Eagerly track user position as soon as page loads
+        if (!window._cachedPosition) {
+            window._cachedPosition = null;
+            window._geoWatchId = null;
+
+            (function() {
+                if (!navigator.geolocation) return;
+                window._geoWatchId = navigator.geolocation.watchPosition(
+                    function(position) {
+                        window._cachedPosition = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                    },
+                    function(error) {
+                        console.warn('Geolocation error:', error.message);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+                );
+            })();
+        }
+
+        // Populate hidden lat/lng fields before form submission
+        window.populateGeoFields = window.populateGeoFields || function(form) {
+            var latField = form.querySelector('.geo-latitude');
+            var lngField = form.querySelector('.geo-longitude');
+
+            // Source 1: Geofencing instance (already tracking for range check)
+            if (window.geofencing && window.geofencing.getUserLocation()) {
+                var loc = window.geofencing.getUserLocation();
+                latField.value = loc.lat;
+                lngField.value = loc.lng;
+                return true;
+            }
+
+            // Source 2: Eagerly cached position from watchPosition
+            if (window._cachedPosition) {
+                latField.value = window._cachedPosition.lat;
+                lngField.value = window._cachedPosition.lng;
+                return true;
+            }
+
+            // Source 3: Last resort - fetch position now and submit async
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    latField.value = position.coords.latitude;
+                    lngField.value = position.coords.longitude;
+                    form.submit();
+                }, function() {
+                    form.submit();
+                }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 });
+                return false;
+            }
+
+            return true;
+        };
+    </script>
     <script>
         // This script handles the Tasks Summary filter dropdown.
         document.addEventListener('DOMContentLoaded', function() {
-            // Find the button that triggers the dropdown. We assume it has a 'data-dropdown-toggle' attribute.
             const dropdownButton = document.querySelector('[data-dropdown-toggle="dropdown-time"]');
             const dropdownMenu = document.getElementById('dropdown-time');
 
             if (dropdownButton && dropdownMenu) {
-                // Listen for clicks on the entire dropdown menu.
                 dropdownMenu.addEventListener('click', function(event) {
-
-                    // Find the specific item that was clicked (could be a link or any other element).
-                    const target = event.target.closest('a, button, li'); // Make it flexible
+                    const target = event.target.closest('a, button, li');
 
                     if (target) {
-                        // Get the text content of the clicked item.
                         const selectedPeriod = target.textContent.trim();
 
                         if (selectedPeriod) {
@@ -677,3 +735,4 @@
         });
     </script>
 @endpush
+</x-layouts.general-employee>
