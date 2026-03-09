@@ -153,7 +153,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Skills</label>
 
                             <!-- Skills Pills -->
-                            <div class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-3 rounded-lg">
                                 <template x-for="(skill, idx) in templateForm.skills" :key="idx">
                                     <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
                                         <span x-text="skill"></span>
@@ -169,11 +169,11 @@
                             </div>
 
                             <!-- Add Skill Input -->
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700">
                                 <input type="text" x-model="newSkillInput"
                                     @keydown.enter.prevent="addSkillToTemplate()"
-                                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                    placeholder="Type a skill and press Enter...">
+                                    class="flex-1 px-4 py-2 rounded-lg focus:outline-none bg-white dark:bg-gray-700 dark:text-white text-sm"
+                                    placeholder="Type a skill and add...">
                                 <button type="button" @click="addSkillToTemplate()"
                                     class="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
                                     <i class="fa-solid fa-plus"></i>
@@ -811,7 +811,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Required Skills</label>
 
                             <!-- Skills Pills Display -->
-                            <div class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-3 rounded-lg">
                                 <template x-for="(skill, idx) in formData.requiredSkills" :key="idx">
                                     <span x-show="skill.trim() !== ''"
                                           class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
@@ -844,19 +844,51 @@
                         <!-- Required Documents -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Required Documents</label>
-                            <div class="space-y-2">
+
+                            <!-- Docs Pills Display -->
+                            <div class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-3 rounded-lg">
                                 <template x-for="(doc, idx) in formData.requiredDocs" :key="idx">
-                                    <div class="flex gap-2">
-                                        <input type="text" x-model="formData.requiredDocs[idx]"
-                                            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                            placeholder="Enter document...">
-                                        <button type="button" @click="removeDoc(idx)" class="px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
-                                            <i class="fa-solid fa-minus"></i>
+                                    <span x-show="doc.name && doc.name.trim() !== ''"
+                                          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
+                                        <span x-text="doc.name"></span>
+                                        <span x-show="doc.type"
+                                              class="ml-0.5 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400"
+                                              x-text="doc.type"></span>
+                                        <button type="button" @click="removeDoc(idx)"
+                                                class="ml-0.5 text-purple-400 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-200">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
                                         </button>
-                                    </div>
+                                    </span>
                                 </template>
-                                <button type="button" @click="addDoc()" class="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg">
-                                    <i class="fa-solid fa-plus mr-2"></i>Add Document
+                                <span x-show="formData.requiredDocs.filter(d => d.name && d.name.trim() !== '').length === 0"
+                                      class="text-xs text-gray-400 dark:text-gray-500 py-1">No documents added</span>
+                            </div>
+
+                            <!-- Add Document Input -->
+                            <div class="flex gap-2">
+                                <input type="text" x-model="newDocInput"
+                                    @keydown.enter.prevent="addDocPill()"
+                                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                    placeholder="Type a document to add...">
+                                <select x-model="newDocType"
+                                    class="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
+                                    <option value="">Type</option>
+                                    <option value="PDF">PDF</option>
+                                    <option value="DOC">DOC</option>
+                                    <option value="DOCX">DOCX</option>
+                                    <option value="JPG">JPG</option>
+                                    <option value="PNG">PNG</option>
+                                    <option value="XLS">XLS</option>
+                                    <option value="XLSX">XLSX</option>
+                                    <option value="CSV">CSV</option>
+                                    <option value="TXT">TXT</option>
+                                    <option value="Any">Any</option>
+                                </select>
+                                <button type="button" @click="addDocPill()"
+                                    class="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                                    <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
                         </div>
@@ -1226,7 +1258,7 @@
             iconColor: job.icon_color,
             is_active: job.is_active,
             requiredSkills: job.required_skills || [],
-            requiredDocs: job.required_docs || [],
+            requiredDocs: (job.required_docs || []).map(d => typeof d === 'string' ? { name: d, type: '' } : d),
             applicantCount: applicantCounts[job.title] || 0
         }));
 
@@ -1239,6 +1271,8 @@
             editingIndex: null,
             isSubmitting: false,
             newSkillInput: '',
+            newDocInput: '',
+            newDocType: '',
             statesList: [],
             citiesList: [],
             showStateDropdown: false,
@@ -1267,7 +1301,7 @@
                 iconColor: 'blue',
                 is_active: true,
                 requiredSkills: [],
-                requiredDocs: ['']
+                requiredDocs: []
             },
             jobPostings: dbJobPostings,
 
@@ -1329,7 +1363,7 @@
                     iconColor: 'blue',
                     is_active: true,
                     requiredSkills: [],
-                    requiredDocs: ['']
+                    requiredDocs: []
                 };
                 this.citiesList = [];
                 this.selectedStateIso2 = '';
@@ -1369,7 +1403,7 @@
                     iconColor: job.iconColor,
                     is_active: job.is_active,
                     requiredSkills: job.requiredSkills?.length ? [...job.requiredSkills] : [],
-                    requiredDocs: job.requiredDocs?.length ? [...job.requiredDocs] : ['']
+                    requiredDocs: job.requiredDocs?.length ? [...job.requiredDocs] : []
                 };
 
                 // Load cities for the selected state
@@ -1442,7 +1476,7 @@
                         this.isSubmitting = true;
 
                         const requiredSkills = this.formData.requiredSkills.filter(s => s.trim() !== '');
-                        const requiredDocs = this.formData.requiredDocs.filter(d => d.trim() !== '');
+                        const requiredDocs = this.formData.requiredDocs.filter(d => d.name && d.name.trim() !== '');
                         const location = `${this.formData.city}, ${this.formData.state}`;
 
                         const payload = {
@@ -1497,7 +1531,7 @@
                                     iconColor: data.data.icon_color,
                                     is_active: data.data.is_active,
                                     requiredSkills: data.data.required_skills || [],
-                                    requiredDocs: data.data.required_docs || []
+                                    requiredDocs: (data.data.required_docs || []).map(d => typeof d === 'string' ? { name: d, type: '' } : d)
                                 };
 
                                 if (wasEditing) {
@@ -1561,14 +1595,17 @@
                 this.formData.requiredSkills.splice(index, 1);
             },
 
-            addDoc() {
-                this.formData.requiredDocs.push('');
+            addDocPill() {
+                const name = this.newDocInput.trim();
+                if (name && !this.formData.requiredDocs.some(d => d.name === name)) {
+                    this.formData.requiredDocs.push({ name: name, type: this.newDocType || '' });
+                }
+                this.newDocInput = '';
+                this.newDocType = '';
             },
 
             removeDoc(index) {
-                if (this.formData.requiredDocs.length > 1) {
-                    this.formData.requiredDocs.splice(index, 1);
-                }
+                this.formData.requiredDocs.splice(index, 1);
             },
 
             getIconBgClass(color) {
