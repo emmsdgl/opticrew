@@ -1,12 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log In</title>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <title>Log In</title>
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
+    <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        @import url('{{ asset('app.css') }}');
+
+        #container-2 {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Floating label container */
+        .input-group {
+            position: relative;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1.2em 1em 0.6em 2.5em;
+            border-radius: 8px;
+            outline: none;
+            border: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #0077FF;
+        }
+
+        .input-group label {
+            position: absolute;
+            top: 1.1em;
+            left: 2.5em;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            background-color: transparent;
+            padding: 0 0.3em;
+        }
+
+        .input-group input:focus+label,
+        .input-group input.not-empty+label {
+            top: -0.6em;
+            left: 2.3em;
+            font-size: 0.75rem;
+            background-color: white;
+            color: #0077FF;
+        }
+
+        /* ICONS */
+        .input-group .icon {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            color: #0077FF;
+        }
+
+        #container-2-layer {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 1em;
+            padding-bottom: 1em;
+        }
+
+        #btn-login {
+            width: 100%;
+            padding: 1em;
+            background: #0077FF;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 1px solid #868282;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: #0077FF;
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: "✓";
+            color: white;
+            font-size: 14px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+    </style>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
     <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
@@ -213,6 +320,42 @@
             </form>
         </div>
     </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll('.input-group input');
+
+            inputs.forEach(input => {
+                // Handle pre-filled fields (e.g., autofill)
+                if (input.value.trim() !== '') {
+                    input.classList.add('not-empty');
+                }
+
+                // Toggle label floating based on content
+                input.addEventListener('input', () => {
+                    if (input.value.trim() !== '') {
+                        input.classList.add('not-empty');
+                    } else {
+                        input.classList.remove('not-empty');
+                    }
+                });
+            });
+
+            const passwordInput = document.getElementById('input-password');
+            const togglePassword = document.getElementById('togglePassword');
+            const icon = togglePassword.querySelector('i');
+
+            togglePassword.addEventListener('click', () => {
+                const isPassword = passwordInput.type === 'password';
+                passwordInput.type = isPassword ? 'text' : 'password';
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+        });
+
+    </script>
+    <x-global-dialogs />
 
 
     <script>

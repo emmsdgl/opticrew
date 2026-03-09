@@ -4,6 +4,11 @@
 /public/storage
 /storage/*.key
 /vendor
+ocr-env/
+.venv/
+venv/
+__pycache__/
+*.pyc
 .env
 .env.backup
 .env.production

@@ -27,3 +27,27 @@
     "ask": []
   }
 }
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(git add:*)",
+      "Bash(php artisan list:*)",
+      "Bash(php -l:*)",
+      "Bash(php artisan serve:*)",
+      "Bash(timeout 5 bash:*)",
+      "Bash(php artisan:*)",
+      "Bash(find:*)",
+      "Bash(git stash:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(/c/xampp/mysql/bin/mysql:*)",
+      "Bash(ls -la \"d:\\\\xampp\\\\htdocs\\\\opticrew\\\\app\\\\Models\"\" | find \"d:xampphtdocsopticrewappModels\" -maxdepth 1 -type f -name \"*.php \")",
+      "Bash(ls -d d:/xampp/htdocs/opticrew/resources/views/components/*/)",
+      "Bash(xargs grep -l \"training\\\\|course\\\\|development\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

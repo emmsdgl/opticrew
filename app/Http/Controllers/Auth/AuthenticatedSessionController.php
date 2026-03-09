@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\UserActivityLog;
+use App\Models\UserActivityLog;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Carbon\Carbon;
 use Carbon\Carbon;
 
 class AuthenticatedSessionController extends Controller
@@ -30,6 +32,24 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
+        UserActivityLog::log(
+            Auth::id(),
+            UserActivityLog::TYPE_LOGIN,
+            'Logged in to account',
+            null,
+            $request->ip()
+        );
+
+        return redirect()->intended($this->dashboardUrl());
+    }
+
+    /**
+     * Show the terms acceptance page.
+     */
+    public function showTerms(): View|RedirectResponse
+    {
+        if (Auth::user()->terms_accepted_at) {
+            return redirect()->intended($this->dashboardUrl());
         UserActivityLog::log(
             Auth::id(),
             UserActivityLog::TYPE_LOGIN,
@@ -107,12 +127,25 @@ class AuthenticatedSessionController extends Controller
             );
         }
 
+        $userId = Auth::id();
+        if ($userId) {
+            UserActivityLog::log(
+                $userId,
+                UserActivityLog::TYPE_LOGOUT,
+                'Logged out of account',
+                null,
+                $request->ip()
+            );
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
+        // Redirect to login page after logout
+        return redirect()->route('login');
         // Redirect to login page after logout
         return redirect()->route('login');
     }
