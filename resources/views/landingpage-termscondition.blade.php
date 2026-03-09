@@ -309,14 +309,29 @@
     document.addEventListener('DOMContentLoaded', function() {
         const agreeBtn = document.querySelector('.btn-agree');
         const declineBtn = document.querySelector('.btn-decline');
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromRecruitment = urlParams.get('from') === 'recruitment';
+        const jobId = urlParams.get('job') || '';
 
         agreeBtn.addEventListener('click', function() {
-            window.showSuccessDialog('Terms Accepted', 'Thank you for accepting the Terms and Conditions.');
-            // ADD VERIFICATION LOGIC HERE
+            // Set cookie for 30 days
+            document.cookie = 'finnoys_terms_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
+
+            if (fromRecruitment) {
+                const redirectUrl = '/recruitment' + (jobId ? '?apply_job=' + jobId : '');
+                window.showSuccessDialog('Terms Accepted', 'Thank you for accepting the Terms and Conditions.', 'Continue', redirectUrl);
+            } else {
+                window.showSuccessDialog('Terms Accepted', 'Thank you for accepting the Terms and Conditions.');
+            }
         });
-        
+
         declineBtn.addEventListener('click', function() {
-            window.showErrorDialog('Login Failed', 'Please read and accept the terms and conditions.', 'Back to login', '/login');
+            if (fromRecruitment) {
+                const redirectUrl = '/recruitment' + (jobId ? '?apply_job=' + jobId : '');
+                window.showErrorDialog('Terms Required', 'You must accept the Terms and Conditions before applying.', 'Back to Recruitment', redirectUrl);
+            } else {
+                window.showErrorDialog('Login Failed', 'Please read and accept the terms and conditions.', 'Back to login', '/login');
+            }
         });
     });
 </script>
