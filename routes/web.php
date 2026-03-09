@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\EmployeeTasksController;
 use App\Http\Controllers\Auth\ClientRegistrationController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentList;
@@ -52,6 +53,8 @@ Route::get('/', function () {
             return redirect()->route('client.dashboard');
         } elseif ($role === 'company') {
             return redirect()->route('manager.dashboard');
+        } elseif ($role === 'applicant') {
+            return redirect()->route('applicant.dashboard');
         }
     }
 
@@ -122,6 +125,11 @@ Route::get('/login', function () {
 Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
+
+// Google OAuth Routes
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+Route::post('/auth/google/recruitment-apply', [GoogleAuthController::class, 'recruitmentApply'])->name('recruitment.google.apply');
 
 /*
 |-------------------------------------------------------------------------
@@ -422,6 +430,11 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     Route::get('/client/settings', [ProfileController::class, 'settings'])->name('client.settings');
     Route::get('/client/help-center', [ProfileController::class, 'helpcenter'])->name('client.helpcenter');
     Route::post('/client/settings/update-password', [ProfileController::class, 'updatePassword'])->name('client.settings.update-password');
+});
+
+// --- APPLICANT ROUTES ---
+Route::middleware(['auth', 'terms.accepted', 'applicant'])->prefix('applicant')->name('applicant.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'dashboard'])->name('dashboard');
 });
 
 // --- MANAGER (CONTRACTED CLIENT) ROUTES ---

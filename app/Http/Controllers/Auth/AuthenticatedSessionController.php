@@ -84,6 +84,8 @@ class AuthenticatedSessionController extends Controller
             return '/employee/dashboard';
         } elseif ($role === 'external_client') {
             return '/client/dashboard';
+        } elseif ($role === 'applicant') {
+            return '/applicant/dashboard';
         }
 
         return '/';

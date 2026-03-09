@@ -361,75 +361,84 @@
     </div>
 
     {{-- Application Modal --}}
-    <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="display: none;">
+    <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="display: none;"
+        x-data="{
+            termsAccepted: document.cookie.includes('finnoys_terms_accepted=1'),
+            policyAccepted: document.cookie.includes('finnoys_policy_accepted=1')
+        }">
         <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto scrollbar-custom">
             {{-- Modal Header --}}
             <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center z-10">
-                <button onclick="closeApplicationModal()" class=" text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                <button onclick="closeApplicationModal()" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                     <i class="fas fa-arrow-left text-xl"></i>
                 </button>
-                <h2 class="text-lg font-bold text-center mr-3 w-full text-gray-900 dark:text-white">Get Your Interview Schedule</h2>
+                <h2 class="text-lg font-bold text-center mr-3 w-full text-gray-900 dark:text-white">Apply for this Position</h2>
             </div>
 
             {{-- Modal Body --}}
             <div class="p-6">
-                <form id="applicationForm" class="space-y-4" enctype="multipart/form-data">
+                <form id="applicationForm" action="{{ route('recruitment.google.apply') }}" method="POST" class="space-y-4">
                     @csrf
                     <input type="hidden" name="job_title" id="applicationJobTitle">
                     <input type="hidden" name="job_type" id="applicationJobType">
-                    {{-- Email Address --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Email Address
-                        </label>
-                        <input type="email" name="email" required
-                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
-                            placeholder="johndoe@example.com">
-                    </div>
 
-                    {{-- Alternative Email Address --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Alternative Email Address <span class="text-gray-400 text-xs">(Optional)</span>
-                        </label>
-                        <input type="email" name="alternative_email"
-                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
-                            placeholder="johndoe@example.com">
-                    </div>
-
-                    {{-- Compiled PDF Document --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Resume & Cover Letter
-                        </label>
-                        <div class="relative">
-                            <input type="file" name="pdf_document" id="pdfDocument" accept=".pdf" required
-                                class="hidden"
-                                onchange="updateFileName(this)">
-                            <label for="pdfDocument"
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                                <span id="fileName" class="text-gray-500 dark:text-gray-400 text-sm">Choose file</span>
-                                <i class="fas fa-upload text-gray-400"></i>
-                            </label>
+                    {{-- Google Sign-In Info --}}
+                    <div class="text-center mb-2">
+                        <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fab fa-google text-2xl text-blue-600"></i>
                         </div>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Kindly drag or click to upload your compiled documents
+                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                            Sign in with your Google account to apply. Your email will be used for application updates.
                         </p>
                     </div>
 
-                    {{-- Terms and Conditions --}}
-                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
-                        <p class="text-xs text-gray-600 dark:text-gray-400 text-center leading-relaxed">
-                            By signing to the form above, you acknowledge that you have read, understood, and agree to be bound by Finnoys <a href="#" class="text-blue-600 dark:text-blue-400 underline">Terms and Conditions</a> and <a href="#" class="text-blue-600 dark:text-blue-400 underline">Privacy Policy</a>.
-                        </p>
+                    {{-- Terms and Conditions Acceptance --}}
+                    <div class="space-y-2">
+                        <div id="termsCheckRow" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
+                            :class="termsAccepted ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'"
+                            onclick="navigateToTerms()">
+                            <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                :class="termsAccepted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-500'">
+                                <i class="fas fa-check text-white text-xs" x-show="termsAccepted"></i>
+                            </div>
+                            <span class="text-sm flex-1" :class="termsAccepted ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'">
+                                <span x-text="termsAccepted ? 'Terms and Conditions accepted' : 'Read and accept Terms and Conditions'"></span>
+                            </span>
+                            <i class="fas fa-arrow-right text-xs text-gray-400" x-show="!termsAccepted"></i>
+                        </div>
+
+                        <div id="policyCheckRow" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
+                            :class="policyAccepted ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'"
+                            onclick="navigateToPolicy()">
+                            <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                                :class="policyAccepted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-500'">
+                                <i class="fas fa-check text-white text-xs" x-show="policyAccepted"></i>
+                            </div>
+                            <span class="text-sm flex-1" :class="policyAccepted ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'">
+                                <span x-text="policyAccepted ? 'Privacy Policy accepted' : 'Read and accept Privacy Policy'"></span>
+                            </span>
+                            <i class="fas fa-arrow-right text-xs text-gray-400" x-show="!policyAccepted"></i>
+                        </div>
                     </div>
 
-                    {{-- Submit Button --}}
-                    <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-full transition-all shadow-lg hover:shadow-xl text-sm">
-                        Submit Application
+                    {{-- Sign in with Google to Apply --}}
+                    <button type="submit" id="googleApplyBtn"
+                        :disabled="!termsAccepted || !policyAccepted"
+                        :class="(!termsAccepted || !policyAccepted) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-600 shadow-lg hover:shadow-xl'"
+                        class="w-full flex items-center justify-center gap-3 py-3.5 px-4 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 48 48">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Sign in with Google to Apply</span>
                     </button>
+
+                    <p x-show="!termsAccepted || !policyAccepted" class="text-xs text-center text-amber-600 dark:text-amber-400">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Please accept both Terms and Privacy Policy to continue
+                    </p>
                 </form>
             </div>
         </div>
@@ -438,6 +447,38 @@
 
 @push('scripts')
     <script>
+        // Show flash messages from session (after Google OAuth redirect)
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                showNotification('success', @json(session('success')));
+            @endif
+            @if(session('error'))
+                showNotification('error', @json(session('error')));
+            @endif
+
+            // Auto-open modal if returning from terms/policy acceptance
+            const urlParams = new URLSearchParams(window.location.search);
+            const applyJob = urlParams.get('apply_job');
+            if (applyJob && jobs[applyJob]) {
+                selectJob(parseInt(applyJob));
+                setTimeout(() => openApplicationModal(), 500);
+            }
+        });
+
+        // Navigate to Terms page with return context
+        function navigateToTerms() {
+            if (document.cookie.includes('finnoys_terms_accepted=1')) return;
+            const jobId = selectedJobId || '';
+            window.location.href = '{{ route("termscondition") }}?from=recruitment&job=' + jobId;
+        }
+
+        // Navigate to Policy page with return context
+        function navigateToPolicy() {
+            if (document.cookie.includes('finnoys_policy_accepted=1')) return;
+            const jobId = selectedJobId || '';
+            window.location.href = '{{ route("privacypolicy") }}?from=recruitment&job=' + jobId;
+        }
+
         // Dynamically generated jobs from database
         const jobs = {
             @foreach($jobPostings ?? [] as $job)
@@ -636,10 +677,6 @@
             document.body.style.overflow = 'auto';
             document.getElementById('applicationForm').reset();
             document.getElementById('fileName').textContent = 'Choose file';
-            // Reset submit button
-            const submitBtn = document.querySelector('#applicationForm button[type="submit"]');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Submit Application';
         }
 
         // Update file name display
@@ -648,44 +685,11 @@
             document.getElementById('fileName').textContent = fileName;
         }
 
-        // Handle form submission
-        document.getElementById('applicationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const submitBtn = this.querySelector('button[type="submit"]');
+        // Handle form submission - show loading state
+        document.getElementById('applicationForm').addEventListener('submit', function() {
+            const submitBtn = document.getElementById('googleApplyBtn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
-
-            // Get form data
-            const formData = new FormData(this);
-
-            // Send AJAX request
-            fetch('{{ route("recruitment.apply") }}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success message
-                    showNotification('success', data.message);
-                    closeApplicationModal();
-                } else {
-                    showNotification('error', data.message || 'Something went wrong. Please try again.');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Submit Application';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('error', 'An error occurred. Please try again later.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit Application';
-            });
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Redirecting to Google...';
         });
 
         // Notification function

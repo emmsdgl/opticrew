@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ApplicationStatusUpdate;
 use App\Models\JobApplication;
 use App\Models\JobPosting;
 use App\Services\Notification\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class JobApplicationController extends Controller
@@ -78,9 +80,7 @@ class JobApplicationController extends Controller
             ->groupBy('job_title')
             ->pluck('count', 'job_title');
 
-        $cscApiKey = env('CSC_API_KEY', '');
-
-        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts', 'cscApiKey'));
+        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts'));
     }
 
     /**
@@ -103,17 +103,32 @@ class JobApplicationController extends Controller
         ]);
 
         $application = JobApplication::findOrFail($id);
+        $oldStatus = $application->status;
+
         $application->update([
             'status' => $validated['status'],
             'admin_notes' => $validated['admin_notes'] ?? $application->admin_notes,
             'reviewed_at' => now(),
         ]);
 
-        if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Application status updated successfully.']);
+        // Send email notification when status changes
+        if ($oldStatus !== $validated['status']) {
+            try {
+                $recipients = [$application->email];
+                if ($application->alternative_email) {
+                    $recipients[] = $application->alternative_email;
+                }
+                Mail::to($recipients)->send(new ApplicationStatusUpdate($application));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send application status email: ' . $e->getMessage());
+            }
         }
 
-        return redirect()->back()->with('success', 'Application status updated successfully.');
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Application status updated and email notification sent.']);
+        }
+
+        return redirect()->back()->with('success', 'Application status updated and email notification sent.');
     }
 
     /**
