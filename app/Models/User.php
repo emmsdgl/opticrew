@@ -9,13 +9,10 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    use \Illuminate\Database\Eloquent\SoftDeletes;
     use \Illuminate\Database\Eloquent\SoftDeletes;
 
     /**
@@ -26,44 +23,13 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'username',
-        'username',
         'email',
         'google_id',
         'email_verified_at',
         'profile_picture',
         'phone',
         'location',
-        'email_verified_at',
-        'profile_picture',
-        'phone',
-        'location',
         'password',
-        'role',
-        'terms_accepted_at',
-    ];
-
-    // Define the relationship
-    public function client(): HasOne
-    {
-        return $this->hasOne(Client::class);
-    }
-
-    public function employee(): HasOne
-    {
-        // This tells Laravel that a User has one Employee,
-        // linked by the 'user_id' column in the 'employees' table.
-        return $this->hasOne(Employee::class);
-    }
-
-    public function notifications(): HasMany
-    {
-        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
-    }
-
-    public function contractedClient(): HasOne
-    {
-        return $this->hasOne(ContractedClient::class);
-    }
         'role',
         'terms_accepted_at',
     ];

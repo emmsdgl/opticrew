@@ -40,10 +40,6 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\PreventBackHistory::class,
             \App\Http\Middleware\SetLocale::class, // Set application locale from session 
 
-
-            \App\Http\Middleware\PreventBackHistory::class,
-            \App\Http\Middleware\SetLocale::class, // Set application locale from session 
-
         ],
 
         'api' => [
@@ -79,13 +75,6 @@ class Kernel extends HttpKernel
         'client' => \App\Http\Middleware\CheckClient::class,
         'manager' => \App\Http\Middleware\CheckManager::class,
         'applicant' => \App\Http\Middleware\CheckApplicant::class,
-        'terms.accepted' => \App\Http\Middleware\EnsureTermsAccepted::class,
-
-        // Role-based access control middleware
-        'admin' => \App\Http\Middleware\CheckAdmin::class,
-        'employee' => \App\Http\Middleware\CheckEmployee::class,
-        'client' => \App\Http\Middleware\CheckClient::class,
-        'manager' => \App\Http\Middleware\CheckManager::class,
         'terms.accepted' => \App\Http\Middleware\EnsureTermsAccepted::class,
     ];
 }
