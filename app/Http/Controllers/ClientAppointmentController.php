@@ -296,21 +296,35 @@ class ClientAppointmentController extends Controller
             'special_requests' => 'nullable|string|max:1000'
         ]);
 
-        // SCENARIO #1: Minimum 3-day notice requirement
-        // Urgent/Priority flags can bypass this rule (admin or manager role)
+        // SCENARIO #1: Minimum booking notice requirement
+        // - Standard booking: 3 days advance notice
+        // - Priority Clean: 2 days advance notice (client opts in)
+        // - Admin/Manager: no restriction
+        // - Tomorrow (1 day): always blocked for non-privileged users
         $serviceDate = Carbon::parse($request->service_date);
-        $minimumDate = Carbon::today()->addDays(3);
+        $daysUntilService = Carbon::today()->diffInDays($serviceDate, false);
         $user = Auth::user();
         $isPrivileged = $user && in_array($user->role, ['admin', 'manager']);
-        $isUrgent = $request->boolean('is_urgent') || $request->boolean('is_priority');
+        $isPriority = $request->boolean('is_priority');
 
-        if ($serviceDate->lt($minimumDate) && !$isPrivileged && !$isUrgent) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Minimum 3-day notice required. Please select a date at least 3 days from today.',
-                'error_code' => 'MINIMUM_NOTICE_REQUIRED',
-                'minimum_date' => $minimumDate->format('Y-m-d'),
-            ], 422);
+        if (!$isPrivileged) {
+            if ($daysUntilService < 2) {
+                // Tomorrow or today — always blocked
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This date is too soon. Bookings require at least 2 days advance notice.',
+                    'error_code' => 'DATE_TOO_SOON',
+                    'minimum_date' => Carbon::today()->addDays(2)->format('Y-m-d'),
+                ], 422);
+            } elseif ($daysUntilService < 3 && !$isPriority) {
+                // 2 days out but Priority Clean not selected
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This date requires Priority Clean. Please enable "Priority Clean" to book within 3 days.',
+                    'error_code' => 'PRIORITY_REQUIRED',
+                    'minimum_date' => Carbon::today()->addDays(3)->format('Y-m-d'),
+                ], 422);
+            }
         }
 
         // SCENARIO #5: Calendar Conflict - Prevent double-booking on the same date
