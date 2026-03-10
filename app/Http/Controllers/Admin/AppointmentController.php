@@ -316,10 +316,36 @@ class AppointmentController extends Controller
 
             if ($availableTeams && $availableTeams->count() > 0) {
                 // Use recommended team if it exists, otherwise pick the first available
+                // SCENARIO #6: Filter out teams with overlapping bookings
                 $teamId = $appointment->recommended_team_id;
+                $estimatedDuration = $appointment->number_of_units * 60;
 
+                // Check recommended team for overlap
+                if ($teamId) {
+                    $overlap = $this->checkTeamOverlap($teamId, $appointment->service_date, $appointment->service_time, $estimatedDuration);
+                    if ($overlap) {
+                        $teamId = null; // Recommended team has conflict, find another
+                    }
+                }
+
+                // Find first non-conflicting team
                 if (!$teamId || !$availableTeams->contains(fn($t) => $t['id'] == $teamId)) {
-                    $teamId = $availableTeams->first()['id'];
+                    $teamId = null;
+                    foreach ($availableTeams as $team) {
+                        $overlap = $this->checkTeamOverlap($team['id'], $appointment->service_date, $appointment->service_time, $estimatedDuration);
+                        if (!$overlap) {
+                            $teamId = $team['id'];
+                            break;
+                        }
+                    }
+                }
+
+                if (!$teamId) {
+                    Log::warning('Auto-assignment: all teams have overlapping bookings', [
+                        'appointment_id' => $appointment->id,
+                        'service_date' => $appointment->service_date,
+                    ]);
+                    return 'All existing teams have overlapping bookings. Please assign manually or adjust the schedule.';
                 }
 
                 DB::beginTransaction();
@@ -498,6 +524,63 @@ class AppointmentController extends Controller
     }
 
     /**
+     * SCENARIO #6: Check for overlapping bookings when assigning a team
+     * Compares Task_End_Time of existing tasks with the new Task_Start_Time
+     */
+    protected function checkTeamOverlap(int $teamId, $serviceDate, $serviceTime, ?int $estimatedDurationMinutes = null): ?array
+    {
+        $existingTasks = Task::where('assigned_team_id', $teamId)
+            ->whereDate('scheduled_date', $serviceDate)
+            ->whereNotIn('status', ['Cancelled'])
+            ->get();
+
+        if ($existingTasks->isEmpty()) {
+            return null;
+        }
+
+        $newTaskStart = Carbon::parse($serviceDate)->setTimeFromTimeString(
+            Carbon::parse($serviceTime)->format('H:i:s')
+        );
+
+        foreach ($existingTasks as $task) {
+            if (!$task->scheduled_time) continue;
+
+            $taskStart = Carbon::parse($task->scheduled_date)->setTimeFromTimeString(
+                Carbon::parse($task->scheduled_time)->format('H:i:s')
+            );
+            $taskDuration = $task->estimated_duration_minutes ?? $task->duration ?? 60;
+            $travelTime = $task->travel_time ?? 30;
+            $taskEnd = $taskStart->copy()->addMinutes($taskDuration + $travelTime);
+
+            // Check if new task starts before existing task ends
+            if ($newTaskStart->lt($taskEnd) && $newTaskStart->gte($taskStart)) {
+                return [
+                    'conflict' => true,
+                    'existing_task_id' => $task->id,
+                    'existing_task_description' => $task->task_description,
+                    'existing_task_end' => $taskEnd->format('g:i A'),
+                    'new_task_start' => $newTaskStart->format('g:i A'),
+                ];
+            }
+
+            // Also check if existing task starts during the new task
+            $newDuration = $estimatedDurationMinutes ?? 60;
+            $newTaskEnd = $newTaskStart->copy()->addMinutes($newDuration + 30);
+            if ($taskStart->lt($newTaskEnd) && $taskStart->gte($newTaskStart)) {
+                return [
+                    'conflict' => true,
+                    'existing_task_id' => $task->id,
+                    'existing_task_description' => $task->task_description,
+                    'existing_task_start' => $taskStart->format('g:i A'),
+                    'new_task_end' => $newTaskEnd->format('g:i A'),
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Assign team to appointment
      * If team_id is provided: assign existing team
      * If employee_ids provided: create new team via optimization
@@ -522,6 +605,25 @@ class AppointmentController extends Controller
                 $request->validate([
                     'team_id' => 'required|exists:optimization_teams,id'
                 ]);
+
+                // SCENARIO #6: Check for overlapping bookings before assigning
+                $estimatedDuration = $appointment->number_of_units * 60;
+                $overlap = $this->checkTeamOverlap(
+                    $request->team_id,
+                    $appointment->service_date,
+                    $appointment->service_time,
+                    $estimatedDuration
+                );
+
+                if ($overlap) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Team has an overlapping task: "' . $overlap['existing_task_description'] . '". Please choose a different team or time.',
+                        'error_code' => 'OVERLAPPING_BOOKING',
+                        'overlap_details' => $overlap,
+                    ], 422);
+                }
 
                 // Find or create task
                 $task = Task::where('client_id', $appointment->client_id)
@@ -646,6 +748,84 @@ class AppointmentController extends Controller
     }
 
     /**
+     * SCENARIO #17: Manual assignment with confirmation dialog
+     * Admin manually assigns an employee to a task with compensation info
+     *
+     * POST /admin/appointments/{id}/manual-assign
+     * Body: { employee_id, compensation_note, confirm: true }
+     */
+    public function manualAssign(Request $request, $id)
+    {
+        $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'confirm' => 'required|boolean',
+            'compensation_note' => 'nullable|string|max:500',
+        ]);
+
+        if (!$request->confirm) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Assignment not confirmed.',
+                'requires_confirmation' => true,
+            ], 400);
+        }
+
+        try {
+            $appointment = ClientAppointment::findOrFail($id);
+            $employee = \App\Models\Employee::with('user')->findOrFail($request->employee_id);
+
+            // Check if employee has less than 2 team members (warning)
+            $employeeName = $employee->user->name ?? 'Employee';
+
+            DB::beginTransaction();
+
+            // Find or create task
+            $task = Task::where('client_id', $appointment->client_id)
+                ->whereDate('scheduled_date', $appointment->service_date)
+                ->first();
+
+            if (!$task) {
+                $task = $this->createTaskFromAppointment($appointment);
+            }
+
+            // Log manual assignment with compensation note
+            Log::info('Manual task assignment by admin', [
+                'appointment_id' => $appointment->id,
+                'task_id' => $task->id,
+                'employee_id' => $employee->id,
+                'assigned_by' => Auth::id(),
+                'compensation_note' => $request->compensation_note,
+            ]);
+
+            DB::commit();
+
+            // Notify the employee
+            if ($employee->user) {
+                $this->notificationService->notifyEmployeeTaskAssigned(
+                    $employee->user,
+                    $task,
+                    $appointment
+                );
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Task manually assigned to {$employeeName}. Compensation will vary.",
+            ]);
+
+        } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to manually assign: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Create task from appointment
      */
     protected function createTaskFromAppointment(ClientAppointment $appointment)
@@ -687,17 +867,24 @@ class AppointmentController extends Controller
                   ->where('is_saved', true);
         })->with(['employees'])->get();
 
-        // Format teams for dropdown
-        return $teams->map(function($team) {
+        // Format teams for dropdown with task count info
+        return $teams->map(function($team) use ($date) {
             $teamMembers = $team->employees->map(function($emp) {
                 return $emp->first_name . ' ' . $emp->last_name .
                        ($emp->has_driving_license ? ' (Driver)' : '');
             })->join(', ');
 
+            // SCENARIO #5/#6: Show how many active tasks this team has on this date
+            $activeTaskCount = Task::where('assigned_team_id', $team->id)
+                ->whereDate('scheduled_date', $date)
+                ->whereNotIn('status', ['Cancelled'])
+                ->count();
+
             return [
                 'id' => $team->id,
                 'name' => 'Team ' . $team->id . ': ' . $teamMembers,
-                'has_driver' => $team->employees->contains(fn($e) => $e->has_driving_license)
+                'has_driver' => $team->employees->contains(fn($e) => $e->has_driving_license),
+                'active_tasks' => $activeTaskCount,
             ];
         });
     }

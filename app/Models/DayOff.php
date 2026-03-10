@@ -19,12 +19,21 @@ class DayOff extends Model
         'approved_by',
         'approved_at',
         'admin_notes',
+        // Scenario #11: Emergency leave fields
+        'is_emergency',
+        'escalation_level',
+        'escalation_notified_at',
+        'auto_escalation_locked',
     ];
 
     protected $casts = [
         'date' => 'date',
         'end_date' => 'date',
         'approved_at' => 'datetime',
+        'is_emergency' => 'boolean',
+        'escalation_level' => 'integer',
+        'escalation_notified_at' => 'datetime',
+        'auto_escalation_locked' => 'boolean',
     ];
 
     // Status constants
@@ -36,6 +45,7 @@ class DayOff extends Model
     const TYPE_VACATION = 'vacation';
     const TYPE_SICK = 'sick';
     const TYPE_PERSONAL = 'personal';
+    const TYPE_EMERGENCY = 'emergency';
     const TYPE_OTHER = 'other';
 
     public function employee()

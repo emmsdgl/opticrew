@@ -296,12 +296,49 @@ class ClientAppointmentController extends Controller
             'special_requests' => 'nullable|string|max:1000'
         ]);
 
+        // SCENARIO #1: Minimum 3-day notice requirement
+        // Urgent/Priority flags can bypass this rule (admin or manager role)
+        $serviceDate = Carbon::parse($request->service_date);
+        $minimumDate = Carbon::today()->addDays(3);
+        $user = Auth::user();
+        $isPrivileged = $user && in_array($user->role, ['admin', 'manager']);
+        $isUrgent = $request->boolean('is_urgent') || $request->boolean('is_priority');
+
+        if ($serviceDate->lt($minimumDate) && !$isPrivileged && !$isUrgent) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Minimum 3-day notice required. Please select a date at least 3 days from today.',
+                'error_code' => 'MINIMUM_NOTICE_REQUIRED',
+                'minimum_date' => $minimumDate->format('Y-m-d'),
+            ], 422);
+        }
+
+        // SCENARIO #5: Calendar Conflict - Prevent double-booking on the same date
+        // Check if this client already has a pending/approved appointment on the same date
+        $client = $user ? $user->client : null;
+        if ($client) {
+            $existingAppointment = ClientAppointment::where('client_id', $client->id)
+                ->whereDate('service_date', $request->service_date)
+                ->whereIn('status', ['pending', 'approved', 'confirmed'])
+                ->first();
+
+            if ($existingAppointment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You already have a booking on this date. Please choose a different date or cancel the existing booking first.',
+                    'error_code' => 'CALENDAR_CONFLICT',
+                    'existing_appointment_id' => $existingAppointment->id,
+                ], 422);
+            }
+        }
+
         try {
             DB::beginTransaction();
 
-            // Get authenticated user and their client record
-            $user = Auth::user();
-            $client = $user ? $user->client : null;
+            // Refresh client record (may have been loaded above for conflict check)
+            if (!$client) {
+                $client = $user ? $user->client : null;
+            }
 
             if (!$client) {
                 // Create new client if not authenticated
@@ -521,27 +558,91 @@ class ClientAppointmentController extends Controller
                 ], 404);
             }
 
-            if ($appointment->status !== 'pending') {
+            if (!in_array($appointment->status, ['pending', 'approved', 'confirmed'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only pending appointments can be cancelled'
+                    'message' => 'This appointment cannot be cancelled in its current state.'
                 ], 400);
             }
 
-            $appointment->update(['status' => 'cancelled']);
+            // SCENARIO #7: Cancellation Policy
+            // - Same-day cancellations (within Grace Period of 24 hours) trigger "Late Cancellation" flag with penalty fee
+            // - Cancel button locked for confirmed appointments → must use "Request Cancellation (Fee Applies)"
+            // SCENARIO #8: Urgent/Priority flags bypass the 3-day cancellation rule (admin/manager only)
+            $isPrivileged = $user && in_array($user->role, ['admin', 'manager']);
+            $serviceDate = Carbon::parse($appointment->service_date);
+            $hoursUntilService = Carbon::now()->diffInHours($serviceDate, false);
+            $daysUntilService = Carbon::now()->diffInDays($serviceDate, false);
+
+            $cancellationType = 'standard'; // default
+            $cancellationFee = 0;
+            $feeApplies = false;
+
+            if ($daysUntilService < 0) {
+                // Past service date - cannot cancel
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot cancel past appointments.'
+                ], 400);
+            }
+
+            if ($hoursUntilService <= 24 && !$isPrivileged) {
+                // SCENARIO #7: Same-day / Grace Period cancellation (< 24 hours)
+                // Late Cancellation with penalty fee
+                $cancellationType = 'late_cancellation';
+                $feeApplies = true;
+                $cancellationFee = round($appointment->total_amount * 0.50, 2); // 50% penalty fee
+
+                Log::info('Late cancellation detected (Grace Period)', [
+                    'appointment_id' => $appointment->id,
+                    'hours_until_service' => $hoursUntilService,
+                    'cancellation_fee' => $cancellationFee,
+                ]);
+            } elseif ($daysUntilService < 3 && !$isPrivileged) {
+                // Within 3 days but more than 24 hours - Request Cancellation with reduced fee
+                $cancellationType = 'request_cancellation';
+                $feeApplies = true;
+                $cancellationFee = round($appointment->total_amount * 0.25, 2); // 25% fee
+
+                Log::info('Short-notice cancellation (Fee Applies)', [
+                    'appointment_id' => $appointment->id,
+                    'days_until_service' => $daysUntilService,
+                    'cancellation_fee' => $cancellationFee,
+                ]);
+            }
+
+            // Update appointment
+            $appointment->update([
+                'status' => 'cancelled',
+                'cancellation_type' => $cancellationType,
+                'cancellation_fee' => $cancellationFee,
+                'cancelled_at' => now(),
+                'cancelled_by' => $user->id,
+            ]);
 
             Log::info('Appointment cancelled by client', [
                 'appointment_id' => $appointment->id,
-                'client_id' => $client->id
+                'client_id' => $client->id,
+                'cancellation_type' => $cancellationType,
+                'fee_applies' => $feeApplies,
+                'cancellation_fee' => $cancellationFee,
             ]);
 
             // Notify all admins about the cancellation
             $clientName = $client->first_name . ' ' . $client->last_name;
             $this->notificationService->notifyAdminsAppointmentCancelled($appointment, $clientName);
 
+            $message = 'Appointment cancelled successfully.';
+            if ($feeApplies) {
+                $message = "Appointment cancelled. A cancellation fee of €{$cancellationFee} applies due to {$cancellationType}.";
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Appointment cancelled successfully'
+                'message' => $message,
+                'cancellation_type' => $cancellationType,
+                'fee_applies' => $feeApplies,
+                'cancellation_fee' => $cancellationFee,
             ]);
 
         } catch (\Exception $e) {
@@ -555,6 +656,69 @@ class ClientAppointmentController extends Controller
                 'message' => 'Failed to cancel appointment'
             ], 500);
         }
+    }
+
+    /**
+     * SCENARIO #7: Get cancellation policy info for an appointment
+     * Returns whether cancel button should be locked and what fees apply
+     */
+    public function getCancellationPolicy($id)
+    {
+        $user = Auth::user();
+        $client = $user ? $user->client : null;
+
+        if (!$client) {
+            return response()->json(['success' => false, 'message' => 'Client not found'], 404);
+        }
+
+        $appointment = ClientAppointment::where('id', $id)
+            ->where('client_id', $client->id)
+            ->first();
+
+        if (!$appointment) {
+            return response()->json(['success' => false, 'message' => 'Appointment not found'], 404);
+        }
+
+        $isPrivileged = $user && in_array($user->role, ['admin', 'manager']);
+        $serviceDate = Carbon::parse($appointment->service_date);
+        $hoursUntilService = Carbon::now()->diffInHours($serviceDate, false);
+        $daysUntilService = Carbon::now()->diffInDays($serviceDate, false);
+
+        $canCancel = in_array($appointment->status, ['pending', 'approved', 'confirmed']);
+        $cancelButtonLocked = false;
+        $feeApplies = false;
+        $feePercentage = 0;
+        $estimatedFee = 0;
+        $policyMessage = 'Free cancellation available.';
+
+        if ($daysUntilService < 0) {
+            $canCancel = false;
+            $policyMessage = 'Cannot cancel past appointments.';
+        } elseif ($hoursUntilService <= 24 && !$isPrivileged) {
+            $cancelButtonLocked = true;
+            $feeApplies = true;
+            $feePercentage = 50;
+            $estimatedFee = round($appointment->total_amount * 0.50, 2);
+            $policyMessage = "Late cancellation: 50% fee (€{$estimatedFee}) applies. Contact admin for assistance.";
+        } elseif ($daysUntilService < 3 && !$isPrivileged) {
+            $feeApplies = true;
+            $feePercentage = 25;
+            $estimatedFee = round($appointment->total_amount * 0.25, 2);
+            $policyMessage = "Short-notice cancellation: 25% fee (€{$estimatedFee}) applies.";
+        }
+
+        return response()->json([
+            'success' => true,
+            'can_cancel' => $canCancel,
+            'cancel_button_locked' => $cancelButtonLocked,
+            'fee_applies' => $feeApplies,
+            'fee_percentage' => $feePercentage,
+            'estimated_fee' => $estimatedFee,
+            'policy_message' => $policyMessage,
+            'is_privileged' => $isPrivileged,
+            'hours_until_service' => max(0, $hoursUntilService),
+            'days_until_service' => max(0, $daysUntilService),
+        ]);
     }
 
     /**

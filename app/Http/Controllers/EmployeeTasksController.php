@@ -217,6 +217,8 @@ class EmployeeTasksController extends Controller
 
     /**
      * Decline a task
+     * SCENARIO #10: Last-minute cancellation pushes notifications
+     * SCENARIO #20: Cannot cancel after task started or 30 min before scheduled time
      */
     public function decline(Task $task)
     {
@@ -233,6 +235,30 @@ class EmployeeTasksController extends Controller
             return redirect()->back()->with('error', 'You do not have access to this task.');
         }
 
+        // SCENARIO #20: Cannot cancel/decline after task has started
+        if (in_array($task->status, ['In Progress', 'Completed'])) {
+            return redirect()->back()->with('error', 'Cannot decline a task that has already started or been completed.');
+        }
+
+        // SCENARIO #20: Cannot cancel/decline within 30 minutes of scheduled start time
+        if ($task->scheduled_date && $task->scheduled_time) {
+            $scheduledStart = Carbon::parse($task->scheduled_date)->setTimeFromTimeString(
+                Carbon::parse($task->scheduled_time)->format('H:i:s')
+            );
+            $minutesUntilStart = Carbon::now()->diffInMinutes($scheduledStart, false);
+
+            if ($minutesUntilStart <= 30 && $minutesUntilStart >= 0) {
+                return redirect()->back()->with('error', 'Cannot decline a task within 30 minutes of its scheduled start time.');
+            }
+        }
+
+        // SCENARIO #10: Check if this is a last-minute decline (within 1 day)
+        $isLastMinute = false;
+        if ($task->scheduled_date) {
+            $daysUntilTask = Carbon::now()->diffInDays(Carbon::parse($task->scheduled_date), false);
+            $isLastMinute = $daysUntilTask <= 1;
+        }
+
         // Update task approval status
         $task->update([
             'employee_approved' => false,
@@ -241,6 +267,12 @@ class EmployeeTasksController extends Controller
 
         // Notify all admins that the employee declined the task
         $this->notificationService->notifyAdminsTaskDeclined($task, $user->name);
+
+        // SCENARIO #10: For last-minute declines, send urgent push notifications
+        // to available staff in the region and notify dispatcher
+        if ($isLastMinute) {
+            $this->notificationService->notifyAdminsLastMinuteDecline($task, $user->name);
+        }
 
         return redirect()->route('employee.tasks')->with('success', 'Task declined successfully.');
     }
