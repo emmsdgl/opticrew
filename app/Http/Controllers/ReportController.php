@@ -218,53 +218,72 @@ class ReportController extends Controller
         $holidays = DB::table('holidays')
             ->whereBetween('date', [$startDate, $endDate])
             ->pluck('date')
+            ->map(function($date) {
+                return Carbon::parse($date)->format('Y-m-d');
+            })
             ->toArray();
 
-        // Build holiday condition for SQL
-        $holidayCondition = count($holidays) > 0
-            ? "DATE(attendances.clock_in) IN ('" . implode("','", $holidays) . "')"
-            : "0";
-
-        // Get all employees with their attendance and salary calculations
+        // Get all employees with their attendance and salary calculations (with per-day overtime)
         $employees = Employee::select('employees.*', 'users.name', 'users.email')
             ->join('users', 'employees.user_id', '=', 'users.id')
-            ->selectRaw('
-                (SELECT COUNT(*)
-                 FROM attendances
-                 WHERE attendances.employee_id = employees.id
-                 AND DATE(attendances.clock_in) BETWEEN ? AND ?) as days_worked
-            ', [$startDate, $endDate])
-            // Calculate regular hours (not Sunday, not Holiday)
-            ->selectRaw("
-                (SELECT SUM(total_minutes_worked)
-                 FROM attendances
-                 WHERE attendances.employee_id = employees.id
-                 AND DATE(attendances.clock_in) BETWEEN ? AND ?
-                 AND DAYOFWEEK(attendances.clock_in) != 1
-                 AND NOT ({$holidayCondition})) as regular_minutes
-            ", [$startDate, $endDate])
-            // Calculate premium hours (Sunday OR Holiday)
-            ->selectRaw("
-                (SELECT SUM(total_minutes_worked)
-                 FROM attendances
-                 WHERE attendances.employee_id = employees.id
-                 AND DATE(attendances.clock_in) BETWEEN ? AND ?
-                 AND (DAYOFWEEK(attendances.clock_in) = 1 OR {$holidayCondition})) as premium_minutes
-            ", [$startDate, $endDate])
             ->whereNull('employees.deleted_at')
             ->get()
-            ->map(function ($employee) {
-                // Calculate regular hours and pay
-                $employee->regular_hours = $employee->regular_minutes ? round($employee->regular_minutes / 60, 2) : 0;
-                $employee->regular_pay = $employee->regular_hours * $employee->salary_per_hour;
+            ->map(function ($employee) use ($startDate, $endDate, $holidays) {
+                $overtimeThreshold = 8;
+                $baseRate = $employee->salary_per_hour;
+                $otRate = $baseRate + 0.50;
 
-                // Calculate premium hours and pay (double rate)
-                $employee->premium_hours = $employee->premium_minutes ? round($employee->premium_minutes / 60, 2) : 0;
-                $employee->premium_pay = $employee->premium_hours * ($employee->salary_per_hour * 2);
+                // Get attendance records grouped by day
+                $attendances = Attendance::where('employee_id', $employee->id)
+                    ->whereDate('clock_in', '>=', $startDate)
+                    ->whereDate('clock_in', '<=', $endDate)
+                    ->get()
+                    ->groupBy(function ($att) {
+                        return Carbon::parse($att->clock_in)->format('Y-m-d');
+                    });
 
-                // Calculate totals
-                $employee->total_hours = $employee->regular_hours + $employee->premium_hours;
-                $employee->gross_salary = $employee->regular_pay + $employee->premium_pay;
+                $employee->days_worked = $attendances->count();
+                $totalRegularPay = 0;
+                $totalPremiumPay = 0;
+                $totalRegularHours = 0;
+                $totalPremiumHours = 0;
+                $totalOvertimeHours = 0;
+
+                foreach ($attendances as $date => $dayRecords) {
+                    $dailyMinutes = $dayRecords->sum('total_minutes_worked');
+                    $dailyHours = $dailyMinutes / 60;
+                    $clockInDate = Carbon::parse($date);
+                    $isPremium = $clockInDate->dayOfWeek === 0 || in_array($date, $holidays);
+
+                    // Split into regular and overtime for this day
+                    if ($dailyHours > $overtimeThreshold) {
+                        $regHrs = $overtimeThreshold;
+                        $otHrs = $dailyHours - $overtimeThreshold;
+                    } else {
+                        $regHrs = $dailyHours;
+                        $otHrs = 0;
+                    }
+
+                    $totalOvertimeHours += $otHrs;
+
+                    if ($isPremium) {
+                        $premiumBase = $baseRate * 2;
+                        $premiumOt = $premiumBase + 0.50;
+                        $totalPremiumPay += ($regHrs * $premiumBase) + ($otHrs * $premiumOt);
+                        $totalPremiumHours += $dailyHours;
+                    } else {
+                        $totalRegularPay += ($regHrs * $baseRate) + ($otHrs * $otRate);
+                        $totalRegularHours += $dailyHours;
+                    }
+                }
+
+                $employee->regular_hours = round($totalRegularHours, 2);
+                $employee->regular_pay = round($totalRegularPay, 2);
+                $employee->premium_hours = round($totalPremiumHours, 2);
+                $employee->premium_pay = round($totalPremiumPay, 2);
+                $employee->overtime_hours = round($totalOvertimeHours, 2);
+                $employee->total_hours = round($totalRegularHours + $totalPremiumHours, 2);
+                $employee->gross_salary = round($totalRegularPay + $totalPremiumPay, 2);
 
                 return $employee;
             });
@@ -310,13 +329,17 @@ class ReportController extends Controller
             })
             ->toArray();
 
+        // Overtime threshold and rate
+        $overtimeThresholdHours = 8;
+        $overtimeRate = $employee->salary_per_hour + 0.50; // e.g. €13.00 + €0.50 = €13.50/hr
+
         // Get all attendance records
         $attendances = Attendance::where('employee_id', $employeeId)
             ->whereDate('clock_in', '>=', $startDate)
             ->whereDate('clock_in', '<=', $endDate)
             ->orderBy('clock_in', 'desc')
             ->get()
-            ->map(function ($attendance) use ($employee, $holidays) {
+            ->map(function ($attendance) use ($employee, $holidays, $overtimeThresholdHours, $overtimeRate) {
                 $attendance->hours_worked = $attendance->total_minutes_worked ? round($attendance->total_minutes_worked / 60, 2) : 0;
 
                 // Check if this day is Sunday (0) or Holiday
@@ -328,13 +351,41 @@ class ReportController extends Controller
                 $attendance->is_premium_day = $isSunday || $isHoliday;
                 $attendance->day_type = $isSunday ? 'Sunday' : ($isHoliday ? 'Holiday' : 'Regular');
 
-                // Calculate pay with premium rate if applicable
-                $hourlyRate = $attendance->is_premium_day
-                    ? ($employee->salary_per_hour * 2)
-                    : $employee->salary_per_hour;
+                // SCENARIO #16: Calculate pay with overtime after 8 hours
+                $baseRate = $employee->salary_per_hour;
 
-                $attendance->hourly_rate = $hourlyRate;
-                $attendance->daily_pay = $attendance->hours_worked * $hourlyRate;
+                if ($attendance->is_premium_day) {
+                    // Sunday/Holiday: double rate for all hours, overtime still applies after 8hrs
+                    $premiumBaseRate = $baseRate * 2;
+                    $premiumOvertimeRate = $premiumBaseRate + 0.50;
+
+                    if ($attendance->hours_worked > $overtimeThresholdHours) {
+                        $regularHours = $overtimeThresholdHours;
+                        $otHours = $attendance->hours_worked - $overtimeThresholdHours;
+                        $attendance->daily_pay = round(($regularHours * $premiumBaseRate) + ($otHours * $premiumOvertimeRate), 2);
+                    } else {
+                        $regularHours = $attendance->hours_worked;
+                        $otHours = 0;
+                        $attendance->daily_pay = round($attendance->hours_worked * $premiumBaseRate, 2);
+                    }
+                    $attendance->hourly_rate = $premiumBaseRate;
+                } else {
+                    // Regular day: base rate for first 8hrs, overtime rate after
+                    if ($attendance->hours_worked > $overtimeThresholdHours) {
+                        $regularHours = $overtimeThresholdHours;
+                        $otHours = $attendance->hours_worked - $overtimeThresholdHours;
+                        $attendance->daily_pay = round(($regularHours * $baseRate) + ($otHours * $overtimeRate), 2);
+                    } else {
+                        $regularHours = $attendance->hours_worked;
+                        $otHours = 0;
+                        $attendance->daily_pay = round($attendance->hours_worked * $baseRate, 2);
+                    }
+                    $attendance->hourly_rate = $baseRate;
+                }
+
+                $attendance->regular_hours = round($regularHours, 2);
+                $attendance->overtime_hours = round($otHours, 2);
+                $attendance->overtime_rate = $attendance->is_premium_day ? ($baseRate * 2 + 0.50) : $overtimeRate;
 
                 return $attendance;
             });
@@ -349,8 +400,13 @@ class ReportController extends Controller
         $regularHours = round($regularMinutes / 60, 2);
         $premiumHours = round($premiumMinutes / 60, 2);
 
-        $regularPay = $regularHours * $employee->salary_per_hour;
-        $premiumPay = $premiumHours * ($employee->salary_per_hour * 2);
+        // Sum pay from corrected per-attendance calculations (which include overtime)
+        $regularPay = $regularAttendances->sum('daily_pay');
+        $premiumPay = $premiumAttendances->sum('daily_pay');
+
+        // Aggregate overtime hours from per-attendance breakdown
+        $totalRegularHoursWorked = $attendances->sum('regular_hours');
+        $totalOvertimeHours = $attendances->sum('overtime_hours');
 
         $stats = [
             'total_days' => $attendances->count(),
@@ -360,8 +416,10 @@ class ReportController extends Controller
             'total_hours' => round($attendances->sum('total_minutes_worked') / 60, 2),
             'regular_hours' => $regularHours,
             'premium_hours' => $premiumHours,
-            'regular_pay' => $regularPay,
-            'premium_pay' => $premiumPay,
+            'base_hours' => round($totalRegularHoursWorked, 2),
+            'overtime_hours' => round($totalOvertimeHours, 2),
+            'regular_pay' => round($regularPay, 2),
+            'premium_pay' => round($premiumPay, 2),
             'total_salary' => $attendances->sum('daily_pay'),
             'average_hours_per_day' => $attendances->count() > 0
                 ? round($attendances->sum('total_minutes_worked') / 60 / $attendances->count(), 2)
@@ -382,8 +440,11 @@ class ReportController extends Controller
                 'is_premium_day' => $firstAttendance->is_premium_day,
                 'shifts' => $dayAttendances->count(),
                 'total_hours' => $hours,
+                'regular_hours' => round($dayAttendances->sum('regular_hours'), 2),
+                'overtime_hours' => round($dayAttendances->sum('overtime_hours'), 2),
                 'hourly_rate' => $firstAttendance->hourly_rate,
-                'daily_pay' => $hours * $firstAttendance->hourly_rate,
+                'overtime_rate' => $firstAttendance->overtime_rate,
+                'daily_pay' => round($dayAttendances->sum('daily_pay'), 2),
             ];
         });
 
@@ -645,53 +706,70 @@ class ReportController extends Controller
         $holidays = DB::table('holidays')
             ->whereBetween('date', [$startDate, $endDate])
             ->pluck('date')
+            ->map(function($date) {
+                return Carbon::parse($date)->format('Y-m-d');
+            })
             ->toArray();
-
-        // Build holiday condition for SQL
-        $holidayCondition = count($holidays) > 0
-            ? "DATE(attendances.clock_in) IN ('" . implode("','", $holidays) . "')"
-            : "0";
 
         $employees = Employee::select('employees.*', 'users.name', 'users.email')
             ->join('users', 'employees.user_id', '=', 'users.id')
-            ->selectRaw('
-                (SELECT COUNT(*)
-                 FROM attendances
-                 WHERE attendances.employee_id = employees.id
-                 AND DATE(attendances.clock_in) BETWEEN ? AND ?) as days_worked
-            ', [$startDate, $endDate])
-            // Calculate regular hours (not Sunday, not Holiday)
-            ->selectRaw("
-                (SELECT SUM(total_minutes_worked)
-                 FROM attendances
-                 WHERE attendances.employee_id = employees.id
-                 AND DATE(attendances.clock_in) BETWEEN ? AND ?
-                 AND DAYOFWEEK(attendances.clock_in) != 1
-                 AND NOT ({$holidayCondition})) as regular_minutes
-            ", [$startDate, $endDate])
-            // Calculate premium hours (Sunday OR Holiday)
-            ->selectRaw("
-                (SELECT SUM(total_minutes_worked)
-                 FROM attendances
-                 WHERE attendances.employee_id = employees.id
-                 AND DATE(attendances.clock_in) BETWEEN ? AND ?
-                 AND (DAYOFWEEK(attendances.clock_in) = 1 OR {$holidayCondition})) as premium_minutes
-            ", [$startDate, $endDate])
             ->whereNull('employees.deleted_at')
             ->get()
-            ->map(function ($employee) {
-                // Calculate regular hours and pay
-                $employee->regular_hours = $employee->regular_minutes ? round($employee->regular_minutes / 60, 2) : 0;
-                $employee->regular_pay = $employee->regular_hours * $employee->salary_per_hour;
+            ->map(function ($employee) use ($startDate, $endDate, $holidays) {
+                $overtimeThreshold = 8;
+                $baseRate = $employee->salary_per_hour;
+                $otRate = $baseRate + 0.50;
 
-                // Calculate premium hours and pay (double rate)
-                $employee->premium_hours = $employee->premium_minutes ? round($employee->premium_minutes / 60, 2) : 0;
-                $employee->premium_rate = $employee->salary_per_hour * 2;
-                $employee->premium_pay = $employee->premium_hours * $employee->premium_rate;
+                $attendances = Attendance::where('employee_id', $employee->id)
+                    ->whereDate('clock_in', '>=', $startDate)
+                    ->whereDate('clock_in', '<=', $endDate)
+                    ->get()
+                    ->groupBy(function ($att) {
+                        return Carbon::parse($att->clock_in)->format('Y-m-d');
+                    });
 
-                // Calculate totals
-                $employee->total_hours = $employee->regular_hours + $employee->premium_hours;
-                $employee->gross_salary = $employee->regular_pay + $employee->premium_pay;
+                $employee->days_worked = $attendances->count();
+                $totalRegularPay = 0;
+                $totalPremiumPay = 0;
+                $totalRegularHours = 0;
+                $totalPremiumHours = 0;
+                $totalOvertimeHours = 0;
+
+                foreach ($attendances as $date => $dayRecords) {
+                    $dailyMinutes = $dayRecords->sum('total_minutes_worked');
+                    $dailyHours = $dailyMinutes / 60;
+                    $clockInDate = Carbon::parse($date);
+                    $isPremium = $clockInDate->dayOfWeek === 0 || in_array($date, $holidays);
+
+                    if ($dailyHours > $overtimeThreshold) {
+                        $regHrs = $overtimeThreshold;
+                        $otHrs = $dailyHours - $overtimeThreshold;
+                    } else {
+                        $regHrs = $dailyHours;
+                        $otHrs = 0;
+                    }
+
+                    $totalOvertimeHours += $otHrs;
+
+                    if ($isPremium) {
+                        $premiumBase = $baseRate * 2;
+                        $premiumOt = $premiumBase + 0.50;
+                        $totalPremiumPay += ($regHrs * $premiumBase) + ($otHrs * $premiumOt);
+                        $totalPremiumHours += $dailyHours;
+                    } else {
+                        $totalRegularPay += ($regHrs * $baseRate) + ($otHrs * $otRate);
+                        $totalRegularHours += $dailyHours;
+                    }
+                }
+
+                $employee->regular_hours = round($totalRegularHours, 2);
+                $employee->regular_pay = round($totalRegularPay, 2);
+                $employee->premium_hours = round($totalPremiumHours, 2);
+                $employee->premium_rate = $baseRate * 2;
+                $employee->premium_pay = round($totalPremiumPay, 2);
+                $employee->overtime_hours = round($totalOvertimeHours, 2);
+                $employee->total_hours = round($totalRegularHours + $totalPremiumHours, 2);
+                $employee->gross_salary = round($totalRegularPay + $totalPremiumPay, 2);
 
                 return $employee;
             });
@@ -719,14 +797,16 @@ class ReportController extends Controller
             fputcsv($file, ['Generated:', now()->format('Y-m-d H:i:s')]);
             fputcsv($file, []); // Empty line
 
-            // Column headers with regular and Sunday/Holiday breakdown
+            // Column headers with regular, overtime, and Sunday/Holiday breakdown
             fputcsv($file, [
                 'Employee Name',
                 'Email',
                 'Regular Rate (€/hr)',
+                'Overtime Rate (€/hr)',
                 'Sunday/Holiday Rate (€/hr)',
                 'Days Worked',
                 'Regular Hours',
+                'Overtime Hours',
                 'Regular Pay (€)',
                 'Sunday/Holiday Hours',
                 'Sunday/Holiday Pay (€)',
@@ -740,9 +820,11 @@ class ReportController extends Controller
                     $employee->name,
                     $employee->email,
                     number_format($employee->salary_per_hour, 2),
+                    number_format($employee->salary_per_hour + 0.50, 2),
                     number_format($employee->premium_rate, 2),
                     $employee->days_worked ?: 0,
                     number_format($employee->regular_hours, 2),
+                    number_format($employee->overtime_hours, 2),
                     number_format($employee->regular_pay, 2),
                     number_format($employee->premium_hours, 2),
                     number_format($employee->premium_pay, 2),
@@ -756,6 +838,7 @@ class ReportController extends Controller
             fputcsv($file, ['SUMMARY']);
             fputcsv($file, ['Total Employees:', $employees->count()]);
             fputcsv($file, ['Total Regular Hours:', number_format($employees->sum('regular_hours'), 2)]);
+            fputcsv($file, ['Total Overtime Hours:', number_format($employees->sum('overtime_hours'), 2)]);
             fputcsv($file, ['Total Sunday/Holiday Hours:', number_format($employees->sum('premium_hours'), 2)]);
             fputcsv($file, ['Total Hours:', number_format($employees->sum('total_hours'), 2)]);
             fputcsv($file, ['Total Payroll:', '€' . number_format($employees->sum('gross_salary'), 2)]);

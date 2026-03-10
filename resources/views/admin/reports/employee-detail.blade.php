@@ -67,10 +67,12 @@
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         €{{ number_format($stats['premium_pay'], 2) }} (2x)</p>
                 </div>
-                <div class="bg-purple-50 dark:bg-purple-900/10 rounded-lg p-4">
-                    <p class="text-sm text-purple-600 dark:text-purple-400 font-medium">Avg Hours/Day</p>
-                    <p class="text-2xl font-bold text-purple-700 dark:text-purple-300 mt-1">
-                        {{ number_format($stats['average_hours_per_day'], 2) }}</p>
+                <div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-lg p-4">
+                    <p class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Overtime Hours</p>
+                    <p class="text-2xl font-bold text-yellow-700 dark:text-yellow-300 mt-1">
+                        {{ number_format($stats['overtime_hours'] ?? 0, 2) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        After 8hrs/day (+€0.50/hr)</p>
                 </div>
                 <div class="bg-green-50 dark:bg-green-900/10 rounded-lg p-4">
                     <p class="text-sm text-green-600 dark:text-green-400 font-medium">Total Salary</p>
@@ -102,6 +104,12 @@
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Shifts</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Regular Hrs</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    OT Hrs</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Total Hours</th>
@@ -141,6 +149,18 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                         {{ $day['shifts'] }}
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                        {{ number_format($day['regular_hours'] ?? $day['total_hours'], 2) }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        @if (($day['overtime_hours'] ?? 0) > 0)
+                                            <span class="text-yellow-600 dark:text-yellow-400 font-semibold">
+                                                {{ number_format($day['overtime_hours'], 2) }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400">0.00</span>
+                                        @endif
+                                    </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400">
                                         {{ number_format($day['total_hours'], 2) }} hrs
@@ -157,6 +177,10 @@
                                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-white" colspan="3">TOTAL</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">{{ $stats['total_days'] }}
                                 </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                    {{ number_format($stats['base_hours'] ?? 0, 2) }}</td>
+                                <td class="px-6 py-4 text-sm text-yellow-600 dark:text-yellow-400">
+                                    {{ number_format($stats['overtime_hours'] ?? 0, 2) }}</td>
                                 <td class="px-6 py-4 text-sm text-blue-600 dark:text-blue-400">
                                     {{ number_format($stats['total_hours'], 2) }} hrs</td>
                                 <td class="px-6 py-4 text-sm text-green-600 dark:text-green-400">

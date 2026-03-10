@@ -245,6 +245,32 @@
                                 <span x-show="formData.is_sunday && !formData.is_holiday">Sunday - Double the price will apply</span>
                                 <span x-show="formData.is_sunday && formData.is_holiday">Sunday & Holiday - Double the price will apply</span>
                             </div>
+
+                            <!-- Date notice: blocked (tomorrow) -->
+                            <div x-show="dateNotice === 'blocked'" x-cloak
+                                 class="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                <div class="flex items-start">
+                                    <i class="fi fi-rr-circle-exclamation text-red-500 mt-0.5 mr-2 flex-shrink-0"></i>
+                                    <p class="text-sm text-red-700 dark:text-red-400" x-text="dateNoticeMessage"></p>
+                                </div>
+                            </div>
+
+                            <!-- Date notice: priority available (2 days) -->
+                            <div x-show="dateNotice === 'priority'" x-cloak
+                                 class="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                                <div class="flex items-start">
+                                    <i class="fi fi-rr-triangle-warning text-amber-500 mt-0.5 mr-2 flex-shrink-0"></i>
+                                    <p class="text-sm text-amber-700 dark:text-amber-400" x-text="dateNoticeMessage"></p>
+                                </div>
+                                <label class="flex items-center mt-3 cursor-pointer group">
+                                    <input type="checkbox" x-model="formData.is_priority"
+                                           class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded
+                                                  focus:ring-blue-500 focus:ring-2">
+                                    <span class="ml-2 text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                        Priority Clean — I need this service on short notice
+                                    </span>
+                                </label>
+                            </div>
                         </div>
 
                         <div>
@@ -494,6 +520,7 @@
                                         <span x-show="formData.is_sunday && !formData.is_holiday" class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Sunday - 2x)</span>
                                         <span x-show="formData.is_holiday && !formData.is_sunday" class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Holiday - 2x)</span>
                                         <span x-show="formData.is_sunday && formData.is_holiday" class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Sunday & Holiday - 2x)</span>
+                                        <span x-show="formData.is_priority" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Priority Clean</span>
                                     </span>
                                 </div>
                                 <div class="flex justify-between">
@@ -606,6 +633,8 @@
             showDistrictSuggestions: false,
             filteredDistricts: [],
             quotation: 0,
+            dateNotice: '',        // 'blocked' = tomorrow (cannot book), 'priority' = 2 days (needs Priority Clean)
+            dateNoticeMessage: '',
 
             // Holidays data from backend
             holidays: @json($holidays ?? []),
@@ -666,6 +695,7 @@
                 service_time: '',
                 is_sunday: false,        // Auto-detected from service_date
                 is_holiday: false,       // To be flagged by admin later
+                is_priority: false,      // Priority Clean - allows 2-day advance booking
                 units: 1,                // Default to 1 unit
                 special_requests: ''
             },
@@ -964,16 +994,38 @@
             checkDateAndCalculate() {
                 // Check if the selected date is a Sunday or Holiday
                 if (this.formData.service_date) {
-                    const selectedDate = new Date(this.formData.service_date);
+                    const selectedDate = new Date(this.formData.service_date + 'T00:00:00');
                     // getDay() returns 0 for Sunday, 1 for Monday, etc.
                     this.formData.is_sunday = (selectedDate.getDay() === 0);
 
                     // Check if the selected date is a holiday
                     this.formData.is_holiday = this.holidays.some(holiday => holiday.date === this.formData.service_date);
 
+                    // Check minimum booking notice (3-day rule)
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const diffTime = selectedDate.getTime() - today.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    this.dateNotice = '';
+                    this.dateNoticeMessage = '';
+                    this.formData.is_priority = false;
+
+                    if (diffDays < 2) {
+                        // Tomorrow or today — cannot book at all
+                        this.dateNotice = 'blocked';
+                        this.dateNoticeMessage = 'This date is too soon. Bookings require at least 2 days advance notice. Please select a later date.';
+                    } else if (diffDays < 3) {
+                        // 2 days from now — can book with Priority Clean
+                        this.dateNotice = 'priority';
+                        this.dateNoticeMessage = 'This date is within our standard 3-day advance booking window. To proceed, please enable "Priority Clean" below.';
+                    }
+
                     console.log('Date checked:', {
                         date: this.formData.service_date,
                         dayOfWeek: selectedDate.getDay(),
+                        diffDays: diffDays,
+                        dateNotice: this.dateNotice,
                         isSunday: this.formData.is_sunday,
                         isHoliday: this.formData.is_holiday
                     });
@@ -1061,6 +1113,18 @@
                 // Check service date
                 if (!this.formData.service_date) {
                     this.showToast('Please select a service date');
+                    return false;
+                }
+
+                // Block if date is too soon (tomorrow or today)
+                if (this.dateNotice === 'blocked') {
+                    this.showToast('This date is too soon. Please select a date at least 2 days from today.');
+                    return false;
+                }
+
+                // Require Priority Clean checkbox for 2-day advance booking
+                if (this.dateNotice === 'priority' && !this.formData.is_priority) {
+                    this.showToast('Please enable "Priority Clean" to book within the 3-day advance window.');
                     return false;
                 }
 
@@ -1162,6 +1226,7 @@
                         service_time: this.formData.service_time,
                         is_sunday: this.formData.is_sunday,
                         is_holiday: this.formData.is_holiday || false,
+                        is_priority: this.formData.is_priority || false,
                         units: this.formData.units,
                         unit_size: firstUnit.size,  // From first unit (for backward compatibility)
                         room_identifier: firstUnit.name,  // From first unit (for backward compatibility)

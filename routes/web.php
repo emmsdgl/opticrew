@@ -216,6 +216,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::post('/{id}/approve', [\App\Http\Controllers\Admin\AppointmentController::class, 'approve'])->name('approve');
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\AppointmentController::class, 'reject'])->name('reject');
         Route::post('/{id}/assign-team', [\App\Http\Controllers\Admin\AppointmentController::class, 'assignTeam'])->name('assign-team');
+        Route::post('/{id}/manual-assign', [\App\Http\Controllers\Admin\AppointmentController::class, 'manualAssign'])->name('manual-assign');
     });
 
     // --- ADMIN QUOTATION ROUTES ---
@@ -414,6 +415,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
     Route::get('/client/appointments', [ClientAppointmentController::class, 'index'])->name('client.appointments');
     Route::post('/client/appointments/{id}/cancel', [ClientAppointmentController::class, 'cancel'])->name('client.appointment.cancel');
+    Route::get('/client/appointments/{id}/cancellation-policy', [ClientAppointmentController::class, 'getCancellationPolicy'])->name('client.appointment.cancellation-policy');
     Route::post('/client/appointments/{id}/feedback', [ClientAppointmentController::class, 'storeFeedback'])->name('client.appointment.feedback');
 
     Route::get('/client/pricing', function () {

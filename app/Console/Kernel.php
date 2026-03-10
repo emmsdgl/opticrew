@@ -20,6 +20,21 @@ class Kernel extends ConsoleKernel
             ->weekdays()
             ->at('07:00')
             ->withoutOverlapping();
+
+        // SCENARIO #11: Process emergency leave escalation every 15 minutes
+        $schedule->command('opticrew:escalate-emergency-leaves')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping();
+
+        // SCENARIO #14/#15: Process unstaffed tasks every 10 minutes
+        $schedule->command('opticrew:process-unstaffed-tasks')
+            ->everyTenMinutes()
+            ->withoutOverlapping();
+
+        // SCENARIO #19/#21: Process task approval grace periods and late clock-ins every 5 minutes
+        $schedule->command('opticrew:process-task-grace-periods')
+            ->everyFiveMinutes()
+            ->withoutOverlapping();
     }
 
     /**

@@ -39,6 +39,11 @@ class ClientAppointment extends Model
         'rejected_at',
         'client_notified',
         'notified_at',
+        // Cancellation fields (Scenario #7)
+        'cancellation_type',
+        'cancellation_fee',
+        'cancelled_at',
+        'cancelled_by',
     ];
 
     protected $casts = [
@@ -56,6 +61,8 @@ class ClientAppointment extends Model
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
         'notified_at' => 'datetime',
+        'cancellation_fee' => 'decimal:2',
+        'cancelled_at' => 'datetime',
     ];
 
     // Relationships

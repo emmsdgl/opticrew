@@ -78,7 +78,7 @@ class LeaveRequestController extends Controller
                 'date' => 'required|date|after_or_equal:today',
                 'end_date' => 'nullable|date|after_or_equal:date',
                 'reason' => 'required|string|max:500',
-                'type' => 'required|in:vacation,sick,personal,other',
+                'type' => 'required|in:vacation,sick,personal,emergency,other',
             ]);
 
             $user = $request->user();
@@ -117,6 +117,21 @@ class LeaveRequestController extends Controller
                 ], 400);
             }
 
+            // SCENARIO #11: Determine if this is an emergency leave
+            $isEmergency = $request->type === 'emergency';
+            $daysUntilLeave = Carbon::today()->diffInDays($startDate, false);
+
+            // SCENARIO #13: Standard leave must be booked 4 days prior
+            // The 3-day prior period will mark the employee as unavailable in scheduling pool
+            if (!$isEmergency && $daysUntilLeave < 4) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Standard leave requests must be submitted at least 4 days before the leave date. For urgent situations, please select "Emergency" leave type.',
+                    'error_code' => 'MINIMUM_LEAVE_NOTICE',
+                    'minimum_date' => Carbon::today()->addDays(4)->format('Y-m-d'),
+                ], 422);
+            }
+
             $leaveRequest = DayOff::create([
                 'employee_id' => $employee->id,
                 'date' => $request->date,
@@ -124,15 +139,28 @@ class LeaveRequestController extends Controller
                 'reason' => $request->reason,
                 'type' => $request->type,
                 'status' => 'pending',
+                'is_emergency' => $isEmergency,
+                'escalation_level' => 0,
             ]);
 
             // Notify all admins about the leave request
             $employeeName = $employee->fullName ?? ($user->name ?? 'Employee');
             $this->notificationService->notifyAdminsLeaveRequest($leaveRequest, $employeeName);
 
+            // SCENARIO #11: For emergency leave, immediately notify manager with escalation
+            if ($isEmergency) {
+                $this->notificationService->notifyManagerEmergencyLeave($leaveRequest, $employeeName, 1);
+                $leaveRequest->update([
+                    'escalation_level' => 1,
+                    'escalation_notified_at' => now(),
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Leave request submitted successfully',
+                'message' => $isEmergency
+                    ? 'Emergency leave request submitted. Manager has been notified immediately.'
+                    : 'Leave request submitted successfully.',
                 'leave_request' => [
                     'id' => $leaveRequest->id,
                     'date' => $leaveRequest->date->format('Y-m-d'),
@@ -140,6 +168,7 @@ class LeaveRequestController extends Controller
                     'reason' => $leaveRequest->reason,
                     'type' => $leaveRequest->type,
                     'status' => $leaveRequest->status,
+                    'is_emergency' => $isEmergency,
                     'duration_days' => $leaveRequest->duration_days,
                 ]
             ], 201);

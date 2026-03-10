@@ -53,6 +53,7 @@
             height: 6px;
             margin: 12px 0;
         }
+
         .range-slider-track {
             position: absolute;
             top: 0;
@@ -62,9 +63,11 @@
             border-radius: 3px;
             background: #e5e7eb;
         }
+
         .dark .range-slider-track {
             background: #4b5563;
         }
+
         .range-slider-fill {
             position: absolute;
             top: 0;
@@ -72,6 +75,7 @@
             border-radius: 3px;
             background: #3b82f6;
         }
+
         .range-slider-wrap input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -85,6 +89,7 @@
             outline: none;
             margin: 0;
         }
+
         .range-slider-wrap input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -94,9 +99,10 @@
             background: #3b82f6;
             cursor: pointer;
             border: 2px solid white;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
             pointer-events: all;
         }
+
         .range-slider-wrap input[type="range"]::-moz-range-thumb {
             width: 18px;
             height: 18px;
@@ -104,16 +110,167 @@
             background: #3b82f6;
             cursor: pointer;
             border: 2px solid white;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
             pointer-events: all;
+        }
+        /* Beam Circle Orbits */
+        @keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes orbit-counter { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        @keyframes center-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .orbit-ring {
+            position: absolute;
+            border-radius: 50%;
+            border-style: dashed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .orbit-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+        .orbit-icon {
+            position: absolute;
+            top: 50%;
+            border-radius: 50%;
+            display: grid;
+            place-content: center;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.15);
         }
     </style>
 @endpush
 
 @section('content')
-    <div class="w-full min-h-screen bg-[#F6FAFD] dark:bg-gray-900 p-4 md:p-6 lg:p-8"
-         x-data="recruitmentPage()"
-         x-init="init()">
+    {{-- Hero Section --}}
+    <section
+        class="w-full bg-gradient-to-br from-[#eef2f7] via-[#F6FAFD] to-[#e8edf5] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 overflow-hidden">
+        <div class="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 md:py-24 lg:py-28">
+            <div class="flex flex-col lg:flex-row items-center gap-0 lg:gap-0">
+                {{-- Left Content --}}
+                <div class="flex-1 text-center lg:text-left max-w-2xl px-12">
+                    <p class="text-sm font-bold text-blue-600 dark:text-blue-400 mb-6">Welcome to Fin-noys</p>
+                    <h1
+                        class="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-gray-900 dark:text-white leading-tight mb-6">
+                        Explore<br>
+                        opportunities<br>
+                        <span class="text-blue-600">with Fin-noys.</span>
+                    </h1>
+                    <p
+                        class="text-gray-500 dark:text-gray-400 text-sm md:text-sm mb-10 max-w-md mx-auto lg:mx-0 leading-relaxed">
+                        Find a job according to your interest simply click on search
+                        and choose category according to your skills
+                    </p>
+
+                    {{-- Hero Search Bar --}}
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-full shadow-lg shadow-gray-200/60 dark:shadow-black/20 p-2 flex items-center gap-2 max-w-lg mx-auto lg:mx-0">
+                        <div class="flex items-center gap-2 flex-1 pl-4">
+                            <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input type="text" placeholder="Job Title or keyword"
+                                class="w-full bg-transparent border-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none py-2"
+                                x-data x-ref="heroSearch"
+                                @keydown.enter.prevent="
+                                    const val = $refs.heroSearch.value.trim();
+                                    if (val) {
+                                        document.querySelector('#jobListingsSection').scrollIntoView({ behavior: 'smooth' });
+                                        setTimeout(() => {
+                                            const mainSearch = document.querySelector('[x-model=&quot;searchQuery&quot;]');
+                                            if (mainSearch) { mainSearch.value = val; mainSearch.dispatchEvent(new Event('input')); }
+                                        }, 500);
+                                    }
+                                ">
+                        </div>
+                        <div
+                            class="hidden sm:flex items-center gap-2 flex-1 pl-4 border-l border-gray-200 dark:border-gray-600">
+                            <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <input type="text" placeholder="Location"
+                                class="w-full bg-transparent border-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none py-2"
+                                x-data x-ref="heroLocation"
+                                @keydown.enter.prevent="
+                                    document.querySelector('#jobListingsSection').scrollIntoView({ behavior: 'smooth' });
+                                ">
+                        </div>
+                        <button
+                            class="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-sm font-normal px-6 py-3 rounded-full transition-colors"
+                            x-data
+                            @click="
+                                const heroSearch = document.querySelector('[x-ref=&quot;heroSearch&quot;]');
+                                const val = heroSearch ? heroSearch.value.trim() : '';
+                                document.querySelector('#jobListingsSection').scrollIntoView({ behavior: 'smooth' });
+                                if (val) {
+                                    setTimeout(() => {
+                                        const mainSearch = document.querySelector('[x-model=&quot;searchQuery&quot;]');
+                                        if (mainSearch) { mainSearch.value = val; mainSearch.dispatchEvent(new Event('input')); }
+                                    }, 500);
+                                }
+                            ">
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Right Illustration --}}
+                {{-- Beam Circle Orbits --}}
+                <div class="flex-1 flex justify-center lg:justify-center p-4">
+                    <div class="relative" style="width: 480px; height: 480px;">
+                        {{-- Orbit 1: Briefcase (innermost) --}}
+                        <div class="orbit-ring border-blue-950 dark:border-white/40" style="width: 25%; height: 25%; border-width: 1.5px;"></div>
+                        <div class="orbit-container" style="animation: orbit-spin 7s linear infinite;">
+                            <div class="orbit-icon bg-blue-600 dark:bg-white" style="left: calc(50% + 12.5%); transform: translate(-50%, -50%); width: 36px; height: 36px; animation: orbit-counter 7s linear infinite;">
+                                <svg class="w-5 h-5 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            </div>
+                        </div>
+
+                        {{-- Orbit 2: Chat/Message --}}
+                        <div class="orbit-ring border-blue-950 dark:border-white/40" style="width: 45%; height: 45%; border-width: 1.5px;"></div>
+                        <div class="orbit-container" style="animation: orbit-spin 12s linear infinite;">
+                            <div class="orbit-icon bg-blue-600 dark:bg-white" style="left: calc(50% + 22.5%); transform: translate(-50%, -50%); width: 40px; height: 40px; animation: orbit-counter 12s linear infinite;">
+                                <svg class="w-5 h-5 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            </div>
+                        </div>
+
+                        {{-- Orbit 3: Document/Resume --}}
+                        <div class="orbit-ring border-blue-950 dark:border-white/40" style="width: 65%; height: 65%; border-width: 1.5px;"></div>
+                        <div class="orbit-container" style="animation: orbit-spin 9s linear infinite;">
+                            <div class="orbit-icon bg-blue-600 dark:bg-white" style="left: calc(50% + 32.5%); transform: translate(-50%, -50%); width: 44px; height: 44px; animation: orbit-counter 9s linear infinite;">
+                                <svg class="w-6 h-6 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                        </div>
+
+                        {{-- Orbit 4: Location (outermost) --}}
+                        <div class="orbit-ring border-blue-950 dark:border-white/40" style="width: 85%; height: 85%; border-width: 1.5px;"></div>
+                        <div class="orbit-container" style="animation: orbit-spin 15s linear infinite;">
+                            <div class="orbit-icon bg-blue-600 dark:bg-white" style="left: calc(50% + 42.5%); transform: translate(-50%, -50%); width: 48px; height: 48px; animation: orbit-counter 15s linear infinite;">
+                                <svg class="w-6 h-6 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            </div>
+                        </div>
+
+                        {{-- Center Icon: Briefcase --}}
+                        <div class="absolute inset-0 grid place-content-center z-10">
+                            <div class="rounded-full bg-blue-600 dark:bg-white shadow-lg grid place-content-center" style="width: 64px; height: 64px; animation: center-pulse 2s ease-in-out infinite;">
+                                <svg class="w-8 h-8 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Job Listings Section --}}
+    <div id="jobListingsSection" class="w-full min-h-screen bg-[#F6FAFD] dark:bg-gray-900 p-4 md:p-6 lg:p-8"
+        x-data="recruitmentPage()" x-init="init()">
 
         <div class="max-w-[1600px] mx-auto p-3">
             {{-- Page Header --}}
@@ -130,41 +287,54 @@
             {{-- Search Bar --}}
             <div class="max-w-xl mx-auto mb-10">
                 <div class="relative">
-                    <input type="text" x-model="searchQuery" @input="applyFilters()" placeholder="Search by Category, Company or ..."
+                    <input type="text" x-model="searchQuery" @input="applyFilters()"
+                        placeholder="Search by Category, Company or ..."
                         class="w-full text-sm px-5 py-3.5 pr-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400">
                     <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <button @click="applyFilters()"
                             class="w-9 h-9 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
                         </button>
                     </div>
                 </div>
                 {{-- Active filter pills --}}
-                <div class="flex flex-wrap items-center justify-center gap-2 mt-4" x-show="selectedTypes.length > 0 || selectedLocations.length > 0 || selectedCategories.length > 0" x-cloak>
-                    <template x-for="t in selectedTypes" :key="'t-'+t">
-                        <span class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-blue-600 text-white shadow-sm">
+                <div class="flex flex-wrap items-center justify-center gap-2 mt-4"
+                    x-show="selectedTypes.length > 0 || selectedLocations.length > 0 || selectedCategories.length > 0"
+                    x-cloak>
+                    <template x-for="t in selectedTypes" :key="'t-' + t">
+                        <span
+                            class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-blue-600 text-white shadow-sm">
                             <span x-text="t.replace('-',' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
-                            <button @click="selectedTypes = selectedTypes.filter(x => x !== t); applyFilters()" class="ml-0.5 hover:text-blue-200">&times;</button>
+                            <button @click="selectedTypes = selectedTypes.filter(x => x !== t); applyFilters()"
+                                class="ml-0.5 hover:text-blue-200">&times;</button>
                         </span>
                     </template>
-                    <template x-for="loc in selectedLocations" :key="'l-'+loc">
-                        <span class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm">
+                    <template x-for="loc in selectedLocations" :key="'l-' + loc">
+                        <span
+                            class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm">
                             <span x-text="loc"></span>
-                            <button @click="selectedLocations = selectedLocations.filter(x => x !== loc); applyFilters()" class="ml-0.5 hover:text-gray-400">&times;</button>
+                            <button @click="selectedLocations = selectedLocations.filter(x => x !== loc); applyFilters()"
+                                class="ml-0.5 hover:text-gray-400">&times;</button>
                         </span>
                     </template>
-                    <template x-for="cat in selectedCategories" :key="'c-'+cat">
-                        <span class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm">
+                    <template x-for="cat in selectedCategories" :key="'c-' + cat">
+                        <span
+                            class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm">
                             <span x-text="cat.replace('-',' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
-                            <button @click="selectedCategories = selectedCategories.filter(x => x !== cat); applyFilters()" class="ml-0.5 hover:text-gray-400">&times;</button>
+                            <button @click="selectedCategories = selectedCategories.filter(x => x !== cat); applyFilters()"
+                                class="ml-0.5 hover:text-gray-400">&times;</button>
                         </span>
                     </template>
-                    <button @click="clearAllFilters()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium px-1">Clear filters</button>
+                    <button @click="clearAllFilters()"
+                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium px-1">Clear
+                        filters</button>
                 </div>
             </div>
 
@@ -172,29 +342,39 @@
 
                 {{-- Left Sidebar - Filters --}}
                 <aside class="w-full lg:w-72 xl:w-80 flex-shrink-0">
-                    <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-custom">
+                    <div
+                        class="bg-white dark:bg-gray-900 rounded-2xl p-6 sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-custom">
 
                         {{-- Job Type Filter --}}
                         <div>
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">Job Type</h3>
-                                <button @click="clearJobTypes()" class="text-xs text-red-500 hover:text-red-600 font-medium">Clear all</button>
+                                <button @click="clearJobTypes()"
+                                    class="text-xs text-red-500 hover:text-red-600 font-medium">Clear all</button>
                             </div>
                             <div class="space-y-2.5">
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" value="full-time" x-model="selectedTypes" @change="applyFilters()"
+                                    <input type="checkbox" value="full-time" x-model="selectedTypes"
+                                        @change="applyFilters()"
                                         class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Full time</span>
+                                    <span
+                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Full
+                                        time</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" value="part-time" x-model="selectedTypes" @change="applyFilters()"
+                                    <input type="checkbox" value="part-time" x-model="selectedTypes"
+                                        @change="applyFilters()"
                                         class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Part time</span>
+                                    <span
+                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Part
+                                        time</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" value="remote" x-model="selectedTypes" @change="applyFilters()"
+                                    <input type="checkbox" value="remote" x-model="selectedTypes"
+                                        @change="applyFilters()"
                                         class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Remote</span>
+                                    <span
+                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Remote</span>
                                 </label>
                             </div>
                         </div>
@@ -203,24 +383,25 @@
                         <div>
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">Salary Range</h3>
-                                <span class="text-xs font-semibold text-blue-600 dark:text-blue-400">$<span x-text="salaryMin"></span> &ndash; $<span x-text="salaryMax"></span></span>
+                                <span class="text-xs font-semibold text-blue-600 dark:text-blue-400">$<span
+                                        x-text="salaryMin"></span> &ndash; $<span x-text="salaryMax"></span></span>
                             </div>
                             <div class="px-1">
-                                <div class="range-slider-wrap"
-                                     x-init="$nextTick(() => updateRangeSlider())"
-                                     x-effect="updateRangeSlider()">
+                                <div class="range-slider-wrap" x-init="$nextTick(() => updateRangeSlider())" x-effect="updateRangeSlider()">
                                     <div class="range-slider-track"></div>
                                     <div class="range-slider-fill" :style="rangeFillStyle()"></div>
-                                    <input type="range" x-model.number="salaryMin"
-                                        :min="salaryAbsMin" :max="salaryAbsMax" step="1"
+                                    <input type="range" x-model.number="salaryMin" :min="salaryAbsMin"
+                                        :max="salaryAbsMax" step="1"
                                         @input="if(salaryMin > salaryMax) salaryMin = salaryMax; applyFilters()">
-                                    <input type="range" x-model.number="salaryMax"
-                                        :min="salaryAbsMin" :max="salaryAbsMax" step="1"
+                                    <input type="range" x-model.number="salaryMax" :min="salaryAbsMin"
+                                        :max="salaryAbsMax" step="1"
                                         @input="if(salaryMax < salaryMin) salaryMax = salaryMin; applyFilters()">
                                 </div>
                                 <div class="flex items-center justify-between mt-4">
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">$<span x-text="salaryAbsMin"></span></span>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">$<span x-text="salaryAbsMax"></span></span>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">$<span
+                                            x-text="salaryAbsMin"></span></span>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">$<span
+                                            x-text="salaryAbsMax"></span></span>
                                 </div>
                             </div>
                         </div>
@@ -229,17 +410,24 @@
                         <div>
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">Location</h3>
-                                <button @click="selectedLocations = []; applyFilters()" x-show="selectedLocations.length > 0" class="text-xs text-red-500 hover:text-red-600 font-medium">Clear</button>
+                                <button @click="selectedLocations = []; applyFilters()"
+                                    x-show="selectedLocations.length > 0"
+                                    class="text-xs text-red-500 hover:text-red-600 font-medium">Clear</button>
                             </div>
                             <div class="space-y-2.5 max-h-48 overflow-y-auto scrollbar-custom">
                                 <template x-for="loc in locations" :key="loc">
                                     <label class="flex items-center justify-between cursor-pointer group">
                                         <div class="flex items-center gap-3">
-                                            <input type="checkbox" :value="loc" x-model="selectedLocations" @change="applyFilters()"
+                                            <input type="checkbox" :value="loc" x-model="selectedLocations"
+                                                @change="applyFilters()"
                                                 class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
-                                            <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white" x-text="loc"></span>
+                                            <span
+                                                class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
+                                                x-text="loc"></span>
                                         </div>
-                                        <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full" x-text="locationCounts[loc] || 0"></span>
+                                        <span
+                                            class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full"
+                                            x-text="locationCounts[loc] || 0"></span>
                                     </label>
                                 </template>
                             </div>
@@ -252,11 +440,16 @@
                                 <template x-for="cat in categories" :key="cat.value">
                                     <label class="flex items-center justify-between cursor-pointer group">
                                         <div class="flex items-center gap-3">
-                                            <input type="checkbox" :value="cat.value" x-model="selectedCategories" @change="applyFilters()"
+                                            <input type="checkbox" :value="cat.value" x-model="selectedCategories"
+                                                @change="applyFilters()"
                                                 class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
-                                            <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white" x-text="cat.label"></span>
+                                            <span
+                                                class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
+                                                x-text="cat.label"></span>
                                         </div>
-                                        <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full" x-text="cat.count"></span>
+                                        <span
+                                            class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full"
+                                            x-text="cat.count"></span>
                                     </label>
                                 </template>
                             </div>
@@ -270,7 +463,8 @@
                     {{-- Results Header --}}
                     <div class="flex items-center justify-between mb-4 px-1">
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Showing <span class="font-semibold text-gray-900 dark:text-white" x-text="visibleCount"></span> jobs
+                            Showing <span class="font-semibold text-gray-900 dark:text-white"
+                                x-text="visibleCount"></span> jobs
                         </p>
                         <select x-model="sortBy" @change="applyFilters()"
                             class="text-sm px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-gray-300">
@@ -284,90 +478,104 @@
                     {{-- Job Cards --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         @forelse($jobPostings ?? [] as $job)
-                        @php
-                            $iconBgClass = match($job->icon_color) {
-                                'green' => 'bg-green-50 dark:bg-green-900/30',
-                                'purple' => 'bg-purple-50 dark:bg-purple-900/30',
-                                'orange' => 'bg-orange-50 dark:bg-orange-900/30',
-                                'red' => 'bg-red-50 dark:bg-red-900/30',
-                                default => 'bg-blue-50 dark:bg-blue-900/30',
-                            };
-                            $iconTextClass = match($job->icon_color) {
-                                'green' => 'text-green-600 dark:text-green-400',
-                                'purple' => 'text-purple-600 dark:text-purple-400',
-                                'orange' => 'text-orange-600 dark:text-orange-400',
-                                'red' => 'text-red-600 dark:text-red-400',
-                                default => 'text-blue-600 dark:text-blue-400',
-                            };
-                            $typeBadgeClass = match($job->type) {
-                                'part-time' => 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-                                'remote' => 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
-                                default => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-                            };
-                            // Reverse-map icon to category
-                            $categoryMap = [
-                                'fa-broom' => 'cleaning',
-                                'fa-dolly' => 'logistics',
-                                'fa-user-tie' => 'management',
-                                'fa-headset' => 'customer-service',
-                                'fa-spray-can' => 'maintenance',
-                                'fa-clipboard-check' => 'administration',
-                                'fa-users' => 'human-resources',
-                                'fa-briefcase' => 'general',
-                            ];
-                            $jobCategory = $categoryMap[$job->icon] ?? 'other';
-                        @endphp
-                        <div class="job-item" data-job-id="{{ $job->id }}" data-type="{{ $job->type }}" data-category="{{ $jobCategory }}" data-location="{{ $job->location }}"
-                            @click="selectJob({{ $job->id }})"
-                            :style="filteredIds.includes({{ $job->id }}) ? '' : 'display:none'">
-                            <div class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col h-full"
-                                 :class="selectedJobId === {{ $job->id }} ? 'ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg' : 'shadow-sm hover:border-gray-200 dark:hover:border-gray-600'">
+                            @php
+                                $iconBgClass = match ($job->icon_color) {
+                                    'green' => 'bg-green-50 dark:bg-green-900/30',
+                                    'purple' => 'bg-purple-50 dark:bg-purple-900/30',
+                                    'orange' => 'bg-orange-50 dark:bg-orange-900/30',
+                                    'red' => 'bg-red-50 dark:bg-red-900/30',
+                                    default => 'bg-blue-50 dark:bg-blue-900/30',
+                                };
+                                $iconTextClass = match ($job->icon_color) {
+                                    'green' => 'text-green-600 dark:text-green-400',
+                                    'purple' => 'text-purple-600 dark:text-purple-400',
+                                    'orange' => 'text-orange-600 dark:text-orange-400',
+                                    'red' => 'text-red-600 dark:text-red-400',
+                                    default => 'text-blue-600 dark:text-blue-400',
+                                };
+                                $typeBadgeClass = match ($job->type) {
+                                    'part-time'
+                                        => 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+                                    'remote'
+                                        => 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+                                    default => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                                };
+                                // Reverse-map icon to category
+                                $categoryMap = [
+                                    'fa-broom' => 'cleaning',
+                                    'fa-dolly' => 'logistics',
+                                    'fa-user-tie' => 'management',
+                                    'fa-headset' => 'customer-service',
+                                    'fa-spray-can' => 'maintenance',
+                                    'fa-clipboard-check' => 'administration',
+                                    'fa-users' => 'human-resources',
+                                    'fa-briefcase' => 'general',
+                                ];
+                                $jobCategory = $categoryMap[$job->icon] ?? 'other';
+                            @endphp
+                            <div class="job-item" data-job-id="{{ $job->id }}" data-type="{{ $job->type }}"
+                                data-category="{{ $jobCategory }}" data-location="{{ $job->location }}"
+                                @click="selectJob({{ $job->id }})"
+                                :style="filteredIds.includes({{ $job->id }}) ? '' : 'display:none'">
+                                <div class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col h-full"
+                                    :class="selectedJobId === {{ $job->id }} ?
+                                        'ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg' :
+                                        'shadow-sm hover:border-gray-200 dark:hover:border-gray-600'">
 
-                                {{-- Top row: Icon + Title + Heart --}}
-                                <div class="flex items-start gap-3 mb-3">
-                                    <div class="w-10 h-10 {{ $iconBgClass }} rounded-xl flex items-center justify-center flex-shrink-0">
-                                        <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-sm"></i>
+                                    {{-- Top row: Icon + Title + Heart --}}
+                                    <div class="flex items-start gap-3 mb-3">
+                                        <div
+                                            class="w-10 h-10 {{ $iconBgClass }} rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-sm"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                                {{ $job->title }}</h3>
+                                            <p
+                                                class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+                                                <i class="fas fa-map-marker-alt text-[10px]"></i>
+                                                {{ $job->location }}
+                                            </p>
+                                        </div>
+                                        <button @click.stop
+                                            class="text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 transition-colors flex-shrink-0">
+                                            <i class="far fa-heart"></i>
+                                        </button>
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ $job->title }}</h3>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                                            <i class="fas fa-map-marker-alt text-[10px]"></i>
-                                            {{ $job->location }}
-                                        </p>
+
+                                    {{-- Type Badges --}}
+                                    <div class="flex flex-wrap gap-1.5 mb-3">
+                                        <span class="px-2 py-0.5 {{ $typeBadgeClass }} text-[11px] font-semibold rounded">
+                                            {{ $job->type_badge }}
+                                        </span>
                                     </div>
-                                    <button @click.stop class="text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 transition-colors flex-shrink-0">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                </div>
 
-                                {{-- Type Badges --}}
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="px-2 py-0.5 {{ $typeBadgeClass }} text-[11px] font-semibold rounded">
-                                        {{ $job->type_badge }}
-                                    </span>
-                                </div>
+                                    {{-- Description --}}
+                                    <p
+                                        class="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 flex-1 leading-relaxed">
+                                        {{ $job->description }}
+                                    </p>
 
-                                {{-- Description --}}
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 flex-1 leading-relaxed">
-                                    {{ $job->description }}
-                                </p>
-
-                                {{-- Footer: Salary + Posted --}}
-                                <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto">
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white">&euro;{{ $job->salary }}</span>
-                                    <span class="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                                        <i class="far fa-clock"></i>
-                                        {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
-                                    </span>
+                                    {{-- Footer: Salary + Posted --}}
+                                    <div
+                                        class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto">
+                                        <span
+                                            class="text-sm font-bold text-gray-900 dark:text-white">&euro;{{ $job->salary }}</span>
+                                        <span class="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                                            <i class="far fa-clock"></i>
+                                            {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         @empty
-                        <div class="col-span-full text-center py-16">
-                            <i class="fas fa-briefcase text-gray-300 dark:text-gray-600 text-5xl mb-4"></i>
-                            <p class="text-gray-500 dark:text-gray-400 text-base font-medium">No job openings available at the moment.</p>
-                            <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Please check back later for new opportunities.</p>
-                        </div>
+                            <div class="col-span-full text-center py-16">
+                                <i class="fas fa-briefcase text-gray-300 dark:text-gray-600 text-5xl mb-4"></i>
+                                <p class="text-gray-500 dark:text-gray-400 text-base font-medium">No job openings available
+                                    at the moment.</p>
+                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Please check back later for new
+                                    opportunities.</p>
+                            </div>
                         @endforelse
                     </div>
 
@@ -375,65 +583,84 @@
                     <div x-show="visibleCount === 0 && totalJobs > 0" x-cloak class="text-center py-16">
                         <i class="fas fa-search text-gray-300 dark:text-gray-600 text-4xl mb-4"></i>
                         <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No jobs match your filters.</p>
-                        <button @click="clearAllFilters()" class="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">Clear all filters</button>
+                        <button @click="clearAllFilters()"
+                            class="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">Clear all
+                            filters</button>
                     </div>
                 </div>
 
                 {{-- Job Detail Panel --}}
-                <div x-show="showDetail" x-cloak
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 translate-x-4"
-                     x-transition:enter-end="opacity-100 translate-x-0"
-                     class="w-full lg:w-80 xl:w-[340px] flex-shrink-0">
-                    <div class="bg-white dark:bg-gray-900 shadow-sm rounded-xl sticky top-6 max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden relative my-3">
+                <div x-show="showDetail" x-cloak x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0"
+                    class="w-full lg:w-80 xl:w-[340px] flex-shrink-0">
+                    <div
+                        class="bg-white dark:bg-gray-900 shadow-sm rounded-xl sticky top-6 max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden relative my-3">
                         <template x-if="selectedJob">
                             <div class="flex flex-col h-full min-h-0">
                                 {{-- Scrollable content --}}
                                 <div class="flex-1 overflow-y-auto scrollbar-custom min-h-0">
                                     {{-- Top section: Icon + Title + Location --}}
-                                    <div class="px-6 pt-8 pb-5 flex flex-col items-center text-center border-b border-gray-100 dark:border-gray-700">
+                                    <div
+                                        class="px-6 pt-8 pb-5 flex flex-col items-center text-center border-b border-gray-100 dark:border-gray-700">
                                         {{-- Close button --}}
                                         <button @click="showDetail = false; selectedJobId = null; selectedJob = null;"
                                             class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors z-10">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
 
                                         {{-- Company Icon --}}
                                         <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-sm dark:shadow-none"
-                                             :class="{
-                                                'bg-green-50 dark:bg-green-900/30': selectedJob.iconColor === 'green',
-                                                'bg-purple-50 dark:bg-purple-900/30': selectedJob.iconColor === 'purple',
-                                                'bg-orange-50 dark:bg-orange-900/30': selectedJob.iconColor === 'orange',
+                                            :class="{
+                                                'bg-green-50 dark:bg-green-900/30': selectedJob
+                                                    .iconColor === 'green',
+                                                'bg-purple-50 dark:bg-purple-900/30': selectedJob
+                                                    .iconColor === 'purple',
+                                                'bg-orange-50 dark:bg-orange-900/30': selectedJob
+                                                    .iconColor === 'orange',
                                                 'bg-red-50 dark:bg-red-900/30': selectedJob.iconColor === 'red',
-                                                'bg-blue-50 dark:bg-blue-900/30': !['green','purple','orange','red'].includes(selectedJob.iconColor)
-                                             }">
+                                                'bg-blue-50 dark:bg-blue-900/30': !['green', 'purple', 'orange', 'red']
+                                                    .includes(selectedJob.iconColor)
+                                            }">
                                             <i class="fas text-2xl"
-                                               :class="[selectedJob.icon, {
-                                                    'text-green-600 dark:text-green-400': selectedJob.iconColor === 'green',
-                                                    'text-purple-600 dark:text-purple-400': selectedJob.iconColor === 'purple',
-                                                    'text-orange-600 dark:text-orange-400': selectedJob.iconColor === 'orange',
-                                                    'text-red-600 dark:text-red-400': selectedJob.iconColor === 'red',
-                                                    'text-blue-600 dark:text-blue-400': !['green','purple','orange','red'].includes(selectedJob.iconColor)
-                                               }]"></i>
+                                                :class="[selectedJob.icon, {
+                                                    'text-green-600 dark:text-green-400': selectedJob
+                                                        .iconColor === 'green',
+                                                    'text-purple-600 dark:text-purple-400': selectedJob
+                                                        .iconColor === 'purple',
+                                                    'text-orange-600 dark:text-orange-400': selectedJob
+                                                        .iconColor === 'orange',
+                                                    'text-red-600 dark:text-red-400': selectedJob
+                                                        .iconColor === 'red',
+                                                    'text-blue-600 dark:text-blue-400': !['green', 'purple',
+                                                        'orange', 'red'
+                                                    ].includes(selectedJob.iconColor)
+                                                }]"></i>
                                         </div>
 
                                         {{-- Title --}}
-                                        <h2 class="text-lg font-bold text-gray-900 dark:text-white leading-snug mb-1" x-text="selectedJob.title"></h2>
+                                        <h2 class="text-lg font-bold text-gray-900 dark:text-white leading-snug mb-1"
+                                            x-text="selectedJob.title"></h2>
 
                                         {{-- Company + Location --}}
-                                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedJob.location"></p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedJob.location">
+                                        </p>
                                     </div>
 
                                     {{-- Required Skills (Minimum qualifications) --}}
                                     <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700"
-                                         x-show="selectedJob.requiredSkills && selectedJob.requiredSkills.length > 0">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Minimum qualifications:</h3>
+                                        x-show="selectedJob.requiredSkills && selectedJob.requiredSkills.length > 0">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Minimum
+                                            qualifications:</h3>
                                         <ul class="space-y-2">
                                             <template x-for="skill in selectedJob.requiredSkills" :key="skill">
-                                                <li class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                                    <span class="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0">&#8226;</span>
+                                                <li
+                                                    class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                    <span
+                                                        class="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0">&#8226;</span>
                                                     <span x-text="skill"></span>
                                                 </li>
                                             </template>
@@ -442,16 +669,22 @@
 
                                     {{-- Required Documents --}}
                                     <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700"
-                                         x-show="selectedJob.requiredDocs && selectedJob.requiredDocs.length > 0">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required documents</h3>
+                                        x-show="selectedJob.requiredDocs && selectedJob.requiredDocs.length > 0">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required documents
+                                        </h3>
                                         <ul class="space-y-2">
-                                            <template x-for="doc in selectedJob.requiredDocs" :key="typeof doc === 'object' ? doc.name : doc">
-                                                <li class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                                    <span class="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0">&#8226;</span>
+                                            <template x-for="doc in selectedJob.requiredDocs"
+                                                :key="typeof doc === 'object' ? doc.name : doc">
+                                                <li
+                                                    class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                    <span
+                                                        class="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0">&#8226;</span>
                                                     <span>
                                                         <span x-text="typeof doc === 'object' ? doc.name : doc"></span>
                                                         <template x-if="typeof doc === 'object' && doc.type">
-                                                            <span class="ml-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400" x-text="doc.type"></span>
+                                                            <span
+                                                                class="ml-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400"
+                                                                x-text="doc.type"></span>
                                                         </template>
                                                     </span>
                                                 </li>
@@ -460,16 +693,18 @@
                                     </div>
 
                                     {{-- About the Job --}}
-                                    <div class="px-6 py-5"
-                                         x-data="{ expanded: false }">
+                                    <div class="px-6 py-5" x-data="{ expanded: false }">
                                         <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">About the Job</h3>
                                         <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                            <p :class="expanded ? '' : 'line-clamp-4'" x-text="selectedJob.description"></p>
+                                            <p :class="expanded ? '' : 'line-clamp-4'" x-text="selectedJob.description">
+                                            </p>
                                         </div>
                                         <button @click="expanded = !expanded"
                                             class="mt-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1">
                                             <span x-text="expanded ? 'Show less' : 'Read More'"></span>
-                                            <svg class="w-3 h-3 transition-transform" :class="expanded ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <svg class="w-3 h-3 transition-transform"
+                                                :class="expanded ? 'rotate-180' : ''" fill="none"
+                                                stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                             </svg>
                                         </button>
@@ -477,13 +712,16 @@
 
                                     {{-- Benefits --}}
                                     <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
-                                         x-show="selectedJob.benefits && selectedJob.benefits.length > 0">
+                                        x-show="selectedJob.benefits && selectedJob.benefits.length > 0">
                                         <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Benefits:</h3>
                                         <ul class="space-y-2">
                                             <template x-for="benefit in selectedJob.benefits" :key="benefit">
-                                                <li class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                                    <div class="w-5 h-5 bg-blue-50 dark:bg-blue-900/30 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                        <i class="fas fa-check text-blue-600 dark:text-blue-400 text-[8px]"></i>
+                                                <li
+                                                    class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                    <div
+                                                        class="w-5 h-5 bg-blue-50 dark:bg-blue-900/30 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                        <i
+                                                            class="fas fa-check text-blue-600 dark:text-blue-400 text-[8px]"></i>
                                                     </div>
                                                     <span x-text="benefit"></span>
                                                 </li>
@@ -493,12 +731,14 @@
                                 </div>
 
                                 {{-- Fixed bottom: Apply Now + Heart --}}
-                                <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center gap-3 flex-shrink-0">
+                                <div
+                                    class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center gap-3 flex-shrink-0">
                                     <button @click="openApplicationModal()"
                                         class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full transition-all shadow-md text-sm font-semibold hover:shadow-lg">
                                         Apply Now
                                     </button>
-                                    <button @click.stop class="w-11 h-11 bg-gray-100 dark:bg-gray-700 text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 rounded-full transition-colors flex items-center justify-center flex-shrink-0">
+                                    <button @click.stop
+                                        class="w-11 h-11 bg-gray-100 dark:bg-gray-700 text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 rounded-full transition-colors flex items-center justify-center flex-shrink-0">
                                         <i class="far fa-heart text-lg"></i>
                                     </button>
                                 </div>
@@ -513,30 +753,35 @@
     </div>
 
     {{-- Application Modal --}}
-    <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="display: none;"
-        x-data="{
+    <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        style="display: none;" x-data="{
             termsAccepted: document.cookie.includes('finnoys_terms_accepted=1'),
             policyAccepted: document.cookie.includes('finnoys_policy_accepted=1')
         }">
         <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto scrollbar-custom">
             {{-- Modal Header --}}
-            <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center z-10">
-                <button onclick="closeApplicationModal()" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+            <div
+                class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center z-10">
+                <button onclick="closeApplicationModal()"
+                    class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                     <i class="fas fa-arrow-left text-xl"></i>
                 </button>
-                <h2 class="text-lg font-bold text-center mr-3 w-full text-gray-900 dark:text-white">Apply for this Position</h2>
+                <h2 class="text-lg font-bold text-center mr-3 w-full text-gray-900 dark:text-white">Apply for this Position
+                </h2>
             </div>
 
             {{-- Modal Body --}}
             <div class="p-6">
-                <form id="applicationForm" action="{{ route('recruitment.google.apply') }}" method="POST" class="space-y-4">
+                <form id="applicationForm" action="{{ route('recruitment.google.apply') }}" method="POST"
+                    class="space-y-4">
                     @csrf
                     <input type="hidden" name="job_title" id="applicationJobTitle">
                     <input type="hidden" name="job_type" id="applicationJobType">
 
                     {{-- Google Sign-In Info --}}
                     <div class="text-center mb-2">
-                        <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <div
+                            class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
                             <i class="fab fa-google text-2xl text-blue-600"></i>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -546,48 +791,66 @@
 
                     {{-- Terms and Conditions Acceptance --}}
                     <div class="space-y-2">
-                        <div id="termsCheckRow" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
-                            :class="termsAccepted ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'"
+                        <div id="termsCheckRow"
+                            class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
+                            :class="termsAccepted ?
+                                'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' :
+                                'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'"
                             onclick="navigateToTerms()">
                             <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
                                 :class="termsAccepted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-500'">
                                 <i class="fas fa-check text-white text-xs" x-show="termsAccepted"></i>
                             </div>
-                            <span class="text-sm flex-1" :class="termsAccepted ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'">
-                                <span x-text="termsAccepted ? 'Terms and Conditions accepted' : 'Read and accept Terms and Conditions'"></span>
+                            <span class="text-sm flex-1"
+                                :class="termsAccepted ? 'text-green-700 dark:text-green-400' :
+                                    'text-gray-600 dark:text-gray-400'">
+                                <span
+                                    x-text="termsAccepted ? 'Terms and Conditions accepted' : 'Read and accept Terms and Conditions'"></span>
                             </span>
                             <i class="fas fa-arrow-right text-xs text-gray-400" x-show="!termsAccepted"></i>
                         </div>
 
-                        <div id="policyCheckRow" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
-                            :class="policyAccepted ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'"
+                        <div id="policyCheckRow"
+                            class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
+                            :class="policyAccepted ?
+                                'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' :
+                                'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'"
                             onclick="navigateToPolicy()">
                             <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
                                 :class="policyAccepted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-500'">
                                 <i class="fas fa-check text-white text-xs" x-show="policyAccepted"></i>
                             </div>
-                            <span class="text-sm flex-1" :class="policyAccepted ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'">
-                                <span x-text="policyAccepted ? 'Privacy Policy accepted' : 'Read and accept Privacy Policy'"></span>
+                            <span class="text-sm flex-1"
+                                :class="policyAccepted ? 'text-green-700 dark:text-green-400' :
+                                    'text-gray-600 dark:text-gray-400'">
+                                <span
+                                    x-text="policyAccepted ? 'Privacy Policy accepted' : 'Read and accept Privacy Policy'"></span>
                             </span>
                             <i class="fas fa-arrow-right text-xs text-gray-400" x-show="!policyAccepted"></i>
                         </div>
                     </div>
 
                     {{-- Sign in with Google to Apply --}}
-                    <button type="submit" id="googleApplyBtn"
-                        :disabled="!termsAccepted || !policyAccepted"
-                        :class="(!termsAccepted || !policyAccepted) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-600 shadow-lg hover:shadow-xl'"
+                    <button type="submit" id="googleApplyBtn" :disabled="!termsAccepted || !policyAccepted"
+                        :class="(!termsAccepted || !policyAccepted) ? 'opacity-50 cursor-not-allowed' :
+                        'hover:bg-gray-50 dark:hover:bg-gray-600 shadow-lg hover:shadow-xl'"
                         class="w-full flex items-center justify-center gap-3 py-3.5 px-4 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 transition-colors">
                         <svg width="20" height="20" viewBox="0 0 48 48">
-                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            <path fill="#EA4335"
+                                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                            <path fill="#4285F4"
+                                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                            <path fill="#FBBC05"
+                                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                            <path fill="#34A853"
+                                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                         </svg>
-                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Sign in with Google to Apply</span>
+                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Sign in with Google to
+                            Apply</span>
                     </button>
 
-                    <p x-show="!termsAccepted || !policyAccepted" class="text-xs text-center text-amber-600 dark:text-amber-400">
+                    <p x-show="!termsAccepted || !policyAccepted"
+                        class="text-xs text-center text-amber-600 dark:text-amber-400">
                         <i class="fas fa-info-circle mr-1"></i>
                         Please accept both Terms and Privacy Policy to continue
                     </p>
@@ -601,10 +864,10 @@
     <script>
         // Show flash messages from session (after Google OAuth redirect)
         document.addEventListener('DOMContentLoaded', function() {
-            @if(session('success'))
+            @if (session('success'))
                 showNotification('success', @json(session('success')));
             @endif
-            @if(session('error'))
+            @if (session('error'))
                 showNotification('error', @json(session('error')));
             @endif
 
@@ -623,36 +886,37 @@
 
         // Navigate to Terms page with return context
         let selectedJobId = null;
+
         function navigateToTerms() {
             if (document.cookie.includes('finnoys_terms_accepted=1')) return;
             const jobId = selectedJobId || '';
-            window.location.href = '{{ route("termscondition") }}?from=recruitment&job=' + jobId;
+            window.location.href = '{{ route('termscondition') }}?from=recruitment&job=' + jobId;
         }
 
         // Navigate to Policy page with return context
         function navigateToPolicy() {
             if (document.cookie.includes('finnoys_policy_accepted=1')) return;
             const jobId = selectedJobId || '';
-            window.location.href = '{{ route("privacypolicy") }}?from=recruitment&job=' + jobId;
+            window.location.href = '{{ route('privacypolicy') }}?from=recruitment&job=' + jobId;
         }
 
         // Dynamically generated jobs from database
         const jobs = {
-            @foreach($jobPostings ?? [] as $job)
-            {{ $job->id }}: {
-                id: {{ $job->id }},
-                title: @json($job->title),
-                description: @json($job->description),
-                location: @json($job->location),
-                salary: @json($job->salary),
-                type: @json($job->type),
-                typeBadge: @json($job->type_badge),
-                icon: @json($job->icon),
-                iconColor: @json($job->icon_color),
-                requiredSkills: @json($job->required_skills ?? []),
-                requiredDocs: @json($job->required_docs ?? []),
-                benefits: @json($job->benefits ?? [])
-            },
+            @foreach ($jobPostings ?? [] as $job)
+                {{ $job->id }}: {
+                    id: {{ $job->id }},
+                    title: @json($job->title),
+                    description: @json($job->description),
+                    location: @json($job->location),
+                    salary: @json($job->salary),
+                    type: @json($job->type),
+                    typeBadge: @json($job->type_badge),
+                    icon: @json($job->icon),
+                    iconColor: @json($job->icon_color),
+                    requiredSkills: @json($job->required_skills ?? []),
+                    requiredDocs: @json($job->required_docs ?? []),
+                    benefits: @json($job->benefits ?? [])
+                },
             @endforeach
         };
 
@@ -693,7 +957,8 @@
                     this.locations = Object.keys(locCounts).sort();
 
                     // Build salary range from all jobs
-                    let minSal = Infinity, maxSal = 0;
+                    let minSal = Infinity,
+                        maxSal = 0;
                     allJobIds.forEach(id => {
                         const parsed = this.parseSalary(jobs[id].salary);
                         if (parsed.min < minSal) minSal = parsed.min;
@@ -708,32 +973,90 @@
 
                     // Build categories with counts from icon mapping
                     const catMap = {
-                        'fa-broom': { value: 'cleaning', label: 'Cleaning' },
-                        'fa-dolly': { value: 'logistics', label: 'Logistics' },
-                        'fa-user-tie': { value: 'management', label: 'Management' },
-                        'fa-headset': { value: 'customer-service', label: 'Customer Service' },
-                        'fa-spray-can': { value: 'maintenance', label: 'Maintenance' },
-                        'fa-clipboard-check': { value: 'administration', label: 'Administration' },
-                        'fa-users': { value: 'human-resources', label: 'Human Resources' },
-                        'fa-briefcase': { value: 'general', label: 'General' },
+                        'fa-broom': {
+                            value: 'cleaning',
+                            label: 'Cleaning'
+                        },
+                        'fa-dolly': {
+                            value: 'logistics',
+                            label: 'Logistics'
+                        },
+                        'fa-user-tie': {
+                            value: 'management',
+                            label: 'Management'
+                        },
+                        'fa-headset': {
+                            value: 'customer-service',
+                            label: 'Customer Service'
+                        },
+                        'fa-spray-can': {
+                            value: 'maintenance',
+                            label: 'Maintenance'
+                        },
+                        'fa-clipboard-check': {
+                            value: 'administration',
+                            label: 'Administration'
+                        },
+                        'fa-users': {
+                            value: 'human-resources',
+                            label: 'Human Resources'
+                        },
+                        'fa-briefcase': {
+                            value: 'general',
+                            label: 'General'
+                        },
                     };
                     // Initialize all categories with count 0
-                    const allCats = [
-                        { value: 'cleaning', label: 'Cleaning' },
-                        { value: 'logistics', label: 'Logistics' },
-                        { value: 'management', label: 'Management' },
-                        { value: 'customer-service', label: 'Customer Service' },
-                        { value: 'maintenance', label: 'Maintenance' },
-                        { value: 'administration', label: 'Administration' },
-                        { value: 'human-resources', label: 'Human Resources' },
-                        { value: 'general', label: 'General' },
+                    const allCats = [{
+                            value: 'cleaning',
+                            label: 'Cleaning'
+                        },
+                        {
+                            value: 'logistics',
+                            label: 'Logistics'
+                        },
+                        {
+                            value: 'management',
+                            label: 'Management'
+                        },
+                        {
+                            value: 'customer-service',
+                            label: 'Customer Service'
+                        },
+                        {
+                            value: 'maintenance',
+                            label: 'Maintenance'
+                        },
+                        {
+                            value: 'administration',
+                            label: 'Administration'
+                        },
+                        {
+                            value: 'human-resources',
+                            label: 'Human Resources'
+                        },
+                        {
+                            value: 'general',
+                            label: 'General'
+                        },
                     ];
                     const catCounts = {};
-                    allCats.forEach(c => { catCounts[c.value] = { ...c, count: 0 }; });
+                    allCats.forEach(c => {
+                        catCounts[c.value] = {
+                            ...c,
+                            count: 0
+                        };
+                    });
                     allJobIds.forEach(id => {
                         const icon = jobs[id].icon;
-                        const cat = catMap[icon] || { value: 'other', label: 'Other' };
-                        if (!catCounts[cat.value]) catCounts[cat.value] = { ...cat, count: 0 };
+                        const cat = catMap[icon] || {
+                            value: 'other',
+                            label: 'Other'
+                        };
+                        if (!catCounts[cat.value]) catCounts[cat.value] = {
+                            ...cat,
+                            count: 0
+                        };
                         catCounts[cat.value].count++;
                     });
                     this.categories = Object.values(catCounts);
@@ -766,11 +1089,20 @@
 
                 // Parse salary string like "30 - 40/hr", "25/hr", "2500/mo" into { min, max }
                 parseSalary(salaryStr) {
-                    if (!salaryStr) return { min: 0, max: 0 };
+                    if (!salaryStr) return {
+                        min: 0,
+                        max: 0
+                    };
                     const numbers = salaryStr.match(/[\d]+(?:\.[\d]+)?/g);
-                    if (!numbers || numbers.length === 0) return { min: 0, max: 0 };
+                    if (!numbers || numbers.length === 0) return {
+                        min: 0,
+                        max: 0
+                    };
                     const nums = numbers.map(Number);
-                    return { min: Math.min(...nums), max: Math.max(...nums) };
+                    return {
+                        min: Math.min(...nums),
+                        max: Math.max(...nums)
+                    };
                 },
 
                 selectJob(jobId) {
@@ -790,7 +1122,8 @@
                         const jobCategory = el ? el.getAttribute('data-category') : 'other';
 
                         // Search filter
-                        if (searchLower && !job.title.toLowerCase().includes(searchLower) && !job.description.toLowerCase().includes(searchLower)) {
+                        if (searchLower && !job.title.toLowerCase().includes(searchLower) && !job.description
+                            .toLowerCase().includes(searchLower)) {
                             return false;
                         }
 

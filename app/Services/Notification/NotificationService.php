@@ -938,6 +938,143 @@ class NotificationService
         );
     }
 
+    // ============================================
+    // Scenario Notification Methods
+    // ============================================
+
+    /**
+     * SCENARIO #10: Notify admins about a last-minute task decline by an employee.
+     * Sends urgent notification to all admins/dispatchers.
+     */
+    public function notifyAdminsLastMinuteDecline($task, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LAST_MINUTE_DECLINE,
+            'URGENT: Last-Minute Task Decline',
+            "⚠️ {$employeeName} has declined task \"{$task->task_description}\" scheduled for {$serviceDate} with less than 24 hours notice. Immediate reassignment required.",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-triangle',
+                'color' => 'red',
+                'action_url' => '/admin/appointments',
+                'action_text' => 'Reassign Task'
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #9: Notify admins about CRITICAL_WARNING for incomplete staffing.
+     */
+    public function notifyAdminsCriticalWarning($task, string $message): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_CRITICAL_WARNING,
+            'CRITICAL WARNING: Incomplete Staffing',
+            $message,
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-circle',
+                'color' => 'red',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #14: Notify qualified employees about an unstaffed job opportunity.
+     */
+    public function notifyEmployeesJobOpportunity($task, $employees): Collection
+    {
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+
+        $notifications = collect();
+        foreach ($employees as $employee) {
+            if ($employee->user) {
+                $notifications->push($this->create(
+                    $employee->user,
+                    Notification::TYPE_JOB_OPPORTUNITY,
+                    'Job Opportunity Available',
+                    "A task \"{$task->task_description}\" on {$serviceDate} needs a team member. Are you available?",
+                    [
+                        'task_id' => $task->id,
+                        'task_description' => $task->task_description,
+                        'service_date' => $serviceDate,
+                        'icon' => 'briefcase',
+                        'color' => 'blue',
+                        'action_url' => '/employee/tasks',
+                        'action_text' => 'View Opportunity'
+                    ]
+                ));
+            }
+        }
+
+        return $notifications;
+    }
+
+    /**
+     * SCENARIO #15: CRITICAL_ESCALATION - No one accepting within 60 minutes.
+     */
+    public function notifyAdminsCriticalEscalation($task): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_CRITICAL_ESCALATION,
+            'CRITICAL ESCALATION: Unassigned Task',
+            "⚠️ Task \"{$task->task_description}\" on {$serviceDate} has had no acceptance for 60+ minutes. System will auto-assign to the employee with no pending tasks.",
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-triangle',
+                'color' => 'red',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #11: Notify manager about emergency leave request.
+     */
+    public function notifyManagerEmergencyLeave($leaveRequest, $employeeName, $escalationLevel): Collection
+    {
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+        $titles = [
+            1 => 'Urgent Reminder: Emergency Leave Pending',
+            2 => 'ALERT: Emergency Leave Pending',
+            3 => 'CRITICAL: Emergency Leave - System Action Required',
+        ];
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_EMERGENCY_LEAVE_ESCALATION,
+            $titles[$escalationLevel] ?? 'Emergency Leave Notification',
+            "Emergency leave for {$employeeName} requires immediate attention. Escalation Level: {$escalationLevel}.",
+            [
+                'leave_request_id' => $leaveRequest->id,
+                'employee_name' => $employeeName,
+                'escalation_level' => $escalationLevel,
+                'urgency' => $escalationLevel >= 3 ? 'critical' : 'high',
+                'icon' => 'user-clock',
+                'color' => $escalationLevel >= 3 ? 'red' : 'yellow',
+            ]
+        );
+    }
+
     /**
      * Notify all admins when an employee cancels a leave request.
      */
