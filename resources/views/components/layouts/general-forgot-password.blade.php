@@ -166,7 +166,6 @@
         </div>
     </div>
 
-    <!-- @push('scripts') -->
     <script>
     (function() {
         'use strict';
@@ -187,6 +186,8 @@
             const emailInput = document.getElementById('email');
             const securityDropdown = document.getElementById('dropdown-security-questions');
             const securityAnswer = document.getElementById('security_answer');
+            const securityQuestionContainer = document.getElementById('security-question-container');
+            const securityAnswerContainer = document.getElementById('security-answer-container');
             const next1Btn = document.getElementById('next1-btn');
             const next2Btn = document.getElementById('next2-btn');
             const back1Btn = document.getElementById('back1-btn');
@@ -258,6 +259,8 @@
                 if (!email) {
                     console.log("⚠️ Email is empty, skipping fetch");
                     securityDropdown.innerHTML = '<option value="" disabled selected>Enter your email first...</option>';
+                    securityQuestionContainer.classList.add('hidden');
+                    securityAnswerContainer.classList.add('hidden');
                     questionsLoaded = false;
                     return;
                 }
@@ -291,13 +294,17 @@
                     securityDropdown.innerHTML += `<option value="${data.questions.q2.key}">${data.questions.q2.text}</option>`;
                     securityDropdown.disabled = false;
                     questionsLoaded = true;
-                    
+                    securityQuestionContainer.classList.remove('hidden');
+                    securityAnswerContainer.classList.remove('hidden');
+
                     console.log("✅ Security questions loaded successfully");
 
                 } catch (error) {
                     console.error("❌ Fetch error:", error);
                     securityDropdown.innerHTML = `<option value="" disabled selected>${error.message}</option>`;
                     securityDropdown.disabled = true;
+                    securityQuestionContainer.classList.add('hidden');
+                    securityAnswerContainer.classList.add('hidden');
                     questionsLoaded = false;
                 }
             });
@@ -540,8 +547,6 @@
         }
     })();
     </script>
-    <!-- @endpush -->
-    @stack('scripts')
     <x-global-dialogs />
 </body>
 </html>

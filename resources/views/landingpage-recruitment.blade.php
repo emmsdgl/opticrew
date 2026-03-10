@@ -5,7 +5,7 @@
     <style>
         body {
             background-image: none;
-            background-color: #f9fafb;
+            background-color: #F6FAFD;
         }
 
         .dark body {
@@ -46,318 +46,470 @@
         .dark .scrollbar-custom::-webkit-scrollbar-thumb:hover {
             background-color: rgba(75, 85, 99, 0.7);
         }
+
+        /* Dual range slider */
+        .range-slider-wrap {
+            position: relative;
+            height: 6px;
+            margin: 12px 0;
+        }
+        .range-slider-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+        }
+        .dark .range-slider-track {
+            background: #4b5563;
+        }
+        .range-slider-fill {
+            position: absolute;
+            top: 0;
+            height: 6px;
+            border-radius: 3px;
+            background: #3b82f6;
+        }
+        .range-slider-wrap input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            position: absolute;
+            top: -6px;
+            left: 0;
+            width: 100%;
+            height: 18px;
+            background: transparent;
+            pointer-events: none;
+            outline: none;
+            margin: 0;
+        }
+        .range-slider-wrap input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            pointer-events: all;
+        }
+        .range-slider-wrap input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            pointer-events: all;
+        }
     </style>
 @endpush
 
 @section('content')
-    <div class="w-full min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8 xl:col-span-2">
-        <div class="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-3 gap-3 sm:px-6 lg:px-24">
+    <div class="w-full min-h-screen bg-[#F6FAFD] dark:bg-gray-900 p-4 md:p-6 lg:p-8"
+         x-data="recruitmentPage()"
+         x-init="init()">
 
-            {{-- Left Side - Job Listings --}}
-            <div class="xl:col-span-2 sm:px-3 lg:px-12">
-                {{-- Header --}}
-                <div class="mb-8">
-                    <h1 class="text-3xl md:text-4xl font-medium text-gray-900 dark:text-white mb-2">
-                        Find the best<span class="text-blue-600 mx-2 font-bold dark:text-blue-400">Job Opportunities</span>for your career
-                    </h1>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 my-6">What are you looking for?</p>
+        <div class="max-w-[1600px] mx-auto p-3">
+            {{-- Page Header --}}
+            <div class="text-center my-10">
+                <p class="text-sm font-bold text-blue-600 dark:text-blue-400 mb-2">Get the help you need</p>
+                <h1 class="text-4xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">
+                    Explore Job Opportunities at Fin-noys
+                </h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xl mx-auto leading-relaxed">
+                    Browse available positions from top employers. Find the right role and apply today.
+                </p>
+            </div>
 
-                    {{-- Search Bar --}}
-                    <div class="relative mb-6">
-                        <input type="text" id="searchInput" placeholder="Search jobs..."
-                            class="w-full text-sm px-4 py-3 pr-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-sm">
-                        <svg class="absolute right-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            {{-- Search Bar --}}
+            <div class="max-w-xl mx-auto mb-10">
+                <div class="relative">
+                    <input type="text" x-model="searchQuery" @input="applyFilters()" placeholder="Search by Category, Company or ..."
+                        class="w-full text-sm px-5 py-3.5 pr-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400">
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                    </div>
-
-                    {{-- Tab Navigation --}}
-                    <div class="flex gap-3 mb-6 flex-wrap">
-                        <button onclick="filterJobs('all')" data-filter="all"
-                            class="filter-tab px-6 py-2.5 rounded-full text-sm transition-all duration-200 bg-blue-600 text-white shadow-lg">
-                            All
-                        </button>
-                        <button onclick="filterJobs('full-time')" data-filter="full-time"
-                            class="filter-tab px-6 py-2.5 rounded-full text-sm transition-all duration-200 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                            Full Time
-                        </button>
-                        <button onclick="filterJobs('part-time')" data-filter="part-time"
-                            class="filter-tab px-6 py-2.5 rounded-full text-sm transition-all duration-200 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                            Part Time
-                        </button>
-                        <button onclick="filterJobs('remote')" data-filter="remote"
-                            class="filter-tab px-6 py-2.5 rounded-full text-sm transition-all duration-200 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                            Remote
+                        <button @click="applyFilters()"
+                            class="w-9 h-9 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
                         </button>
                     </div>
                 </div>
+                {{-- Active filter pills --}}
+                <div class="flex flex-wrap items-center justify-center gap-2 mt-4" x-show="selectedTypes.length > 0 || selectedLocations.length > 0 || selectedCategories.length > 0" x-cloak>
+                    <template x-for="t in selectedTypes" :key="'t-'+t">
+                        <span class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-blue-600 text-white shadow-sm">
+                            <span x-text="t.replace('-',' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
+                            <button @click="selectedTypes = selectedTypes.filter(x => x !== t); applyFilters()" class="ml-0.5 hover:text-blue-200">&times;</button>
+                        </span>
+                    </template>
+                    <template x-for="loc in selectedLocations" :key="'l-'+loc">
+                        <span class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm">
+                            <span x-text="loc"></span>
+                            <button @click="selectedLocations = selectedLocations.filter(x => x !== loc); applyFilters()" class="ml-0.5 hover:text-gray-400">&times;</button>
+                        </span>
+                    </template>
+                    <template x-for="cat in selectedCategories" :key="'c-'+cat">
+                        <span class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm">
+                            <span x-text="cat.replace('-',' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
+                            <button @click="selectedCategories = selectedCategories.filter(x => x !== cat); applyFilters()" class="ml-0.5 hover:text-gray-400">&times;</button>
+                        </span>
+                    </template>
+                    <button @click="clearAllFilters()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium px-1">Clear filters</button>
+                </div>
+            </div>
 
-                {{-- Job Cards Grid --}}
-                <div id="jobList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                    @forelse($jobPostings ?? [] as $job)
-                    @php
-                        $iconBgClass = match($job->icon_color) {
-                            'green' => 'bg-green-50 dark:bg-green-900/30',
-                            'purple' => 'bg-purple-50 dark:bg-purple-900/30',
-                            'orange' => 'bg-orange-50 dark:bg-orange-900/30',
-                            'red' => 'bg-red-50 dark:bg-red-900/30',
-                            default => 'bg-blue-50 dark:bg-blue-900/30',
-                        };
-                        $iconTextClass = match($job->icon_color) {
-                            'green' => 'text-green-600 dark:text-green-400',
-                            'purple' => 'text-purple-600 dark:text-purple-400',
-                            'orange' => 'text-orange-600 dark:text-orange-400',
-                            'red' => 'text-red-600 dark:text-red-400',
-                            default => 'text-blue-600 dark:text-blue-400',
-                        };
-                        $typeBadgeClass = match($job->type) {
-                            'part-time' => 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-                            'remote' => 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
-                            default => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-                        };
-                    @endphp
-                    <div class="job-item cursor-pointer" data-job-id="{{ $job->id }}" data-type="{{ $job->type }}"
-                        onclick="selectJob({{ $job->id }})">
-                        <div
-                            class="job-card bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-800 flex flex-col h-full">
-                            <div class="flex items-start justify-between mb-6">
-                                <div class="w-12 h-12 {{ $iconBgClass }} rounded-xl flex items-center justify-center">
-                                    <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-lg"></i>
-                                </div>
+            <div class="flex flex-col lg:flex-row gap-6">
 
-                                <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                    <i class="far fa-heart text-xl"></i>
-                                </button>
+                {{-- Left Sidebar - Filters --}}
+                <aside class="w-full lg:w-72 xl:w-80 flex-shrink-0">
+                    <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-custom">
+
+                        {{-- Job Type Filter --}}
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Job Type</h3>
+                                <button @click="clearJobTypes()" class="text-xs text-red-500 hover:text-red-600 font-medium">Clear all</button>
                             </div>
-                            <span class="inline-block self-start px-2 py-1 {{ $typeBadgeClass }} text-xs font-medium rounded mb-3">
-                                {{ $job->type_badge }}
-                            </span>
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">{{ $job->title }}</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 line-clamp-3 flex-1">
-                                {{ $job->description }}
-                            </p>
-                            <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $job->salary }}</span>
+                            <div class="space-y-2.5">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" value="full-time" x-model="selectedTypes" @change="applyFilters()"
+                                        class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Full time</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" value="part-time" x-model="selectedTypes" @change="applyFilters()"
+                                        class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Part time</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" value="remote" x-model="selectedTypes" @change="applyFilters()"
+                                        class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Remote</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        {{-- Salary Range Filter --}}
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Salary Range</h3>
+                                <span class="text-xs font-semibold text-blue-600 dark:text-blue-400">$<span x-text="salaryMin"></span> &ndash; $<span x-text="salaryMax"></span></span>
+                            </div>
+                            <div class="px-1">
+                                <div class="range-slider-wrap"
+                                     x-init="$nextTick(() => updateRangeSlider())"
+                                     x-effect="updateRangeSlider()">
+                                    <div class="range-slider-track"></div>
+                                    <div class="range-slider-fill" :style="rangeFillStyle()"></div>
+                                    <input type="range" x-model.number="salaryMin"
+                                        :min="salaryAbsMin" :max="salaryAbsMax" step="1"
+                                        @input="if(salaryMin > salaryMax) salaryMin = salaryMax; applyFilters()">
+                                    <input type="range" x-model.number="salaryMax"
+                                        :min="salaryAbsMin" :max="salaryAbsMax" step="1"
+                                        @input="if(salaryMax < salaryMin) salaryMax = salaryMin; applyFilters()">
                                 </div>
-                                <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                                    <span class="flex items-center gap-1">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        {{ $job->location }}
+                                <div class="flex items-center justify-between mt-4">
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">$<span x-text="salaryAbsMin"></span></span>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">$<span x-text="salaryAbsMax"></span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Location Filter --}}
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Location</h3>
+                                <button @click="selectedLocations = []; applyFilters()" x-show="selectedLocations.length > 0" class="text-xs text-red-500 hover:text-red-600 font-medium">Clear</button>
+                            </div>
+                            <div class="space-y-2.5 max-h-48 overflow-y-auto scrollbar-custom">
+                                <template x-for="loc in locations" :key="loc">
+                                    <label class="flex items-center justify-between cursor-pointer group">
+                                        <div class="flex items-center gap-3">
+                                            <input type="checkbox" :value="loc" x-model="selectedLocations" @change="applyFilters()"
+                                                class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                                            <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white" x-text="loc"></span>
+                                        </div>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full" x-text="locationCounts[loc] || 0"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+
+                        {{-- Job Categories Filter --}}
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Job Categories</h3>
+                            <div class="space-y-2.5">
+                                <template x-for="cat in categories" :key="cat.value">
+                                    <label class="flex items-center justify-between cursor-pointer group">
+                                        <div class="flex items-center gap-3">
+                                            <input type="checkbox" :value="cat.value" x-model="selectedCategories" @change="applyFilters()"
+                                                class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                                            <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white" x-text="cat.label"></span>
+                                        </div>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full" x-text="cat.count"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+
+                    </div>
+                </aside>
+
+                {{-- Right Side - Job Cards Grid --}}
+                <div class="flex-1 min-w-0">
+                    {{-- Results Header --}}
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Showing <span class="font-semibold text-gray-900 dark:text-white" x-text="visibleCount"></span> jobs
+                        </p>
+                        <select x-model="sortBy" @change="applyFilters()"
+                            class="text-sm px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-gray-300">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                            <option value="salary-high">Salary: High to Low</option>
+                            <option value="salary-low">Salary: Low to High</option>
+                        </select>
+                    </div>
+
+                    {{-- Job Cards --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        @forelse($jobPostings ?? [] as $job)
+                        @php
+                            $iconBgClass = match($job->icon_color) {
+                                'green' => 'bg-green-50 dark:bg-green-900/30',
+                                'purple' => 'bg-purple-50 dark:bg-purple-900/30',
+                                'orange' => 'bg-orange-50 dark:bg-orange-900/30',
+                                'red' => 'bg-red-50 dark:bg-red-900/30',
+                                default => 'bg-blue-50 dark:bg-blue-900/30',
+                            };
+                            $iconTextClass = match($job->icon_color) {
+                                'green' => 'text-green-600 dark:text-green-400',
+                                'purple' => 'text-purple-600 dark:text-purple-400',
+                                'orange' => 'text-orange-600 dark:text-orange-400',
+                                'red' => 'text-red-600 dark:text-red-400',
+                                default => 'text-blue-600 dark:text-blue-400',
+                            };
+                            $typeBadgeClass = match($job->type) {
+                                'part-time' => 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+                                'remote' => 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+                                default => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                            };
+                            // Reverse-map icon to category
+                            $categoryMap = [
+                                'fa-broom' => 'cleaning',
+                                'fa-dolly' => 'logistics',
+                                'fa-user-tie' => 'management',
+                                'fa-headset' => 'customer-service',
+                                'fa-spray-can' => 'maintenance',
+                                'fa-clipboard-check' => 'administration',
+                                'fa-users' => 'human-resources',
+                                'fa-briefcase' => 'general',
+                            ];
+                            $jobCategory = $categoryMap[$job->icon] ?? 'other';
+                        @endphp
+                        <div class="job-item" data-job-id="{{ $job->id }}" data-type="{{ $job->type }}" data-category="{{ $jobCategory }}" data-location="{{ $job->location }}"
+                            @click="selectJob({{ $job->id }})"
+                            :style="filteredIds.includes({{ $job->id }}) ? '' : 'display:none'">
+                            <div class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col h-full"
+                                 :class="selectedJobId === {{ $job->id }} ? 'ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg' : 'shadow-sm hover:border-gray-200 dark:hover:border-gray-600'">
+
+                                {{-- Top row: Icon + Title + Heart --}}
+                                <div class="flex items-start gap-3 mb-3">
+                                    <div class="w-10 h-10 {{ $iconBgClass }} rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ $job->title }}</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+                                            <i class="fas fa-map-marker-alt text-[10px]"></i>
+                                            {{ $job->location }}
+                                        </p>
+                                    </div>
+                                    <button @click.stop class="text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 transition-colors flex-shrink-0">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                </div>
+
+                                {{-- Type Badges --}}
+                                <div class="flex flex-wrap gap-1.5 mb-3">
+                                    <span class="px-2 py-0.5 {{ $typeBadgeClass }} text-[11px] font-semibold rounded">
+                                        {{ $job->type_badge }}
+                                    </span>
+                                </div>
+
+                                {{-- Description --}}
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 flex-1 leading-relaxed">
+                                    {{ $job->description }}
+                                </p>
+
+                                {{-- Footer: Salary + Posted --}}
+                                <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">&euro;{{ $job->salary }}</span>
+                                    <span class="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                                        <i class="far fa-clock"></i>
+                                        {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
                                     </span>
                                 </div>
                             </div>
                         </div>
+                        @empty
+                        <div class="col-span-full text-center py-16">
+                            <i class="fas fa-briefcase text-gray-300 dark:text-gray-600 text-5xl mb-4"></i>
+                            <p class="text-gray-500 dark:text-gray-400 text-base font-medium">No job openings available at the moment.</p>
+                            <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Please check back later for new opportunities.</p>
+                        </div>
+                        @endforelse
                     </div>
-                    @empty
-                    <div class="col-span-2 text-center py-12">
-                        <i class="fas fa-briefcase text-gray-400 text-5xl mb-4"></i>
-                        <p class="text-gray-500 dark:text-gray-400 text-base font-medium">No job openings available at the moment.</p>
-                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Please check back later for new opportunities.</p>
+
+                    {{-- No results from filter --}}
+                    <div x-show="visibleCount === 0 && totalJobs > 0" x-cloak class="text-center py-16">
+                        <i class="fas fa-search text-gray-300 dark:text-gray-600 text-4xl mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No jobs match your filters.</p>
+                        <button @click="clearAllFilters()" class="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">Clear all filters</button>
                     </div>
-                    @endforelse
                 </div>
+
+                {{-- Job Detail Panel --}}
+                <div x-show="showDetail" x-cloak
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-x-4"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     class="w-full lg:w-80 xl:w-[340px] flex-shrink-0">
+                    <div class="bg-white dark:bg-gray-900 shadow-sm rounded-xl sticky top-6 max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden relative my-3">
+                        <template x-if="selectedJob">
+                            <div class="flex flex-col h-full min-h-0">
+                                {{-- Scrollable content --}}
+                                <div class="flex-1 overflow-y-auto scrollbar-custom min-h-0">
+                                    {{-- Top section: Icon + Title + Location --}}
+                                    <div class="px-6 pt-8 pb-5 flex flex-col items-center text-center border-b border-gray-100 dark:border-gray-700">
+                                        {{-- Close button --}}
+                                        <button @click="showDetail = false; selectedJobId = null; selectedJob = null;"
+                                            class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors z-10">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+
+                                        {{-- Company Icon --}}
+                                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-sm dark:shadow-none"
+                                             :class="{
+                                                'bg-green-50 dark:bg-green-900/30': selectedJob.iconColor === 'green',
+                                                'bg-purple-50 dark:bg-purple-900/30': selectedJob.iconColor === 'purple',
+                                                'bg-orange-50 dark:bg-orange-900/30': selectedJob.iconColor === 'orange',
+                                                'bg-red-50 dark:bg-red-900/30': selectedJob.iconColor === 'red',
+                                                'bg-blue-50 dark:bg-blue-900/30': !['green','purple','orange','red'].includes(selectedJob.iconColor)
+                                             }">
+                                            <i class="fas text-2xl"
+                                               :class="[selectedJob.icon, {
+                                                    'text-green-600 dark:text-green-400': selectedJob.iconColor === 'green',
+                                                    'text-purple-600 dark:text-purple-400': selectedJob.iconColor === 'purple',
+                                                    'text-orange-600 dark:text-orange-400': selectedJob.iconColor === 'orange',
+                                                    'text-red-600 dark:text-red-400': selectedJob.iconColor === 'red',
+                                                    'text-blue-600 dark:text-blue-400': !['green','purple','orange','red'].includes(selectedJob.iconColor)
+                                               }]"></i>
+                                        </div>
+
+                                        {{-- Title --}}
+                                        <h2 class="text-lg font-bold text-gray-900 dark:text-white leading-snug mb-1" x-text="selectedJob.title"></h2>
+
+                                        {{-- Company + Location --}}
+                                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedJob.location"></p>
+                                    </div>
+
+                                    {{-- Required Skills (Minimum qualifications) --}}
+                                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700"
+                                         x-show="selectedJob.requiredSkills && selectedJob.requiredSkills.length > 0">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Minimum qualifications:</h3>
+                                        <ul class="space-y-2">
+                                            <template x-for="skill in selectedJob.requiredSkills" :key="skill">
+                                                <li class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                    <span class="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0">&#8226;</span>
+                                                    <span x-text="skill"></span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+
+                                    {{-- Required Documents --}}
+                                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700"
+                                         x-show="selectedJob.requiredDocs && selectedJob.requiredDocs.length > 0">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required documents</h3>
+                                        <ul class="space-y-2">
+                                            <template x-for="doc in selectedJob.requiredDocs" :key="typeof doc === 'object' ? doc.name : doc">
+                                                <li class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                    <span class="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0">&#8226;</span>
+                                                    <span>
+                                                        <span x-text="typeof doc === 'object' ? doc.name : doc"></span>
+                                                        <template x-if="typeof doc === 'object' && doc.type">
+                                                            <span class="ml-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400" x-text="doc.type"></span>
+                                                        </template>
+                                                    </span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+
+                                    {{-- About the Job --}}
+                                    <div class="px-6 py-5"
+                                         x-data="{ expanded: false }">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">About the Job</h3>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                            <p :class="expanded ? '' : 'line-clamp-4'" x-text="selectedJob.description"></p>
+                                        </div>
+                                        <button @click="expanded = !expanded"
+                                            class="mt-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1">
+                                            <span x-text="expanded ? 'Show less' : 'Read More'"></span>
+                                            <svg class="w-3 h-3 transition-transform" :class="expanded ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    {{-- Benefits --}}
+                                    <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
+                                         x-show="selectedJob.benefits && selectedJob.benefits.length > 0">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Benefits:</h3>
+                                        <ul class="space-y-2">
+                                            <template x-for="benefit in selectedJob.benefits" :key="benefit">
+                                                <li class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                    <div class="w-5 h-5 bg-blue-50 dark:bg-blue-900/30 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                        <i class="fas fa-check text-blue-600 dark:text-blue-400 text-[8px]"></i>
+                                                    </div>
+                                                    <span x-text="benefit"></span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                {{-- Fixed bottom: Apply Now + Heart --}}
+                                <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center gap-3 flex-shrink-0">
+                                    <button @click="openApplicationModal()"
+                                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full transition-all shadow-md text-sm font-semibold hover:shadow-lg">
+                                        Apply Now
+                                    </button>
+                                    <button @click.stop class="w-11 h-11 bg-gray-100 dark:bg-gray-700 text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 rounded-full transition-colors flex items-center justify-center flex-shrink-0">
+                                        <i class="far fa-heart text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
             </div>
-
-            {{-- Right Side - Job Details --}}
-            <div class="xl:col-span-1">
-                <div id="jobDetailPanel"
-                    class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 sticky top-6 border border-blue-100 dark:border-gray-700"
-                    style="display: none;">
-
-                    {{-- Job Type Badge --}}
-                    <div class="mb-4">
-                        <span id="jobTypeBadge"
-                            class="inline-block px-3 py-1 bg-blue-900/30 text-blue-600 text-xs rounded-lg">
-                            Full-time Employee
-                        </span>
-                    </div>
-
-                    {{-- Job Title --}}
-                    <h2 id="jobTitle" class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
-                        Deep Cleaning Specialist
-                    </h2>
-
-                    {{-- Location & Salary --}}
-                    <div class="mb-6">
-                        <p id="jobLocation" class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2 mb-2">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Imst, Finland
-                        </p>
-                        <p id="jobSalary" class="text-xl font-bold text-gray-900 dark:text-white">
-                            $30 - $40/hr
-                        </p>
-                    </div>
-
-                    {{-- Description --}}
-                    <p id="jobDescription" class="text-sm text-justify text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                        Handling intensive cleaning tasks using specialized equipment and chemicals to meet high sanitation standards.
-                    </p>
-
-                    {{-- Action Buttons --}}
-                    <div class="flex gap-3 mb-8">
-                        <button onclick="openApplicationModal()"
-                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-full transition-all shadow-lg text-sm hover:shadow-xl">
-                            Apply Now
-                        </button>
-                        <button
-                            class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-lg flex items-center justify-center">
-                            <i class="far fa-heart text-xl"></i>
-                        </button>
-                    </div>
-
-                    {{-- Tabs --}}
-                    <div class="flex gap-4 mb-6 border-b border-gray-300 dark:border-gray-600">
-                        <button onclick="switchDetailTab('overview')" id="tab-overview"
-                            class="detail-tab pb-3 text-sm font-semibold transition-colors text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400">
-                            Overview
-                        </button>
-                        <button onclick="switchDetailTab('benefits')" id="tab-benefits"
-                            class="detail-tab pb-3 text-sm font-semibold transition-colors text-gray-600 dark:text-gray-400">
-                            Benefits
-                        </button>
-                    </div>
-
-                    {{-- Tab Content --}}
-                    <div id="tab-content-overview" class="tab-content">
-                        <div class="mb-8">
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">
-                                Required Skills and Experience
-                            </h3>
-                            <ul id="requiredSkills" class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Advanced cleaning methods</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Equipment and chemical handling</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Safety awareness</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Prior deep cleaning experience</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Knowledge of cleaning chemicals</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>PPR compliance</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        {{-- Required Documentations --}}
-                        <div class="mb-6">
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">
-                                Required Documentations
-                            </h3>
-                            <ul id="requiredDocs" class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Resume / Bio-data</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Valid Government ID (e.g., Passport, National ID)</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Passport-size (recent) photo</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Educational certificates and photo</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>NBI / Police Clearance</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>2×2 ID Photo (or ROA-acknowledged employment</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                                    <span>Company Policy & NDA Acknowledgement</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        {{-- Note --}}
-                        <div class="bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
-                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Kindly prepare a compiled pdf document with the same sequence guide from the company policy and NDA acknowledgement which will be in the form.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div id="tab-content-benefits" class="tab-content" style="display: none;">
-                        <div class="space-y-3">
-                            <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4">
-                                <div class="flex items-start gap-3">
-                                    <i class="fas fa-hand-holding-usd text-blue-600 dark:text-blue-400 text-xl mt-1"></i>
-                                    <div>
-                                        <h4 class="font-semibold text-sm text-gray-900 dark:text-white mb-1">Competitive Salary</h4>
-                                        <p class="text-xs text-gray-600 dark:text-gray-400">Hourly rate with potential for overtime pay</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4">
-                                <div class="flex items-start gap-3">
-                                    <i class="fas fa-medkit text-blue-600 dark:text-blue-400 text-xl mt-1"></i>
-                                    <div>
-                                        <h4 class="font-semibold text-sm text-gray-900 dark:text-white mb-1">Health Insurance</h4>
-                                        <p class="text-xs text-gray-600 dark:text-gray-400">Comprehensive health coverage for employees</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4">
-                                <div class="flex items-start gap-3">
-                                    <i class="fas fa-graduation-cap text-blue-600 dark:text-blue-400 text-xl mt-1"></i>
-                                    <div>
-                                        <h4 class="font-semibold text-sm text-gray-900 dark:text-white mb-1">Training & Development</h4>
-                                        <p class="text-xs text-gray-600 dark:text-gray-400">Ongoing professional development opportunities</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4">
-                                <div class="flex items-start gap-3">
-                                    <i class="fas fa-calendar-alt text-blue-600 dark:text-blue-400 text-xl mt-1"></i>
-                                    <div>
-                                        <h4 class="font-semibold text-sm text-gray-900 dark:text-white mb-1">Paid Time Off</h4>
-                                        <p class="text-xs text-gray-600 dark:text-gray-400">Generous vacation and sick leave policy</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Empty State --}}
-                <div id="emptyState"
-                    class="bg-white dark:bg-gray-800 rounded-3xl p-12 text-center border border-gray-200 dark:border-gray-700">
-                    <div class="text-gray-400 dark:text-gray-500 mb-4">
-                        <i class="fas fa-briefcase text-6xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        Select a Job
-                    </h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Click on any job card to view details
-                    </p>
-                </div>
-            </div>
-
         </div>
+
     </div>
 
     {{-- Application Modal --}}
@@ -460,12 +612,17 @@
             const urlParams = new URLSearchParams(window.location.search);
             const applyJob = urlParams.get('apply_job');
             if (applyJob && jobs[applyJob]) {
-                selectJob(parseInt(applyJob));
-                setTimeout(() => openApplicationModal(), 500);
+                // Let Alpine init first, then select + open modal
+                setTimeout(() => {
+                    const comp = document.querySelector('[x-data]').__x.$data;
+                    comp.selectJob(parseInt(applyJob));
+                    setTimeout(() => comp.openApplicationModal(), 300);
+                }, 500);
             }
         });
 
         // Navigate to Terms page with return context
+        let selectedJobId = null;
         function navigateToTerms() {
             if (document.cookie.includes('finnoys_terms_accepted=1')) return;
             const jobId = selectedJobId || '';
@@ -483,6 +640,7 @@
         const jobs = {
             @foreach($jobPostings ?? [] as $job)
             {{ $job->id }}: {
+                id: {{ $job->id }},
                 title: @json($job->title),
                 description: @json($job->description),
                 location: @json($job->location),
@@ -492,197 +650,209 @@
                 icon: @json($job->icon),
                 iconColor: @json($job->icon_color),
                 requiredSkills: @json($job->required_skills ?? []),
-                requiredDocs: @json($job->required_docs ?? [])
+                requiredDocs: @json($job->required_docs ?? []),
+                benefits: @json($job->benefits ?? [])
             },
             @endforeach
         };
 
-        // Get first job ID for default selection
-        const firstJobId = {{ ($jobPostings ?? collect())->first()?->id ?? 'null' }};
+        const allJobIds = Object.keys(jobs).map(Number);
 
-        let currentFilter = 'all';
-        let selectedJobId = null;
+        function recruitmentPage() {
+            return {
+                searchQuery: '',
+                selectedTypes: [],
+                selectedLocations: [],
+                selectedCategories: [],
+                salaryMin: 0,
+                salaryMax: 1000,
+                salaryAbsMin: 0,
+                salaryAbsMax: 1000,
+                sortBy: 'newest',
+                selectedJobId: null,
+                selectedJob: null,
+                showDetail: false,
+                detailTab: 'overview',
+                filteredIds: [...allJobIds],
+                visibleCount: allJobIds.length,
+                totalJobs: allJobIds.length,
 
-        // Check for job parameter in URL and auto-select on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const jobId = urlParams.get('job');
+                // Derived data for sidebar
+                locations: [],
+                locationCounts: {},
+                categories: [],
 
-            if (jobId && jobs[jobId]) {
-                selectJob(parseInt(jobId));
-                const selectedJobCard = document.querySelector(`[data-job-id="${jobId}"]`);
-                if (selectedJobCard) {
-                    selectedJobCard.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'nearest'
+                init() {
+                    // Build unique locations (full "City, State" strings) with counts
+                    const locCounts = {};
+                    allJobIds.forEach(id => {
+                        const loc = jobs[id].location;
+                        locCounts[loc] = (locCounts[loc] || 0) + 1;
                     });
+                    this.locationCounts = locCounts;
+                    this.locations = Object.keys(locCounts).sort();
+
+                    // Build salary range from all jobs
+                    let minSal = Infinity, maxSal = 0;
+                    allJobIds.forEach(id => {
+                        const parsed = this.parseSalary(jobs[id].salary);
+                        if (parsed.min < minSal) minSal = parsed.min;
+                        if (parsed.max > maxSal) maxSal = parsed.max;
+                    });
+                    if (minSal === Infinity) minSal = 0;
+                    if (maxSal === 0) maxSal = 1000;
+                    this.salaryAbsMin = minSal;
+                    this.salaryAbsMax = maxSal;
+                    this.salaryMin = minSal;
+                    this.salaryMax = maxSal;
+
+                    // Build categories with counts from icon mapping
+                    const catMap = {
+                        'fa-broom': { value: 'cleaning', label: 'Cleaning' },
+                        'fa-dolly': { value: 'logistics', label: 'Logistics' },
+                        'fa-user-tie': { value: 'management', label: 'Management' },
+                        'fa-headset': { value: 'customer-service', label: 'Customer Service' },
+                        'fa-spray-can': { value: 'maintenance', label: 'Maintenance' },
+                        'fa-clipboard-check': { value: 'administration', label: 'Administration' },
+                        'fa-users': { value: 'human-resources', label: 'Human Resources' },
+                        'fa-briefcase': { value: 'general', label: 'General' },
+                    };
+                    // Initialize all categories with count 0
+                    const allCats = [
+                        { value: 'cleaning', label: 'Cleaning' },
+                        { value: 'logistics', label: 'Logistics' },
+                        { value: 'management', label: 'Management' },
+                        { value: 'customer-service', label: 'Customer Service' },
+                        { value: 'maintenance', label: 'Maintenance' },
+                        { value: 'administration', label: 'Administration' },
+                        { value: 'human-resources', label: 'Human Resources' },
+                        { value: 'general', label: 'General' },
+                    ];
+                    const catCounts = {};
+                    allCats.forEach(c => { catCounts[c.value] = { ...c, count: 0 }; });
+                    allJobIds.forEach(id => {
+                        const icon = jobs[id].icon;
+                        const cat = catMap[icon] || { value: 'other', label: 'Other' };
+                        if (!catCounts[cat.value]) catCounts[cat.value] = { ...cat, count: 0 };
+                        catCounts[cat.value].count++;
+                    });
+                    this.categories = Object.values(catCounts);
+
+                    // Auto-select from URL param, or default to newest job
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const jobId = urlParams.get('job');
+                    if (jobId && jobs[jobId]) {
+                        this.selectJob(parseInt(jobId));
+                    } else if (allJobIds.length > 0) {
+                        // Select the newest job (highest ID)
+                        const newestId = Math.max(...allJobIds);
+                        this.selectJob(newestId);
+                    }
+
+                    this.applyFilters();
+                },
+
+                rangeFillStyle() {
+                    const range = this.salaryAbsMax - this.salaryAbsMin || 1;
+                    const left = ((this.salaryMin - this.salaryAbsMin) / range) * 100;
+                    const right = ((this.salaryMax - this.salaryAbsMin) / range) * 100;
+                    return `left:${left}%;width:${right - left}%`;
+                },
+
+                updateRangeSlider() {
+                    // no-op placeholder for x-effect reactivity trigger
+                    void(this.salaryMin + this.salaryMax);
+                },
+
+                // Parse salary string like "30 - 40/hr", "25/hr", "2500/mo" into { min, max }
+                parseSalary(salaryStr) {
+                    if (!salaryStr) return { min: 0, max: 0 };
+                    const numbers = salaryStr.match(/[\d]+(?:\.[\d]+)?/g);
+                    if (!numbers || numbers.length === 0) return { min: 0, max: 0 };
+                    const nums = numbers.map(Number);
+                    return { min: Math.min(...nums), max: Math.max(...nums) };
+                },
+
+                selectJob(jobId) {
+                    this.selectedJobId = jobId;
+                    this.selectedJob = jobs[jobId] || null;
+                    this.detailTab = 'overview';
+                    this.showDetail = true;
+                    selectedJobId = jobId; // global for terms/policy nav
+                },
+
+                applyFilters() {
+                    const searchLower = this.searchQuery.toLowerCase();
+
+                    this.filteredIds = allJobIds.filter(id => {
+                        const job = jobs[id];
+                        const el = document.querySelector(`[data-job-id="${id}"]`);
+                        const jobCategory = el ? el.getAttribute('data-category') : 'other';
+
+                        // Search filter
+                        if (searchLower && !job.title.toLowerCase().includes(searchLower) && !job.description.toLowerCase().includes(searchLower)) {
+                            return false;
+                        }
+
+                        // Type filter
+                        if (this.selectedTypes.length > 0 && !this.selectedTypes.includes(job.type)) {
+                            return false;
+                        }
+
+                        // Salary range filter
+                        const parsed = this.parseSalary(job.salary);
+                        if (parsed.max < this.salaryMin || parsed.min > this.salaryMax) {
+                            return false;
+                        }
+
+                        // Location filter (full "City, State" match)
+                        if (this.selectedLocations.length > 0 && !this.selectedLocations.includes(job.location)) {
+                            return false;
+                        }
+
+                        // Category filter
+                        if (this.selectedCategories.length > 0 && !this.selectedCategories.includes(jobCategory)) {
+                            return false;
+                        }
+
+                        return true;
+                    });
+
+                    this.visibleCount = this.filteredIds.length;
+                },
+
+                clearJobTypes() {
+                    this.selectedTypes = [];
+                    this.applyFilters();
+                },
+
+                clearAllFilters() {
+                    this.searchQuery = '';
+                    this.selectedTypes = [];
+                    this.selectedLocations = [];
+                    this.selectedCategories = [];
+                    this.salaryMin = this.salaryAbsMin;
+                    this.salaryMax = this.salaryAbsMax;
+                    this.sortBy = 'newest';
+                    this.applyFilters();
+                },
+
+                openApplicationModal() {
+                    if (this.selectedJobId && jobs[this.selectedJobId]) {
+                        document.getElementById('applicationJobTitle').value = jobs[this.selectedJobId].title;
+                        document.getElementById('applicationJobType').value = jobs[this.selectedJobId].type;
+                    }
+                    document.getElementById('applicationModal').style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
                 }
-            } else if (firstJobId) {
-                // Pre-select the first job on page load
-                selectJob(firstJobId);
-            }
-        });
-
-        function selectJob(jobId) {
-            selectedJobId = jobId;
-
-            // Remove active styling from all jobs
-            document.querySelectorAll('.job-card').forEach(card => {
-                card.classList.remove('ring-2', 'ring-blue-500', 'dark:ring-blue-400');
-            });
-
-            // Add active styling to selected job
-            const selectedCard = document.querySelector(`[data-job-id="${jobId}"] .job-card`);
-            if (selectedCard) {
-                selectedCard.classList.add('ring-2', 'ring-blue-500', 'dark:ring-blue-400');
-            }
-
-            // Update job details
-            const job = jobs[jobId];
-            if (job) {
-                updateJobDetails(job);
-                // Show detail panel, hide empty state
-                document.getElementById('jobDetailPanel').style.display = 'block';
-                document.getElementById('emptyState').style.display = 'none';
-            }
+            };
         }
 
-        function updateJobDetails(job) {
-            // Update type badge
-            document.getElementById('jobTypeBadge').textContent = job.typeBadge;
-
-            // Update title
-            document.getElementById('jobTitle').textContent = job.title;
-
-            // Update location
-            document.getElementById('jobLocation').innerHTML =
-                `<i class="fas fa-map-marker-alt"></i> ${job.location}`;
-
-            // Update salary
-            document.getElementById('jobSalary').textContent = job.salary;
-
-            // Update description
-            document.getElementById('jobDescription').textContent = job.description;
-
-            // Update required skills
-            const skillsList = document.getElementById('requiredSkills');
-            if (skillsList && job.requiredSkills) {
-                skillsList.innerHTML = job.requiredSkills.map(skill => `
-                    <li class="flex items-start gap-2">
-                        <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                        <span>${skill}</span>
-                    </li>
-                `).join('');
-            }
-
-            // Update required documents
-            const docsList = document.getElementById('requiredDocs');
-            if (docsList && job.requiredDocs) {
-                docsList.innerHTML = job.requiredDocs.map(doc => `
-                    <li class="flex items-start gap-2">
-                        <span class="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                        <span>${doc}</span>
-                    </li>
-                `).join('');
-            }
-        }
-
-        function filterJobs(type) {
-            currentFilter = type;
-
-            // Update tab styles
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                const filter = tab.getAttribute('data-filter');
-                if (filter === type) {
-                    tab.className =
-                        'filter-tab px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 bg-blue-600 text-white shadow-lg';
-                } else {
-                    tab.className =
-                        'filter-tab px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700';
-                }
-            });
-
-            // Filter jobs
-            const jobItems = document.querySelectorAll('.job-item');
-            jobItems.forEach(item => {
-                const jobType = item.getAttribute('data-type');
-                if (type === 'all' || jobType === type) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        function switchDetailTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.detail-tab').forEach(tab => {
-                tab.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-b-2', 'border-blue-600',
-                    'dark:border-blue-400');
-                tab.classList.add('text-gray-600', 'dark:text-gray-400');
-            });
-
-            const activeTab = document.getElementById(`tab-${tabName}`);
-            if (activeTab) {
-                activeTab.classList.remove('text-gray-600', 'dark:text-gray-400');
-                activeTab.classList.add('text-blue-600', 'dark:text-blue-400', 'border-b-2', 'border-blue-600',
-                    'dark:border-blue-400');
-            }
-
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
-            });
-
-            const activeContent = document.getElementById(`tab-content-${tabName}`);
-            if (activeContent) {
-                activeContent.style.display = 'block';
-            }
-        }
-
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function (e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const jobItems = document.querySelectorAll('.job-item');
-
-            jobItems.forEach(item => {
-                const title = item.querySelector('h3').textContent.toLowerCase();
-                const description = item.querySelector('p').textContent.toLowerCase();
-                const jobType = item.getAttribute('data-type');
-
-                const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
-                const matchesFilter = currentFilter === 'all' || jobType === currentFilter;
-
-                if (matchesSearch && matchesFilter) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        });
-
-        // Modal functions
-        function openApplicationModal() {
-            // Set job details in hidden fields
-            if (selectedJobId && jobs[selectedJobId]) {
-                document.getElementById('applicationJobTitle').value = jobs[selectedJobId].title;
-                document.getElementById('applicationJobType').value = jobs[selectedJobId].type;
-            }
-            document.getElementById('applicationModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
+        // Modal functions (global)
         function closeApplicationModal() {
             document.getElementById('applicationModal').style.display = 'none';
             document.body.style.overflow = 'auto';
             document.getElementById('applicationForm').reset();
-            document.getElementById('fileName').textContent = 'Choose file';
-        }
-
-        // Update file name display
-        function updateFileName(input) {
-            const fileName = input.files[0]?.name || 'Choose file';
-            document.getElementById('fileName').textContent = fileName;
         }
 
         // Handle form submission - show loading state

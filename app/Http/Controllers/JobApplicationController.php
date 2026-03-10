@@ -80,7 +80,9 @@ class JobApplicationController extends Controller
             ->groupBy('job_title')
             ->pluck('count', 'job_title');
 
-        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts'));
+        $cscApiKey = env('CSC_API_KEY', '');
+
+        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts', 'cscApiKey'));
     }
 
     /**
@@ -153,14 +155,40 @@ class JobApplicationController extends Controller
     public function destroy($id)
     {
         $application = JobApplication::findOrFail($id);
-
-        // Delete the resume file
-        if (Storage::disk('public')->exists($application->resume_path)) {
-            Storage::disk('public')->delete($application->resume_path);
-        }
-
         $application->delete();
 
         return redirect()->route('admin.recruitment.index')->with('success', 'Application deleted successfully.');
+    }
+
+    /**
+     * Bulk delete applications (admin)
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:job_applications,id',
+        ]);
+
+        JobApplication::whereIn('id', $validated['ids'])->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => count($validated['ids']) . ' application(s) deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Restore a soft-deleted application (admin)
+     */
+    public function restore($id)
+    {
+        $application = JobApplication::onlyTrashed()->findOrFail($id);
+        $application->restore();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Application restored successfully.',
+        ]);
     }
 }

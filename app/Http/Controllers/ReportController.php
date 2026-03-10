@@ -48,8 +48,8 @@ class ReportController extends Controller
                 'clients.birthdate', 'clients.security_question_1', 'clients.security_answer_1',
                 'clients.security_question_2', 'clients.security_answer_2', 'clients.created_at',
                 'clients.updated_at', 'clients.client_type', 'clients.company_name', 'clients.email',
-                'clients.phone_number', 'clients.business_id', 'clients.street_address', 'clients.postal_code',
-                'clients.city', 'clients.district', 'clients.address', 'clients.billing_address',
+                'clients.phone_number', 'clients.business_id', 'clients.street_address', 'clients.state',
+                'clients.city', 'clients.address', 'clients.billing_address',
                 'clients.einvoice_number', 'clients.is_active', 'clients.deleted_at')
             ->get();
 

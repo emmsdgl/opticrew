@@ -231,14 +231,20 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::patch('/{id}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
         Route::get('/{id}/download', [JobApplicationController::class, 'downloadResume'])->name('download');
         Route::delete('/{id}', [JobApplicationController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-delete', [JobApplicationController::class, 'bulkDestroy'])->name('bulk-destroy');
+        Route::post('/{id}/restore', [JobApplicationController::class, 'restore'])->name('restore');
     });
 
     // --- ADMIN JOB POSTINGS ROUTES ---
     Route::prefix('admin/job-postings')->name('admin.job-postings.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\JobPostingController::class, 'index'])->name('index');
+        Route::get('/archived', [\App\Http\Controllers\Admin\JobPostingController::class, 'archived'])->name('archived');
         Route::post('/', [\App\Http\Controllers\Admin\JobPostingController::class, 'store'])->name('store');
         Route::put('/{id}', [\App\Http\Controllers\Admin\JobPostingController::class, 'update'])->name('update');
+        Route::post('/{id}/archive', [\App\Http\Controllers\Admin\JobPostingController::class, 'archive'])->name('archive');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\JobPostingController::class, 'restore'])->name('restore');
         Route::delete('/{id}', [\App\Http\Controllers\Admin\JobPostingController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-delete', [\App\Http\Controllers\Admin\JobPostingController::class, 'bulkDestroy'])->name('bulk-destroy');
     });
 
     // --- ADMIN TRAINING VIDEO ROUTES ---

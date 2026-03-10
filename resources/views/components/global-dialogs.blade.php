@@ -12,7 +12,12 @@
         errorMessage: '',
         errorButtonText: '',
         errorRedirectUrl: '',
-        successRedirectUrl: ''
+        successRedirectUrl: '',
+        showConfirm: false,
+        confirmTitle: '',
+        confirmMessage: '',
+        confirmButtonText: '',
+        confirmCancelText: ''
      }"
      x-on:show-success-dialog.window="
         successTitle = $event.detail.title || 'Success';
@@ -20,6 +25,13 @@
         successButtonText = $event.detail.buttonText || 'Continue';
         successRedirectUrl = $event.detail.redirectUrl || '';
         showSuccess = true;
+     "
+     x-on:show-confirm-dialog.window="
+        confirmTitle = $event.detail.title || 'Are you sure?';
+        confirmMessage = $event.detail.message || '';
+        confirmButtonText = $event.detail.confirmText || 'Confirm';
+        confirmCancelText = $event.detail.cancelText || 'Cancel';
+        showConfirm = true;
      "
      x-on:show-error-dialog.window="
         errorTitle = $event.detail.title || 'Error';
@@ -31,6 +43,7 @@
 
     <x-employer-components.success-dialog />
     <x-employer-components.error-dialog />
+    <x-employer-components.confirm-dialog />
 </div>
 
 <script>
@@ -44,6 +57,28 @@
         window.dispatchEvent(new CustomEvent('show-success-dialog', {
             detail: { title: title, message: message, buttonText: buttonText, redirectUrl: redirectUrl }
         }));
+    };
+
+    /**
+     * Show a confirmation dialog that returns a Promise.
+     * Usage:
+     *   window.showConfirmDialog('Title', 'Message', 'Confirm Text', 'Cancel Text')
+     *     .then(() => { /* confirmed */ })
+     *     .catch(() => { /* cancelled */ });
+     */
+    window.showConfirmDialog = function(title, message, confirmText, cancelText) {
+        return new Promise((resolve, reject) => {
+            window.__confirmResolve = resolve;
+            window.__confirmReject = reject;
+            window.dispatchEvent(new CustomEvent('show-confirm-dialog', {
+                detail: {
+                    title: title,
+                    message: message,
+                    confirmText: confirmText,
+                    cancelText: cancelText
+                }
+            }));
+        });
     };
 
     window.showErrorDialog = function(title, message, buttonText, redirectUrl) {

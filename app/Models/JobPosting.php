@@ -19,19 +19,32 @@ class JobPosting extends Model
         'icon',
         'icon_color',
         'is_active',
+        'status',
         'required_skills',
         'required_docs',
+        'benefits',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'required_skills' => 'array',
         'required_docs' => 'array',
+        'benefits' => 'array',
     ];
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('is_active', true)->where('status', 'published');
+    }
+
+    public function scopeArchived($query)
+    {
+        return $query->where('status', 'archived');
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
     }
 
     public function getTypeBadgeAttribute($value)

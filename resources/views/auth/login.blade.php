@@ -173,8 +173,13 @@
                     <label for="input-password" class="text-[#07185788] text-sm font-sans">Password</label>
 
                     <button type="button" id="togglePassword"
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-blue-500 focus:outline-none">
-                        <i class="fa-solid fa-eye pr-3"></i>
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-blue-500 focus:outline-none pr-3">
+                        <svg id="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/>
+                        </svg>
+                        <svg id="icon-eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
                     </button>
                 </div>
 
@@ -190,13 +195,13 @@
                 <input type="submit" id="btn-login"
                     class="text-sm font-sans font-semibold hover:bg-blue-800 focus:outline-white" value="Login">
 
-                <div id="container-2-3" class="text-center p-3 text-sm">
+                {{-- <div id="container-2-3" class="text-center p-3 text-sm">
                     <p id="donthaveacct" class="text-[#07185788]">
                         Don't have an account?
                         <span id="createacc-label"
                             class="text-blue-600 font-sans font-bold ml-1 text-xs">Create account with Google</span>
                     </p>
-                </div>
+                </div> --}}
 
                 <!-- Sign in with Google -->
                 <a href="{{ route('google.redirect') }}" id="btn-google"
@@ -237,13 +242,14 @@
 
             const passwordInput = document.getElementById('input-password');
             const togglePassword = document.getElementById('togglePassword');
-            const icon = togglePassword.querySelector('i');
+            const iconEyeClosed = document.getElementById('icon-eye-closed');
+            const iconEyeOpen = document.getElementById('icon-eye-open');
 
             togglePassword.addEventListener('click', () => {
                 const isPassword = passwordInput.type === 'password';
                 passwordInput.type = isPassword ? 'text' : 'password';
-                icon.classList.toggle('fa-eye');
-                icon.classList.toggle('fa-eye-slash');
+                iconEyeClosed.style.display = isPassword ? 'none' : 'block';
+                iconEyeOpen.style.display = isPassword ? 'block' : 'none';
             });
         });
 
