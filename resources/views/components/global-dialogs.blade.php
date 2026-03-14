@@ -63,8 +63,8 @@
      * Show a confirmation dialog that returns a Promise.
      * Usage:
      *   window.showConfirmDialog('Title', 'Message', 'Confirm Text', 'Cancel Text')
-     *     .then(() => { /* confirmed */ })
-     *     .catch(() => { /* cancelled */ });
+     *     .then(() => { // confirmed })
+     *     .catch(() => { // cancelled });
      */
     window.showConfirmDialog = function(title, message, confirmText, cancelText) {
         return new Promise((resolve, reject) => {

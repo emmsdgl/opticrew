@@ -130,7 +130,7 @@
     {{$sidebar}}
 
     <!-- MAIN CONTENT -->
-    <main id="main-content" class="lg:ml-64 min-h-screen flex flex-col transition-all duration-300">
+    <main id="main-content" class="lg:ml-72 h-screen overflow-y-auto overflow-x-hidden flex flex-col transition-all duration-300">
    
             <!--DASHBOARD HEADER CONTENTS -->
             @php
@@ -161,7 +161,6 @@
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebar-toggle');
             const themeToggle = document.getElementById('theme-toggle');
-            const icon = document.getElementById('theme-icon');
             const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
             const mobileSidebarClose = document.getElementById('mobile-sidebar-close');
             const sidebarBackdrop = document.getElementById('sidebar-backdrop');
@@ -171,19 +170,16 @@
             const currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
 
             applyTheme(currentTheme);
-            updateIconRotation(currentTheme === 'dark');
 
             themeToggle.addEventListener('click', () => {
-                icon.classList.add('rotate-flip');
-                icon.addEventListener('animationend', () => {
-                    icon.classList.remove('rotate-flip');
+                themeToggle.classList.add('rotate-flip');
+                themeToggle.addEventListener('animationend', () => {
+                    themeToggle.classList.remove('rotate-flip');
                 }, { once: true });
 
                 const isDark = html.classList.contains('dark');
                 const newTheme = isDark ? 'light' : 'dark';
-
                 applyTheme(newTheme);
-                updateIconRotation(newTheme === 'dark');
             });
 
             const mainContent = document.getElementById('main-content');
@@ -194,19 +190,19 @@
 
                 if (collapsed) {
                     // Expanding sidebar
-                    sidebar.classList.replace('w-20', 'w-64');
-                    if (window.innerWidth >= 1024) { // Only adjust margin on desktop
-                        mainContent.classList.replace('lg:ml-20', 'lg:ml-64');
+                    sidebar.classList.replace('w-20', 'w-72');
+                    if (window.innerWidth >= 1024) {
+                        mainContent.classList.replace('lg:ml-20', 'lg:ml-72');
                     }
                     document.querySelectorAll('.nav-label, .sidebar-logo-text, .sidebar-logo')
                         .forEach(el => el.classList.remove('hidden'));
-                    // Move toggle button beside expanded sidebar (256px width + 16px gap = 272px)
-                    sidebarToggle.style.left = '272px';
+                    // Move toggle button beside expanded sidebar (288px width + 8px gap = 296px)
+                    sidebarToggle.style.left = '296px';
                 } else {
                     // Collapsing sidebar
-                    sidebar.classList.replace('w-64', 'w-20');
-                    if (window.innerWidth >= 1024) { // Only adjust margin on desktop
-                        mainContent.classList.replace('lg:ml-64', 'lg:ml-20');
+                    sidebar.classList.replace('w-72', 'w-20');
+                    if (window.innerWidth >= 1024) {
+                        mainContent.classList.replace('lg:ml-72', 'lg:ml-20');
                     }
                     document.querySelectorAll('.nav-label, .sidebar-logo-text, .sidebar-logo')
                         .forEach(el => el.classList.add('hidden'));
@@ -258,31 +254,15 @@
             });
 
             function applyTheme(mode) {
-                let iconClasses = '';
-
                 if (mode === 'dark') {
                     html.classList.add('dark');
                     html.setAttribute('data-theme', 'dark');
                     localStorage.setItem('theme', 'dark');
-                    iconClasses = 'fi fi-rr-moon text-indigo-300';
                 } else {
                     html.classList.remove('dark');
                     html.setAttribute('data-theme', 'light');
                     localStorage.setItem('theme', 'light');
-                    iconClasses = 'fi fi-rr-brightness text-yellow-500';
                 }
-
-                const keepClasses = Array.from(icon.classList).filter(cls =>
-                    cls.startsWith('rotate-') || cls.startsWith('transition-') ||
-                    cls.startsWith('duration-') || cls.startsWith('ease-')
-                ).join(' ');
-
-                icon.className = `${iconClasses} ${keepClasses}`;
-            }
-
-            function updateIconRotation(isDark) {
-                icon.classList.remove('rotate-0', 'rotate-180');
-                icon.classList.add(isDark ? 'rotate-180' : 'rotate-0');
             }
 
             // ===== DROPDOWN FUNCTIONALITY =====

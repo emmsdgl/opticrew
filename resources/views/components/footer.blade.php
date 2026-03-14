@@ -1,21 +1,3 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
-</head>
-
-<body class="bg-white dark:bg-gray-900">
-
     <footer class="bg-gray-50 dark:bg-[#121629] text-gray-700 dark:text-gray-300 px-12 md:px-16 py-6 transition-colors duration-300">
         <!-- Main Container -->
         <div class="max-w-7xl mx-auto">
@@ -86,6 +68,3 @@
             </div>
         </div>
     </footer>
-</body>
-
-</html>

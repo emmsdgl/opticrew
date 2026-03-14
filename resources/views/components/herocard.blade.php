@@ -9,13 +9,11 @@
 
     <!-- Left content -->
     <div class="w-full lg:w-2/3 pl-0 lg:pl-12 text-center lg:text-left z-10 py-6">
-        <h5
-            class="mb-4 text-3xl sm:text-3xl md:text-3xl lg:text-3xl font-sans font-bold tracking-tight text-white">
-            Hello,<span id="headername" class="ml-1">{{ $headerName }}</span>
+        <h5 class="mb-4 text-3xl sm:text-3xl md:text-3xl lg:text-3xl font-sans font-bold tracking-tight text-white">
+            <x-blur-text text="Hello, {{ $headerName }}" :delay="150" direction="top" :stepDuration="0.35" />
         </h5>
-        <p id="headerdesc"
-           class="text-sm sm:text-sm md:text-sm font-sans font-normal text-white opacity-90 max-w-[90%] mx-auto lg:mx-0">
-            {{ $headerDesc }}
+        <p class="text-sm sm:text-sm md:text-sm font-sans font-normal text-white opacity-90 max-w-[90%] mx-auto lg:mx-0">
+            <x-blur-text text="{{ $headerDesc }}" :delay="80" direction="top" :stepDuration="0.30" />
         </p>
     </div>
         <div id="hero-icon" class="hidden md:hidden lg:block lg:w-[30rem] relative">

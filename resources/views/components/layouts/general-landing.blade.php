@@ -380,6 +380,8 @@
     @include('components.footer')
 
     <!-- Common Scripts -->
+    <x-global-dialogs />
+
     @stack('scripts')
 
     <script>
@@ -496,7 +498,6 @@
             }
         });
     </script>
-    <x-global-dialogs />
 </body>
 
 </html>

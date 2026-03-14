@@ -5,13 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Client;
-use App\Models\JobApplication;
 use App\Models\UserActivityLog;
-use App\Services\Notification\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
@@ -47,6 +44,7 @@ class GoogleAuthController extends Controller
             'recruitment_data' => [
                 'job_title' => $request->job_title,
                 'job_type' => $request->job_type,
+                'required_docs' => json_decode($request->required_docs, true) ?? [],
             ],
         ]);
 
@@ -163,25 +161,15 @@ class GoogleAuthController extends Controller
             $user->update(['profile_picture' => $googleUser->getAvatar()]);
         }
 
-        // Create the job application
-        $application = JobApplication::create([
-            'job_title' => $recruitmentData['job_title'],
-            'job_type' => $recruitmentData['job_type'] ?? null,
-            'email' => $googleUser->getEmail(),
-            'status' => 'pending',
-        ]);
-
-        // Notify all admins
-        app(NotificationService::class)->notifyAdminsNewJobApplication($application);
-
         // Log in the applicant
         Auth::login($user, true);
         session()->regenerate();
 
-        // Clear session data
-        session()->forget(['google_auth_purpose', 'recruitment_data']);
+        // Keep recruitment data in session so the dashboard can open the apply modal
+        session()->forget(['google_auth_purpose']);
+        // recruitment_data is kept intentionally — the dashboard will consume it
 
-        return redirect()->route('applicant.dashboard')->with('success', 'Your application has been submitted successfully!');
+        return redirect()->route('applicant.dashboard')->with('open_apply_modal', true);
     }
 
     /**

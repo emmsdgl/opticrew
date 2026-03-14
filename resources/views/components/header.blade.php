@@ -3,12 +3,12 @@
 ])
 
 <!-- Topbar -->
-<header class="flex items-center justify-between px-3 sm:px-6 h-24 border-b border-gray-50 dark:border-gray-700">
+<header class="flex items-center justify-between px-3 sm:px-6 h-24 border-b border-gray-50 dark:border-gray-700 sticky top-0 z-10 bg-white dark:bg-[#0F172A] flex-shrink-0">
     <div class="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
         <!-- Mobile Menu Button (Hamburger) -->
         <button id="mobile-menu-toggle" class="lg:hidden text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors p-2 flex-shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.50" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
     </div>
@@ -18,8 +18,8 @@
         <!-- Notification Dropdown -->
         <div class="relative" x-data="notificationDropdown()" x-init="init()">
             <button @click="open = !open"
-                    class="relative bg-blue-100 dark:bg-blue-900/30 px-3 py-2 rounded-full transition hover:bg-gray-300 dark:hover:bg-gray-700">
-                <i class="fi fi-rr-bell text-blue-600 dark:text-blue-300 text-base"></i>
+                    class="relative bg-blue-100 dark:bg-blue-900/30 w-10 h-10 rounded-full transition hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.50" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-300"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
 
                 <!-- Notification Badge -->
                 <span x-show="unreadCount > 0" x-cloak class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center" x-text="unreadCount > 9 ? '9+' : unreadCount"></span>
@@ -88,9 +88,11 @@
 
         <!-- Theme Toggle Button -->
         <button id="theme-toggle"
-            class="relative bg-blue-100 dark:bg-blue-900/30 px-3 py-2 rounded-full transition rotate-once">
-            <i id="theme-icon"
-                class="fi fi-rr-brightness text-yellow-300 text-lg transition-transform duration-500"></i>
+            class="relative bg-blue-100 dark:bg-blue-900/30 w-10 h-10 rounded-full transition rotate-once flex items-center justify-center">
+            {{-- Sun icon (light mode) --}}
+            <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.50" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:hidden transition-transform duration-500"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            {{-- Moon icon (dark mode) --}}
+            <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.50" stroke-linecap="round" stroke-linejoin="round" class="hidden dark:block text-blue-300 transition-transform duration-500"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
         </button>
 
         <!-- Profile Dropdown -->
@@ -133,15 +135,24 @@
                 @auth
                     <!-- Menu Items -->
                     <div class="py-2">
-                        <a href="{{
-                            auth()->user()->role === 'admin' ? route('admin.profile') :
-                            (auth()->user()->role === 'employee' ? route('employee.profile') :
-                            route('client.profile'))
-                        }}"
-                            class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <i class="fa-regular fa-user w-5 text-gray-500 dark:text-gray-400"></i>
-                            <span class="ml-3">Profile</span>
-                        </a>
+                        @if(auth()->user()->role === 'applicant')
+                            <button type="button"
+                                onclick="window.dispatchEvent(new CustomEvent('open-profile-modal')); document.getElementById('profile-dropdown').classList.add('invisible','opacity-0','scale-95'); document.getElementById('profile-dropdown').classList.remove('opacity-100','scale-100');"
+                                class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fa-regular fa-user w-5 text-gray-500 dark:text-gray-400"></i>
+                                <span class="ml-3">Profile</span>
+                            </button>
+                        @else
+                            <a href="{{
+                                auth()->user()->role === 'admin' ? route('admin.profile') :
+                                (auth()->user()->role === 'employee' ? route('employee.profile') :
+                                route('client.profile'))
+                            }}"
+                                class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fa-regular fa-user w-5 text-gray-500 dark:text-gray-400"></i>
+                                <span class="ml-3">Profile</span>
+                            </a>
+                        @endif
                                                 
                         <a href="{{
                             auth()->user()->role === 'admin' ? route('admin.settings') :

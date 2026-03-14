@@ -164,21 +164,21 @@ class JobPostingController extends Controller
     }
 
     /**
-     * Delete a job posting
+     * Delete a job posting (moves to archived)
      */
     public function destroy($id)
     {
         $jobPosting = JobPosting::findOrFail($id);
-        $jobPosting->delete();
+        $jobPosting->update(['status' => 'archived', 'is_active' => false]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Job posting deleted successfully.'
+            'message' => 'Job posting moved to archived.',
         ]);
     }
 
     /**
-     * Bulk delete job postings
+     * Bulk delete job postings (moves to archived)
      */
     public function bulkDestroy(Request $request)
     {
@@ -187,11 +187,11 @@ class JobPostingController extends Controller
             'ids.*' => 'integer|exists:job_postings,id',
         ]);
 
-        JobPosting::whereIn('id', $validated['ids'])->delete();
+        JobPosting::whereIn('id', $validated['ids'])->update(['status' => 'archived', 'is_active' => false]);
 
         return response()->json([
             'success' => true,
-            'message' => count($validated['ids']) . ' job posting(s) deleted successfully.',
+            'message' => count($validated['ids']) . ' job posting(s) moved to archived.',
         ]);
     }
 

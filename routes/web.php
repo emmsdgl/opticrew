@@ -230,6 +230,8 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::get('/', [JobApplicationController::class, 'index'])->name('index');
         Route::get('/{id}', [JobApplicationController::class, 'show'])->name('show');
         Route::patch('/{id}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{id}/view', [JobApplicationController::class, 'viewResume'])->name('view');
+        Route::get('/{id}/preview', [JobApplicationController::class, 'previewResume'])->name('preview');
         Route::get('/{id}/download', [JobApplicationController::class, 'downloadResume'])->name('download');
         Route::delete('/{id}', [JobApplicationController::class, 'destroy'])->name('destroy');
         Route::post('/bulk-delete', [JobApplicationController::class, 'bulkDestroy'])->name('bulk-destroy');
@@ -441,8 +443,19 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
 });
 
 // --- APPLICANT ROUTES ---
-Route::middleware(['auth', 'terms.accepted', 'applicant'])->prefix('applicant')->name('applicant.')->group(function () {
+// Route::middleware(['auth', 'terms.accepted', 'applicant'])->prefix('applicant')->name('applicant.')->group(function () {
+//     Route::get('/dashboard', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'dashboard'])->name('dashboard');
+// });
+
+// TEMPORARY: Applicant routes without authentication (for development)
+Route::prefix('applicant')->name('applicant.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/saved', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'saved'])->name('saved');
+    Route::post('/jobs/{id}/toggle-save', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'toggleSaveJob'])->name('jobs.toggle-save');
+    Route::post('/apply/extract', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'extractResume'])->name('apply.extract');
+    Route::post('/apply/submit', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'submitApplication'])->name('apply.submit');
+    Route::post('/profile/update', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/applications/{id}/withdraw', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'withdrawApplication'])->name('applications.withdraw');
 });
 
 // --- MANAGER (CONTRACTED CLIENT) ROUTES ---

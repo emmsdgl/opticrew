@@ -913,6 +913,129 @@ class NotificationService
     }
 
     /**
+     * Notify applicant when their application is submitted.
+     */
+    public function notifyApplicantApplicationSubmitted($application, User $user): ?Notification
+    {
+        return $this->create(
+            $user,
+            Notification::TYPE_APPLICATION_SUBMITTED,
+            'Application Submitted',
+            "Your application for {$application->job_title} has been submitted successfully.",
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'icon' => 'paper-plane',
+                'color' => 'blue',
+            ]
+        );
+    }
+
+    /**
+     * Notify applicant when their application status changes.
+     */
+    public function notifyApplicantStatusChanged($application, string $oldStatus, string $newStatus): ?Notification
+    {
+        $user = User::where('email', $application->email)->first();
+        if (!$user) return null;
+
+        $labels = [
+            'pending' => 'Pending',
+            'reviewed' => 'Under Review',
+            'interview_scheduled' => 'Interview Scheduled',
+            'hired' => 'Hired',
+            'rejected' => 'Not Selected',
+        ];
+
+        $newLabel = $labels[$newStatus] ?? ucfirst($newStatus);
+        $title = match($newStatus) {
+            'reviewed' => 'Application Under Review',
+            'interview_scheduled' => 'Interview Scheduled',
+            'hired' => 'Congratulations! You\'re Hired',
+            'rejected' => 'Application Update',
+            default => 'Application Status Updated',
+        };
+        $message = match($newStatus) {
+            'reviewed' => "Your application for {$application->job_title} is now being reviewed by our team.",
+            'interview_scheduled' => "An interview has been scheduled for your {$application->job_title} application." . ($application->interview_date ? " Date: {$application->interview_date->format('M d, Y')}" : ''),
+            'hired' => "You've been hired for the {$application->job_title} position! We'll be in touch with next steps.",
+            'rejected' => "Thank you for your interest in the {$application->job_title} position. Unfortunately, we've decided to move forward with other candidates.",
+            default => "Your application for {$application->job_title} has been updated to: {$newLabel}.",
+        };
+
+        $colors = [
+            'reviewed' => 'blue',
+            'interview_scheduled' => 'purple',
+            'hired' => 'green',
+            'rejected' => 'red',
+        ];
+
+        return $this->create(
+            $user,
+            Notification::TYPE_APPLICATION_STATUS_CHANGED,
+            $title,
+            $message,
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'icon' => match($newStatus) {
+                    'reviewed' => 'eye',
+                    'interview_scheduled' => 'calendar-check',
+                    'hired' => 'circle-check',
+                    'rejected' => 'circle-xmark',
+                    default => 'bell',
+                },
+                'color' => $colors[$newStatus] ?? 'gray',
+            ]
+        );
+    }
+
+    /**
+     * Notify applicant when they withdraw their application.
+     */
+    public function notifyApplicantApplicationWithdrawn($application, User $user): ?Notification
+    {
+        return $this->create(
+            $user,
+            Notification::TYPE_APPLICATION_WITHDRAWN,
+            'Application Withdrawn',
+            "You have withdrawn your application for {$application->job_title}.",
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'icon' => 'rotate-left',
+                'color' => 'gray',
+            ]
+        );
+    }
+
+    /**
+     * Notify admins when an applicant withdraws their application.
+     */
+    public function notifyAdminsApplicationWithdrawn($application): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_APPLICATION_WITHDRAWN,
+            'Application Withdrawn',
+            "{$application->email} has withdrawn their application for {$application->job_title}.",
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'email' => $application->email,
+                'icon' => 'rotate-left',
+                'color' => 'red',
+                'action_url' => route('admin.recruitment.index'),
+                'action_text' => 'View Applications'
+            ]
+        );
+    }
+
+    /**
      * Notify all admins when an employee submits an absence/leave request (web form).
      */
     public function notifyAdminsEmployeeRequest($employeeRequest, $employeeName): Collection

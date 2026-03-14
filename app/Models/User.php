@@ -24,6 +24,7 @@ class User extends Authenticatable
         'name',
         'username',
         'email',
+        'alternative_email',
         'google_id',
         'email_verified_at',
         'profile_picture',

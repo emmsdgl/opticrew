@@ -16,6 +16,23 @@
     <style>
         @import url('{{ asset('app.css') }}');
 
+        /* Aurora text effect */
+        .aurora-text {
+            background: linear-gradient(135deg, #4169e1, #22d3ee, #0077FF, #06b6d4, #4169e1);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: aurora-text-shift 6s ease-in-out infinite;
+        }
+        @keyframes aurora-text-shift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 50% 100%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 50% 0%; }
+            100% { background-position: 0% 50%; }
+        }
+
         #container-2 {
             display: flex;
             flex-direction: column;
@@ -119,15 +136,23 @@
         <!-- INTERACTIVE PICTURE START -->
         <div class="container-1 w-full md:w-1/2 flex flex-col justify-center m-12 mr-1">
             <div id="container-1-2"
-                class="p-6 h-full flex flex-col justify-center items-center rounded-3xl bg-cover bg-no-repeat bg-center lg:block lg:flex md:block md:flex hidden"
+                class="p-6 h-full flex flex-col justify-center items-center rounded-3xl bg-cover bg-no-repeat bg-center relative overflow-hidden lg:block lg:flex md:block md:flex hidden"
                 style="background-image: url('{{ asset('images/backgrounds/login_bg2.svg') }}');">
 
-                <h1 id="header1" class="text-5xl font-sans font-bold text-white mb-4 text-left w-2/3">
+                {{-- Liquid Ether Overlay --}}
+                <x-liquid-ether
+                    :colors="['#1730F0', '#4169E1', '#93AAFF', '#0055FF']"
+                    :opacity="0.35"
+                    :mouse-force="18"
+                    :auto-demo="true"
+                />
+
+                <h1 id="header1" class="text-5xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
                     One-stop booking for
-                    <span class="text-[#0077FF] font-sans italic" id="spotless_text">a spotless space</span>
+                    <span class="aurora-text font-sans italic font-extrabold" id="spotless_text">a spotless space</span>
                 </h1>
 
-                <p id="desc1" class="text-[#688bff89] text-opacity-40 text-base text-left mt-3 w-2/3 ">
+                <p id="desc1" class="text-[#688bff89] text-opacity-40 text-base text-left mt-3 w-2/3 relative z-10">
                     Finnoys is a cleaning agency catering your cleaning needs with its offered quality cleaning
                     services.
                 </p>
@@ -141,8 +166,10 @@
                 @csrf
 
                 <div id="container-2-1" class="flex flex-col items-start my-12 w-full">
-                    <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt=""
-                        class="absolute h-20 w-auto top-20 right-[29rem]">
+                    <a href="{{ url('/') }}" class="absolute top-20 right-[29rem]">
+                        <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt="Finnoys"
+                            class="h-20 w-auto cursor-pointer">
+                    </a>
                     <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 mt-6 text-[#081032]">Log In</h1>
                     <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm mb-3">Welcome to
                         Fin-noys</p>
@@ -254,6 +281,8 @@
         });
 
     </script>
+
+
     <x-global-dialogs />
 </body>
 

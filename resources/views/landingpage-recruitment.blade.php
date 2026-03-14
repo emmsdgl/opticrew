@@ -113,10 +113,40 @@
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
             pointer-events: all;
         }
+
         /* Beam Circle Orbits */
-        @keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes orbit-counter { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-        @keyframes center-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes orbit-spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes orbit-counter {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(-360deg);
+            }
+        }
+
+        @keyframes center-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
         .orbit-ring {
             position: absolute;
             border-radius: 50%;
@@ -125,42 +155,79 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
+
         .orbit-container {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
+
         .orbit-icon {
             position: absolute;
             top: 50%;
             border-radius: 50%;
             display: grid;
             place-content: center;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Aurora text effect */
+        .aurora-text {
+            background: linear-gradient(135deg, #22d3ee, #4169e1, #06b6d4, #3b82f6, #22d3ee);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: aurora-text-shift 6s ease-in-out infinite;
+        }
+
+        @keyframes aurora-text-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            25% {
+                background-position: 50% 100%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            75% {
+                background-position: 50% 0%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
     </style>
 @endpush
 
 @section('content')
     {{-- Hero Section --}}
-    <section
-        class="w-full bg-gradient-to-br from-[#eef2f7] via-[#F6FAFD] to-[#e8edf5] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 overflow-hidden">
+    <section class="w-full bg-gradient-to-br bg-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 overflow-hidden">
         <div class="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 md:py-24 lg:py-28">
-            <div class="flex flex-col lg:flex-row items-center gap-0 lg:gap-0">
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-2">
                 {{-- Left Content --}}
-                <div class="flex-1 text-center lg:text-left max-w-2xl px-12">
-                    <p class="text-sm font-bold text-blue-600 dark:text-blue-400 mb-6">Welcome to Fin-noys</p>
-                    <h1
-                        class="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-gray-900 dark:text-white leading-tight mb-6">
-                        Explore<br>
-                        opportunities<br>
-                        <span class="text-blue-600">with Fin-noys.</span>
-                    </h1>
-                    <p
-                        class="text-gray-500 dark:text-gray-400 text-sm md:text-sm mb-10 max-w-md mx-auto lg:mx-0 leading-relaxed">
-                        Find a job according to your interest simply click on search
-                        and choose category according to your skills
-                    </p>
+                <div class="flex flex-col text-center lg:text-left max-w-2xl px-6 items-center justify-center">
+                    <div class="w-full px-10">
+                        <p class="text-sm font-bold text-blue-600 dark:text-blue-400 mb-6">Welcome to Fin-noys</p>
+                        <h1
+                            class="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-gray-900 dark:text-white leading-tight mb-6">
+                            Explore<br>
+                            opportunities<br>
+                            <span class="aurora-text font-extrabold">with Fin-noys.</span>
+                        </h1>
+                        <p
+                            class="text-gray-500 dark:text-gray-400 text-sm md:text-sm mb-10 max-w-md mx-auto lg:mx-0 leading-relaxed">
+                            Find a job according to your interest simply click on search
+                            and choose category according to your skills
+                        </p>
+                    </div>
 
                     {{-- Hero Search Bar --}}
                     <div
@@ -220,46 +287,76 @@
                     </div>
                 </div>
 
-                {{-- Right Illustration --}}
                 {{-- Beam Circle Orbits --}}
-                <div class="flex-1 flex justify-center lg:justify-center p-4">
+                <div class="flex justify-center lg:justify-center">
                     <div class="relative" style="width: 480px; height: 480px;">
                         {{-- Orbit 1: Briefcase (innermost) --}}
-                        <div class="orbit-ring border-blue-950 dark:border-white/40" style="width: 25%; height: 25%; border-width: 1.5px;"></div>
+                        <div class="orbit-ring border-blue-950 dark:border-white/40"
+                            style="width: 25%; height: 25%; border-width: 1.5px;"></div>
                         <div class="orbit-container" style="animation: orbit-spin 7s linear infinite;">
-                            <div class="orbit-icon bg-blue-600 dark:bg-white" style="left: calc(50% + 12.5%); transform: translate(-50%, -50%); width: 36px; height: 36px; animation: orbit-counter 7s linear infinite;">
-                                <svg class="w-5 h-5 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <div class="orbit-icon bg-blue-600 dark:bg-white"
+                                style="left: calc(50% + 12.5%); transform: translate(-50%, -50%); width: 36px; height: 36px; animation: orbit-counter 7s linear infinite;">
+                                <svg class="w-5 h-5 text-white dark:text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
                             </div>
                         </div>
 
                         {{-- Orbit 2: Chat/Message --}}
-                        <div class="orbit-ring border-blue-950 dark:border-white/40" style="width: 45%; height: 45%; border-width: 1.5px;"></div>
+                        <div class="orbit-ring border-blue-950 dark:border-white/40"
+                            style="width: 45%; height: 45%; border-width: 1.5px;"></div>
                         <div class="orbit-container" style="animation: orbit-spin 12s linear infinite;">
-                            <div class="orbit-icon bg-blue-600 dark:bg-white" style="left: calc(50% + 22.5%); transform: translate(-50%, -50%); width: 40px; height: 40px; animation: orbit-counter 12s linear infinite;">
-                                <svg class="w-5 h-5 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            <div class="orbit-icon bg-blue-600 dark:bg-white"
+                                style="left: calc(50% + 22.5%); transform: translate(-50%, -50%); width: 40px; height: 40px; animation: orbit-counter 12s linear infinite;">
+                                <svg class="w-5 h-5 text-white dark:text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
                             </div>
                         </div>
 
                         {{-- Orbit 3: Document/Resume --}}
-                        <div class="orbit-ring border-blue-950 dark:border-white/40" style="width: 65%; height: 65%; border-width: 1.5px;"></div>
+                        <div class="orbit-ring border-blue-950 dark:border-white/40"
+                            style="width: 65%; height: 65%; border-width: 1.5px;"></div>
                         <div class="orbit-container" style="animation: orbit-spin 9s linear infinite;">
-                            <div class="orbit-icon bg-blue-600 dark:bg-white" style="left: calc(50% + 32.5%); transform: translate(-50%, -50%); width: 44px; height: 44px; animation: orbit-counter 9s linear infinite;">
-                                <svg class="w-6 h-6 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <div class="orbit-icon bg-blue-600 dark:bg-white"
+                                style="left: calc(50% + 32.5%); transform: translate(-50%, -50%); width: 44px; height: 44px; animation: orbit-counter 9s linear infinite;">
+                                <svg class="w-6 h-6 text-white dark:text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
                             </div>
                         </div>
 
                         {{-- Orbit 4: Location (outermost) --}}
-                        <div class="orbit-ring border-blue-950 dark:border-white/40" style="width: 85%; height: 85%; border-width: 1.5px;"></div>
+                        <div class="orbit-ring border-blue-950 dark:border-white/40"
+                            style="width: 85%; height: 85%; border-width: 1.5px;"></div>
                         <div class="orbit-container" style="animation: orbit-spin 15s linear infinite;">
-                            <div class="orbit-icon bg-blue-600 dark:bg-white" style="left: calc(50% + 42.5%); transform: translate(-50%, -50%); width: 48px; height: 48px; animation: orbit-counter 15s linear infinite;">
-                                <svg class="w-6 h-6 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <div class="orbit-icon bg-blue-600 dark:bg-white"
+                                style="left: calc(50% + 42.5%); transform: translate(-50%, -50%); width: 48px; height: 48px; animation: orbit-counter 15s linear infinite;">
+                                <svg class="w-6 h-6 text-white dark:text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
                             </div>
                         </div>
 
                         {{-- Center Icon: Briefcase --}}
                         <div class="absolute inset-0 grid place-content-center z-10">
-                            <div class="rounded-full bg-blue-600 dark:bg-white shadow-lg grid place-content-center" style="width: 64px; height: 64px; animation: center-pulse 2s ease-in-out infinite;">
-                                <svg class="w-8 h-8 text-white dark:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            <div class="rounded-full bg-blue-600 dark:bg-white shadow-lg grid place-content-center"
+                                style="width: 64px; height: 64px; animation: center-pulse 2s ease-in-out infinite;">
+                                <svg class="w-8 h-8 text-white dark:text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
                             </div>
                         </div>
                     </div>
@@ -269,81 +366,18 @@
     </section>
 
     {{-- Job Listings Section --}}
-    <div id="jobListingsSection" class="w-full min-h-screen bg-[#F6FAFD] dark:bg-gray-900 p-4 md:p-6 lg:p-8"
+    <div id="jobListingsSection" class="w-full min-h-screen bg-[#F6FAFD] dark:bg-gray-900 p-4 md:p-6 lg:p-12"
         x-data="recruitmentPage()" x-init="init()">
 
         <div class="max-w-[1600px] mx-auto p-3">
-            {{-- Page Header --}}
-            <div class="text-center my-10">
-                <p class="text-sm font-bold text-blue-600 dark:text-blue-400 mb-2">Get the help you need</p>
-                <h1 class="text-4xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">
-                    Explore Job Opportunities at Fin-noys
-                </h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xl mx-auto leading-relaxed">
-                    Browse available positions from top employers. Find the right role and apply today.
-                </p>
-            </div>
 
-            {{-- Search Bar --}}
-            <div class="max-w-xl mx-auto mb-10">
-                <div class="relative">
-                    <input type="text" x-model="searchQuery" @input="applyFilters()"
-                        placeholder="Search by Category, Company or ..."
-                        class="w-full text-sm px-5 py-3.5 pr-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400">
-                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <button @click="applyFilters()"
-                            class="w-9 h-9 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                {{-- Active filter pills --}}
-                <div class="flex flex-wrap items-center justify-center gap-2 mt-4"
-                    x-show="selectedTypes.length > 0 || selectedLocations.length > 0 || selectedCategories.length > 0"
-                    x-cloak>
-                    <template x-for="t in selectedTypes" :key="'t-' + t">
-                        <span
-                            class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-blue-600 text-white shadow-sm">
-                            <span x-text="t.replace('-',' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
-                            <button @click="selectedTypes = selectedTypes.filter(x => x !== t); applyFilters()"
-                                class="ml-0.5 hover:text-blue-200">&times;</button>
-                        </span>
-                    </template>
-                    <template x-for="loc in selectedLocations" :key="'l-' + loc">
-                        <span
-                            class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm">
-                            <span x-text="loc"></span>
-                            <button @click="selectedLocations = selectedLocations.filter(x => x !== loc); applyFilters()"
-                                class="ml-0.5 hover:text-gray-400">&times;</button>
-                        </span>
-                    </template>
-                    <template x-for="cat in selectedCategories" :key="'c-' + cat">
-                        <span
-                            class="inline-flex items-center gap-1 text-xs font-medium px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 shadow-sm">
-                            <span x-text="cat.replace('-',' ').replace(/\b\w/g, l => l.toUpperCase())"></span>
-                            <button @click="selectedCategories = selectedCategories.filter(x => x !== cat); applyFilters()"
-                                class="ml-0.5 hover:text-gray-400">&times;</button>
-                        </span>
-                    </template>
-                    <button @click="clearAllFilters()"
-                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium px-1">Clear
-                        filters</button>
-                </div>
-            </div>
 
             <div class="flex flex-col lg:flex-row gap-6">
 
                 {{-- Left Sidebar - Filters --}}
-                <aside class="w-full lg:w-72 xl:w-80 flex-shrink-0">
+                <aside class="w-full lg:w-80 xl:w-96 flex-shrink-0">
                     <div
-                        class="bg-white dark:bg-gray-900 rounded-2xl p-6 sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-custom">
+                        class="bg-white shadow-lg dark:bg-gray-900 rounded-2xl p-6 sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-custom">
 
                         {{-- Job Type Filter --}}
                         <div>
@@ -458,25 +492,40 @@
                     </div>
                 </aside>
 
-                {{-- Right Side - Job Cards Grid --}}
+                {{-- Middle - Job Cards List --}}
                 <div class="flex-1 min-w-0">
+                    {{-- Search Bar
+                    <div class="relative mb-4">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" x-model="searchQuery" @input="applyFilters()"
+                            placeholder="Search by Category, Company or ..."
+                            class="w-full text-sm pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400">
+                    </div> --}}
+
                     {{-- Results Header --}}
-                    <div class="flex items-center justify-between mb-4 px-1">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Showing <span class="font-semibold text-gray-900 dark:text-white"
-                                x-text="visibleCount"></span> jobs
-                        </p>
-                        <select x-model="sortBy" @change="applyFilters()"
-                            class="text-sm px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-gray-300">
-                            <option value="newest">Newest first</option>
-                            <option value="oldest">Oldest first</option>
-                            <option value="salary-high">Salary: High to Low</option>
-                            <option value="salary-low">Salary: Low to High</option>
-                        </select>
+                    <div class="flex items-center justify-between mb-4 px-8">
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">Jobs For You</span>
+                            <span
+                                class="text-sm text-blue-600 dark:text-blue-400 font-semibold cursor-pointer">Popular</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-400">Sort:</span>
+                            <select x-model="sortBy" @change="applyFilters()"
+                                class="text-xs px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-gray-300">
+                                <option value="newest">Newest</option>
+                                <option value="oldest">Oldest</option>
+                                <option value="salary-high">Salary: High to Low</option>
+                                <option value="salary-low">Salary: Low to High</option>
+                            </select>
+                        </div>
                     </div>
 
-                    {{-- Job Cards --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {{-- Scrollable Job Cards --}}
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[calc(100vh-8rem)] overflow-y-auto overflow-x-visible scrollbar-custom px-1 pb-2">
                         @forelse($jobPostings ?? [] as $job)
                             @php
                                 $iconBgClass = match ($job->icon_color) {
@@ -517,10 +566,10 @@
                                 data-category="{{ $jobCategory }}" data-location="{{ $job->location }}"
                                 @click="selectJob({{ $job->id }})"
                                 :style="filteredIds.includes({{ $job->id }}) ? '' : 'display:none'">
-                                <div class="job-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col h-full"
+                                <div class="job-card bg-white dark:bg-gray-800 rounded-2xl p-4 border-2 transition-all duration-200 cursor-pointer hover:shadow-lg flex flex-col h-full"
                                     :class="selectedJobId === {{ $job->id }} ?
-                                        'ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg' :
-                                        'shadow-sm hover:border-gray-200 dark:hover:border-gray-600'">
+                                        'border-blue-500 dark:border-blue-400 shadow-lg bg-blue-50/50 dark:bg-blue-900/10' :
+                                        'border-transparent shadow-sm hover:border-blue-300 dark:hover:border-blue-500/50'">
 
                                     {{-- Top row: Icon + Title + Heart --}}
                                     <div class="flex items-start gap-3 mb-3">
@@ -529,11 +578,10 @@
                                             <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-sm"></i>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                            <h3 class="text-sm font-bold text-gray-900 dark:text-white leading-snug truncate"
+                                                title="{{ $job->title }}">
                                                 {{ $job->title }}</h3>
-                                            <p
-                                                class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                                                <i class="fas fa-map-marker-alt text-[10px]"></i>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                                                 {{ $job->location }}
                                             </p>
                                         </div>
@@ -545,14 +593,15 @@
 
                                     {{-- Type Badges --}}
                                     <div class="flex flex-wrap gap-1.5 mb-3">
-                                        <span class="px-2 py-0.5 {{ $typeBadgeClass }} text-[11px] font-semibold rounded">
+                                        <span
+                                            class="px-2.5 py-0.5 {{ $typeBadgeClass }} text-xs font-medium rounded-full">
                                             {{ $job->type_badge }}
                                         </span>
                                     </div>
 
                                     {{-- Description --}}
                                     <p
-                                        class="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 flex-1 leading-relaxed">
+                                        class="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 flex-1 leading-relaxed">
                                         {{ $job->description }}
                                     </p>
 
@@ -560,10 +609,11 @@
                                     <div
                                         class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto">
                                         <span
-                                            class="text-sm font-bold text-gray-900 dark:text-white">&euro;{{ $job->salary }}</span>
+                                            class="text-sm font-bold text-gray-900 dark:text-white">&euro;{{ $job->salary }}<span
+                                                class="text-xs font-normal text-gray-400">/hr</span></span>
                                         <span class="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
                                             <i class="far fa-clock"></i>
-                                            {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
+                                            Posted {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
                                         </span>
                                     </div>
                                 </div>
@@ -592,9 +642,9 @@
                 {{-- Job Detail Panel --}}
                 <div x-show="showDetail" x-cloak x-transition:enter="transition ease-out duration-200"
                     x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0"
-                    class="w-full lg:w-80 xl:w-[340px] flex-shrink-0">
+                    class="w-full lg:w-80 xl:w-96 flex-shrink-0">
                     <div
-                        class="bg-white dark:bg-gray-900 shadow-sm rounded-xl sticky top-6 max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden relative my-3">
+                        class="bg-white dark:bg-gray-900 shadow-lg rounded-2xl sticky top-6 max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden">
                         <template x-if="selectedJob">
                             <div class="flex flex-col h-full min-h-0">
                                 {{-- Scrollable content --}}
@@ -649,12 +699,18 @@
                                         <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedJob.location">
                                         </p>
                                     </div>
-
+                                    {{-- About the Job --}}
+                                    <div class="px-6 py-5">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">About the Job</h3>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                            <p class="w-full text-justify" x-text="selectedJob.description"></p>
+                                        </div>
+                                    </div>
                                     {{-- Required Skills (Minimum qualifications) --}}
                                     <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700"
                                         x-show="selectedJob.requiredSkills && selectedJob.requiredSkills.length > 0">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Minimum
-                                            qualifications:</h3>
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required
+                                            Skills:</h3>
                                         <ul class="space-y-2">
                                             <template x-for="skill in selectedJob.requiredSkills" :key="skill">
                                                 <li
@@ -692,23 +748,7 @@
                                         </ul>
                                     </div>
 
-                                    {{-- About the Job --}}
-                                    <div class="px-6 py-5" x-data="{ expanded: false }">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">About the Job</h3>
-                                        <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                            <p :class="expanded ? '' : 'line-clamp-4'" x-text="selectedJob.description">
-                                            </p>
-                                        </div>
-                                        <button @click="expanded = !expanded"
-                                            class="mt-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1">
-                                            <span x-text="expanded ? 'Show less' : 'Read More'"></span>
-                                            <svg class="w-3 h-3 transition-transform"
-                                                :class="expanded ? 'rotate-180' : ''" fill="none"
-                                                stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
-                                    </div>
+
 
                                     {{-- Benefits --}}
                                     <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
@@ -732,7 +772,7 @@
 
                                 {{-- Fixed bottom: Apply Now + Heart --}}
                                 <div
-                                    class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center gap-3 flex-shrink-0">
+                                    class="px-6 py-4 rounded-xl border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center gap-3 flex-shrink-0">
                                     <button @click="openApplicationModal()"
                                         class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full transition-all shadow-md text-sm font-semibold hover:shadow-lg">
                                         Apply Now
@@ -766,31 +806,34 @@
                     class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                     <i class="fas fa-arrow-left text-xl"></i>
                 </button>
-                <h2 class="text-lg font-bold text-center mr-3 w-full text-gray-900 dark:text-white">Apply for this Position
-                </h2>
+                <p class="text-sm text-center mr-3 w-full text-gray-900 dark:text-white">
+                    Want to proceed with your application?
+                </p>
             </div>
 
             {{-- Modal Body --}}
             <div class="p-6">
                 <form id="applicationForm" action="{{ route('recruitment.google.apply') }}" method="POST"
-                    class="space-y-4">
+                    class="space-y-4 p-3">
                     @csrf
                     <input type="hidden" name="job_title" id="applicationJobTitle">
                     <input type="hidden" name="job_type" id="applicationJobType">
+                    <input type="hidden" name="required_docs" id="applicationRequiredDocs">
 
                     {{-- Google Sign-In Info --}}
-                    <div class="text-center mb-2">
+                    <div class="text-center">
                         <div
-                            class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                            class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fab fa-google text-2xl text-blue-600"></i>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                            Sign in with your Google account to apply. Your email will be used for application updates.
+                        <p class="flex flex-col text-sm text-gray-600 dark:text-gray-400 leading-relaxed my-8">
+                            <span class="font-bold">Sign in with your Google account to apply.</span> <span
+                                class="font-normal">Your email will be used for application updates.</span>
                         </p>
                     </div>
 
                     {{-- Terms and Conditions Acceptance --}}
-                    <div class="space-y-2">
+                    <div class="space-y-2 px-4 bg-amber">
                         <div id="termsCheckRow"
                             class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
                             :class="termsAccepted ?
@@ -831,23 +874,26 @@
                     </div>
 
                     {{-- Sign in with Google to Apply --}}
-                    <button type="submit" id="googleApplyBtn" :disabled="!termsAccepted || !policyAccepted"
-                        :class="(!termsAccepted || !policyAccepted) ? 'opacity-50 cursor-not-allowed' :
-                        'hover:bg-gray-50 dark:hover:bg-gray-600 shadow-lg hover:shadow-xl'"
-                        class="w-full flex items-center justify-center gap-3 py-3.5 px-4 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 transition-colors">
-                        <svg width="20" height="20" viewBox="0 0 48 48">
-                            <path fill="#EA4335"
-                                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                            <path fill="#4285F4"
-                                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                            <path fill="#FBBC05"
-                                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                            <path fill="#34A853"
-                                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                        </svg>
-                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Sign in with Google to
-                            Apply</span>
-                    </button>
+                    <div class="px-4 py-2">
+                        <button type="submit" id="googleApplyBtn" :disabled="!termsAccepted || !policyAccepted"
+                            :class="(!termsAccepted || !policyAccepted) ? 'opacity-50 cursor-not-allowed' :
+                            'hover:bg-gray-50 dark:hover:bg-gray-600 shadow-lg hover:shadow-xl'"
+                            class="w-full flex items-center justify-center gap-3 py-3.5 px-4 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 transition-colors">
+                            <svg width="20" height="20" viewBox="0 0 48 48">
+                                <path fill="#EA4335"
+                                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                                <path fill="#4285F4"
+                                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                                <path fill="#FBBC05"
+                                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                                <path fill="#34A853"
+                                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                            </svg>
+                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Sign in with Google to
+                                Apply</span>
+                        </button>
+
+                    </div>
 
                     <p x-show="!termsAccepted || !policyAccepted"
                         class="text-xs text-center text-amber-600 dark:text-amber-400">
@@ -1174,6 +1220,7 @@
                     if (this.selectedJobId && jobs[this.selectedJobId]) {
                         document.getElementById('applicationJobTitle').value = jobs[this.selectedJobId].title;
                         document.getElementById('applicationJobType').value = jobs[this.selectedJobId].type;
+                        document.getElementById('applicationRequiredDocs').value = JSON.stringify(jobs[this.selectedJobId].requiredDocs || []);
                     }
                     document.getElementById('applicationModal').style.display = 'flex';
                     document.body.style.overflow = 'hidden';

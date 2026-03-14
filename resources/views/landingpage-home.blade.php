@@ -220,7 +220,7 @@
     </div>
 
     <!-- Stats Section -->
-    <div id="container-2" class="bg-white dark:bg-gray-900 py-12 sm:py-24 lg:py-32 transition-colors">
+    {{-- <div id="container-2" class="bg-white dark:bg-gray-900 py-12 sm:py-24 lg:py-32 transition-colors">
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <dl class="grid grid-cols-1 gap-x-8 gap-y-8 sm:gap-y-16 text-center lg:grid-cols-3">
                 <div class="mx-auto flex max-w-xs flex-col gap-y-2 sm:gap-y-4">
@@ -246,7 +246,7 @@
                 </div>
             </dl>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Service Introduction -->
     <div id="container-3" class="py-8 sm:py-16 bg-white dark:bg-gray-900 transition-colors">
