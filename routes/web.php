@@ -451,6 +451,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
 Route::prefix('applicant')->name('applicant.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('/saved', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'saved'])->name('saved');
+    Route::get('/withdrawn', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'withdrawn'])->name('withdrawn');
     Route::post('/jobs/{id}/toggle-save', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'toggleSaveJob'])->name('jobs.toggle-save');
     Route::post('/apply/extract', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'extractResume'])->name('apply.extract');
     Route::post('/apply/submit', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'submitApplication'])->name('apply.submit');

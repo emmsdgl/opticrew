@@ -36,7 +36,8 @@
         }
     </script>
 
-    @livewireStyles 
+    @livewireStyles
+    @stack('styles')
 </head>
 <style>
     #page-loader {

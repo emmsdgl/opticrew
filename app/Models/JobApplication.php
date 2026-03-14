@@ -23,6 +23,8 @@ class JobApplication extends Model
         'reviewed_at',
         'interview_date',
         'status_history',
+        'withdraw_reason',
+        'withdraw_details',
     ];
 
     protected $casts = [

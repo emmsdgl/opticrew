@@ -20,15 +20,20 @@ class ApplicantDashboardController extends Controller
         $jobPostings = JobPosting::active()->orderBy('created_at', 'desc')->get();
 
         $myApplications = JobApplication::where('email', $user->email)
+            ->where('status', '!=', 'withdrawn')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $withdrawnCount = JobApplication::where('email', $user->email)
+            ->where('status', 'withdrawn')
+            ->count();
 
         $savedJobIds = SavedJob::where('user_id', $user->id)->pluck('job_posting_id')->toArray();
 
         // Check if redirected from landing page recruitment (Google OAuth flow)
         $pendingApply = session()->pull('recruitment_data');
 
-        return view('applicant.dashboard', compact('user', 'jobPostings', 'myApplications', 'savedJobIds', 'pendingApply'));
+        return view('applicant.dashboard', compact('user', 'jobPostings', 'myApplications', 'savedJobIds', 'pendingApply', 'withdrawnCount'));
     }
 
     public function updateProfile(Request $request)
@@ -43,6 +48,20 @@ class ApplicantDashboardController extends Controller
         $user->update($request->only(['alternative_email', 'phone', 'location']));
 
         return response()->json(['success' => true, 'message' => 'Profile updated successfully.']);
+    }
+
+    public function withdrawn()
+    {
+        $user = Auth::user();
+
+        $withdrawnApplications = JobApplication::where('email', $user->email)
+            ->where('status', 'withdrawn')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        $jobPostings = JobPosting::orderBy('created_at', 'desc')->get();
+
+        return view('applicant.withdrawn', compact('user', 'withdrawnApplications', 'jobPostings'));
     }
 
     public function saved()
@@ -216,6 +235,14 @@ class ApplicantDashboardController extends Controller
     public function withdrawApplication($id)
     {
         $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You must be logged in to withdraw an application.',
+            ], 401);
+        }
+
         $application = JobApplication::where('email', $user->email)->findOrFail($id);
 
         // Only allow withdrawal up to interview_scheduled
@@ -226,6 +253,9 @@ class ApplicantDashboardController extends Controller
             ], 422);
         }
 
+        $withdrawReason = $request->input('withdraw_reason', '');
+        $withdrawDetails = $request->input('withdraw_details', '');
+
         // Update status history
         $history = $application->status_history ?? [];
         $history[] = [
@@ -233,11 +263,15 @@ class ApplicantDashboardController extends Controller
             'to' => 'withdrawn',
             'timestamp' => now()->toIso8601String(),
             'by' => $user->name ?? 'Applicant',
+            'reason' => $withdrawReason,
+            'details' => $withdrawDetails,
         ];
 
         $application->update([
             'status' => 'withdrawn',
             'status_history' => $history,
+            'withdraw_reason' => $withdrawReason,
+            'withdraw_details' => $withdrawDetails,
         ]);
 
         // Notifications

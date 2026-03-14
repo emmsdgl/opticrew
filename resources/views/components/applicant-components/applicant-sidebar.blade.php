@@ -41,7 +41,7 @@
         @php
             $navItems = [
                 ['label' => 'Dashboard', 'icon' => 'fa-solid fa-house', 'href' => route('applicant.dashboard')],
-                ['label' => 'Saved', 'icon' => 'fa-solid fa-bookmark', 'href' => route('applicant.saved')],
+                ['label' => 'Withdrawn', 'icon' => 'fa-solid fa-rotate-left', 'href' => route('applicant.withdrawn')],
                 ['label' => 'Terms and Conditions', 'icon' => 'fa-solid fa-file-contract', 'href' => route('termscondition')],
                 ['label' => 'Privacy Policy', 'icon' => 'fa-solid fa-shield-halved', 'href' => route('privacypolicy')],
             ];

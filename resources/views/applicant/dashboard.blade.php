@@ -247,15 +247,15 @@
                         </div>
                         <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full flex-shrink-0">{{ $myApplications->count() }}</span>
                     </div>
-                    {{-- Saved --}}
+                    {{-- Withdrawn --}}
                     <div class="flex items-center gap-3 p-2.5 rounded-xl shadow-sm">
                         <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-gray-700">
-                            <i class="fa-solid fa-bookmark text-sm text-gray-600 dark:text-gray-400"></i>
+                            <i class="fa-solid fa-rotate-left text-sm text-gray-600 dark:text-gray-400"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-gray-900 dark:text-white">Saved</div>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white">Withdrawn</div>
                         </div>
-                        <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full flex-shrink-0">{{ count($savedJobIds ?? []) }}</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full flex-shrink-0">{{ $withdrawnCount ?? 0 }}</span>
                     </div>
                 </div>
             </div>

@@ -774,92 +774,19 @@
         </div>
 
         {{-- ── Confirmation Dialog ── --}}
-        <div
-            x-show="open && showConfirm"
-            style="display:none"
-            class="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-            x-transition:enter="transition ease-out duration-150"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-100"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-        >
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 scale-90"
-                x-transition:enter-end="opacity-100 scale-100">
-                <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-3">
-                    <i class="fa-solid fa-paper-plane text-blue-500 text-lg"></i>
-                </div>
-                <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Submit Application?</h3>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-5">
-                    You're about to apply for <span class="font-semibold text-gray-700 dark:text-gray-300" x-text="jobTitle"></span>. Make sure your details are correct before confirming.
-                </p>
-                <div class="flex gap-3">
-                    <button type="button" @click="showConfirm = false"
-                        class="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        Cancel
-                    </button>
-                    <button type="button" @click="submitApply()"
-                        class="flex-1 py-2 rounded-xl text-xs font-bold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 transition-colors">
-                        Confirm
-                    </button>
-                </div>
-            </div>
-        </div>
+        <x-dialogs.confirm-dialog show="open && showConfirm" title="Submit Application?" onCancel="showConfirm = false" onConfirm="submitApply()">
+            You're about to apply for <span class="font-semibold text-gray-700 dark:text-gray-300" x-text="jobTitle"></span>. Make sure your details are correct before confirming.
+        </x-dialogs.confirm-dialog>
 
         {{-- ── Success Dialog ── --}}
-        <div
-            x-show="open && showSuccess"
-            style="display:none"
-            class="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-            x-transition:enter="transition ease-out duration-150"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-        >
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 scale-90"
-                x-transition:enter-end="opacity-100 scale-100">
-                <div class="w-12 h-12 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-3">
-                    <i class="fa-solid fa-circle-check text-green-500 text-xl"></i>
-                </div>
-                <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Application Submitted!</h3>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-5">
-                    Your application for <span class="font-semibold" x-text="jobTitle"></span> has been submitted. We'll reach out soon via your email.
-                </p>
-                <button type="button" @click="closeModal(); window.location.reload()"
-                    class="w-full py-2 rounded-xl text-xs font-bold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 transition-colors">
-                    Done
-                </button>
-            </div>
-        </div>
+        <x-dialogs.success-dialog show="open && showSuccess" title="Application Submitted!" @click="closeModal(); window.location.reload()">
+            Your application for <span class="font-semibold" x-text="jobTitle"></span> has been submitted. We'll reach out soon via your email.
+        </x-dialogs.success-dialog>
 
         {{-- ── Error Dialog ── --}}
-        <div
-            x-show="open && showError"
-            style="display:none"
-            class="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-            x-transition:enter="transition ease-out duration-150"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-        >
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 scale-90"
-                x-transition:enter-end="opacity-100 scale-100">
-                <div class="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3">
-                    <i class="fa-solid fa-circle-xmark text-red-500 text-xl"></i>
-                </div>
-                <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Submission Failed</h3>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-5" x-text="errorMsg"></p>
-                <button type="button" @click="showError = false"
-                    class="w-full py-2 rounded-xl text-xs font-bold border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    Close
-                </button>
-            </div>
-        </div>
+        <x-dialogs.error-dialog show="open && showError" title="Submission Failed" @click="showError = false">
+            <span x-text="errorMsg"></span>
+        </x-dialogs.error-dialog>
 
     </div>
     </template>

@@ -45,7 +45,15 @@
 </style>
 
 <div
-    x-data="{ open: false, showWithdrawConfirm: false, withdrawing: false }"
+    x-data="{
+        open: false,
+        showWithdrawConfirm: false,
+        withdrawing: false,
+        showWithdrawError: false,
+        withdrawErrorMsg: '',
+        withdrawReason: '',
+        withdrawDetails: '',
+    }"
     class="flex flex-col p-4 rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700/50 bg-white dark:bg-gray-800/80 p-2 h-[fit-content]">
 
     {{-- ── Scrollable content body ── --}}
@@ -276,51 +284,87 @@
             </div>
 
             {{-- Withdraw confirmation dialog --}}
-            <div
-                x-show="open && showWithdrawConfirm"
-                style="display:none"
-                class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-                x-transition:enter="transition ease-out duration-150"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-100"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
+            <x-dialogs.confirm-dialog
+                show="open && showWithdrawConfirm"
+                title="Withdraw Application?"
+                icon="fa-solid fa-triangle-exclamation"
+                iconBg="bg-red-50 dark:bg-red-900/30"
+                iconColor="text-red-500"
+                onCancel="withdrawReason = ''; withdrawDetails = ''; showWithdrawConfirm = false"
             >
-                <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center"
-                    @click.stop
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-90"
-                    x-transition:enter-end="opacity-100 scale-100">
-                    <div class="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3">
-                        <i class="fa-solid fa-triangle-exclamation text-red-500 text-lg"></i>
-                    </div>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Withdraw Application?</h3>
-                    <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-5">
-                        Are you sure you want to withdraw your application for <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $application->job_title }}</span>? This action cannot be undone.
-                    </p>
-                    <div class="flex gap-3">
-                        <button type="button" @click="showWithdrawConfirm = false"
-                            class="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                            Cancel
-                        </button>
-                        <button type="button"
-                            :disabled="withdrawing"
-                            @click="withdrawing = true;
-                                fetch('{{ route('applicant.applications.withdraw', $application->id) }}', {
-                                    method: 'POST',
-                                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' }
-                                }).then(r => r.json()).then(d => {
-                                    if (d.success) { window.location.reload(); }
-                                    else { withdrawing = false; showWithdrawConfirm = false; }
-                                }).catch(() => { withdrawing = false; showWithdrawConfirm = false; })"
-                            class="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50">
-                            <span x-show="!withdrawing">Withdraw</span>
-                            <span x-show="withdrawing"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Withdrawing...</span>
-                        </button>
-                    </div>
+                <x-slot:confirmButton>
+                    <button type="button"
+                        :disabled="withdrawing || !withdrawReason"
+                        @click="withdrawing = true;
+                            fetch('{{ route('applicant.applications.withdraw', $application->id) }}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    withdraw_reason: withdrawReason,
+                                    withdraw_details: withdrawDetails
+                                })
+                            }).then(r => {
+                                if (!r.ok) throw new Error('Server error: ' + r.status);
+                                return r.json();
+                            }).then(d => {
+                                if (d.success) {
+                                    window.location.href = '{{ route('applicant.withdrawn') }}';
+                                } else {
+                                    withdrawErrorMsg = d.message || 'Failed to withdraw application.';
+                                    withdrawing = false;
+                                    showWithdrawConfirm = false;
+                                    showWithdrawError = true;
+                                }
+                            }).catch(e => {
+                                console.error('Withdraw error:', e);
+                                withdrawErrorMsg = 'An error occurred while withdrawing the application. Please try again.';
+                                withdrawing = false;
+                                showWithdrawConfirm = false;
+                                showWithdrawError = true;
+                            })"
+                        class="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+                        <span x-show="!withdrawing">Withdraw</span>
+                        <span x-show="withdrawing"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Withdrawing...</span>
+                    </button>
+                </x-slot:confirmButton>
+
+                <p class="mb-3">Are you sure you want to withdraw your application for <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $application->job_title }}</span>? This action cannot be undone.</p>
+
+                {{-- Reason dropdown --}}
+                <div class="text-left mb-2">
+                    <label class="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">Reason for withdrawal <span class="text-red-400">*</span></label>
+                    <select x-model="withdrawReason"
+                        class="w-full text-xs text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-2 outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-400 transition-all">
+                        <option value="">Select a reason...</option>
+                        <option value="Accepted Another Job Offer">Accepted Another Job Offer</option>
+                        <option value="Position No Longer of Interest">Position No Longer of Interest</option>
+                        <option value="Personal Reasons">Personal Reasons</option>
+                        <option value="Salary or Compensation Concerns">Salary or Compensation Concerns</option>
+                        <option value="Location or Commute Issues">Location or Commute Issues</option>
+                        <option value="Schedule Conflict">Schedule Conflict</option>
+                        <option value="Career Direction Change">Career Direction Change</option>
+                        <option value="Application Submitted by Mistake">Application Submitted by Mistake</option>
+                        <option value="Role Requirements Not Suitable">Role Requirements Not Suitable</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
-            </div>
+
+                {{-- Details textarea --}}
+                <div class="text-left">
+                    <label class="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">Additional details <span class="text-[10px] font-normal text-gray-400">(optional)</span></label>
+                    <textarea x-model="withdrawDetails" rows="3" placeholder="Provide any additional details..."
+                        class="w-full text-xs text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-2 outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-400 transition-all resize-none"></textarea>
+                </div>
+            </x-dialogs.confirm-dialog>
+
+            {{-- Withdraw error dialog --}}
+            <x-dialogs.error-dialog show="showWithdrawError" title="Withdraw Failed" @click="showWithdrawError = false">
+                <span x-text="withdrawErrorMsg"></span>
+            </x-dialogs.error-dialog>
         </div>
     </template>
 
