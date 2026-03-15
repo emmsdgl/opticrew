@@ -14,7 +14,14 @@
                     ['label' => 'Quotation Requests', 'icon' => 'fa-file-invoice', 'href' => route('admin.quotations.index')],
                 ]
             ],
-            ['label' => 'Recruitment', 'icon' => 'fa-user-plus', 'href' => route('admin.recruitment.index')],
+            [
+                'label' => 'Recruitment',
+                'icon' => 'fa-user-plus',
+                'children' => [
+                    ['label' => 'Applications', 'icon' => 'fa-file-lines', 'href' => route('admin.recruitment.index'), 'route' => 'admin.recruitment.index'],
+                    ['label' => 'Interviews', 'icon' => 'fa-calendar-check', 'href' => route('admin.recruitment.interviews'), 'route' => 'admin.recruitment.interviews'],
+                ]
+            ],
             ['label' => 'Training', 'icon' => 'fa-video', 'href' => route('admin.training-videos.index')],
             ['label' => 'Attendance', 'icon' => 'fa-solid fa-calendar-check', 'href' => route('admin.attendance')],
             ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('admin.history')],

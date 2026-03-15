@@ -22,6 +22,7 @@ class JobApplication extends Model
         'admin_notes',
         'reviewed_at',
         'interview_date',
+        'interview_duration',
         'status_history',
         'withdraw_reason',
         'withdraw_details',
@@ -29,7 +30,7 @@ class JobApplication extends Model
 
     protected $casts = [
         'reviewed_at'    => 'datetime',
-        'interview_date' => 'date',
+        'interview_date' => 'datetime',
         'status_history' => 'array',
     ];
 

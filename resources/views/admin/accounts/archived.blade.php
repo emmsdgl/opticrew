@@ -220,9 +220,8 @@
                 @endforeach
             </div>
 
-            <!-- Pagination -->
             <div class="mt-4">
-                {{ $users->links() }}
+                <x-pagination :paginator="$users" />
             </div>
         @else
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">

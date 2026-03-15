@@ -72,7 +72,7 @@
                                 style="display: none;">
                                 <ul class="py-2 text-xs text-gray-700 dark:text-white">
                                     <li>
-                                        <button @click="filterCategory = 'all'; open = false" type="button"
+                                        <button @click="filterCategory = 'all'; currentPage = 1; open = false" type="button"
                                             class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                                             :class="{ 'bg-gray-100 dark:bg-gray-600': filterCategory === 'all' }">
                                             All Categories
@@ -80,7 +80,7 @@
                                     </li>
                                     <template x-for="(cat, key) in categories" :key="key">
                                         <li>
-                                            <button @click="filterCategory = key; open = false" type="button"
+                                            <button @click="filterCategory = key; currentPage = 1; open = false" type="button"
                                                 class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                                                 :class="{ 'bg-gray-100 dark:bg-gray-600': filterCategory === key }"
                                                 x-text="cat.title">
@@ -99,34 +99,66 @@
             </div>
 
 
+            <!-- Bulk Actions Bar -->
+            <div x-show="selectedIds.length > 0" x-transition
+                class="flex flex-row justify-between items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <span class="text-sm font-medium text-blue-700 dark:text-blue-300"
+                    x-text="selectedIds.length + ' selected'"></span>
+                <div class="flex flex-row gap-3">
+                    <button @click="confirmBulkDelete()"
+                        class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+                        <i class="fa-solid fa-trash mr-1"></i>Delete Selected
+                    </button>
+                    <button @click="selectedIds = []"
+                        class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        Deselect All
+                    </button>
+                </div>
+            </div>
+
             <!-- Data Table -->
             <div x-show="filteredVideos().length > 0"
                 class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                <table class="w-full">
+                <table class="w-full table-fixed">
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-700">
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            <th class="w-10 px-3 py-4 text-center">
+                                <input type="checkbox"
+                                    :checked="paginatedVideos().length > 0 && paginatedVideos().every(v => selectedIds.includes(v.id))"
+                                    @change="toggleSelectAll()"
+                                    class="appearance-none w-4 h-4 rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 checked:bg-blue-600 checked:border-blue-600 checked:bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-colors">
+                            </th>
+                            <th class="w-[30%] px-4 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
                                 Title</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
                                 Category</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
                                 Source</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            <th class="w-20 px-4 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
                                 Duration</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            <th class="w-24 px-4 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
                                 Required</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            <th class="w-24 px-4 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
                                 Status</th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            <th class="w-24 px-4 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">
                                 Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template x-for="(video, index) in filteredVideos()" :key="video.id">
-                            <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                        <template x-for="(video, index) in paginatedVideos()" :key="video.id">
+                            <tr class="even:bg-gray-50 dark:even:bg-gray-800/50"
+                                :class="{ 'bg-blue-50/50 dark:bg-blue-900/10': selectedIds.includes(video.id) }">
+                                <!-- Checkbox -->
+                                <td class="w-10 px-3 py-4 text-center">
+                                    <input type="checkbox"
+                                        :value="video.id"
+                                        :checked="selectedIds.includes(video.id)"
+                                        @change="toggleSelect(video.id)"
+                                        class="appearance-none w-4 h-4 rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 checked:bg-blue-600 checked:border-blue-600 checked:bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-colors">
+                                </td>
                                 <!-- Title with thumbnail -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-3">
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-3 min-w-0">
                                         <template x-if="video.platform === 'youtube' && video.video_id">
                                             <img :src="'https://img.youtube.com/vi/' + video.video_id + '/default.jpg'"
                                                 class="w-12 h-9 rounded object-cover flex-shrink-0" alt="">
@@ -136,28 +168,28 @@
                                                 <i class="fa-solid fa-file-video text-gray-400 text-sm"></i>
                                             </div>
                                         </template>
-                                        <div>
-                                            <div class="text-sm font-semibold text-gray-900 dark:text-white"
+                                        <div class="min-w-0">
+                                            <div class="text-sm font-semibold text-gray-900 dark:text-white truncate"
                                                 x-text="video.title"></div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 max-w-[200px] truncate"
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate"
                                                 x-text="video.description"></div>
                                         </div>
                                     </div>
                                 </td>
 
                                 <!-- Category badge -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full"
                                         :class="getCategoryBadgeClass(video.category)"
                                         x-text="getCategoryLabel(video.category)"></span>
                                 </td>
 
                                 <!-- Source -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <template x-if="video.platform === 'youtube'">
                                         <div class="flex items-center gap-1.5">
                                             <i class="fa-brands fa-youtube text-red-500 text-xs"></i>
-                                            <span class="text-sm text-gray-600 dark:text-gray-300 font-mono" x-text="video.video_id"></span>
+                                            <span class="text-sm text-gray-600 dark:text-gray-300 font-mono truncate max-w-[100px]" x-text="video.video_id"></span>
                                         </div>
                                     </template>
                                     <template x-if="video.platform === 'upload'">
@@ -169,13 +201,13 @@
                                 </td>
 
                                 <!-- Duration -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <span class="text-sm text-gray-900 dark:text-gray-200"
                                         x-text="video.duration || '-'"></span>
                                 </td>
 
                                 <!-- Required -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full"
                                         :class="video.required ?
                                             'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400' :
@@ -184,7 +216,7 @@
                                 </td>
 
                                 <!-- Status -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full"
                                         :class="video.is_active ?
                                             'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' :
@@ -193,14 +225,16 @@
                                 </td>
 
                                 <!-- Actions -->
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <td class="px-4 py-4 whitespace-nowrap text-right">
                                     <div class="flex items-center justify-end gap-3">
                                         <button @click="editVideo(video)"
-                                            class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                            title="Edit">
                                             <i class="fa-solid fa-pen text-sm"></i>
                                         </button>
                                         <button @click="deleteVideo(video)"
-                                            class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                                            class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                            title="Delete">
                                             <i class="fa-solid fa-trash text-sm"></i>
                                         </button>
                                     </div>
@@ -209,6 +243,54 @@
                         </template>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination -->
+            <div x-show="totalPages > 1" class="mt-3">
+                <nav role="navigation" aria-label="Pagination" class="mx-auto flex w-full justify-center">
+                    <ul class="flex flex-row items-center gap-1">
+                        {{-- Previous --}}
+                        <li>
+                            <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1"
+                                :class="currentPage <= 1 ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                                class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors">
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                <span>Previous</span>
+                            </button>
+                        </li>
+
+                        {{-- Page Numbers --}}
+                        <template x-for="page in pageNumbers" :key="'page-'+page">
+                            <li>
+                                <template x-if="page === '...'">
+                                    <span class="flex h-9 w-9 items-center justify-center text-gray-400 dark:text-gray-500" aria-hidden="true">
+                                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                                    </span>
+                                </template>
+                                <template x-if="page !== '...' && page === currentPage">
+                                    <span aria-current="page"
+                                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium text-gray-900 dark:text-gray-100 shadow-sm"
+                                        x-text="page"></span>
+                                </template>
+                                <template x-if="page !== '...' && page !== currentPage">
+                                    <button @click="goToPage(page)"
+                                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                        x-text="page"></button>
+                                </template>
+                            </li>
+                        </template>
+
+                        {{-- Next --}}
+                        <li>
+                            <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages"
+                                :class="currentPage >= totalPages ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                                class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors">
+                                <span>Next</span>
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
             </div>
 
             <!-- Empty State -->
@@ -411,6 +493,9 @@
                     editingId: null,
                     isSubmitting: false,
                     filterCategory: 'all',
+                    selectedIds: [],
+                    currentPage: 1,
+                    perPage: 5,
                     categories: @json($categories),
                     fetchingDuration: false,
                     trainingVideos: @json($trainingVideos).map(v => ({
@@ -444,6 +529,87 @@
                     filteredVideos() {
                         if (this.filterCategory === 'all') return this.trainingVideos;
                         return this.trainingVideos.filter(v => v.category === this.filterCategory);
+                    },
+
+                    paginatedVideos() {
+                        const filtered = this.filteredVideos();
+                        const start = (this.currentPage - 1) * this.perPage;
+                        return filtered.slice(start, start + this.perPage);
+                    },
+
+                    get totalPages() {
+                        return Math.ceil(this.filteredVideos().length / this.perPage);
+                    },
+
+                    get pageNumbers() {
+                        const pages = [];
+                        const total = this.totalPages;
+                        const current = this.currentPage;
+
+                        pages.push(1);
+
+                        const rangeStart = Math.max(2, current - 1);
+                        const rangeEnd = Math.min(total - 1, current + 1);
+
+                        if (rangeStart > 2) pages.push('...');
+                        for (let i = rangeStart; i <= rangeEnd; i++) pages.push(i);
+                        if (rangeEnd < total - 1) pages.push('...');
+
+                        if (total > 1) pages.push(total);
+                        return pages;
+                    },
+
+                    goToPage(p) {
+                        if (p >= 1 && p <= this.totalPages) this.currentPage = p;
+                    },
+
+                    toggleSelect(id) {
+                        const idx = this.selectedIds.indexOf(id);
+                        if (idx >= 0) {
+                            this.selectedIds.splice(idx, 1);
+                        } else {
+                            this.selectedIds.push(id);
+                        }
+                    },
+
+                    toggleSelectAll() {
+                        const pageIds = this.paginatedVideos().map(v => v.id);
+                        const allSelected = pageIds.every(id => this.selectedIds.includes(id));
+                        if (allSelected) {
+                            this.selectedIds = this.selectedIds.filter(id => !pageIds.includes(id));
+                        } else {
+                            pageIds.forEach(id => { if (!this.selectedIds.includes(id)) this.selectedIds.push(id); });
+                        }
+                    },
+
+                    async confirmBulkDelete() {
+                        if (!confirm(`Are you sure you want to delete ${this.selectedIds.length} training video(s)? This action cannot be undone.`)) return;
+
+                        try {
+                            const results = await Promise.all(
+                                this.selectedIds.map(id =>
+                                    fetch(`/admin/training-videos/${id}`, {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                            'Accept': 'application/json'
+                                        }
+                                    }).then(r => r.json())
+                                )
+                            );
+
+                            const deletedIds = [...this.selectedIds];
+                            this.trainingVideos = this.trainingVideos.filter(v => !deletedIds.includes(v.id));
+                            this.selectedIds = [];
+                            if (this.currentPage > this.totalPages) this.currentPage = Math.max(1, this.totalPages);
+                            this.successTitle = 'Videos Deleted Successfully';
+                            this.successMessage = `${deletedIds.length} training video(s) have been removed.`;
+                            this.showSuccess = true;
+                        } catch (error) {
+                            console.error('Bulk delete error:', error);
+                            window.showErrorDialog('Delete Failed', 'An error occurred while deleting the selected videos.');
+                        }
                     },
 
                     openModal() {
@@ -589,6 +755,7 @@
                             const data = await response.json();
                             if (data.success) {
                                 this.trainingVideos = this.trainingVideos.filter(v => v.id !== video.id);
+                                if (this.currentPage > this.totalPages) this.currentPage = Math.max(1, this.totalPages);
                                 this.successTitle = 'Video Deleted Successfully';
                                 this.successMessage =
                                     'The training video has been removed and is no longer visible to employees.';

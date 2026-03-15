@@ -7,32 +7,13 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-px bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Pending</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">
-                    {{ $applications->where('status', 'pending')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Reviewed</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">
-                    {{ $applications->where('status', 'reviewed')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Interview</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">
-                    {{ $applications->where('status', 'interview_scheduled')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Hired</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">
-                    {{ $applications->where('status', 'hired')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Total applications</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->total() }}</p>
-            </div>
-        </div>
+        <x-employer-components.stats-cards :stats="[
+            ['label' => 'Pending', 'value' => $applications->where('status', 'pending')->count(), 'icon' => 'fi fi-rr-clock', 'iconColor' => '#eab308'],
+            ['label' => 'Reviewed', 'value' => $applications->where('status', 'reviewed')->count(), 'icon' => 'fi fi-rr-eye', 'iconColor' => '#3b82f6'],
+            ['label' => 'Interview', 'value' => $applications->where('status', 'interview_scheduled')->count(), 'icon' => 'fi fi-rr-calendar', 'iconColor' => '#8b5cf6'],
+            ['label' => 'Hired', 'value' => $applications->where('status', 'hired')->count(), 'icon' => 'fi fi-rr-check-circle', 'iconColor' => '#22c55e'],
+            ['label' => 'Total Applications', 'value' => $applications->total(), 'icon' => 'fi fi-rr-document', 'iconColor' => '#6b7280'],
+        ]" />
 
         <!-- Applications Section Header with Filters -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 my-4 mx-4">
@@ -322,7 +303,7 @@
                         x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
                         x-transition:leave="transform transition ease-in-out duration-200"
                         x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" @click.stop
-                        class="relative w-screen max-w-md sm:max-w-lg">
+                        class="relative w-screen max-w-sm">
 
                         <div
                             class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
@@ -448,13 +429,13 @@
                                             <i class="fa-solid fa-sliders text-gray-600 dark:text-gray-400"></i>
                                             Status & Notes
                                         </h4>
-                                        <div class="space-y-3 py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                        <div class="space-y-3 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                                             {{-- Admin Notes --}}
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Admin Notes</label>
                                                 <textarea x-model="drawerNotes" rows="2"
                                                     :disabled="selectedApp?.status === 'hired' || selectedApp?.status === 'rejected'"
-                                                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    class="w-full px-3 py-4 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                     placeholder="Add notes about this applicant..."></textarea>
                                             </div>
 
@@ -585,25 +566,179 @@
                                 {{-- Reviewed: Schedule Interview + Reject --}}
                                 <template x-if="selectedApp?.status === 'reviewed'">
                                     <div class="space-y-3">
-                                        <div x-show="showDatePicker" x-transition class="space-y-2">
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Interview Date</label>
-                                            <input type="date" x-model="interviewDate"
-                                                :min="new Date().toISOString().split('T')[0]"
-                                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white">
+                                        <div x-show="showDatePicker" x-transition class="space-y-3">
+                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Select Interview Date</label>
+
+                                            {{-- Custom Calendar Picker --}}
+                                            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                                                {{-- Month navigation --}}
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <button @click="calPrev()" type="button" class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                                        <i class="fa-solid fa-chevron-left text-[10px] text-gray-500 dark:text-gray-400"></i>
+                                                    </button>
+                                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-200" x-text="calMonthLabel"></span>
+                                                    <button @click="calNext()" type="button" class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                                        <i class="fa-solid fa-chevron-right text-[10px] text-gray-500 dark:text-gray-400"></i>
+                                                    </button>
+                                                </div>
+
+                                                {{-- Day-of-week headers --}}
+                                                <div class="grid grid-cols-7 gap-0.5 mb-1">
+                                                    <template x-for="d in ['Mo','Tu','We','Th','Fr','Sa','Su']" :key="d">
+                                                        <div class="text-center text-[9px] font-semibold text-gray-400 dark:text-gray-500 py-1" x-text="d"></div>
+                                                    </template>
+                                                </div>
+
+                                                {{-- Day grid --}}
+                                                <div class="grid grid-cols-7 gap-0.5">
+                                                    <template x-for="cell in calCells" :key="cell.key">
+                                                        <div class="relative group">
+                                                            <button type="button"
+                                                                @click="selectCalDate(cell)"
+                                                                :disabled="!cell.inMonth || cell.isPast || cell.isBooked || cell.isHoliday || cell.isSunday"
+                                                                :class="{
+                                                                    'text-gray-300 dark:text-gray-600 cursor-default': !cell.inMonth,
+                                                                    'text-gray-300 dark:text-gray-600 cursor-not-allowed line-through': cell.inMonth && cell.isPast && !cell.isHoliday && !cell.isSunday,
+                                                                    'bg-red-100 dark:bg-red-900/30 text-red-400 dark:text-red-500 cursor-not-allowed': cell.inMonth && cell.isBooked && !cell.isPast && !cell.isHoliday,
+                                                                    'bg-orange-100 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400 cursor-not-allowed': cell.inMonth && cell.isHoliday && !cell.isPast,
+                                                                    'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed': cell.inMonth && cell.isSunday && !cell.isHoliday && !cell.isPast && !cell.isBooked,
+                                                                    'bg-purple-600 text-white font-bold shadow-sm ring-2 ring-purple-300 dark:ring-purple-500': cell.isSelected && cell.inMonth && !cell.isBooked && !cell.isHoliday && !cell.isSunday,
+                                                                    'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold': cell.isToday && !cell.isSelected && cell.inMonth && !cell.isBooked && !cell.isPast && !cell.isHoliday && !cell.isSunday,
+                                                                    'hover:bg-purple-100 dark:hover:bg-purple-900/30 text-gray-700 dark:text-gray-300 cursor-pointer': cell.inMonth && !cell.isPast && !cell.isBooked && !cell.isHoliday && !cell.isSunday && !cell.isSelected && !cell.isToday,
+                                                                }"
+                                                                class="flex items-center justify-center w-8 h-8 mx-auto rounded-lg text-[10px] transition-all duration-150">
+                                                                <span x-text="cell.day"></span>
+                                                            </button>
+
+                                                            {{-- Tooltip for booked dates --}}
+                                                            <template x-if="cell.isBooked && cell.inMonth && !cell.isPast">
+                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-44 pointer-events-none">
+                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
+                                                                        <p class="font-bold text-red-300 mb-0.5"><i class="fa-solid fa-ban mr-1"></i>Unavailable</p>
+                                                                        <template x-for="b in cell.bookedBy" :key="b.id">
+                                                                            <p class="truncate"><span x-text="b.job_title"></span> — <span x-text="b.email"></span></p>
+                                                                        </template>
+                                                                    </div>
+                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
+                                                                </div>
+                                                            </template>
+
+                                                            {{-- Tooltip for holidays --}}
+                                                            <template x-if="cell.isHoliday && cell.inMonth && !cell.isPast">
+                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-40 pointer-events-none">
+                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
+                                                                        <p class="font-bold text-orange-300 mb-0.5"><i class="fa-solid fa-calendar-xmark mr-1"></i>Holiday</p>
+                                                                        <p x-text="cell.holidayName"></p>
+                                                                    </div>
+                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
+                                                                </div>
+                                                            </template>
+
+                                                            {{-- Tooltip for Sundays --}}
+                                                            <template x-if="cell.isSunday && !cell.isHoliday && cell.inMonth && !cell.isPast && !cell.isBooked">
+                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-32 pointer-events-none">
+                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg text-center">
+                                                                        <p class="font-bold text-gray-400"><i class="fa-solid fa-ban mr-1"></i>Sunday</p>
+                                                                    </div>
+                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+
+                                                {{-- Legend --}}
+                                                <div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-purple-600"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Selected</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Booked</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Holiday</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Sunday</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-gray-900 dark:bg-white"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Today</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Selected date & time display --}}
+                                            <div x-show="interviewDate" class="space-y-2">
+                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
+                                                    <i class="fa-solid fa-calendar-check text-purple-500 text-xs"></i>
+                                                    <span class="text-xs font-semibold text-purple-700 dark:text-purple-300" x-text="interviewDate ? new Date(interviewDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : ''"></span>
+                                                </div>
+
+                                                {{-- Time picker --}}
+                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
+                                                    <i class="fa-solid fa-clock text-purple-500 text-xs"></i>
+                                                    <label class="text-xs font-medium text-purple-700 dark:text-purple-300">Time:</label>
+                                                    <input type="time" x-model="interviewTime"
+                                                        class="flex-1 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-transparent border-none outline-none focus:ring-0 p-0"
+                                                    />
+                                                </div>
+
+                                                {{-- Duration picker --}}
+                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
+                                                    <i class="fa-solid fa-hourglass-half text-purple-500 text-xs"></i>
+                                                    <label class="text-xs font-medium text-purple-700 dark:text-purple-300">Duration:</label>
+                                                    <select x-model="interviewDuration"
+                                                        class="flex-1 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-transparent border-none outline-none focus:ring-0 p-0 cursor-pointer">
+                                                        <option value="15">15 minutes</option>
+                                                        <option value="30">30 minutes</option>
+                                                        <option value="45">45 minutes</option>
+                                                        <option value="60">1 hour</option>
+                                                        <option value="90">1 hour 30 minutes</option>
+                                                        <option value="120">2 hours</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {{-- Action buttons --}}
                                             <div class="flex gap-2">
-                                                <button @click="if(interviewDate) setStatus('interview_scheduled', { interview_date: interviewDate })"
-                                                    :disabled="!interviewDate || isUpdating"
+                                                <button @click="
+                                                    if (interviewDate && interviewTime) {
+                                                        const conflicts = checkTimeOverlap(interviewDate, interviewTime, interviewDuration);
+                                                        if (conflicts) {
+                                                            const details = conflicts.map(c => {
+                                                                const [ch, cm] = (c.time || '09:00').split(':').map(Number);
+                                                                const cEnd = ch * 60 + cm + (c.duration || 60);
+                                                                const fmtT = (mins) => {
+                                                                    const hh = Math.floor(mins / 60);
+                                                                    const mm = mins % 60;
+                                                                    const ampm = hh < 12 ? 'AM' : 'PM';
+                                                                    const disp = hh === 0 ? 12 : (hh > 12 ? hh - 12 : hh);
+                                                                    return String(disp).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ' ' + ampm;
+                                                                };
+                                                                return c.job_title + ' (' + c.email + ') — ' + fmtT(ch * 60 + cm) + ' to ' + fmtT(cEnd);
+                                                            }).join('\n');
+                                                            window.showErrorDialog('Schedule Conflict', 'The selected time slot overlaps with an existing interview:\n\n' + details);
+                                                        } else {
+                                                            setStatus('interview_scheduled', { interview_date: interviewDate + ' ' + interviewTime + ':00', interview_duration: parseInt(interviewDuration) });
+                                                        }
+                                                    }"
+                                                    :disabled="!interviewDate || !interviewTime || isUpdating"
                                                     class="flex-1 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50">
-                                                    <i class="fa-solid fa-calendar-check mr-1.5"></i>Confirm Date
+                                                    <i class="fa-solid fa-calendar-check mr-1.5"></i>Confirm Schedule
                                                 </button>
-                                                <button @click="showDatePicker = false; interviewDate = ''"
+                                                <button @click="showDatePicker = false; interviewDate = ''; interviewTime = '09:00'; interviewDuration = '60'"
                                                     class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                                     Cancel
                                                 </button>
                                             </div>
                                         </div>
                                         <div x-show="!showDatePicker" class="flex gap-2">
-                                            <button @click="showDatePicker = true"
+                                            <button @click="showDatePicker = true; buildCalCells()"
                                                 :disabled="isUpdating"
                                                 class="flex-1 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50">
                                                 <i class="fa-solid fa-calendar-plus mr-1.5"></i>Schedule Interview
@@ -735,129 +870,6 @@
             </div>
             </template>
 
-        </div>
-
-        <!-- Applicant Profiles Section -->
-        <div class="flex flex-col gap-4 w-full rounded-lg p-4">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mx-4">
-                <div>
-                    <x-labelwithvalue label="Registered Applicants" count="({{ $applicantUsers->count() }})" />
-                </div>
-                <div class="flex-1 md:max-w-xs">
-                    {{-- <div class="relative">
-                        <input type="text" id="applicantSearchInput" placeholder="Search applicants..."
-                            class="w-full px-4 py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    </div> --}}
-                </div>
-            </div>
-
-            @if($applicantUsers->count() > 0)
-            <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                <table class="w-full min-w-[1000px]" id="applicantsTable">
-                    <thead>
-                        <tr class="border-b border-gray-200 dark:border-gray-700">
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applicant</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Email</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Account Type</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Location</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applications</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Registered</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($applicantUsers as $applicant)
-                        @php
-                            $appCount = $applications->where('email', $applicant->email)->count();
-                            $profilePic = $applicant->profile_picture;
-                            $profileUrl = $profilePic
-                                ? (str_starts_with($profilePic, 'profile_pictures/')
-                                    ? asset('storage/' . $profilePic)
-                                    : asset($profilePic))
-                                : null;
-                        @endphp
-                        <tr class="even:bg-gray-50 dark:even:bg-gray-800/50 applicant-row"
-                            data-name="{{ strtolower($applicant->name) }}"
-                            data-email="{{ strtolower($applicant->email) }}">
-
-                            {{-- Applicant --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center gap-3">
-                                    @if($profileUrl)
-                                    <img src="{{ $profileUrl }}" alt="" class="w-8 h-8 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700">
-                                    @else
-                                    <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                        <span class="text-xs font-bold text-blue-600 dark:text-blue-400">{{ strtoupper(substr($applicant->name, 0, 1)) }}</span>
-                                    </div>
-                                    @endif
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $applicant->name }}</p>
-                                        @if($applicant->phone)
-                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $applicant->phone }}</p>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-
-                            {{-- Email --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <p class="text-sm text-gray-900 dark:text-gray-200">{{ $applicant->email }}</p>
-                            </td>
-
-                            {{-- Account Type --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($applicant->google_id)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
-                                    <svg class="w-3 h-3" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                                    Google
-                                </span>
-                                @else
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                                    <i class="fa-solid fa-envelope text-[10px]"></i>
-                                    Email
-                                </span>
-                                @endif
-                            </td>
-
-                            {{-- Location --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($applicant->location)
-                                <p class="text-sm text-gray-600 dark:text-gray-300">
-                                    <i class="fa-solid fa-location-dot text-gray-400 mr-1 text-[10px]"></i>{{ $applicant->location }}
-                                </p>
-                                @else
-                                <span class="text-xs text-gray-400 dark:text-gray-500">--</span>
-                                @endif
-                            </td>
-
-                            {{-- Applications count --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($appCount > 0)
-                                <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400">
-                                    {{ $appCount }} {{ Str::plural('application', $appCount) }}
-                                </span>
-                                @else
-                                <span class="text-xs text-gray-400 dark:text-gray-500">No applications</span>
-                                @endif
-                            </td>
-
-                            {{-- Registered --}}
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <p class="text-sm text-gray-900 dark:text-gray-200">{{ $applicant->created_at->format('M d, Y') }}</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $applicant->created_at->format('h:i A') }}</p>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @else
-            <div class="w-full rounded-lg border border-dashed border-gray-200 dark:border-gray-700 px-6 py-16 text-center">
-                <i class="fa-solid fa-users text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
-                <p class="text-base font-medium text-gray-500 dark:text-gray-400">No registered applicants yet</p>
-                <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Applicants who sign up will appear here</p>
-            </div>
-            @endif
         </div>
 
         <!-- Job Postings Section -->
@@ -1080,7 +1092,7 @@
                         x-transition:leave="transform transition ease-in-out duration-200"
                         x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
                         @click.stop
-                        class="relative w-screen max-w-md sm:max-w-lg">
+                        class="relative w-screen max-w-sm">
 
                         <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
                             <!-- Header -->
@@ -1244,12 +1256,36 @@
                 'preview_url' => route('admin.recruitment.preview', $app->id),
                 'download_url' => route('admin.recruitment.download', $app->id),
                 'interview_date' => $app->interview_date ? $app->interview_date->format('Y-m-d') : null,
-                'interview_date_display' => $app->interview_date ? $app->interview_date->format('M d, Y') : null,
+                'interview_time' => $app->interview_date ? $app->interview_date->format('H:i') : '09:00',
+                'interview_duration' => $app->interview_duration ?? 60,
+                'interview_date_display' => $app->interview_date
+                    ? $app->interview_date->format('M d, Y \a\t h:i A') . ' (' . ($app->interview_duration >= 60 ? floor($app->interview_duration/60).'h'.($app->interview_duration%60 ? ' '.$app->interview_duration%60 .'m' : '') : ($app->interview_duration ?? 60).'m') . ')'
+                    : null,
                 'created_at' => $app->created_at->format('M d, Y h:i A'),
                 'reviewed_at' => $app->reviewed_at ? $app->reviewed_at->format('M d, Y h:i A') : null,
                 'status_history' => $app->status_history ?? [],
             ];
         });
+
+        // Collect all booked interview dates (for overlap check)
+        $bookedInterviews = \App\Models\JobApplication::whereNotNull('interview_date')
+            ->whereIn('status', ['interview_scheduled', 'hired'])
+            ->select('id', 'interview_date', 'interview_duration', 'job_title', 'email')
+            ->get()
+            ->map(fn($a) => [
+                'id' => $a->id,
+                'date' => $a->interview_date->format('Y-m-d'),
+                'time' => $a->interview_date->format('H:i'),
+                'duration' => $a->interview_duration ?? 60,
+                'job_title' => $a->job_title,
+                'email' => $a->email,
+            ]);
+
+        // Collect holidays (admin-created + general)
+        $holidays = \App\Models\Holiday::all()->map(fn($h) => [
+            'date' => $h->date->format('Y-m-d'),
+            'name' => $h->name,
+        ]);
     @endphp
 
     <script>
@@ -1312,6 +1348,8 @@
 
         function applicationDrawerData() {
             const applications = @json($applicationsData);
+            const bookedInterviews = @json($bookedInterviews);
+            const holidays = @json($holidays);
 
             return {
                 showDrawer: false,
@@ -1320,7 +1358,13 @@
                 drawerNotes: '',
                 isUpdating: false,
                 interviewDate: '',
+                interviewTime: '09:00',
+                interviewDuration: '60',
                 showDatePicker: false,
+                // Calendar picker state
+                calMonth: new Date().getMonth(),
+                calYear: new Date().getFullYear(),
+                calCells: [],
                 // Resume viewer state
                 showViewer: false,
                 viewerUrl: '',
@@ -1417,8 +1461,13 @@
                     if (this.selectedApp) {
                         this.drawerStatus = this.selectedApp.status;
                         this.drawerNotes = this.selectedApp.admin_notes || '';
-                        this.interviewDate = this.selectedApp.interview_date || '';
+                        this.interviewDate = this.selectedApp.interview_date ? this.selectedApp.interview_date.split('T')[0].split(' ')[0] : '';
+                        this.interviewTime = this.selectedApp.interview_time || '09:00';
+                        this.interviewDuration = this.selectedApp.interview_duration || '60';
                         this.showDatePicker = false;
+                        this.calMonth = new Date().getMonth();
+                        this.calYear = new Date().getFullYear();
+                        this.buildCalCells();
                         this.showDrawer = true;
                         document.body.style.overflow = 'hidden';
                     }
@@ -1429,6 +1478,119 @@
                     this.showDrawer = false;
                     this.selectedApp = null;
                     document.body.style.overflow = 'auto';
+                },
+
+                // ── Calendar picker methods ──
+                fmtDate(d) {
+                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                },
+
+                isDateBooked(dateStr) {
+                    // Check if any OTHER application (not the current one) has an interview on this date
+                    return bookedInterviews.some(b => b.date === dateStr && b.id !== this.selectedApp?.id);
+                },
+
+                getBookedInfo(dateStr) {
+                    return bookedInterviews.filter(b => b.date === dateStr && b.id !== this.selectedApp?.id);
+                },
+
+                isHoliday(dateStr) {
+                    return holidays.some(h => h.date === dateStr);
+                },
+
+                getHolidayName(dateStr) {
+                    const h = holidays.find(h => h.date === dateStr);
+                    return h ? h.name : '';
+                },
+
+                /**
+                 * Check for overlapping interviews using: start1 < end2 AND end1 > start2
+                 * Returns the conflicting booking or null.
+                 */
+                checkTimeOverlap(date, time, duration) {
+                    const [h1, m1] = time.split(':').map(Number);
+                    const newStart = h1 * 60 + m1;
+                    const newEnd = newStart + parseInt(duration);
+
+                    const conflicts = bookedInterviews.filter(b => {
+                        if (b.date !== date || b.id === this.selectedApp?.id) return false;
+                        const [bh, bm] = (b.time || '09:00').split(':').map(Number);
+                        const bStart = bh * 60 + bm;
+                        const bEnd = bStart + (b.duration || 60);
+                        // Overlap check: start1 < end2 AND end1 > start2
+                        return newStart < bEnd && newEnd > bStart;
+                    });
+
+                    return conflicts.length > 0 ? conflicts : null;
+                },
+
+                buildCalCells() {
+                    const first = new Date(this.calYear, this.calMonth, 1);
+                    const last = new Date(this.calYear, this.calMonth + 1, 0);
+                    let startDay = first.getDay() || 7;
+                    const today = this.fmtDate(new Date());
+                    const cells = [];
+
+                    // Prev month padding
+                    const prevLast = new Date(this.calYear, this.calMonth, 0);
+                    for (let i = startDay - 1; i >= 1; i--) {
+                        const day = prevLast.getDate() - i + 1;
+                        const d = new Date(this.calYear, this.calMonth - 1, day);
+                        cells.push({ key: 'p'+day, day, date: this.fmtDate(d), inMonth: false, isPast: true, isToday: false, isBooked: false, isSelected: false, bookedBy: [] });
+                    }
+
+                    // Current month
+                    for (let day = 1; day <= last.getDate(); day++) {
+                        const d = new Date(this.calYear, this.calMonth, day);
+                        const dateStr = this.fmtDate(d);
+                        const isPast = dateStr < today;
+                        const isSunday = d.getDay() === 0;
+                        cells.push({
+                            key: 'c'+day,
+                            day,
+                            date: dateStr,
+                            inMonth: true,
+                            isPast,
+                            isToday: dateStr === today,
+                            isBooked: this.isDateBooked(dateStr),
+                            isHoliday: this.isHoliday(dateStr),
+                            holidayName: this.getHolidayName(dateStr),
+                            isSunday,
+                            isSelected: dateStr === this.interviewDate,
+                            bookedBy: this.getBookedInfo(dateStr),
+                        });
+                    }
+
+                    // Next month padding
+                    const remaining = 42 - cells.length;
+                    for (let day = 1; day <= remaining; day++) {
+                        const d = new Date(this.calYear, this.calMonth + 1, day);
+                        cells.push({ key: 'n'+day, day, date: this.fmtDate(d), inMonth: false, isPast: false, isToday: false, isBooked: false, isSelected: false, bookedBy: [] });
+                    }
+
+                    this.calCells = cells;
+                },
+
+                calPrev() {
+                    this.calMonth--;
+                    if (this.calMonth < 0) { this.calMonth = 11; this.calYear--; }
+                    this.buildCalCells();
+                },
+
+                calNext() {
+                    this.calMonth++;
+                    if (this.calMonth > 11) { this.calMonth = 0; this.calYear++; }
+                    this.buildCalCells();
+                },
+
+                selectCalDate(cell) {
+                    if (!cell.inMonth || cell.isPast || cell.isBooked || cell.isHoliday || cell.isSunday) return;
+                    this.interviewDate = cell.date;
+                    this.buildCalCells();
+                },
+
+                get calMonthLabel() {
+                    return new Date(this.calYear, this.calMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                 },
 
                 openViewer() {
@@ -1559,9 +1721,33 @@
                             this.drawerStatus = newStatus;
                             this.selectedApp.admin_notes = this.drawerNotes;
                             if (extraData.interview_date) {
-                                this.selectedApp.interview_date = extraData.interview_date;
-                                const d = new Date(extraData.interview_date + 'T00:00:00');
-                                this.selectedApp.interview_date_display = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+                                const fullDate = extraData.interview_date;
+                                const datePart = fullDate.split(' ')[0];
+                                const timePart = fullDate.split(' ')[1] || '09:00:00';
+                                this.selectedApp.interview_date = datePart;
+                                this.selectedApp.interview_time = timePart.substring(0, 5);
+                                this.selectedApp.interview_duration = extraData.interview_duration || 60;
+
+                                const dur = parseInt(extraData.interview_duration || 60);
+                                const durLabel = dur >= 60 ? Math.floor(dur/60) + 'h' + (dur%60 ? ' ' + dur%60 + 'm' : '') : dur + 'm';
+
+                                const dt = new Date(datePart + 'T' + timePart);
+                                this.selectedApp.interview_date_display = dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+                                    + ' at ' + dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+                                    + ' (' + durLabel + ')';
+
+                                // Update booked interviews for overlap checking within same session
+                                const existingIdx = bookedInterviews.findIndex(b => b.id === this.selectedApp.id);
+                                const booking = {
+                                    id: this.selectedApp.id,
+                                    date: datePart,
+                                    time: timePart.substring(0, 5),
+                                    duration: extraData.interview_duration || 60,
+                                    job_title: this.selectedApp.job_title,
+                                    email: this.selectedApp.email
+                                };
+                                if (existingIdx >= 0) { bookedInterviews[existingIdx] = booking; }
+                                else { bookedInterviews.push(booking); }
                             }
                             this.selectedApp.reviewed_at = new Date().toLocaleString('en-US', {
                                 month: 'short', day: '2-digit', year: 'numeric',

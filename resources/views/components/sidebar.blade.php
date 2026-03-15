@@ -49,14 +49,15 @@
                         @php
                             $hasActiveChild = false;
                             foreach ($nav['children'] as $child) {
-                                $childPath = isset($child['href']) ? trim(parse_url($child['href'], PHP_URL_PATH), '/') : '';
-                                if (isset($child['href']) && (
-                                    request()->url() === $child['href'] ||
-                                    request()->is($childPath) ||
-                                    request()->is($childPath.'/*')
-                                )) {
+                                if (isset($child['route']) && request()->routeIs($child['route'])) {
                                     $hasActiveChild = true;
                                     break;
+                                } elseif (!isset($child['route']) && isset($child['href'])) {
+                                    $childPath = trim(parse_url($child['href'], PHP_URL_PATH), '/');
+                                    if (request()->url() === $child['href'] || request()->is($childPath) || request()->is($childPath.'/*')) {
+                                        $hasActiveChild = true;
+                                        break;
+                                    }
                                 }
                             }
                         @endphp
@@ -81,12 +82,16 @@
                                  class="mt-1 ml-5 space-y-1">
                                 @foreach($nav['children'] as $child)
                                     @php
-                                        $childPath = isset($child['href']) ? trim(parse_url($child['href'], PHP_URL_PATH), '/') : '';
-                                        $isChildActive = isset($child['href']) && (
-                                            request()->url() === $child['href'] ||
-                                            request()->is($childPath) ||
-                                            request()->is($childPath.'/*')
-                                        );
+                                        if (isset($child['route'])) {
+                                            $isChildActive = request()->routeIs($child['route']);
+                                        } else {
+                                            $childPath = isset($child['href']) ? trim(parse_url($child['href'], PHP_URL_PATH), '/') : '';
+                                            $isChildActive = isset($child['href']) && (
+                                                request()->url() === $child['href'] ||
+                                                request()->is($childPath) ||
+                                                request()->is($childPath.'/*')
+                                            );
+                                        }
                                     @endphp
                                     <a href="{{ $child['href'] ?? '#' }}"
                                        class="flex items-center px-3 py-2.5 text-sm rounded-lg transition-colors duration-200

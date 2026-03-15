@@ -116,6 +116,19 @@ class JobApplicationController extends Controller
     }
 
     /**
+     * Interviews calendar page (admin)
+     */
+    public function interviews()
+    {
+        $interviewApplications = JobApplication::whereNotNull('interview_date')
+            ->where('status', 'interview_scheduled')
+            ->orderBy('interview_date', 'asc')
+            ->get();
+
+        return view('admin.recruitment.interviews', compact('interviewApplications'));
+    }
+
+    /**
      * Show a single application (admin)
      */
     public function show($id)
@@ -133,10 +146,37 @@ class JobApplicationController extends Controller
             'status' => 'required|in:pending,reviewed,interview_scheduled,hired,rejected',
             'admin_notes' => 'nullable|string|max:1000',
             'interview_date' => 'nullable|date',
+            'interview_duration' => 'nullable|integer|min:15|max:480',
         ]);
 
         $application = JobApplication::findOrFail($id);
         $oldStatus = $application->status;
+
+        // Server-side overlap check for interview scheduling
+        if ($validated['status'] === 'interview_scheduled' && isset($validated['interview_date'])) {
+            $newStart = \Carbon\Carbon::parse($validated['interview_date']);
+            $newDuration = $validated['interview_duration'] ?? 60;
+            $newEnd = $newStart->copy()->addMinutes($newDuration);
+
+            $overlapping = JobApplication::whereNotNull('interview_date')
+                ->whereIn('status', ['interview_scheduled', 'hired'])
+                ->where('id', '!=', $id)
+                ->get()
+                ->filter(function ($existing) use ($newStart, $newEnd) {
+                    $existStart = $existing->interview_date;
+                    $existEnd = $existStart->copy()->addMinutes($existing->interview_duration ?? 60);
+                    // Overlap: start1 < end2 AND end1 > start2
+                    return $newStart->lt($existEnd) && $newEnd->gt($existStart);
+                });
+
+            if ($overlapping->isNotEmpty()) {
+                $conflict = $overlapping->first();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Schedule conflict: overlaps with ' . $conflict->job_title . ' (' . $conflict->email . ') on ' . $conflict->interview_date->format('M d, Y \a\t h:i A'),
+                ], 422);
+            }
+        }
 
         // Build timeline entry
         $history = $application->status_history ?? [];
@@ -162,6 +202,9 @@ class JobApplicationController extends Controller
 
         if (isset($validated['interview_date'])) {
             $updateData['interview_date'] = $validated['interview_date'];
+        }
+        if (isset($validated['interview_duration'])) {
+            $updateData['interview_duration'] = $validated['interview_duration'];
         }
 
         $application->update($updateData);

@@ -228,6 +228,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     // --- ADMIN RECRUITMENT ROUTES ---
     Route::prefix('admin/recruitment')->name('admin.recruitment.')->group(function () {
         Route::get('/', [JobApplicationController::class, 'index'])->name('index');
+        Route::get('/interviews', [JobApplicationController::class, 'interviews'])->name('interviews');
         Route::get('/{id}', [JobApplicationController::class, 'show'])->name('show');
         Route::patch('/{id}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
         Route::get('/{id}/view', [JobApplicationController::class, 'viewResume'])->name('view');
@@ -451,6 +452,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
 Route::prefix('applicant')->name('applicant.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('/saved', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'saved'])->name('saved');
+    Route::get('/interviews', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'interviews'])->name('interviews');
     Route::get('/withdrawn', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'withdrawn'])->name('withdrawn');
     Route::post('/jobs/{id}/toggle-save', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'toggleSaveJob'])->name('jobs.toggle-save');
     Route::post('/apply/extract', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'extractResume'])->name('apply.extract');

@@ -293,7 +293,7 @@
                                         <button
                                             @click="$dispatch('open-request-modal', { index: {{ $index }} })"
                                             class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                                            View
+                                            <i class="fa-regular fa-eye mr-1 text-xs"></i> View
                                         </button>
                                     </td>
                                 </tr>

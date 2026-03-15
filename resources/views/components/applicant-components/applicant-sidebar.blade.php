@@ -40,18 +40,17 @@
         {{-- ── Navigation ── --}}
         @php
             $navItems = [
-                ['label' => 'Dashboard', 'icon' => 'fa-solid fa-house', 'href' => route('applicant.dashboard')],
-                ['label' => 'Withdrawn', 'icon' => 'fa-solid fa-rotate-left', 'href' => route('applicant.withdrawn')],
-                ['label' => 'Terms and Conditions', 'icon' => 'fa-solid fa-file-contract', 'href' => route('termscondition')],
-                ['label' => 'Privacy Policy', 'icon' => 'fa-solid fa-shield-halved', 'href' => route('privacypolicy')],
+                ['label' => 'Dashboard', 'icon' => 'fa-solid fa-house', 'href' => route('applicant.dashboard'), 'route' => 'applicant.dashboard'],
+                ['label' => 'Interviews', 'icon' => 'fa-solid fa-calendar-check', 'href' => route('applicant.interviews'), 'route' => 'applicant.interviews'],
+                ['label' => 'Withdrawn', 'icon' => 'fa-solid fa-rotate-left', 'href' => route('applicant.withdrawn'), 'route' => 'applicant.withdrawn'],
+                ['label' => 'Privacy Policy', 'icon' => 'fa-solid fa-shield-halved', 'href' => route('privacypolicy'), 'route' => 'privacypolicy'],
             ];
         @endphp
 
         <nav class="mt-6 space-y-1 px-5">
             @foreach($navItems as $nav)
                 @php
-                    $navPath = trim(parse_url($nav['href'], PHP_URL_PATH), '/');
-                    $isActive = request()->url() === $nav['href'] || request()->is($navPath) || request()->is($navPath.'/*');
+                    $isActive = request()->routeIs($nav['route']);
                 @endphp
                 <a href="{{ $nav['href'] }}"
                     class="flex items-center px-3 py-3.5 text-sm font-medium rounded-lg transition-colors duration-200

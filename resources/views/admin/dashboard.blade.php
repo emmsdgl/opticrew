@@ -173,7 +173,7 @@
                              x-transition:leave-start="translate-x-0"
                              x-transition:leave-end="translate-x-full"
                              @click.stop
-                             class="relative w-screen max-w-md sm:max-w-lg">
+                             class="relative w-screen max-w-sm">
 
                             <!-- Drawer Content -->
                             <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">

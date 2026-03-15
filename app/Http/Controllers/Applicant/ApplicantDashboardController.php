@@ -64,6 +64,19 @@ class ApplicantDashboardController extends Controller
         return view('applicant.withdrawn', compact('user', 'withdrawnApplications', 'jobPostings'));
     }
 
+    public function interviews()
+    {
+        $user = Auth::user();
+
+        $interviewApplications = JobApplication::where('email', $user->email)
+            ->where('status', 'interview_scheduled')
+            ->whereNotNull('interview_date')
+            ->orderBy('interview_date', 'asc')
+            ->get();
+
+        return view('applicant.interviews', compact('user', 'interviewApplications'));
+    }
+
     public function saved()
     {
         $user = Auth::user();

@@ -366,6 +366,7 @@
     @stack('scripts')
     @livewireScripts
     <x-global-dialogs />
+    <x-click-spark />
 </body>
 
 </html>
