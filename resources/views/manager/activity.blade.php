@@ -11,18 +11,12 @@
         <!-- Filter Tabs -->
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2">
             <div class="flex gap-2 overflow-x-auto">
-                <button class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white">
-                    All
-                </button>
-                <button class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    Tasks
-                </button>
-                <button class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    Checklist
-                </button>
-                <button class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    Reports
-                </button>
+                @foreach(['all' => 'All', 'tasks' => 'Tasks', 'checklist' => 'Checklist', 'reports' => 'Reports'] as $value => $label)
+                    <a href="{{ route('manager.activity', ['filter' => $value]) }}"
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ ($filter ?? 'all') === $value ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
             </div>
         </div>
 
@@ -30,13 +24,12 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <div class="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
-                <span class="text-sm text-gray-500 dark:text-gray-400">Most Recent</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ count($activities ?? []) }} events</span>
             </div>
             <div class="divide-y divide-gray-200 dark:divide-gray-700">
                 @forelse($activities ?? [] as $activity)
                     <div class="p-4 md:p-5 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <div class="flex gap-4">
-                            <!-- Icon -->
                             <div class="flex-shrink-0">
                                 <div class="w-10 h-10 rounded-full flex items-center justify-center
                                     @switch($activity['type'] ?? 'info')
@@ -59,21 +52,11 @@
                                     <i class="fa-solid fa-{{ $activity['icon'] ?? 'circle-info' }}"></i>
                                 </div>
                             </div>
-
-                            <!-- Content -->
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ $activity['title'] ?? 'Activity' }}
-                                </p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                                    {{ $activity['description'] ?? '' }}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                    {{ $activity['time'] ?? '' }}
-                                </p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $activity['title'] ?? 'Activity' }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{{ $activity['description'] ?? '' }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $activity['time'] ?? '' }}</p>
                             </div>
-
-                            <!-- Status Label -->
                             @if(isset($activity['status']))
                                 <div class="flex-shrink-0">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -103,15 +86,6 @@
                     </div>
                 @endforelse
             </div>
-
-            @if(count($activities ?? []) > 0)
-                <!-- Load More -->
-                <div class="p-4 border-t border-gray-200 dark:border-gray-700 text-center">
-                    <button class="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">
-                        Load More
-                    </button>
-                </div>
-            @endif
         </div>
     </div>
 </x-layouts.general-manager>

@@ -62,6 +62,7 @@ class Notification extends Model
     const TYPE_EMERGENCY_LEAVE_ESCALATION = 'emergency_leave_escalation';
     const TYPE_TASK_UNSTAFFED = 'task_unstaffed';
     const TYPE_OVERTIME_ALERT = 'overtime_alert';
+    const TYPE_DUPLICATE_APPLICANT = 'duplicate_applicant';
 
     protected $fillable = [
         'user_id',

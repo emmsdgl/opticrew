@@ -33,6 +33,7 @@ class User extends Authenticatable
         'password',
         'role',
         'terms_accepted_at',
+        'is_active',
     ];
 
     // Define the relationship

@@ -17,6 +17,7 @@
                    class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                     <i class="fa-solid fa-download mr-2"></i>Download Resume
                 </a>
+                @if($application->status !== 'withdrawn')
                 <form action="{{ route('admin.recruitment.destroy', $application->id) }}" method="POST" class="inline"
                       onsubmit="return confirm('Are you sure you want to delete this application? This action cannot be undone.');">
                     @csrf
@@ -25,6 +26,7 @@
                         <i class="fa-solid fa-trash mr-2"></i>Delete
                     </button>
                 </form>
+                @endif
             </div>
         </div>
 
@@ -92,21 +94,62 @@
                         <i class="fa-solid fa-file-pdf text-gray-600 dark:text-gray-400 mr-2"></i>
                         Resume / Documents
                     </h2>
+                    @php $resumeExt = strtolower(pathinfo($application->resume_original_name ?? '', PATHINFO_EXTENSION)); @endphp
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-                        <i class="fa-solid fa-file-pdf text-gray-500 text-4xl mb-3"></i>
+                        <i class="{{ $resumeExt === 'pdf' ? 'fa-solid fa-file-pdf text-red-500' : 'fa-solid fa-file-word text-blue-500' }} text-4xl mb-3"></i>
                         <p class="text-gray-900 dark:text-white font-medium">{{ $application->resume_original_name }}</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">PDF Document</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $resumeExt === 'pdf' ? 'PDF' : 'DOCX' }} Document</p>
                         <a href="{{ route('admin.recruitment.download', $application->id) }}"
                            class="inline-flex items-center px-4 py-2 mt-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                             <i class="fa-solid fa-download mr-2"></i>
                             Download Resume
                         </a>
                     </div>
+                    @if($application->documents)
+                        @foreach($application->documents as $doc)
+                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mt-3 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <i class="{{ str_ends_with($doc['original_name'] ?? '', '.pdf') ? 'fa-solid fa-file-pdf text-red-500' : 'fa-solid fa-file-word text-blue-500' }} text-xl"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $doc['original_name'] }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $doc['label'] }}</p>
+                                    </div>
+                                </div>
+                                <a href="{{ asset('storage/' . $doc['path']) }}" download
+                                   class="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                                    <i class="fa-solid fa-download"></i>
+                                </a>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
             </div>
 
             <!-- Sidebar -->
             <div class="space-y-6">
+                {{-- Scenario #7: Communication Lock — show banner and disable all controls when withdrawn --}}
+                @if($application->status === 'withdrawn')
+                <div class="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                    <i class="fa-solid fa-lock text-gray-400 text-3xl mb-3"></i>
+                    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Application is Withdrawn</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">This application was withdrawn by the candidate. All edit and status change actions are disabled.</p>
+                    @if($application->withdraw_reason)
+                    <div class="mt-4 text-left bg-white dark:bg-gray-800 rounded-lg p-4">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Withdrawal Reason</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">{{ $application->withdraw_reason }}</p>
+                        @if($application->withdraw_details)
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mt-3 mb-1">Additional Details</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">{{ $application->withdraw_details }}</p>
+                        @endif
+                    </div>
+                    @endif
+                    <div class="mt-4">
+                        <span class="px-3 py-1.5 text-sm font-semibold rounded-full {{ $application->status_badge_class }}">
+                            {{ $application->status_label }}
+                        </span>
+                    </div>
+                </div>
+                @else
                 <!-- Status Update -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -125,13 +168,21 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Change Status</label>
-                                <select name="status" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <select name="status" id="statusSelect" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                     <option value="pending" {{ $application->status == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="reviewed" {{ $application->status == 'reviewed' ? 'selected' : '' }}>Reviewed</option>
                                     <option value="interview_scheduled" {{ $application->status == 'interview_scheduled' ? 'selected' : '' }}>Interview Scheduled</option>
                                     <option value="hired" {{ $application->status == 'hired' ? 'selected' : '' }}>Hired</option>
                                     <option value="rejected" {{ $application->status == 'rejected' ? 'selected' : '' }}>Rejected</option>
                                 </select>
+                            </div>
+                            {{-- Scenario #4: Interview date picker — shown when "Interview Scheduled" is selected --}}
+                            <div id="interviewDateSection" style="display: {{ $application->status == 'interview_scheduled' ? 'block' : 'none' }};">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Interview Date & Time</label>
+                                <input type="datetime-local" name="interview_date"
+                                       value="{{ $application->interview_date ? $application->interview_date->format('Y-m-d\TH:i') : '' }}"
+                                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">An interview invitation email will be sent automatically.</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Admin Notes</label>
@@ -145,6 +196,7 @@
                         </div>
                     </form>
                 </div>
+                @endif
 
                 <!-- Timeline -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -179,10 +231,17 @@
                         Quick Actions
                     </h2>
                     <div class="space-y-3">
+                        @if($application->status !== 'withdrawn')
                         <a href="mailto:{{ $application->email }}" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                             <i class="fa-solid fa-envelope text-gray-600 dark:text-gray-400"></i>
                             <span class="text-sm text-gray-700 dark:text-gray-300">Send Email</span>
                         </a>
+                        @else
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg opacity-50 cursor-not-allowed">
+                            <i class="fa-solid fa-envelope-circle-xmark text-gray-400"></i>
+                            <span class="text-sm text-gray-400">Email Disabled (Withdrawn)</span>
+                        </div>
+                        @endif
                         <a href="{{ route('admin.recruitment.download', $application->id) }}" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                             <i class="fa-solid fa-download text-gray-600 dark:text-gray-400"></i>
                             <span class="text-sm text-gray-700 dark:text-gray-300">Download Resume</span>
@@ -192,4 +251,18 @@
             </div>
         </div>
     </section>
+
+    {{-- Scenario #4: Toggle interview date picker based on status selection --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusSelect = document.getElementById('statusSelect');
+            const interviewDateSection = document.getElementById('interviewDateSection');
+
+            if (statusSelect && interviewDateSection) {
+                statusSelect.addEventListener('change', function() {
+                    interviewDateSection.style.display = this.value === 'interview_scheduled' ? 'block' : 'none';
+                });
+            }
+        });
+    </script>
 </x-layouts.general-employer>

@@ -303,7 +303,7 @@
             this.jobTitle      = detail.title ?? '';
             this.jobType       = detail.type  ?? '';
             const docs         = detail.requiredDocs ?? [];
-            this.requiredDocs  = docs.length > 0 ? docs : [{ name: 'Resume', fileType: 'docx' }];
+            this.requiredDocs  = docs.length > 0 ? docs : [{ name: 'Resume', fileType: 'docx,pdf' }];
             this.files         = new Array(this.requiredDocs.length).fill(null);
             this.fileNames     = new Array(this.requiredDocs.length).fill('');
             this.draggingIndex = null;
@@ -320,7 +320,7 @@
         closeModal() { this.open = false; },
 
         setFile(index, f) {
-            const ok = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const ok = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf'];
             if (!f || !ok.includes(f.type)) return;
             this.files.splice(index, 1, f);
             this.fileNames.splice(index, 1, f.name);
@@ -537,7 +537,7 @@
                                             :class="files[index] ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'"
                                             x-text="files[index] ? '✓' : (index + 1)"></span>
                                         <span x-text="typeof doc === 'object' ? doc.name : doc"></span>
-                                        <span class="text-[10px] font-normal text-gray-400 dark:text-gray-500">(.docx)</span>
+                                        <span class="text-[10px] font-normal text-gray-400 dark:text-gray-500">(.docx, .pdf)</span>
                                     </p>
 
                                     {{-- Dropzone --}}
@@ -554,14 +554,14 @@
                                         @drop.prevent="handleDrop(index, $event)"
                                         @click="document.getElementById('fileInput' + index).click()"
                                     >
-                                        <input type="file" :id="'fileInput' + index" class="hidden" accept=".docx" @change="handleInput(index, $event)">
+                                        <input type="file" :id="'fileInput' + index" class="hidden" accept=".docx,.pdf" @change="handleInput(index, $event)">
 
                                         <div x-show="!fileNames[index]">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300 dark:text-gray-600 mb-2 mx-auto"><path d="M2 9V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1"/><path d="M2 13h10"/><path d="m9 16 3-3-3-3"/></svg>
                                             <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">
                                                 Drag & drop or <span class="text-blue-500 dark:text-blue-400">browse</span>
                                             </p>
-                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">DOCX only — max 10 MB</p>
+                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">DOCX or PDF — max 10 MB</p>
                                         </div>
 
                                         <div x-show="fileNames[index]" class="flex items-center justify-center gap-3">

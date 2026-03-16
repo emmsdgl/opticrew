@@ -258,7 +258,7 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Required
                             Documents</label>
                         <p class="text-xs text-gray-400 dark:text-gray-500 mb-3">Accepted format: <span
-                                class="font-semibold text-amber-600 dark:text-amber-400">DOCX</span></p>
+                                class="font-semibold text-amber-600 dark:text-amber-400">DOCX, PDF</span></p>
                         <div class="flex flex-wrap gap-2 mb-3" x-show="formData.requiredDocs.length > 0">
                             <template x-for="(doc, idx) in formData.requiredDocs" :key="'doc-' + idx">
                                 <span
@@ -281,9 +281,9 @@
                             <input type="text" x-model="docInput"
                                 class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
                                 placeholder="e.g., Resume, Cover Letter, Certificate..."
-                                @keydown.enter.prevent="if(docInput.trim()) { formData.requiredDocs.push({name: docInput.trim(), fileType: 'docx'}); docInput = ''; }">
+                                @keydown.enter.prevent="if(docInput.trim()) { formData.requiredDocs.push({name: docInput.trim(), fileType: 'docx,pdf'}); docInput = ''; }">
                             <button type="button"
-                                @click="if(docInput.trim()) { formData.requiredDocs.push({name: docInput.trim(), fileType: 'docx'}); docInput = ''; }"
+                                @click="if(docInput.trim()) { formData.requiredDocs.push({name: docInput.trim(), fileType: 'docx,pdf'}); docInput = ''; }"
                                 class="px-4 py-2 text-sm text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20 rounded-lg font-medium">
                                 <i class="fa-solid fa-plus mr-1"></i>Add
                             </button>

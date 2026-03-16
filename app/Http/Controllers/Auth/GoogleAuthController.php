@@ -112,6 +112,12 @@ class GoogleAuthController extends Controller
             }
         }
 
+        // Block banned users
+        if (!$user->is_active) {
+            return redirect()->route('login')->with('error',
+                'Your account has been banned. Please contact the administrator for more information.');
+        }
+
         if ($googleUser->getAvatar() && $user->profile_picture !== $googleUser->getAvatar()) {
             $user->update(['profile_picture' => $googleUser->getAvatar()]);
         }
@@ -139,10 +145,23 @@ class GoogleAuthController extends Controller
         // Find or create user with applicant role
         $user = User::where('google_id', $googleUser->getId())->first();
 
+        // Block if google_id exists but belongs to a non-applicant role (wrong flow)
+        if ($user && $user->role !== 'applicant') {
+            session()->forget(['google_auth_purpose', 'recruitment_data']);
+            return redirect()->route('recruitment')->with('error',
+                'This Google account is already registered in the system as a ' . str_replace('_', ' ', $user->role) . '. Please use a different Google account for job applications.');
+        }
+
         if (!$user) {
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if ($user) {
+                // Block if this email is registered with a non-applicant role
+                if ($user->role !== 'applicant') {
+                    session()->forget(['google_auth_purpose', 'recruitment_data']);
+                    return redirect()->route('recruitment')->with('error',
+                        'This Google account is already registered in the system as a ' . str_replace('_', ' ', $user->role) . '. Please use a different Google account for job applications.');
+                }
                 $user->update(['google_id' => $googleUser->getId()]);
             } else {
                 $user = User::create([
@@ -155,6 +174,13 @@ class GoogleAuthController extends Controller
                     'terms_accepted_at' => now(),
                 ]);
             }
+        }
+
+        // Block banned users
+        if (!$user->is_active) {
+            session()->forget(['google_auth_purpose', 'recruitment_data']);
+            return redirect()->route('recruitment')->with('error',
+                'Your account has been banned. Please contact the administrator for more information.');
         }
 
         if ($googleUser->getAvatar() && $user->profile_picture !== $googleUser->getAvatar()) {

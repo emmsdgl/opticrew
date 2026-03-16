@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ApplicationReceivedAfterHours;
 use App\Mail\ApplicationStatusUpdate;
 use App\Models\JobApplication;
 use App\Models\JobPosting;
+use App\Models\User;
 use App\Services\Notification\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -24,6 +26,18 @@ class JobApplicationController extends Controller
             'alternative_email' => 'nullable|email|max:255',
             'pdf_document' => 'required|file|mimes:pdf|max:10240', // 10MB max
         ]);
+
+        // Scenario #1: Prevent duplicate applications (same email + same job)
+        $alreadyApplied = JobApplication::where('email', $validated['email'])
+            ->where('job_title', $validated['job_title'])
+            ->exists();
+
+        if ($alreadyApplied) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An applicant with the same email already has the same application submitted for this position.',
+            ], 422);
+        }
 
         // Store the PDF file
         $file = $request->file('pdf_document');
@@ -49,6 +63,32 @@ class JobApplicationController extends Controller
 
         // Notify all admins of the new application
         app(NotificationService::class)->notifyAdminsNewJobApplication($application);
+
+        // Scenario #6: Auto-response if submitted outside business hours (Mon-Fri 8AM-5PM)
+        $now = now();
+        $hour = (int) $now->format('H');
+        $isWeekend = $now->isWeekend();
+        $isAfterHours = $isWeekend || $hour < 8 || $hour >= 17;
+
+        if ($isAfterHours) {
+            $nextBusinessDay = $now->copy();
+            if ($isWeekend) {
+                $nextBusinessDay = $nextBusinessDay->next(\Carbon\Carbon::MONDAY);
+            } else {
+                $nextBusinessDay = $nextBusinessDay->addWeekday();
+            }
+            $responseEta = $nextBusinessDay->format('l, F d, Y') . ' (next business day)';
+
+            try {
+                $recipients = [$application->email];
+                if ($application->alternative_email) {
+                    $recipients[] = $application->alternative_email;
+                }
+                Mail::to($recipients)->send(new ApplicationReceivedAfterHours($application, $responseEta));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send after-hours auto-response: ' . $e->getMessage());
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -112,7 +152,24 @@ class JobApplicationController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts', 'cscApiKey', 'allApplications', 'applicantUsers'));
+        // Scenario #5: Get unresolved duplicate applicant notifications for current admin
+        $duplicateAlerts = \App\Models\Notification::where('user_id', auth()->id())
+            ->where('type', \App\Models\Notification::TYPE_DUPLICATE_APPLICANT)
+            ->whereNull('read_at')
+            ->get()
+            ->map(function ($n) {
+                $data = $n->data;
+                return [
+                    'notification_id' => $n->id,
+                    'new_application_id' => $data['new_application_id'] ?? null,
+                    'existing_application_id' => $data['existing_application_id'] ?? null,
+                    'existing_email' => $data['existing_email'] ?? '',
+                    'phone' => $data['phone'] ?? '',
+                ];
+            })
+            ->keyBy('new_application_id');
+
+        return view('admin.recruitment.index', compact('applications', 'jobPostings', 'applicantCounts', 'cscApiKey', 'allApplications', 'applicantUsers', 'duplicateAlerts'));
     }
 
     /**
@@ -150,6 +207,15 @@ class JobApplicationController extends Controller
         ]);
 
         $application = JobApplication::findOrFail($id);
+
+        // Scenario #9: Block any status changes on withdrawn applications
+        if ($application->status === 'withdrawn') {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Cannot update a withdrawn application.'], 422);
+            }
+            return redirect()->back()->with('error', 'Cannot update a withdrawn application.');
+        }
+
         $oldStatus = $application->status;
 
         // Server-side overlap check for interview scheduling
@@ -209,8 +275,20 @@ class JobApplicationController extends Controller
 
         $application->update($updateData);
 
+        // Scenario #10: Role transition — change applicant to employee when hired
+        if ($validated['status'] === 'hired' && $oldStatus !== 'hired') {
+            $applicantUser = User::where('email', $application->email)
+                ->where('role', 'applicant')
+                ->first();
+
+            if ($applicantUser) {
+                $applicantUser->update(['role' => 'employee']);
+            }
+        }
+
         // Send email and in-app notification when status changes
-        if ($oldStatus !== $validated['status']) {
+        // Scenario #9: Ghosting Prevention — suppress all emails for withdrawn applicants
+        if ($oldStatus !== $validated['status'] && $application->status !== 'withdrawn') {
             try {
                 $recipients = [$application->email];
                 if ($application->alternative_email) {
@@ -279,10 +357,28 @@ class JobApplicationController extends Controller
         $ext = strtolower(pathinfo($application->resume_original_name, PATHINFO_EXTENSION));
 
         if ($ext === 'pdf') {
-            return response()->file($filePath, [
-                'Content-Type'        => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $application->resume_original_name . '"',
-            ]);
+            $base64 = base64_encode(file_get_contents($filePath));
+            $fileName = e($application->resume_original_name);
+            return response("<!DOCTYPE html>
+<html><head><meta charset='UTF-8'><title>{$fileName}</title>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#525659;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:12px}
+canvas{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);max-width:100%}</style></head><body>
+<script>
+const pdfData=atob('{$base64}');
+const loadingTask=pdfjsLib.getDocument({data:pdfData});
+loadingTask.promise.then(pdf=>{
+  for(let i=1;i<=pdf.numPages;i++){
+    pdf.getPage(i).then(page=>{
+      const scale=1.5;const viewport=page.getViewport({scale});
+      const canvas=document.createElement('canvas');
+      canvas.width=viewport.width;canvas.height=viewport.height;
+      document.body.appendChild(canvas);
+      page.render({canvasContext:canvas.getContext('2d'),viewport});
+    });
+  }
+});
+</script></body></html>", 200, ['Content-Type' => 'text/html']);
         }
 
         // For DOCX files, extract text and render as styled HTML
@@ -528,6 +624,100 @@ class JobApplicationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Application restored successfully.',
+        ]);
+    }
+
+    /**
+     * Scenario #5: Merge duplicate applicant — transfer the new application's email to use the existing one.
+     */
+    public function mergeDuplicate(Request $request)
+    {
+        $validated = $request->validate([
+            'new_application_id' => 'required|integer|exists:job_applications,id',
+            'existing_application_id' => 'required|integer|exists:job_applications,id',
+        ]);
+
+        $newApp = JobApplication::findOrFail($validated['new_application_id']);
+        $existingApp = JobApplication::findOrFail($validated['existing_application_id']);
+
+        // Merge: update the new application to use the existing applicant's email
+        $newApp->update([
+            'email' => $existingApp->email,
+            'admin_notes' => ($newApp->admin_notes ? $newApp->admin_notes . "\n" : '')
+                . "[Merged] Originally submitted with email: {$newApp->email}. Merged with existing applicant {$existingApp->email} on " . now()->format('M d, Y h:i A') . ".",
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Application merged successfully. New application now linked to {$existingApp->email}.",
+        ]);
+    }
+
+    /**
+     * Scenario #5: Ignore duplicate — admin acknowledges and dismisses the duplicate alert.
+     */
+    public function ignoreDuplicate(Request $request)
+    {
+        $validated = $request->validate([
+            'new_application_id' => 'required|integer|exists:job_applications,id',
+            'existing_application_id' => 'required|integer|exists:job_applications,id',
+        ]);
+
+        $newApp = JobApplication::findOrFail($validated['new_application_id']);
+
+        $newApp->update([
+            'admin_notes' => ($newApp->admin_notes ? $newApp->admin_notes . "\n" : '')
+                . "[Duplicate Ignored] Potential duplicate with application #{$validated['existing_application_id']} was reviewed and ignored on " . now()->format('M d, Y h:i A') . ".",
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Duplicate alert dismissed.',
+        ]);
+    }
+
+    /**
+     * Change an applicant user's role.
+     */
+    public function changeApplicantRole(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'role' => 'required|string|in:applicant,external_client,employee',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        if (in_array($user->role, ['admin'])) {
+            return response()->json(['success' => false, 'message' => 'Cannot change admin roles from here.'], 403);
+        }
+
+        $oldRole = $user->role;
+        $user->update(['role' => $validated['role']]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Role changed from {$oldRole} to {$validated['role']}.",
+        ]);
+    }
+
+    /**
+     * Ban or unban an applicant user.
+     */
+    public function toggleBanApplicant($id)
+    {
+        $user = User::findOrFail($id);
+
+        if (in_array($user->role, ['admin'])) {
+            return response()->json(['success' => false, 'message' => 'Cannot ban admin users.'], 403);
+        }
+
+        $newStatus = !$user->is_active;
+        $user->update(['is_active' => $newStatus]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $newStatus ? 'User has been unbanned.' : 'User has been banned.',
+            'is_active' => $newStatus,
         ]);
     }
 }

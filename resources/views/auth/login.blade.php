@@ -184,6 +184,15 @@
                     </script>
                 @endif
 
+                <!-- Session Error (e.g. Google auth role conflict) -->
+                @if (session('error'))
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            window.showErrorDialog('Account Conflict', @json(session('error')));
+                        });
+                    </script>
+                @endif
+
                 <!-- LOGIN FIELD -->
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon"></i>

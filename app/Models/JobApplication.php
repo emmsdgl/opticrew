@@ -26,12 +26,14 @@ class JobApplication extends Model
         'status_history',
         'withdraw_reason',
         'withdraw_details',
+        'documents',
     ];
 
     protected $casts = [
         'reviewed_at'    => 'datetime',
         'interview_date' => 'datetime',
         'status_history' => 'array',
+        'documents'      => 'array',
     ];
 
     public function getStatusBadgeClassAttribute()

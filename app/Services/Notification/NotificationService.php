@@ -1036,6 +1036,35 @@ class NotificationService
     }
 
     /**
+     * Scenario #5: Notify admins when a potential duplicate applicant is detected (same phone, different email).
+     */
+    public function notifyAdminsDuplicateApplicant($newApplication, $existingApplication, string $phone): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        $existingProfile = json_decode($existingApplication->applicant_profile, true) ?? [];
+        $existingName = trim(($existingProfile['first_name'] ?? '') . ' ' . ($existingProfile['last_name'] ?? '')) ?: $existingApplication->email;
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_DUPLICATE_APPLICANT,
+            'Potential Duplicate Found',
+            "New applicant {$newApplication->email} has the same phone number ({$phone}) as existing applicant {$existingName} ({$existingApplication->email}). Please review and choose to Merge or Ignore.",
+            [
+                'new_application_id' => $newApplication->id,
+                'existing_application_id' => $existingApplication->id,
+                'phone' => $phone,
+                'new_email' => $newApplication->email,
+                'existing_email' => $existingApplication->email,
+                'icon' => 'users',
+                'color' => 'yellow',
+                'action_url' => route('admin.recruitment.index'),
+                'action_text' => 'Review Duplicates'
+            ]
+        );
+    }
+
+    /**
      * Notify all admins when an employee submits an absence/leave request (web form).
      */
     public function notifyAdminsEmployeeRequest($employeeRequest, $employeeName): Collection

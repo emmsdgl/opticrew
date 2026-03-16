@@ -8,7 +8,10 @@ use App\Models\JobPosting;
 use App\Models\SavedJob;
 use App\Services\Notification\NotificationService;
 use Illuminate\Http\Request;
+use App\Mail\ApplicationReceivedAfterHours;
+use App\Mail\ApplicationWithdrawnFarewell;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ApplicantDashboardController extends Controller
@@ -120,7 +123,7 @@ class ApplicantDashboardController extends Controller
     public function extractResume(Request $request)
     {
         $request->validate([
-            'resume' => 'required|file|mimes:docx|max:10240',
+            'resume' => 'required|file|mimes:docx,pdf|max:10240',
         ]);
 
         $file     = $request->file('resume');
@@ -134,12 +137,23 @@ class ApplicantDashboardController extends Controller
             $text = $this->extractDocxText($fullPath);
         }
 
-        // 2. Fall back to Python OCR script if native extraction returned nothing
+        // 2. For PDFs: use smalot/pdfparser (handles font encodings & CMap)
+        if (!trim($text) && $ext === 'pdf') {
+            try {
+                $parser = new \Smalot\PdfParser\Parser();
+                $pdf    = $parser->parseFile($fullPath);
+                $text   = $pdf->getText();
+            } catch (\Throwable $e) {
+                \Log::warning('PdfParser failed', ['error' => $e->getMessage()]);
+            }
+        }
+
+        // 3. Fall back to Python OCR script if nothing so far
         if (!trim($text)) {
             $text = $this->callOcrExtract($fullPath);
         }
 
-        // 3. For PDFs: fall back to PHP-native extraction if Python returned nothing
+        // 4. Last resort for PDFs: PHP-native FlateDecode extraction
         if (!trim($text) && $ext === 'pdf') {
             $text = $this->extractPdfText($fullPath);
         }
@@ -149,6 +163,7 @@ class ApplicantDashboardController extends Controller
         \Log::debug('Resume extract', [
             'ext'    => $ext,
             'chars'  => strlen($text),
+            'text_preview' => mb_substr($text, 0, 1000),
             'fields' => $fields,
         ]);
 
@@ -166,8 +181,16 @@ class ApplicantDashboardController extends Controller
             'job_title' => 'required|string|max:255',
             'job_type'  => 'nullable|string|max:50',
             'email'     => 'required|email|max:255',
-            'resume'    => 'required|file|mimes:docx|max:10240',
+            'resume'    => 'required|file|mimes:docx,pdf|max:10240',
         ]);
+
+        // Block banned users from submitting
+        if (Auth::check() && !Auth::user()->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account has been banned. You cannot submit applications.',
+            ]);
+        }
 
         $alreadyApplied = JobApplication::where('email', $request->email)
             ->where('job_title', $request->job_title)
@@ -182,6 +205,19 @@ class ApplicantDashboardController extends Controller
 
         $file = $request->file('resume');
         $path = $file->store('job-applications', 'public');
+
+        // Save all uploaded documents (resume, cover letter, etc.)
+        $documents = [];
+        $uploadedDocs = $request->file('documents', []);
+        $docLabels    = $request->input('document_labels', []);
+        foreach ($uploadedDocs as $i => $doc) {
+            $docPath = $doc->store('job-applications', 'public');
+            $documents[] = [
+                'label'         => $docLabels[$i] ?? 'Document ' . ($i + 1),
+                'path'          => $docPath,
+                'original_name' => $doc->getClientOriginalName(),
+            ];
+        }
 
         $profile = [
             'first_name'        => $request->first_name        ?? '',
@@ -217,6 +253,7 @@ class ApplicantDashboardController extends Controller
             'alternative_email'    => $request->alternative_email ?? null,
             'resume_path'          => $path,
             'resume_original_name' => $file->getClientOriginalName(),
+            'documents'            => $documents ?: null,
             'applicant_profile'    => json_encode($profile),
             'status'               => 'pending',
             'status_history'       => [[
@@ -235,6 +272,51 @@ class ApplicantDashboardController extends Controller
             $notificationService->notifyApplicantApplicationSubmitted($application, $user);
         }
 
+        // Scenario #6: Auto-response if submitted outside business hours (Mon-Fri 8AM-5PM)
+        $now = now();
+        $hour = (int) $now->format('H');
+        $isWeekend = $now->isWeekend();
+        $isAfterHours = $isWeekend || $hour < 8 || $hour >= 17;
+
+        if ($isAfterHours) {
+            $nextBusinessDay = $now->copy();
+            if ($isWeekend) {
+                $nextBusinessDay = $nextBusinessDay->next(\Carbon\Carbon::MONDAY);
+            } else {
+                $nextBusinessDay = $nextBusinessDay->addWeekday();
+            }
+            $responseEta = $nextBusinessDay->format('l, F d, Y') . ' (next business day)';
+
+            try {
+                $recipients = [$application->email];
+                if ($application->alternative_email) {
+                    $recipients[] = $application->alternative_email;
+                }
+                Mail::to($recipients)->send(new ApplicationReceivedAfterHours($application, $responseEta));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send after-hours auto-response: ' . $e->getMessage());
+            }
+        }
+
+        // Scenario #5: Duplicate detection by phone number
+        $phone = $profile['phone'] ?? '';
+        if (!empty($phone)) {
+            $existingApp = JobApplication::where('id', '!=', $application->id)
+                ->where('email', '!=', $application->email)
+                ->whereNotNull('applicant_profile')
+                ->get()
+                ->first(function ($app) use ($phone) {
+                    $p = json_decode($app->applicant_profile, true);
+                    $existingPhone = preg_replace('/[^0-9]/', '', $p['phone'] ?? '');
+                    $newPhone = preg_replace('/[^0-9]/', '', $phone);
+                    return !empty($existingPhone) && $existingPhone === $newPhone;
+                });
+
+            if ($existingApp) {
+                $notificationService->notifyAdminsDuplicateApplicant($application, $existingApp, $phone);
+            }
+        }
+
         return response()->json([
             'success'        => true,
             'message'        => 'Application submitted successfully!',
@@ -245,7 +327,7 @@ class ApplicantDashboardController extends Controller
     /**
      * Withdraw (soft-delete) an application.
      */
-    public function withdrawApplication($id)
+    public function withdrawApplication(Request $request, $id)
     {
         $user = Auth::user();
 
@@ -291,6 +373,17 @@ class ApplicantDashboardController extends Controller
         $notificationService = app(NotificationService::class);
         $notificationService->notifyApplicantApplicationWithdrawn($application, $user);
         $notificationService->notifyAdminsApplicationWithdrawn($application);
+
+        // Scenario #7: Send farewell email on withdrawal
+        try {
+            $recipients = [$application->email];
+            if ($application->alternative_email) {
+                $recipients[] = $application->alternative_email;
+            }
+            Mail::to($recipients)->send(new ApplicationWithdrawnFarewell($application));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send withdrawal farewell email: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,

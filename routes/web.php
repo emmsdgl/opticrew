@@ -237,6 +237,10 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::delete('/{id}', [JobApplicationController::class, 'destroy'])->name('destroy');
         Route::post('/bulk-delete', [JobApplicationController::class, 'bulkDestroy'])->name('bulk-destroy');
         Route::post('/{id}/restore', [JobApplicationController::class, 'restore'])->name('restore');
+        Route::post('/duplicate/merge', [JobApplicationController::class, 'mergeDuplicate'])->name('merge-duplicate');
+        Route::post('/duplicate/ignore', [JobApplicationController::class, 'ignoreDuplicate'])->name('ignore-duplicate');
+        Route::patch('/applicant/{id}/role', [JobApplicationController::class, 'changeApplicantRole'])->name('change-role');
+        Route::patch('/applicant/{id}/ban', [JobApplicationController::class, 'toggleBanApplicant'])->name('toggle-ban');
     });
 
     // --- ADMIN JOB POSTINGS ROUTES ---
@@ -475,14 +479,34 @@ Route::middleware(['auth', 'terms.accepted', 'manager'])->prefix('manager')->nam
     // Employees
     Route::get('/employees', [ManagerEmployeesController::class, 'index'])->name('employees');
 
+    // Checklist
+    Route::get('/checklist', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'index'])->name('checklist');
+    Route::post('/checklist', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'store'])->name('checklist.store');
+    Route::put('/checklist/{checklistId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'update'])->name('checklist.update');
+    Route::post('/checklist/{checklistId}/categories', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'addCategory'])->name('checklist.categories.add');
+    Route::put('/checklist/categories/{categoryId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'updateCategory'])->name('checklist.categories.update');
+    Route::delete('/checklist/categories/{categoryId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'deleteCategory'])->name('checklist.categories.delete');
+    Route::post('/checklist/categories/{categoryId}/items', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'addItem'])->name('checklist.items.add');
+    Route::put('/checklist/items/{itemId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'updateItem'])->name('checklist.items.update');
+    Route::delete('/checklist/items/{itemId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'deleteItem'])->name('checklist.items.delete');
+
     // Reports
     Route::get('/reports', [ManagerReportsController::class, 'index'])->name('reports');
+    Route::get('/reports/billing', [ManagerReportsController::class, 'billingReport'])->name('reports.billing');
+    Route::get('/reports/billing/pdf', [ManagerReportsController::class, 'billingPdf'])->name('reports.billing.pdf');
 
     // Activity
     Route::get('/activity', [ManagerActivityController::class, 'index'])->name('activity');
 
     // History
     Route::get('/history', [ManagerHistoryController::class, 'index'])->name('history');
+    Route::post('/history/{taskId}/review', [ManagerHistoryController::class, 'submitReview'])->name('history.review');
+
+    // Schedule optimization & helpers
+    Route::post('/schedule/optimize', [ManagerScheduleController::class, 'optimize'])->name('schedule.optimize');
+    Route::get('/schedule/employees', [ManagerScheduleController::class, 'getAvailableEmployees'])->name('schedule.employees');
+    Route::get('/schedule/check-holiday', [ManagerScheduleController::class, 'checkHoliday'])->name('schedule.check-holiday');
+    Route::post('/schedule/tasks/{taskId}/cancel', [ManagerScheduleController::class, 'cancelTask'])->name('schedule.tasks.cancel');
 
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
