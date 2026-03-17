@@ -416,105 +416,6 @@
 
     </section>
 
-    <!-- Change Role Modal -->
-    <div id="changeRoleModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-            <div class="mt-3">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-                    <i class="fas fa-user-tag text-blue-600 text-xl"></i>
-                </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4 text-center">Change User Role</h3>
-                <p id="changeRoleUserName" class="text-sm text-gray-500 dark:text-gray-400 text-center mt-1"></p>
-                <div class="mt-4 px-4 py-3">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select New Role</label>
-                    <select id="newRoleSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
-                        <option value="employee">Employee</option>
-                        <option value="applicant">Applicant</option>
-                        <option value="external_client">External Client</option>
-                    </select>
-                    <p id="roleChangeError" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <div class="flex gap-4 mt-4">
-                        <button type="button" onclick="closeChangeRoleModal()"
-                            class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300">
-                            Cancel
-                        </button>
-                        <button type="button" onclick="submitChangeRole()"
-                            class="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
-                            Change Role
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ban Confirmation Modal -->
-    <div id="banModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-            <div class="mt-3">
-                <div id="banModalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                    <i class="fas fa-ban text-red-600 text-xl"></i>
-                </div>
-                <h3 id="banModalTitle" class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4 text-center">Ban User</h3>
-                <p id="banModalMessage" class="text-sm text-gray-500 dark:text-gray-400 text-center mt-2 px-4"></p>
-                <div class="flex gap-4 mt-6 px-4">
-                    <button type="button" onclick="closeBanModal()"
-                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300">
-                        Cancel
-                    </button>
-                    <button type="button" id="banConfirmBtn" onclick="submitToggleBan()"
-                        class="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">
-                        Ban User
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-            <div class="mt-3">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
-                </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4 text-center">Delete Account</h3>
-                <div class="mt-2 px-4 py-3">
-                    <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
-                        This account will be soft-deleted and can be restored later. Enter your admin password to confirm.
-                    </p>
-
-                    <form id="deleteForm" method="POST" onsubmit="return validatePassword(event)">
-                        @csrf
-                        @method('DELETE')
-
-                        <div class="mb-4">
-                            <label for="admin_password"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Admin Password <span class="text-red-500">*</span>
-                            </label>
-                            <input type="password" id="admin_password" name="admin_password" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                placeholder="Enter your password">
-                            <p id="password_error" class="mt-1 text-sm text-red-600 hidden"></p>
-                        </div>
-
-                        <div class="flex gap-4">
-                            <button type="button" onclick="closeDeleteModal()"
-                                class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300">
-                                Cancel
-                            </button>
-                            <button type="submit"
-                                class="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">
-                                Delete
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Search functionality for main users table
         const searchInput = document.getElementById('searchInput');
@@ -551,180 +452,63 @@
             });
         }
 
-        // Delete modal functions
-        function confirmDelete(userId) {
-            const modal = document.getElementById('deleteModal');
-            const form = document.getElementById('deleteForm');
-            const passwordInput = document.getElementById('admin_password');
-            const errorMsg = document.getElementById('password_error');
-
-            form.action = `/admin/accounts/${userId}`;
-            passwordInput.value = '';
-            errorMsg.classList.add('hidden');
-            modal.classList.remove('hidden');
-        }
-
-        function closeDeleteModal() {
-            const modal = document.getElementById('deleteModal');
-            const passwordInput = document.getElementById('admin_password');
-            const errorMsg = document.getElementById('password_error');
-
-            passwordInput.value = '';
-            errorMsg.classList.add('hidden');
-            modal.classList.add('hidden');
-        }
-
-        async function validatePassword(event) {
-            event.preventDefault();
-            const password = document.getElementById('admin_password').value;
-            const errorMsg = document.getElementById('password_error');
-            const form = document.getElementById('deleteForm');
+        // Delete flow using components/dialog
+        async function confirmDelete(userId) {
+            let password;
 
             try {
-                const response = await fetch('/admin/accounts/verify-password', {
+                password = await window.showPasswordConfirmDialog(
+                    'Delete Account',
+                    'This account will be soft-deleted and can be restored later. Enter your admin password to confirm.',
+                    'Delete Account',
+                    'Cancel'
+                );
+            } catch (e) {
+                return;
+            }
+
+            try {
+                // Verify password
+                const verifyRes = await fetch('/admin/accounts/verify-password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
                     },
                     body: JSON.stringify({ password: password })
                 });
 
-                const data = await response.json();
+                const verifyData = await verifyRes.json();
 
-                if (data.valid) {
-                    form.submit();
-                } else {
-                    errorMsg.textContent = 'Incorrect password. Please try again.';
-                    errorMsg.classList.remove('hidden');
+                if (!verifyData.valid) {
+                    window.showErrorDialog('Verification Failed', 'Incorrect password. Please try again.');
+                    return;
                 }
-            } catch (error) {
-                errorMsg.textContent = 'An error occurred. Please try again.';
-                errorMsg.classList.remove('hidden');
-            }
 
-            return false;
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('deleteModal').addEventListener('click', function (e) {
-            if (e.target === this) {
-                closeDeleteModal();
-            }
-        });
-
-        // ═══════════════════════════════════════════
-        // Change Role functionality
-        // ═══════════════════════════════════════════
-        let changeRoleUserId = null;
-
-        function openChangeRoleModal(userId, userName, currentRole) {
-            changeRoleUserId = userId;
-            document.getElementById('changeRoleUserName').textContent = `Change role for: ${userName}`;
-            document.getElementById('newRoleSelect').value = currentRole;
-            document.getElementById('roleChangeError').classList.add('hidden');
-            document.getElementById('changeRoleModal').classList.remove('hidden');
-        }
-
-        function closeChangeRoleModal() {
-            changeRoleUserId = null;
-            document.getElementById('changeRoleModal').classList.add('hidden');
-        }
-
-        async function submitChangeRole() {
-            const newRole = document.getElementById('newRoleSelect').value;
-            const errorEl = document.getElementById('roleChangeError');
-
-            try {
-                const response = await fetch(`/admin/recruitment/applicant/${changeRoleUserId}/role`, {
-                    method: 'PATCH',
+                // Password verified — proceed with delete
+                const deleteRes = await fetch(`/admin/accounts/${userId}`, {
+                    method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ role: newRole })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    closeChangeRoleModal();
-                    window.location.reload();
-                } else {
-                    errorEl.textContent = data.message || 'Failed to change role.';
-                    errorEl.classList.remove('hidden');
-                }
-            } catch (error) {
-                errorEl.textContent = 'An error occurred. Please try again.';
-                errorEl.classList.remove('hidden');
-            }
-        }
-
-        document.getElementById('changeRoleModal').addEventListener('click', function (e) {
-            if (e.target === this) closeChangeRoleModal();
-        });
-
-        // ═══════════════════════════════════════════
-        // Ban/Unban functionality
-        // ═══════════════════════════════════════════
-        let banUserId = null;
-
-        function toggleBanUser(userId, userName, isActive) {
-            banUserId = userId;
-            const iconDiv = document.getElementById('banModalIcon');
-            const title = document.getElementById('banModalTitle');
-            const message = document.getElementById('banModalMessage');
-            const confirmBtn = document.getElementById('banConfirmBtn');
-
-            if (isActive) {
-                iconDiv.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100';
-                iconDiv.innerHTML = '<i class="fas fa-ban text-red-600 text-xl"></i>';
-                title.textContent = 'Ban User';
-                message.textContent = `Are you sure you want to ban "${userName}"? They will no longer be able to access the system.`;
-                confirmBtn.textContent = 'Ban User';
-                confirmBtn.className = 'flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700';
-            } else {
-                iconDiv.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100';
-                iconDiv.innerHTML = '<i class="fas fa-check-circle text-green-600 text-xl"></i>';
-                title.textContent = 'Unban User';
-                message.textContent = `Are you sure you want to unban "${userName}"? They will regain access to the system.`;
-                confirmBtn.textContent = 'Unban User';
-                confirmBtn.className = 'flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700';
-            }
-
-            document.getElementById('banModal').classList.remove('hidden');
-        }
-
-        function closeBanModal() {
-            banUserId = null;
-            document.getElementById('banModal').classList.add('hidden');
-        }
-
-        async function submitToggleBan() {
-            try {
-                const response = await fetch(`/admin/recruitment/applicant/${banUserId}/ban`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
                     }
                 });
 
-                const data = await response.json();
-
-                if (data.success) {
-                    closeBanModal();
-                    window.location.reload();
+                if (deleteRes.ok) {
+                    window.showSuccessDialog(
+                        'Account Deleted',
+                        'The account has been soft-deleted successfully and can be restored later.',
+                        'OK',
+                        '{{ route("admin.accounts.index") }}'
+                    );
                 } else {
-                    alert(data.message || 'Failed to update user status.');
+                    const errData = await deleteRes.json().catch(() => ({}));
+                    window.showErrorDialog('Delete Failed', errData.message || 'Failed to delete the account. Please try again.');
                 }
             } catch (error) {
-                alert('An error occurred. Please try again.');
+                window.showErrorDialog('Error', 'Something went wrong. Please try again.');
             }
         }
-
-        document.getElementById('banModal').addEventListener('click', function (e) {
-            if (e.target === this) closeBanModal();
-        });
     </script>
 </x-layouts.general-employer>

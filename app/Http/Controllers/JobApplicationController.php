@@ -183,7 +183,12 @@ class JobApplicationController extends Controller
         $interviewApplications = JobApplication::whereNotNull('interview_date')
             ->where('status', 'interview_scheduled')
             ->orderBy('interview_date', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($app) {
+                $job = \App\Models\JobPosting::where('title', $app->job_title)->first();
+                $app->category_color = $job?->icon_color ?? 'blue';
+                return $app;
+            });
 
         return view('admin.recruitment.interviews', compact('interviewApplications'));
     }
@@ -337,6 +342,14 @@ class JobApplicationController extends Controller
                 app(NotificationService::class)->notifyApplicantStatusChanged($application, $oldStatus, $validated['status']);
             } catch (\Exception $e) {
                 \Log::error('Failed to send applicant status notification: ' . $e->getMessage());
+            }
+
+            // In-app notification for all admins
+            try {
+                $changedBy = auth()->user()->name ?? 'Admin';
+                app(NotificationService::class)->notifyAdminsApplicationStatusChanged($application, $oldStatus, $validated['status'], $changedBy);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send admin status notification: ' . $e->getMessage());
             }
         }
 

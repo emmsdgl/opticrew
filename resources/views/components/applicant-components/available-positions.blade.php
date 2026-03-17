@@ -31,12 +31,21 @@
         </div>
         @endforeach
     </div>
-    @else
-    <div class="flex flex-col items-center justify-center py-12 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/30">
-        <i class="fa-regular fa-briefcase text-3xl text-gray-300 dark:text-gray-600 mb-3"></i>
-        <p class="text-sm font-medium text-gray-400 dark:text-gray-500">No open positions at the moment</p>
-        <p class="text-xs text-gray-300 dark:text-gray-600 mt-1">Check back later for new opportunities</p>
+
+    {{-- Filtered empty state (hidden by default, shown by JS when all cards are filtered out) --}}
+    <div id="avp-filtered-empty" class="hidden">
+        <x-applicant-components.empty-state
+            icon="fa-solid fa-filter"
+            title="No matching positions"
+            description="No job postings match your current filters. Try adjusting your criteria."
+        />
     </div>
+    @else
+    <x-applicant-components.empty-state
+        icon="fa-solid fa-briefcase"
+        title="No open positions"
+        description="Check back later for new opportunities."
+    />
     @endif
 
 </div>

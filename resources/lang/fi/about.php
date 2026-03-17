@@ -13,8 +13,9 @@ return [
     
     'floating_cards' => [
         'card1' => '" Todistettu kokemus hotellien ja lomamökkien siivouksesta. "',
-        'card2' => '" Asetamme laadun toimittamisen etusijalle ja varmistamme asiakastyytyväisyyden. "',
-        'card3' => '" Lisensoitu yritys ammattitaitoisella koulutetulla henkilöstöllä. "',
+        'card2' => '" Sitoutuminen laadukkaaseen siivouspalveluun. "',
+        'card3' => '" Joustava ja vastaanottavainen tarpeisiisi. "',
+        'card4' => '" Laaja valikoima siivouspalveluita. "',
     ],
     
     'team' => [
@@ -40,6 +41,27 @@ return [
         ],
     ],
     
+    'section2' => [
+        'team_intro' => 'Kehitystiimin esittely: Ela-vate',
+        'heading_before' => 'Siivous on enemmän kuin tehtävä;',
+        'heading_highlight' => 'se on lupaus mukavuudesta ja huolenpidosta',
+        'tagline' => 'Fin-noysin takana:',
+        'tagline_sub' => 'Puhtaiden tilojen mahdollistaminen',
+
+        'person1_name' => 'Merlyn Guzman',
+        'person1_role' => 'Toimitusjohtaja',
+        'person1_desc' => 'Fin-noysin perustaja',
+        'person2_name' => 'Earl Leonardo',
+        'person2_role' => 'Talousjohtaja',
+        'person2_desc' => 'Finnoysin perustajajäsen',
+        'person3_name' => 'Fin-noysin työntekijät',
+        'person3_role' => 'Työntekijät',
+        'person3_desc' => 'Finnoysin mahdollistajat',
+
+        'flip_name' => 'Merlyn Guzman',
+        'flip_desc' => 'Fin-noysin perustaja. Omistautunut ylläpitämään mukavuutta, huolenpitoa ja erinomaisuutta jokaisessa puhtaassa tilassa.',
+    ],
+
     'contact' => [
         'title' => 'Ota yhteyttä',
         'subtitle' => 'Olemme täällä auttamassa ja vastaamassa kaikkiin kysymyksiisi',

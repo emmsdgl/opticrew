@@ -231,22 +231,22 @@
                     <a href="{{ route('home') }}"
                         class="nav-link {{ request()->routeIs('home') ? 'active text-blue-950 dark:text-white font-bold' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
                         <i class="nav-icon fas fa-home text-blue-950 dark:text-white"></i>
-                        <span>Home</span>
+                        <span>{{ __('common.nav.home') }}</span>
                     </a>
                     <a href="{{ route('services') }}"
                         class="nav-link {{ request()->routeIs('services') ? 'active text-blue-950 dark:text-white font-bold' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
                         <i class="nav-icon fas fa-broom text-blue-950 dark:text-white"></i>
-                        <span>Services</span>
+                        <span>{{ __('common.nav.services') }}</span>
                     </a>
                     <a href="{{ route('quotation') }}"
                         class="nav-link {{ request()->routeIs('quotation') ? 'active text-blue-950 dark:text-white font-bold' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
                         <i class="nav-icon fas fa-file-invoice-dollar text-blue-950 dark:text-white"></i>
-                        <span>Price Quotation</span>
+                        <span>{{ __('common.nav.pricing') }}</span>
                     </a>
                     <a href="{{ route('about') }}"
                         class="nav-link {{ request()->routeIs('about') ? 'active text-blue-950 dark:text-white font-bold' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
                         <i class="nav-icon fas fa-info-circle text-blue-950 dark:text-white"></i>
-                        <span>About</span>
+                        <span>{{ __('common.nav.about') }}</span>
                     </a>
                 </div>
                 <!-- Right side items: Theme Toggle, Language Switcher, Login -->
@@ -328,25 +328,25 @@
                                     <!-- Home -->
                                     <a href="{{ route('home') }}"
                                         class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('home') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                                        Home
+                                        {{ __('common.nav.home') }}
                                     </a>
 
                                     <!-- Services -->
                                     <a href="{{ route('services') }}"
                                         class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('services') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                                        Services
+                                        {{ __('common.nav.services') }}
                                     </a>
 
                                     <!-- Price Quotation -->
                                     <a href="{{ route('quotation') }}"
                                         class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('quotation') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                                        Price Quotation
+                                        {{ __('common.nav.pricing') }}
                                     </a>
 
                                     <!-- About -->
                                     <a href="{{ route('about') }}"
                                         class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('about') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                                        About
+                                        {{ __('common.nav.about') }}
                                     </a>
                                 </div>
 
@@ -390,7 +390,7 @@
                                     <!-- Login Button -->
                                     <a href="{{ route('login') }}"
                                         class="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                                        Log in
+                                        {{ __('common.nav.login') }}
                                     </a>
                                 </div>
                             </nav>

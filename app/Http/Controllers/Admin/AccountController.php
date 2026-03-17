@@ -297,6 +297,10 @@ class AccountController extends Controller
             ]);
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Account updated successfully.']);
+        }
+
         return redirect()->route('admin.accounts.show', $user->id)
             ->with('success', 'Account updated successfully.');
     }
@@ -314,6 +318,10 @@ class AccountController extends Controller
         }
 
         $user->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Account deleted successfully.']);
+        }
 
         return redirect()->route('admin.accounts.index')
             ->with('success', 'Account deleted successfully.');

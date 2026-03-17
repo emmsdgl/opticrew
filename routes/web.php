@@ -39,6 +39,13 @@ use App\Http\Controllers\Manager\ManagerHistoryController;
 
 Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage']);
 
+// --- Email Preview (Dev Only) ---
+Route::get('/mail-preview', function () {
+    $application = \App\Models\JobApplication::where('status', '!=', 'withdrawn')->first();
+    if (!$application) abort(404, 'No applications found');
+    return new \App\Mail\ApplicationStatusUpdate($application);
+});
+
 // --- LANDING PAGE ROUTES (Public) ---
 Route::get('/', function () {
     // If user is already authenticated, redirect to their dashboard
