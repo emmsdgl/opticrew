@@ -1,4 +1,5 @@
 <x-layouts.general-employer :title="'Appointments'">
+    <x-skeleton-page :preset="'stats-table'">
     <section class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]" x-data="appointmentDrawer()">
         <!-- Header -->
         <div class="flex flex-col gap-2">
@@ -935,6 +936,7 @@
             </div>
         </div>
     </section>
+    </x-skeleton-page>
 
     <script>
         function appointmentDrawer() {

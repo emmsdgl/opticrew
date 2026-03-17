@@ -1,4 +1,5 @@
     <x-layouts.general-client :title="'Profile'">
+        <x-skeleton-page :preset="'profile'">
         <section role="status" class="flex w-full flex-col lg:flex-row p-4 md:p-6 min-h-[calc(100vh-4rem)]">
             <!-- Left Panel - Dashboard Content -->
             <div
@@ -49,4 +50,5 @@
                 </div>
             </div>
         </section>
+        </x-skeleton-page>
     </x-layouts.general-client>

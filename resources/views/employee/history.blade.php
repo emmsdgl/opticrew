@@ -1,4 +1,5 @@
 <x-layouts.general-employee :title="'Activity History'">
+    <x-skeleton-page :preset="'history'">
     <div class="flex flex-row w-full gap-6 p-4 md:p-6 h-fit" x-data="employeeHistoryData()">
 
         {{-- Main Content Area --}}
@@ -595,4 +596,5 @@
         };
     }
     </script>
+    </x-skeleton-page>
 </x-layouts.general-employee>

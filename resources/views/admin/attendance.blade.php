@@ -1,5 +1,6 @@
 <x-layouts.general-employer :title="'Attendance'">
 
+    <x-skeleton-page :preset="'stats-table'">
     <section role="status" class="w-full flex flex-col lg:flex-col gap-4 p-4 md:p-6">
 
         <!-- Success/Error Messages -->
@@ -642,5 +643,6 @@
         </div>
 
     </section>
+    </x-skeleton-page>
 
 </x-layouts.general-employer>

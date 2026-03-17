@@ -1,4 +1,5 @@
 <x-layouts.general-client :title="'Settings'">
+    <x-skeleton-page :preset="'default'">
     <section class="flex w-full flex-col p-4 md:p-6 min-h-[calc(100vh-4rem)] overflow-y-auto scroll-smooth">
         <div class="max-w-6xl mx-auto w-full">
             <div class="w-full flex-col justify-start text-justify sm:justify-center pb-12 p-4">
@@ -638,4 +639,5 @@
         // Load states when page loads
         document.addEventListener('DOMContentLoaded', loadToggleStates);
     </script>
+    </x-skeleton-page>
 </x-layouts.general-client>

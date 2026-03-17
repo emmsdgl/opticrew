@@ -1,4 +1,5 @@
 <x-layouts.general-employee :title="'Performance'">
+    <x-skeleton-page :preset="'performance'">
 
     {{-- MOBILE LAYOUT (< 1024px) - Hidden on large screens --}}
     <div class="lg:hidden">
@@ -114,6 +115,7 @@
         </div>
     </div>
     </div>
+    </x-skeleton-page>
 </x-layouts.general-employee>
 
 @push('scripts')

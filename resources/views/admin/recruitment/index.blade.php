@@ -1,12 +1,14 @@
 <x-layouts.general-employer :title="'Job Applications'">
+    <x-skeleton-page :preset="'recruitment'">
     <section role="status" class="w-full flex flex-col lg:flex-col gap-4 py-6">
         <!-- Header -->
-        <div class="flex flex-col gap-2 mb-2">
+        <div class="flex flex-col gap-2 mb-2 px-8">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Job Applications</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">View and manage job applications from candidates</p>
         </div>
 
         <!-- Stats Cards -->
+        <div class="stat-cards py-10">
         <x-employer-components.stats-cards :stats="[
             ['label' => 'Pending', 'value' => $applications->where('status', 'pending')->count(), 'icon' => 'fi fi-rr-clock', 'iconColor' => '#eab308'],
             ['label' => 'Reviewed', 'value' => $applications->where('status', 'reviewed')->count(), 'icon' => 'fi fi-rr-eye', 'iconColor' => '#3b82f6'],
@@ -14,6 +16,7 @@
             ['label' => 'Hired', 'value' => $applications->where('status', 'hired')->count(), 'icon' => 'fi fi-rr-check-circle', 'iconColor' => '#22c55e'],
             ['label' => 'Total Applications', 'value' => $applications->total(), 'icon' => 'fi fi-rr-document', 'iconColor' => '#6b7280'],
         ]" />
+        </div>
 
         <!-- Applications Section Header with Filters -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 my-4 mx-4">
@@ -1532,6 +1535,7 @@
         </div>
 
     </section>
+    </x-skeleton-page>
 
     @php
         $applicationsData = $applications->getCollection()->map(function ($app) use ($duplicateAlerts) {

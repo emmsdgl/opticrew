@@ -1,4 +1,5 @@
 <x-layouts.general-employer :title="'Task Management'">
+    <x-skeleton-page :preset="'calendar'">
     <section role="status" class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
 
         <!-- Task Calendar Section -->
@@ -481,6 +482,7 @@
             </div>
         </div>
     </section>
+    </x-skeleton-page>
 
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>

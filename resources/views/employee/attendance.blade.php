@@ -1,4 +1,5 @@
 <x-layouts.general-employee :title="'Attendance'">
+    <x-skeleton-page :preset="'stats-table'">
 
     {{-- MOBILE LAYOUT (< 1024px) - Hidden on large screens --}}
     <div class="lg:hidden">
@@ -619,6 +620,7 @@
         </div>
 
     </section>
+    </x-skeleton-page>
 
 @push('scripts')
 @once

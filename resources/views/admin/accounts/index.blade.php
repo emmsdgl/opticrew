@@ -1,4 +1,5 @@
 <x-layouts.general-employer :title="'User Accounts'">
+    <x-skeleton-page :preset="'stats-table'">
     <section class="flex flex-col gap-6 p-4 px-12 md:p-6 flex-1">
 
         <!-- Header -->
@@ -415,6 +416,7 @@
         @endif
 
     </section>
+    </x-skeleton-page>
 
     <script>
         // Search functionality for main users table

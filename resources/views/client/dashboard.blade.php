@@ -1,4 +1,5 @@
 <x-layouts.general-client :title="'Client Dashboard'">
+    <x-skeleton-page :preset="'client-dashboard'">
     <!-- Filter/Sort Script - Define before Alpine initializes -->
     <script>
     // Sort function for appointments on dashboard
@@ -547,4 +548,5 @@
             'align' => 'start',
         ],
     ])" />
+    </x-skeleton-page>
 </x-layouts.general-client>

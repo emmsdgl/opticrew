@@ -1,4 +1,5 @@
 <x-layouts.general-employer :title="'Training Management'">
+    <x-skeleton-page :preset="'training'">
     <section role="status" class="w-full flex flex-col lg:flex-col gap-4 p-4 md:p-6">
 
         <!-- Header -->
@@ -480,6 +481,7 @@
         </div>
 
     </section>
+    </x-skeleton-page>
 
     @push('scripts')
         <script>

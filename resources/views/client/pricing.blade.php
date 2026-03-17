@@ -1,4 +1,5 @@
 <x-layouts.general-client :title="'Pricing'">
+    <x-skeleton-page :preset="'default'">
     <div class="flex flex-col w-full min-h-[calc(100vh-4rem)] font-sans">
         <!-- Hero Section with Gradient Background -->
         <div class="relative isolate px-6 sm:py-32 lg:px-8 lg:pb-32 overflow-hidden">
@@ -613,4 +614,5 @@
             });
         });
     </script>
+    </x-skeleton-page>
 </x-layouts.general-client>

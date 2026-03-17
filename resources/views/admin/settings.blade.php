@@ -1,4 +1,5 @@
 <x-layouts.general-employer :title="'Settings'">
+    <x-skeleton-page :preset="'default'">
     <section class="flex w-full flex-col p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <div class="max-w-4xl mx-auto w-full">
             <!-- Page Header -->
@@ -218,4 +219,5 @@
             </div>
         </div>
     </section>
+    </x-skeleton-page>
 </x-layouts.general-employer>

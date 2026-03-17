@@ -1,4 +1,5 @@
 <x-layouts.general-employer :title="'Activity History'">
+    <x-skeleton-page :preset="'history'">
     <div class="flex flex-row w-full gap-6 p-4 md:p-6 h-fit" x-data="adminHistoryData()">
 
         {{-- Main Content Area --}}
@@ -201,6 +202,7 @@
         />
 
     </div>
+    </x-skeleton-page>
 
     <script>
     function adminHistoryData() {

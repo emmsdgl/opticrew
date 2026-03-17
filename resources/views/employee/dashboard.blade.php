@@ -1,4 +1,5 @@
 <x-layouts.general-employee :title="'Employee Dashboard'">
+    <x-skeleton-page :preset="'employee-dashboard'">
 
     {{-- MOBILE LAYOUT (< 1024px) - Hidden on large screens --}} <div class="lg:hidden">
         @include('employee.mobile.dashboard')
@@ -805,4 +806,5 @@
             'align' => 'start',
         ],
     ])" />
+    </x-skeleton-page>
 </x-layouts.general-employee>

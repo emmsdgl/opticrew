@@ -1,4 +1,5 @@
 <x-layouts.general-employer :title="'Analytics'">
+    <x-skeleton-page :preset="'two-panel'">
     <div class="flex flex-col lg:flex-row md:gap-4 w-full">
         <!-- Left Panel - Main Content -->
         <div class="flex flex-col gap-4 md:gap-6 w-full rounded-lg p-3 h-fit lg:w-2/3 md:p-3">
@@ -229,6 +230,7 @@
             @endif
         </div>
     </div>
+    </x-skeleton-page>
 </x-layouts.general-employer>
 
 @push('scripts')

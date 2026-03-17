@@ -1,4 +1,5 @@
 <x-layouts.general-employee :title="'Edit Profile'">
+    <x-skeleton-page :preset="'profile'">
     <section class="flex w-full flex-col p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <div class="max-w-4xl mx-auto w-full">
             <!-- Page Header -->
@@ -227,4 +228,5 @@
         });
     </script>
     @endpush
+    </x-skeleton-page>
 </x-layouts.general-employee>
