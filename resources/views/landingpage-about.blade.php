@@ -251,7 +251,7 @@
                                     CFO
                                 </p>
                                 <p class="font-[fam-regular] text-[9px] sm:text-xs text-gray-400 dark:text-gray-500">
-                                    Co-Founder of Finnoys
+                                    Co-Founder of Fin-noys
                                 </p>
                             </div>
                             
@@ -263,7 +263,7 @@
                                     Employees
                                 </p>
                                 <p class="font-[fam-regular] text-[9px] sm:text-xs text-gray-400 dark:text-gray-500">
-                                    Enablers of Finnoys
+                                    Enablers of Fin-noys
                                 </p>
                             </div>
                         </div>

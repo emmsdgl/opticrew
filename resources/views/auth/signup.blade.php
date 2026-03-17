@@ -453,7 +453,7 @@
         <!-- Logo -->
         <header id="logo-container" class="w-full flex justify-start py-3 px-2">
             <a href="/" class="-m-1.5 p-1.5">
-                <img src="{{ asset('/images/finnoys-text-logo-light.svg') }}" alt="Finnoys Logo" class="h-16 sm:h-20">
+                <img src="{{ asset('/images/finnoys-text-logo-light.svg') }}" alt="Fin-noys Logo" class="h-16 sm:h-20">
             </a>
         </header>
 

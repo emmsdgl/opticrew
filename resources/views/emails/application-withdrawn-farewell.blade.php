@@ -35,7 +35,7 @@
                                 Hello,
                             </p>
                             <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 16px 0;">
-                                We have received your withdrawal request for the <strong>{{ $application->job_title }}</strong> position at Finnoys Cleaning Services. Your application has been successfully withdrawn.
+                                We have received your withdrawal request for the <strong>{{ $application->job_title }}</strong> position at Fin-noys Cleaning Services. Your application has been successfully withdrawn.
                             </p>
                             <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 16px 0;">
                                 We're sorry to see you go. We truly appreciate your interest in joining our team and the time you invested in the application process.
@@ -70,10 +70,10 @@
                     <tr>
                         <td style="padding: 20px 40px 30px; border-top: 1px solid #e5e7eb;">
                             <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
-                                This is an automated message from Finnoys Cleaning Services.<br>
+                                This is an automated message from Fin-noys Cleaning Services.<br>
                                 You will not receive any further automated emails regarding this application.<br>
                                 If you have questions, contact us at
-                                <a href="mailto:no-reply@finnoys.com" style="color: #3b82f6; text-decoration: none;">finnoys0823@gmail.com</a>
+                                <a href="mailto:finnoys0823@gmail.com" style="color: #3b82f6; text-decoration: none;">finnoys0823@gmail.com</a>
                             </p>
                         </td>
                     </tr>

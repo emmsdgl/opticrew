@@ -22,9 +22,9 @@
             <div class="flex-1 flex items-center justify-center">
                 <a href="{{ route('applicant.dashboard') }}" class="flex items-center justify-center">
                     <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
-                        class="block dark:hidden h-24 w-auto sidebar-logo" alt="Finnoys Light Logo">
+                        class="block dark:hidden h-24 w-auto sidebar-logo" alt="Fin-noys Light Logo">
                     <img src="{{ asset('images/finnoys-text-logo.svg') }}"
-                        class="hidden dark:block h-24 w-auto sidebar-logo" alt="Finnoys Dark Logo">
+                        class="hidden dark:block h-24 w-auto sidebar-logo" alt="Fin-noys Dark Logo">
                 </a>
             </div>
 

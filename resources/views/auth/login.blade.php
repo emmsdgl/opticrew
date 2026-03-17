@@ -153,7 +153,7 @@
                 </h1>
 
                 <p id="desc1" class="text-[#688bff89] text-opacity-40 text-base text-left mt-3 w-2/3 relative z-10">
-                    Finnoys is a cleaning agency catering your cleaning needs with its offered quality cleaning
+                    Fin-noys is a cleaning agency catering your cleaning needs with its offered quality cleaning
                     services.
                 </p>
             </div>
@@ -167,7 +167,7 @@
 
                 <div id="container-2-1" class="flex flex-col items-start my-12 w-full">
                     <a href="{{ url('/') }}" class="absolute top-20 right-[29rem]">
-                        <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt="Finnoys"
+                        <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt="Fin-noys"
                             class="h-20 w-auto cursor-pointer">
                     </a>
                     <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 mt-6 text-[#081032]">Log In</h1>
@@ -203,10 +203,10 @@
                                     <i class="fa-solid fa-ban text-red-500 text-2xl"></i>
                                 </div>
                                 <h3 class="text-lg font-bold text-gray-900 mb-2">Account Suspended</h3>
-                                <p class="text-sm text-gray-500 leading-relaxed">Your account has been banned from accessing the system. If you believe this is a mistake, please contact Finnoys support.</p>
+                                <p class="text-sm text-gray-500 leading-relaxed">Your account has been banned from accessing the system. If you believe this is a mistake, please contact Fin-noys support.</p>
                             </div>
                             <div class="px-8 pb-8 flex flex-col gap-3">
-                                <a href="https://mail.google.com/mail/?view=cm&to=finnoys0823@gmail.com&su=Account%20Ban%20Appeal&body=Hello%20Finnoys%20Support%2C%0A%0AI%20believe%20my%20account%20has%20been%20banned%20by%20mistake.%20Please%20review%20my%20account.%0A%0AThank%20you."
+                                <a href="https://mail.google.com/mail/?view=cm&to=finnoys0823@gmail.com&su=Account%20Ban%20Appeal&body=Hello%20Fin-noys%20Support%2C%0A%0AI%20believe%20my%20account%20has%20been%20banned%20by%20mistake.%20Please%20review%20my%20account.%0A%0AThank%20you."
                                    target="_blank" rel="noopener noreferrer"
                                    class="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 text-sm no-underline">
                                     <i class="fa-solid fa-envelope mr-2"></i>Contact Us via Email

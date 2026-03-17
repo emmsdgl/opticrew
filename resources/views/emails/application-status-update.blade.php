@@ -73,7 +73,7 @@
                             <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #eff6ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
                                 <tr>
                                     <td style="padding: 16px 20px;">
-                                        <p style="margin: 0 0 6px; font-size: 12px; color: #3b82f6; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Note from Finnoys</p>
+                                        <p style="margin: 0 0 6px; font-size: 12px; color: #3b82f6; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Note from Fin-noys</p>
                                         <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.6;">{{ $application->admin_notes }}</p>
                                     </td>
                                 </tr>
@@ -86,9 +86,9 @@
                     <tr>
                         <td style="padding: 20px 40px 30px; border-top: 1px solid #e5e7eb;">
                             <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
-                                This is an automated message from Finnoys Cleaning Services.<br>
+                                This is an automated message from Fin-noys Cleaning Services.<br>
                                 Please do not reply to this email. If you have questions, contact us at
-                                <a href="mailto:no-reply@finnoys.com" style="color: #3b82f6; text-decoration: none;">finnoys0823@gmail.com</a>
+                                <a href="mailto:finnoys0823@gmail.com" style="color: #3b82f6; text-decoration: none;">finnoys0823@gmail.com</a>
                             </p>
                         </td>
                     </tr>

@@ -35,7 +35,7 @@
                                 Hello,
                             </p>
                             <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 16px 0;">
-                                Thank you for your interest in the <strong>{{ $application->job_title }}</strong> position at Finnoys Cleaning Services. We have received your application successfully.
+                                Thank you for your interest in the <strong>{{ $application->job_title }}</strong> position at Fin-noys Cleaning Services. We have received your application successfully.
                             </p>
                             <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 16px 0;">
                                 Your application was submitted outside of our regular business hours. Our recruitment team will review your application and get back to you by <strong>{{ $responseEta }}</strong>.
@@ -81,9 +81,9 @@
                     <tr>
                         <td style="padding: 20px 40px 30px; border-top: 1px solid #e5e7eb;">
                             <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
-                                This is an automated message from Finnoys Cleaning Services.<br>
+                                This is an automated message from Fin-noys Cleaning Services.<br>
                                 Please do not reply to this email. If you have questions, contact us at
-                                <a href="mailto:no-reply@finnoys.com" style="color: #3b82f6; text-decoration: none;">finnoys0823@gmail.com</a>
+                                <a href="mailto:finnoys0823@gmail.com" style="color: #3b82f6; text-decoration: none;">finnoys0823@gmail.com</a>
                             </p>
                         </td>
                     </tr>

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Mail\ApplicationReceivedAfterHours;
 use App\Mail\ApplicationWithdrawnFarewell;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -134,13 +135,17 @@ class ApplicantDashboardController extends Controller
         // Collect text from multiple extraction methods, pick the best one.
         $candidates = [];
 
-        // 1. For DOCX: extract text natively from XML (cleanest output)
+        // 1. OCR.space cloud API (most reliable on any hosting)
+        $t = $this->callOcrSpace($fullPath, $ext);
+        if (trim($t)) $candidates['ocr_space'] = $t;
+
+        // 2. For DOCX: extract text natively from XML (cleanest output)
         if ($ext === 'docx') {
             $t = $this->extractDocxText($fullPath);
             if (trim($t)) $candidates['docx_xml'] = $t;
         }
 
-        // 2. For PDFs: use smalot/pdfparser (handles font encodings & CMap)
+        // 3. For PDFs: use smalot/pdfparser (handles font encodings & CMap)
         if ($ext === 'pdf') {
             try {
                 $parser = new \Smalot\PdfParser\Parser();
@@ -152,11 +157,11 @@ class ApplicantDashboardController extends Controller
             }
         }
 
-        // 3. Python OCR script (works locally, may not be available on hosting)
+        // 4. Python OCR script (works locally, may not be available on hosting)
         $t = $this->callOcrExtract($fullPath);
         if (trim($t)) $candidates['python_ocr'] = $t;
 
-        // 4. PHP-native FlateDecode extraction for PDFs
+        // 5. PHP-native FlateDecode extraction for PDFs
         if ($ext === 'pdf') {
             $t = $this->extractPdfText($fullPath);
             if (trim($t)) $candidates['php_native'] = $t;
@@ -576,6 +581,67 @@ class ApplicantDashboardController extends Controller
         }
 
         return '';
+    }
+
+    /**
+     * Call OCR.space cloud API to extract text from a resume file.
+     * Free tier: 25,000 requests/month. Supports PDF, PNG, JPG, DOCX.
+     */
+    private function callOcrSpace(string $filePath, string $ext): string
+    {
+        $apiKey = config('services.ocr_space.api_key');
+        if (!$apiKey) {
+            return '';
+        }
+
+        try {
+            $mimeTypes = [
+                'pdf'  => 'application/pdf',
+                'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'png'  => 'image/png',
+                'jpg'  => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+            ];
+            $mime = $mimeTypes[$ext] ?? 'application/octet-stream';
+
+            $response = Http::timeout(30)
+                ->withHeaders(['apikey' => $apiKey])
+                ->attach('file', fopen($filePath, 'r'), basename($filePath), ['Content-Type' => $mime])
+                ->post('https://api.ocr.space/parse/image', [
+                    'language'       => 'eng',
+                    'isOverlayRequired' => 'false',
+                    'filetype'       => strtoupper($ext),
+                    'detectOrientation' => 'true',
+                    'scale'          => 'true',
+                    'OCREngine'      => '2',  // Engine 2 is better for dense text like resumes
+                ]);
+
+            if (!$response->successful()) {
+                \Log::warning('OCR.space HTTP error', ['status' => $response->status()]);
+                return '';
+            }
+
+            $data = $response->json();
+
+            if (($data['IsErroredOnProcessing'] ?? false) || ($data['OCRExitCode'] ?? 1) !== 1) {
+                \Log::warning('OCR.space processing error', [
+                    'error'    => $data['ErrorMessage'] ?? $data['ErrorDetails'] ?? 'unknown',
+                    'exitCode' => $data['OCRExitCode'] ?? null,
+                ]);
+                return '';
+            }
+
+            // Concatenate text from all parsed pages
+            $text = '';
+            foreach ($data['ParsedResults'] ?? [] as $page) {
+                $text .= ($page['ParsedText'] ?? '') . "\n";
+            }
+
+            return trim($text);
+        } catch (\Throwable $e) {
+            \Log::warning('OCR.space exception', ['error' => $e->getMessage()]);
+            return '';
+        }
     }
 
     /**

@@ -75,7 +75,7 @@
                     <div>
                         <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">Employee Account Required</h3>
                         <p class="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                            This applicant has been hired but doesn't have an employee account yet. Set up their Finnoys employee account to complete the onboarding.
+                            This applicant has been hired but doesn't have an employee account yet. Set up their Fin-noys employee account to complete the onboarding.
                         </p>
                     </div>
                 </div>

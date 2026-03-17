@@ -829,7 +829,7 @@ loadingTask.promise.then(pdf=>{
 
         if ($applicantUser) {
             // Convert existing applicant user to employee
-            // Store original gmail as alternative_email for Google login, set Finnoys email as primary
+            // Store original gmail as alternative_email for Google login, set Fin-noys email as primary
             $applicantUser->update([
                 'name' => $validated['name'],
                 'username' => $validated['username'],

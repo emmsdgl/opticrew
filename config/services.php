@@ -41,4 +41,8 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'ocr_space' => [
+        'api_key' => env('OCR_SPACE_API_KEY', ''),
+    ],
+
 ];

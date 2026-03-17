@@ -24,12 +24,12 @@
                     <!-- Light Mode Logo (visible by default, hidden in dark mode) -->
                     <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
                         class="block dark:hidden h-24 w-auto sidebar-logo"
-                        alt="Finnoys Light Logo">
+                        alt="Fin-noys Light Logo">
 
                     <!-- Dark Mode Logo (hidden by default, visible in dark mode) -->
                     <img src="{{ asset('images/finnoys-text-logo.svg') }}"
                         class="hidden dark:block h-24 w-auto sidebar-logo"
-                        alt="Finnoys Dark Logo">
+                        alt="Fin-noys Dark Logo">
                 </a>
             </div>
 

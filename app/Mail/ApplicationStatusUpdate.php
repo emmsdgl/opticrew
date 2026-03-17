@@ -37,10 +37,10 @@ class ApplicationStatusUpdate extends Mailable
         $interviewMessage .= "<br><br>Please make sure to be available at the scheduled time. If you need to reschedule, please contact us as soon as possible.";
 
         $this->statusMessage = match ($application->status) {
-            'reviewed' => "We wanted to let you know that your application for <strong>{$application->job_title}</strong> is currently being reviewed by our team at Finnoys. We appreciate your interest and will get back to you shortly.",
+            'reviewed' => "We wanted to let you know that your application for <strong>{$application->job_title}</strong> is currently being reviewed by our team at Fin-noys. We appreciate your interest and will get back to you shortly.",
             'interview_scheduled' => $interviewMessage,
-            'hired' => "Congratulations! We are pleased to inform you that you have been selected for the <strong>{$application->job_title}</strong> position at Finnoys. Our team will contact you with the next steps.",
-            'rejected' => "Thank you for your interest in the <strong>{$application->job_title}</strong> position at Finnoys. After careful review, we have decided to move forward with other candidates. We encourage you to apply for future openings.",
+            'hired' => "Congratulations! We are pleased to inform you that you have been selected for the <strong>{$application->job_title}</strong> position at Fin-noys. Our team will contact you with the next steps.",
+            'rejected' => "Thank you for your interest in the <strong>{$application->job_title}</strong> position at Fin-noys. After careful review, we have decided to move forward with other candidates. We encourage you to apply for future openings.",
             default => "Your application status for <strong>{$application->job_title}</strong> has been updated.",
         };
     }

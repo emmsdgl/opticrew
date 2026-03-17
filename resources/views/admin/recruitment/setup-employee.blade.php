@@ -65,7 +65,7 @@
                 <!-- Account Information Section -->
                 <div class="px-6 py-4 bg-white dark:bg-gray-900">
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white">Account Information</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Set up the employee's Finnoys login credentials. Their personal Gmail will be preserved for Google login.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Set up the employee's Fin-noys login credentials. Their personal Gmail will be preserved for Google login.</p>
                 </div>
 
                 <dl>
@@ -104,10 +104,10 @@
                         </dd>
                     </div>
 
-                    <!-- Finnoys Email -->
+                    <!-- Fin-noys Email -->
                     <div class="px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center bg-gray-50 dark:bg-gray-800/50">
                         <dt class="text-sm font-semibold text-gray-900 dark:text-white">
-                            Finnoys email <span class="text-red-500">*</span>
+                            Fin-noys email <span class="text-red-500">*</span>
                         </dt>
                         <dd class="mt-1 sm:col-span-2 sm:mt-0">
                             <div class="flex items-center gap-2">
@@ -153,7 +153,7 @@
                 <div class="border-t border-gray-200 dark:border-gray-700">
                     <div class="px-6 py-4 bg-white dark:bg-gray-900">
                         <h3 class="text-sm font-bold text-gray-900 dark:text-white">Password</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Set the Finnoys account password for this employee.</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Set the Fin-noys account password for this employee.</p>
                     </div>
 
                     <dl>
