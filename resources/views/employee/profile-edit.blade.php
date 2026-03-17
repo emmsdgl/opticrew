@@ -7,17 +7,6 @@
                 <p class="text-gray-600 dark:text-gray-400 mt-1">Update your personal information and profile picture</p>
             </div>
 
-            <!-- Error Messages -->
-            @if ($errors->any())
-                <div class="mb-6 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <!-- Profile Picture Upload -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Profile Picture</h2>
@@ -25,21 +14,22 @@
                 <div class="flex items-center space-x-6">
                     <!-- Current Profile Picture -->
                     <div class="relative">
-                        <img src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : 'https://i.pravatar.cc/150' }}"
+                        <img id="profilePicturePreview"
+                             src="{{ $user->profile_picture ? asset($user->profile_picture) : 'https://i.pravatar.cc/150' }}"
                              alt="Profile Picture"
                              class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700">
                     </div>
 
                     <!-- Upload Form -->
                     <div class="flex-1">
-                        <form action="{{ route('employee.profile.upload-picture') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
-                            @csrf
+                        <form id="pictureForm" class="space-y-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Choose new picture
                                 </label>
                                 <input type="file"
                                        name="profile_picture"
+                                       id="profilePictureInput"
                                        accept="image/*"
                                        class="block w-full text-sm text-gray-500 dark:text-gray-400
                                               file:mr-4 file:py-2 file:px-4
@@ -65,9 +55,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Personal Information</h2>
 
-                <form action="{{ route('employee.profile.update') }}" method="POST" class="space-y-4">
-                    @csrf
-
+                <form id="profileForm" class="space-y-4">
                     <!-- Name -->
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -146,4 +134,97 @@
             </div>
         </div>
     </section>
+
+    @push('scripts')
+    <script>
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            try {
+                await window.showConfirmDialog(
+                    'Save Changes',
+                    'Are you sure you want to update your profile information?',
+                    'Save',
+                    'Cancel'
+                );
+            } catch (e) {
+                return;
+            }
+
+            const form = this;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch("{{ route('employee.profile.update') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    window.showSuccessDialog('Profile Updated', data.message || 'Your profile has been updated successfully.');
+                } else {
+                    const errors = data.errors ? Object.values(data.errors).flat().join('\n') : (data.message || 'Failed to update profile.');
+                    window.showErrorDialog('Update Failed', errors);
+                }
+            } catch (err) {
+                window.showErrorDialog('Error', 'Something went wrong. Please try again.');
+            }
+        });
+
+        document.getElementById('pictureForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('profilePictureInput');
+            if (!fileInput.files.length) {
+                window.showErrorDialog('No File Selected', 'Please choose a picture to upload.');
+                return;
+            }
+
+            try {
+                await window.showConfirmDialog(
+                    'Upload Picture',
+                    'Are you sure you want to update your profile picture?',
+                    'Upload',
+                    'Cancel'
+                );
+            } catch (e) {
+                return;
+            }
+
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch("{{ route('employee.profile.upload-picture') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (data.path) {
+                        document.getElementById('profilePicturePreview').src = data.path;
+                    }
+                    fileInput.value = '';
+                    window.showSuccessDialog('Picture Updated', data.message || 'Your profile picture has been updated successfully.');
+                } else {
+                    const errors = data.errors ? Object.values(data.errors).flat().join('\n') : (data.message || 'Failed to upload picture.');
+                    window.showErrorDialog('Upload Failed', errors);
+                }
+            } catch (err) {
+                window.showErrorDialog('Error', 'Something went wrong. Please try again.');
+            }
+        });
+    </script>
+    @endpush
 </x-layouts.general-employee>

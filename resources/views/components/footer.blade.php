@@ -6,15 +6,14 @@
                 <!-- Left Section -->
                 <div class="md:col-span-2 space-y-8">
                     <div class="flex items-center space-x-2">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Fin-noys</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('common.footer.finnoys') }}</h2>
                     </div>
                     <p class="text-sm text-gray-600 dark:text-gray-300">
-                        The latest updates, discounts, and services, accessed in your own personalized account.
+                        {{ __('common.footer.description') }}
                     </p>
 
                     <p class="text-xs text-gray-500 dark:text-gray-400 max-w-sm">
-                        By creating an account, you agree to with our Privacy Policy and provide consent to receive updates from
-                        Fin-noys.
+                        {{ __('common.footer.consent') }}
                     </p>
                 </div>
 
@@ -22,27 +21,27 @@
                 <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 text-sm">
 
                 <div>
-                        <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">About</h3>
+                        <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">{{ __('common.footer.about') }}</h3>
                         <ul class="space-y-3">
-                            <li><a href="{{ route('about') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Fin-noys</a></li>
-                            <li><a href="{{ route('recruitment') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Careers in Fin-noys</a></li>
-                            <li><a href="{{ route('castcrew') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">CastCrew</a></li>
+                            <li><a href="{{ route('about') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.finnoys') }}</a></li>
+                            <li><a href="{{ route('recruitment') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.careers') }}</a></li>
+                            <li><a href="{{ route('castcrew') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.castcrew') }}</a></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Support</h3>
+                        <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">{{ __('common.footer.support') }}</h3>
                         <ul class="space-y-3">
-                            <li><a href="{{ route('contact') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Contact</a></li>
-                            <li><a href="{{ route('documentation') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Documentation</a></li>
+                            <li><a href="{{ route('contact') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.contact') }}</a></li>
+                            <li><a href="{{ route('documentation') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.documentation') }}</a></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Legal</h3>
+                        <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">{{ __('common.footer.legal') }}</h3>
                         <ul class="space-y-3">
-                            <li><a href="{{ route('termscondition') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Terms & Conditions</a></li>
-                            <li><a href="{{ route('privacypolicy') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">Privacy Policy</a></li>
+                            <li><a href="{{ route('termscondition') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.terms') }}</a></li>
+                            <li><a href="{{ route('privacypolicy') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.privacy') }}</a></li>
                         </ul>
                     </div>
                 </div>
@@ -52,7 +51,7 @@
             <div
                 class="flex flex-col md:flex-row items-center justify-between border-t border-gray-300 dark:border-gray-700 pt-6">
                 <div id="trademark" class="text-xs text-gray-500 dark:text-gray-400 mb-4 md:mb-0">
-                    © 2025 Fin-noys-CastCrew All rights reserved.
+                    {{ __('common.footer.copyright') }}
                 </div>
                 <div id="socials" class="flex space-x-4">
                     <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition">

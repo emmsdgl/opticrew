@@ -1,6 +1,6 @@
 @extends('components.layouts.general-landing')
 
-@section('title', 'Services')
+@section('title', __('services.title'))
 
 @push('styles')
     <style>
@@ -84,54 +84,54 @@
         // Slide Carousel Data
     $slides = [
         [
-            'title' => 'From Request to Refresh — We Make It Shine',
-            'subtitle' => 'What We Offer · Our Services',
-            'description' => 'Discover our range of professional cleaning services designed to make your home or business shine',
-            'buttonText' => 'Explore Services',
+            'title' => __('services.carousel.slide1_title'),
+            'subtitle' => __('services.carousel.slide1_subtitle'),
+            'description' => __('services.carousel.slide1_description'),
+            'buttonText' => __('services.carousel.slide1_button'),
             'buttonUrl' => route('services'),
             'backgroundImage' => asset('images/backgrounds/services_carousel/cover-page.svg'),
             'textColor' => 'text-white',
             'darkTextColor' => 'text-white',
         ],
         [
-            'title' => 'Deep Cleaning',
-            'price' => '€ 120 - € 200',
-            'description' => 'A thorough, top-to-bottom cleaning that tackles dirt and grime in hard-to-reach places...',
-            'badges' => ['Linen Laundry', 'Toilet Cleaning', 'Window Cleaning', 'Interior Arrangement'],
-            'buttonText' => 'Book A Service',
+            'title' => __('services.carousel.slide2_title'),
+            'price' => __('services.carousel.slide2_price'),
+            'description' => __('services.carousel.slide2_description'),
+            'badges' => __('services.carousel.slide2_badges'),
+            'buttonText' => __('services.carousel.slide2_button'),
             'buttonUrl' => route('quotation'),
             'backgroundImage' => asset('images/backgrounds/services_carousel/deep-cleaning.svg'),
             'textColor' => 'text-gray-900',
             'darkTextColor' => 'text-white',
         ],
         [
-            'title' => 'Full Daily Cleaning',
-            'price' => '€ 80 - € 150',
-            'description' => 'Complete room refresh tailored for guest accommodations...',
-            'badges' => ['Light Cleaning', 'Emptying Trash Bins', 'Sweeping & Dusting', 'Replacing Amenities', 'Restocking Amenities'],
-            'buttonText' => 'Book A Service',
+            'title' => __('services.carousel.slide3_title'),
+            'price' => __('services.carousel.slide3_price'),
+            'description' => __('services.carousel.slide3_description'),
+            'badges' => __('services.carousel.slide3_badges'),
+            'buttonText' => __('services.carousel.slide3_button'),
             'buttonUrl' => route('quotation'),
             'backgroundImage' => asset('images/backgrounds/services_carousel/full-daily-cleaning.svg'),
             'textColor' => 'text-gray-900',
             'darkTextColor' => 'text-white',
         ],
         [
-            'title' => 'Snow Out Cleaning',
-            'price' => '€ 150 - € 250',
-            'description' => 'Comprehensive cleaning service for vacation rentals between guest stays...',
-            'badges' => ['Deep Cleaning', 'Full Sanitization', 'Linen Replacement', 'Complete Reset'],
-            'buttonText' => 'Book A Service',
+            'title' => __('services.carousel.slide4_title'),
+            'price' => __('services.carousel.slide4_price'),
+            'description' => __('services.carousel.slide4_description'),
+            'badges' => __('services.carousel.slide4_badges'),
+            'buttonText' => __('services.carousel.slide4_button'),
             'buttonUrl' => route('quotation'),
             'backgroundImage' => asset('images/backgrounds/services_carousel/snow-out-cleaning.svg'),
             'textColor' => 'text-gray-900',
             'darkTextColor' => 'text-white',
         ],
         [
-            'title' => 'Full Daily Cleaning',
-            'price' => '€ 200 - € 300',
-            'description' => 'Comprehensive daily cleaning service covering all areas...',
-            'badges' => ['Complete Service', 'All Rooms', 'Full Maintenance', 'Premium Care'],
-            'buttonText' => 'Book A Service',
+            'title' => __('services.carousel.slide5_title'),
+            'price' => __('services.carousel.slide5_price'),
+            'description' => __('services.carousel.slide5_description'),
+            'badges' => __('services.carousel.slide5_badges'),
+            'buttonText' => __('services.carousel.slide5_button'),
             'buttonUrl' => route('quotation'),
             'backgroundImage' => asset('images/backgrounds/services_carousel/full-daily-cleaning.svg'),
             'textColor' => 'text-gray-900',
@@ -141,10 +141,10 @@
         // Expanding Cards Data
     $expandingCards = [
             [
-            'title' => 'Serving Homes & Businesses Across These Areas',
+            'title' => __('services.expanding.card1_title'),
             'price' => '',
-            'description' => 'Comprehensive cleaning service for vacation rentals between guest stays.',
-            'badges' => ['Inari', 'Lapland', 'Saariselkä'],
+            'description' => __('services.expanding.card1_description'),
+            'badges' => __('services.expanding.card1_badges'),
             'buttonText' => '',
             'buttonUrl' => route('quotation'),
             'bgImage' => asset('images/backgrounds/areas-serve-bg.svg'),
@@ -153,24 +153,24 @@
             'overlayOpacity' => '60',
         ],
         [
-            'title' => 'Municipality of Inari',
+            'title' => __('services.expanding.card2_title'),
             'price' => '',
-            'description' => 'This is one of the municipalities inside Lapland, on the northernmost region, taking up roughly the entire top third of the country, above the Arctic Circle.',
-            'badges' => ['Saariselkä', 'Nellim', 'Lemmenjoki','Ivalo'],
+            'description' => __('services.expanding.card2_description'),
+            'badges' => __('services.expanding.card2_badges'),
             'buttonText' => '',
             'buttonUrl' => route('quotation'),
-            
-            'bgImage' => asset('images/backgrounds/inari-bg.svg'),            
+
+            'bgImage' => asset('images/backgrounds/inari-bg.svg'),
             // Optional: Keep gradient overlay for better text readability
             'gradient' => '',
             'darkGradient' => 'from-blue-600 via-blue-700 to-blue-800',
             'overlayOpacity' => '40', // Lower opacity to show more of the image
         ],
         [
-            'title' => 'Saariselkä',
+            'title' => __('services.expanding.card3_title'),
             'price' => '',
-            'description' => 'In Lapland, with the shimmering northern lights dance above snow-covered fells, reindeer roam freely, and adventure awaits year-round through skiing, hiking, and the serene beauty of the Arctic wilderness.',
-            'badges' => ['Utsjoki', 'Inari','Saariselkä','Kaamanen'],
+            'description' => __('services.expanding.card3_description'),
+            'badges' => __('services.expanding.card3_badges'),
             'buttonText' => '',
             'buttonUrl' => route('quotation'),
             'bgImage' => asset('images/backgrounds/sar-bg.svg'),
@@ -179,10 +179,10 @@
             'overlayOpacity' => '30',
         ],
         [
-            'title' => 'Lapland Region',
+            'title' => __('services.expanding.card4_title'),
             'price' => '',
-            'description' => 'The capital of Lapland and the official hometown of Santa Claus, known for its vibrant urban life and Northern Lights views.',
-            'badges' => ['Utsjoki', 'Inari','Saariselkä','Kaamanen'],
+            'description' => __('services.expanding.card4_description'),
+            'badges' => __('services.expanding.card4_badges'),
             'buttonText' => '',
             'buttonUrl' => route('quotation'),
             'bgImage' => asset('images/backgrounds/lapland-region-bg.svg'),
@@ -209,7 +209,9 @@
                             :buttonUrl="$slide['buttonUrl']"
                             :badges="$slide['badges'] ?? []"
                             :price="$slide['price'] ?? null"
-                            :backgroundImage="$slide['backgroundImage']"
+                            :backgroundImage="$slide['backgroundImage'] ?? null"
+                            :liquidSurface="$slide['liquidSurface'] ?? false"
+                            :liquidColors="$slide['liquidColors'] ?? []"
                             :textColor="$slide['textColor']"
                             :darkTextColor="$slide['darkTextColor']"
                             :isActive="$index === 0"
@@ -252,9 +254,9 @@
         <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <!-- Section Header -->
             <div class="text-center mb-8 sm:mb-12">
-                <h2 class="text-xs sm:text-sm md:text-base text-blue-600 dark:text-blue-400 font-semibold mb-4 sm:mb-6 lg:mb-8">Explore Our Services</h2>
+                <h2 class="text-xs sm:text-sm md:text-base text-blue-600 dark:text-blue-400 font-semibold mb-4 sm:mb-6 lg:mb-8">{{ __('services.section2.subtitle') }}</h2>
                 <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4">
-                    Just a <span class="text-blue-600">click away</span>
+                    {{ __('services.section2.title_before') }} <span class="text-blue-600">{{ __('services.section2.title_highlight') }}</span>
                 </h2>
             </div>
 
@@ -280,7 +282,7 @@
 
             <div class="mt-8 sm:mt-12 w-full justify-center align-items-center">
                 <p class="text-center text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 px-4">
-                    Proudly serving homes and businesses across Finland, we bring professional, reliable cleaning right to your doorstep
+                    {{ __('services.section2.footer_text') }}
                 </p>
             </div>
         </div>
@@ -289,13 +291,13 @@
     <!-- SECTION 3: PRICING -->
     <section class="w-full py-8 sm:py-12 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
         <div class="mx-auto max-w-4xl text-center px-4">
-            <h2 class="text-xs sm:text-sm md:text-base text-blue-600 dark:text-blue-400 font-semibold">Pricing</h2>
+            <h2 class="text-xs sm:text-sm md:text-base text-blue-600 dark:text-blue-400 font-semibold">{{ __('services.section3.subtitle') }}</h2>
             <p class="p-6 sm:p-8 lg:p-12 pb-4 sm:pb-6 pt-4 sm:pt-6 justify-center mt-2 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
-                Find the <span class="text-blue-600 dark:text-blue-400 font-bold">best plan</span> for your cleaning needs.
+                {{ __('services.section3.title_before') }} <span class="text-blue-600 dark:text-blue-400 font-bold">{{ __('services.section3.title_highlight') }}</span> {{ __('services.section3.title_after') }}
             </p>
         </div>
         <p class="mx-auto mt-4 sm:mt-6 max-w-3xl text-center text-sm sm:text-base lg:text-lg xl:text-xl text-gray-600 dark:text-gray-300 px-4">
-            Flexible cleaning plans designed to keep your space spotless — on your schedule, your way.
+            {{ __('services.section3.description') }}
         </p>
 
         <!-- Pricing Cards -->
@@ -304,135 +306,99 @@
             <!-- CARD 1: Contractual Daily Cleaning -->
             <div class="relative bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm h-auto sm:h-[28rem] lg:h-[30rem] rounded-2xl sm:rounded-3xl p-6 sm:p-8 ring-1 ring-gray-900/10 dark:ring-gray-100/10 transition-all duration-300 hover:bg-gray-900 dark:hover:bg-blue-600 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl dark:shadow-gray-900/50">
                 <h3 class="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200">
-                    Contractual Daily Cleaning
+                    {{ __('services.pricing.card1_title') }}
                 </h3>
                 <p class="mt-3 sm:mt-4 flex items-baseline gap-x-2">
                     <span class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-white">
-                        $29
+                        {{ __('services.pricing.card1_price') }}
                     </span>
                     <span class="text-sm sm:text-base text-gray-500 dark:text-gray-400 group-hover:text-gray-300">
-                        /year
+                        {{ __('services.pricing.card1_period') }}
                     </span>
                 </p>
                 <p class="mt-4 sm:mt-6 text-sm sm:text-base text-gray-600 dark:text-gray-300 group-hover:text-gray-300">
-                    Ideal for occasional home cleaning and requests.
+                    {{ __('services.pricing.card1_description') }}
                 </p>
                 <ul role="list" class="mt-6 sm:mt-8 space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-300">
+                    @foreach(__('services.pricing.card1_features') as $feature)
                     <li class="flex gap-x-2 sm:gap-x-3">
                         <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
                             fill="currentColor" viewBox="0 0 20 20">
                             <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
                         </svg>
-                        Daily room cleaning
+                        {{ $feature }}
                     </li>
-                    <li class="flex gap-x-2 sm:gap-x-3">
-                        <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
-                            fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
-                        </svg>
-                        Basic cleaning supplies
-                    </li>
-                    <li class="flex gap-x-2 sm:gap-x-3">
-                        <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
-                            fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
-                        </svg>
-                        Contract-based pricing
-                    </li>
+                    @endforeach
                 </ul>
                 <a href="#"
                     class="mt-6 sm:mt-8 block rounded-full bg-blue-600 dark:bg-blue-500 text-center text-xs sm:text-sm text-white px-4 py-3 sm:py-3.5 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors shadow-md">
-                    Purchase
+                    {{ __('services.pricing.card1_button') }}
                 </a>
             </div>
 
             <!-- CARD 2: Interval Cleaning -->
             <div class="relative bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm h-auto sm:h-[28rem] lg:h-[30rem] rounded-2xl sm:rounded-3xl p-6 sm:p-8 ring-1 ring-gray-900/10 dark:ring-gray-100/10 transition-all duration-300 hover:bg-gray-900 dark:hover:bg-blue-600 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl dark:shadow-gray-900/50">
                 <h3 class="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200">
-                    Interval Cleaning
+                    {{ __('services.pricing.card2_title') }}
                 </h3>
                 <p class="mt-3 sm:mt-4 flex items-baseline gap-x-2">
                     <span class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-white">
-                        $59
+                        {{ __('services.pricing.card2_price') }}
                     </span>
                     <span class="text-sm sm:text-base text-gray-500 dark:text-gray-400 group-hover:text-gray-300">
-                        /month
+                        {{ __('services.pricing.card2_period') }}
                     </span>
                 </p>
                 <p class="mt-4 sm:mt-6 text-sm sm:text-base text-gray-600 dark:text-gray-300 group-hover:text-gray-300">
-                    Great for regular home or office cleaning services.
+                    {{ __('services.pricing.card2_description') }}
                 </p>
                 <ul role="list" class="mt-6 sm:mt-8 space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-300">
+                    @foreach(__('services.pricing.card2_features') as $feature)
                     <li class="flex gap-x-2 sm:gap-x-3">
                         <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
                             fill="currentColor" viewBox="0 0 20 20">
                             <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
                         </svg>
-                        Weekly/bi-weekly service
+                        {{ $feature }}
                     </li>
-                    <li class="flex gap-x-2 sm:gap-x-3">
-                        <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
-                            fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
-                        </svg>
-                        Premium cleaning supplies
-                    </li>
-                    <li class="flex gap-x-2 sm:gap-x-3">
-                        <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
-                            fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
-                        </svg>
-                        Flexible scheduling
-                    </li>
+                    @endforeach
                 </ul>
                 <a href="#"
                     class="mt-6 sm:mt-8 block rounded-full bg-blue-600 dark:bg-blue-500 text-center text-xs sm:text-sm text-white px-4 py-3 sm:py-3.5 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors shadow-md">
-                    Purchase
+                    {{ __('services.pricing.card2_button') }}
                 </a>
             </div>
 
             <!-- CARD 3: On-Call Cleaning -->
             <div class="relative bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm h-auto sm:h-[28rem] lg:h-[30rem] rounded-2xl sm:rounded-3xl p-6 sm:p-8 ring-1 ring-gray-900/10 dark:ring-gray-100/10 transition-all duration-300 hover:bg-gray-900 dark:hover:bg-blue-600 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl dark:shadow-gray-900/50">
                 <h3 class="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200">
-                    On-Call Cleaning
+                    {{ __('services.pricing.card3_title') }}
                 </h3>
                 <p class="mt-3 sm:mt-4 flex items-baseline gap-x-2">
                     <span class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-white">
-                        $99
+                        {{ __('services.pricing.card3_price') }}
                     </span>
                     <span class="text-sm sm:text-base text-gray-500 dark:text-gray-400 group-hover:text-gray-300">
-                        /week
+                        {{ __('services.pricing.card3_period') }}
                     </span>
                 </p>
                 <p class="mt-4 sm:mt-6 text-sm sm:text-base text-gray-600 dark:text-gray-300 group-hover:text-gray-300">
-                    Complete cleaning service with 24/7 support and customization.
+                    {{ __('services.pricing.card3_description') }}
                 </p>
                 <ul role="list" class="mt-6 sm:mt-8 space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-300">
+                    @foreach(__('services.pricing.card3_features') as $feature)
                     <li class="flex gap-x-2 sm:gap-x-3">
                         <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
                             fill="currentColor" viewBox="0 0 20 20">
                             <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
                         </svg>
-                        24/7 on-demand service
+                        {{ $feature }}
                     </li>
-                    <li class="flex gap-x-2 sm:gap-x-3">
-                        <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
-                            fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
-                        </svg>
-                        Priority support
-                    </li>
-                    <li class="flex gap-x-2 sm:gap-x-3">
-                        <svg class="h-5 w-4 sm:h-6 sm:w-5 flex-none text-blue-600 dark:text-blue-400 group-hover:text-blue-400 dark:group-hover:text-blue-200"
-                            fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M16.7 4.15a.75.75 0 0 1 .14 1.05l-8 10.5a.75.75 0 0 1-1.13.08l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.9 3.9 7.48-9.82a.75.75 0 0 1 1.05-.15Z" />
-                        </svg>
-                        Custom cleaning plans
-                    </li>
+                    @endforeach
                 </ul>
                 <a href="#"
                     class="mt-6 sm:mt-8 block rounded-full bg-blue-600 dark:bg-blue-500 text-center text-xs sm:text-sm text-white px-4 py-3 sm:py-3.5 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors shadow-md">
-                    Purchase
+                    {{ __('services.pricing.card3_button') }}
                 </a>
             </div>
         </div>
@@ -626,4 +592,5 @@
             updateCarouselState();
         });
     </script>
+
 @endpush

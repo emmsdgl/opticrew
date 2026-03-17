@@ -1036,6 +1036,56 @@ class NotificationService
     }
 
     /**
+     * Notify all admins when an application status is changed by an admin.
+     */
+    public function notifyAdminsApplicationStatusChanged($application, string $oldStatus, string $newStatus, string $changedBy): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        $labels = [
+            'pending' => 'Pending',
+            'reviewed' => 'Reviewing',
+            'interview_scheduled' => 'Interview',
+            'hired' => 'Hired',
+            'rejected' => 'Rejected',
+        ];
+
+        $newLabel = $labels[$newStatus] ?? ucfirst($newStatus);
+        $oldLabel = $labels[$oldStatus] ?? ucfirst($oldStatus);
+
+        $colors = [
+            'reviewed' => 'blue',
+            'interview_scheduled' => 'purple',
+            'hired' => 'green',
+            'rejected' => 'red',
+        ];
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_APPLICATION_STATUS_CHANGED,
+            "Application Status: {$newLabel}",
+            "{$changedBy} updated {$application->email}'s application for {$application->job_title} from {$oldLabel} to {$newLabel}.",
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'email' => $application->email,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'icon' => match($newStatus) {
+                    'reviewed' => 'eye',
+                    'interview_scheduled' => 'calendar-check',
+                    'hired' => 'circle-check',
+                    'rejected' => 'circle-xmark',
+                    default => 'bell',
+                },
+                'color' => $colors[$newStatus] ?? 'gray',
+                'action_url' => route('admin.recruitment.index'),
+                'action_text' => 'View Applications'
+            ]
+        );
+    }
+
+    /**
      * Notify all admins when an employee submits an absence/leave request (web form).
      */
     public function notifyAdminsEmployeeRequest($employeeRequest, $employeeName): Collection

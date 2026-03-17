@@ -22,7 +22,7 @@ class ApplicationStatusUpdate extends Mailable
         $this->application = $application;
 
         $this->statusLabel = match ($application->status) {
-            'reviewed' => 'Under Review',
+            'reviewed' => 'Reviewing',
             'interview_scheduled' => 'Interview Scheduled',
             'hired' => 'Hired',
             'rejected' => 'Not Selected',

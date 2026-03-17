@@ -172,6 +172,31 @@
         </template>
     </div>
 
+    {{-- Service Category Legend --}}
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 px-1">
+        <span class="text-[9px] font-semibold text-gray-400 dark:text-gray-500">Service Categories</span>
+        <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-blue-400"></span>
+            <span class="text-[10px] text-gray-600 dark:text-gray-400">Deep Cleaning</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-green-400"></span>
+            <span class="text-[10px] text-gray-600 dark:text-gray-400">Daily Room Cleaning</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-purple-400"></span>
+            <span class="text-[10px] text-gray-600 dark:text-gray-400">Snowout Cleaning</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-teal-400"></span>
+            <span class="text-[10px] text-gray-600 dark:text-gray-400">General Cleaning</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-amber-400"></span>
+            <span class="text-[10px] text-gray-600 dark:text-gray-400">Hotel Cleaning</span>
+        </div>
+    </div>
+
     <!-- Task Creation Modal -->
     <div x-show="showModal" x-cloak x-transition.opacity
         class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto p-4 py-8">
@@ -497,8 +522,11 @@
                             <div>
                                 <div class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">Service Type:</div>
                                 <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-broom text-gray-400"></i>
-                                    <span x-text="event.serviceType"></span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
+                                        :class="getServiceColor(event.serviceType)">
+                                        <i class="fa-solid fa-broom text-[10px]"></i>
+                                        <span x-text="event.serviceType"></span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -594,67 +622,43 @@
     </div>
 
     <!-- Add Holiday Modal -->
-    <div x-show="showAddHolidayModal" x-cloak x-transition.opacity
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Add Holiday</h2>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">
-                Do you want to add a holiday to <span class="font-semibold" x-text="selectedHolidayDate"></span>?
-            </p>
-            <div class="flex gap-3">
-                <button @click="promptHolidayName()"
-                    class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
-                    Yes
-                </button>
-                <button @click="closeHolidayModals()"
-                    class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition">
-                    No
-                </button>
-            </div>
+    {{-- Holiday Name Input --}}
+    <x-dialogs.confirm-dialog
+        show="showHolidayNameModal"
+        title="Enter Holiday Name"
+        icon="fa-solid fa-pen"
+        iconBg="bg-blue-50 dark:bg-blue-900/30"
+        iconColor="text-blue-500"
+        confirmText="Add Holiday"
+        confirmClass="flex-1 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+        onConfirm="confirmAddHoliday()"
+        onCancel="closeHolidayModals()"
+    >
+        <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-3">
+            <i class="fa-solid fa-calendar-day mr-1 text-[8px]"></i><span class="font-semibold" x-text="selectedHolidayDate"></span>
+        </p>
+        <div class="text-left">
+            <label class="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">Holiday name</label>
+            <input type="text" x-model="holidayName" placeholder="e.g., Independence Day"
+                @keydown.enter="confirmAddHoliday()"
+                class="w-full text-xs text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-2 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all" />
         </div>
-    </div>
+    </x-dialogs.confirm-dialog>
 
-    <!-- Holiday Name Input Modal -->
-    <div x-show="showHolidayNameModal" x-cloak x-transition.opacity
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Holiday Name</h2>
-            <input type="text" x-model="holidayName" placeholder="Enter holiday name"
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4"
-                @keydown.enter="confirmAddHoliday()">
-            <div class="flex gap-3">
-                <button @click="confirmAddHoliday()"
-                    class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                    Confirm
-                </button>
-                <button @click="closeHolidayModals()"
-                    class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Holiday Modal -->
-    <div x-show="showDeleteHolidayModal" x-cloak x-transition.opacity
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Delete Holiday</h2>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">
-                Do you want to delete holiday "<span class="font-semibold" x-text="selectedHolidayName"></span>"?
-            </p>
-            <div class="flex gap-3">
-                <button @click="confirmDeleteHoliday()"
-                    class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
-                    Confirm
-                </button>
-                <button @click="closeHolidayModals()"
-                    class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
+    {{-- Delete Holiday Confirmation --}}
+    <x-dialogs.confirm-dialog
+        show="showDeleteHolidayModal"
+        title="Delete Holiday"
+        icon="fa-solid fa-trash"
+        iconBg="bg-red-50 dark:bg-red-900/30"
+        iconColor="text-red-500"
+        confirmText="Delete"
+        confirmClass="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition-colors"
+        onConfirm="confirmDeleteHoliday()"
+        onCancel="closeHolidayModals()"
+    >
+        Are you sure you want to delete "<span class="font-semibold text-gray-700 dark:text-gray-300" x-text="selectedHolidayName"></span>"? This action cannot be undone.
+    </x-dialogs.confirm-dialog>
 </div>
 
 @push('scripts')
@@ -751,21 +755,37 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
             }
         },
 
+        serviceTypeColors: {
+            'Deep Cleaning':        'bg-blue-100 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200',
+            'Daily Room Cleaning':  'bg-green-100 text-green-800 dark:bg-green-900/80 dark:text-green-200',
+            'Snowout Cleaning':     'bg-purple-100 text-purple-800 dark:bg-purple-900/80 dark:text-purple-200',
+            'General Cleaning':     'bg-teal-100 text-teal-800 dark:bg-teal-900/80 dark:text-teal-200',
+            'Hotel Cleaning':       'bg-amber-100 text-amber-800 dark:bg-amber-900/80 dark:text-amber-200',
+        },
+
+        serviceTypeDotColors: {
+            'Deep Cleaning':        'bg-blue-400',
+            'Daily Room Cleaning':  'bg-green-400',
+            'Snowout Cleaning':     'bg-purple-400',
+            'General Cleaning':     'bg-teal-400',
+            'Hotel Cleaning':       'bg-amber-400',
+        },
+
+        getServiceColor(serviceType) {
+            return this.serviceTypeColors[serviceType] || 'bg-gray-100 text-gray-800 dark:bg-gray-800/80 dark:text-gray-200';
+        },
+
         groupEventsByClient(events) {
             const groups = {};
-            const colors = [
-                'bg-blue-100 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200',
-                'bg-purple-100 text-purple-800 dark:bg-purple-900/80 dark:text-purple-200',
-                'bg-green-100 text-green-800 dark:bg-green-900/80 dark:text-green-200',
-            ];
-            
+
             events.forEach(event => {
                 const clientName = event.title.split('-')[0].trim();
                 if (!groups[clientName]) {
                     groups[clientName] = {
                         client: clientName,
                         count: 0,
-                        color: colors[Object.keys(groups).length % colors.length],
+                        color: this.getServiceColor(event.pureServiceType),
+                        serviceType: event.pureServiceType || '',
                         tasks: []
                     };
                 }
@@ -1212,8 +1232,15 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                 return;
             }
 
-            if (!confirm('Are you sure you want to save ALL schedules for ' + this.currentServiceDate + '? This will lock all teams for that day and enable real-time task addition.')) {
-                return;
+            try {
+                await window.showConfirmDialog(
+                    'Save All Schedules',
+                    'Are you sure you want to save ALL schedules for ' + this.currentServiceDate + '? This will lock all teams for that day and enable real-time task addition.',
+                    'Save Schedules',
+                    'Cancel'
+                );
+            } catch (e) {
+                return; // User cancelled
             }
 
             try {
@@ -1247,11 +1274,11 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                     const runCount = data.runs_saved || 1;
                     const clientText = runCount > 1 ? `${runCount} clients` : '1 client';
 
-                    this.showToast(`All schedules saved successfully! (${clientText}) Teams are now locked for ${data.service_date}.`, 'success');
+                    window.showSuccessDialog('Schedules Saved', `All schedules saved successfully! (${clientText}) Teams are now locked for ${data.service_date}.`);
 
                     setTimeout(() => {
                         window.location.reload();
-                    }, 2000);
+                    }, 3000);
                 } else {
                     this.showToast('Error: ' + (data.message || 'Unknown error'), 'error');
                     console.error('Save failed:', data);
@@ -1326,15 +1353,10 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                 this.selectedHolidayName = date.holiday.name;
                 this.showDeleteHolidayModal = true;
             } else {
-                // No holiday - show add confirmation
-                this.showAddHolidayModal = true;
+                // No holiday - go directly to name input
+                this.holidayName = '';
+                this.showHolidayNameModal = true;
             }
-        },
-
-        promptHolidayName() {
-            this.showAddHolidayModal = false;
-            this.holidayName = '';
-            this.showHolidayNameModal = true;
         },
 
         async confirmAddHoliday() {
@@ -1379,8 +1401,8 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                     // Refresh calendar to show the holiday
                     this.renderCalendar();
 
-                    window.showSuccessDialog('Holiday Added', 'Holiday added successfully!');
                     this.closeHolidayModals();
+                    setTimeout(() => window.showSuccessDialog('Holiday Added', 'Holiday added successfully!'), 350);
                 } else {
                     window.showErrorDialog('Holiday Error', data.message || 'Failed to add holiday.');
                 }
@@ -1417,8 +1439,8 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                     // Refresh calendar to hide the holiday
                     this.renderCalendar();
 
-                    window.showSuccessDialog('Holiday Deleted', 'Holiday deleted successfully!');
                     this.closeHolidayModals();
+                    setTimeout(() => window.showSuccessDialog('Holiday Deleted', 'Holiday deleted successfully!'), 350);
                 } else {
                     window.showErrorDialog('Delete Failed', data.message || 'Failed to delete holiday.');
                 }

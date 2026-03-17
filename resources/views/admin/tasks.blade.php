@@ -95,11 +95,6 @@
                                         <i class="fa-solid fa-pen text-xs"></i>
                                         Edit
                                     </button>
-                                    <button @click="duplicateTemplate(template); menuOpen = false"
-                                            class="w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-gray-600 flex items-center gap-2">
-                                        <i class="fa-solid fa-copy text-xs"></i>
-                                        Duplicate
-                                    </button>
                                     <button @click="deleteTemplate(template.id); menuOpen = false"
                                             class="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-600 flex items-center gap-2">
                                         <i class="fa-solid fa-trash text-xs"></i>
@@ -140,20 +135,6 @@
                                    x-model="formData.name"
                                    placeholder="e.g., Daily Room Cleaning"
                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Color</label>
-                            <div class="flex gap-2">
-                                <template x-for="color in colors" :key="color">
-                                    <button type="button"
-                                            @click="formData.color = color"
-                                            class="w-8 h-8 rounded-lg border-2 transition-all"
-                                            :style="'background-color: ' + color"
-                                            :class="formData.color === color ? 'border-white scale-110' : 'border-transparent'">
-                                    </button>
-                                </template>
-                            </div>
                         </div>
 
                         <div>
@@ -226,19 +207,6 @@
                                                     <option :value="taskType.id" x-text="taskType.name"></option>
                                                 </template>
                                             </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-3">Color</label>
-                                            <div class="flex flex-wrap gap-2">
-                                                <template x-for="color in colors" :key="color">
-                                                    <button type="button"
-                                                            @click="formData.color = color"
-                                                            class="w-7 h-7 rounded-lg border-2 transition-all"
-                                                            :style="'background-color: ' + color"
-                                                            :class="formData.color === color ? 'border-white scale-110 ring-2 ring-offset-2 ring-offset-gray-800 ring-white/50' : 'border-transparent'">
-                                                    </button>
-                                                </template>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -527,19 +495,17 @@
                 editSortableInstance: null,
                 formData: {
                     name: '',
-                    color: '#E91E63',
+                    color: '#22c55e',
                     defaultFor: '',
                     enabledItems: []
                 },
-                colors: [
-                    '#E91E63', // Pink
-                    '#9C27B0', // Purple
-                    '#FF9800', // Orange
-                    '#4CAF50', // Green
-                    '#2196F3', // Blue
-                    '#F44336', // Red
-                    '#00BCD4', // Cyan
-                ],
+                defaultColorMap: {
+                    'daily_cleaning':   '#22c55e',
+                    'snowout_cleaning': '#a855f7',
+                    'deep_cleaning':    '#3b82f6',
+                    'general_cleaning': '#14b8a6',
+                    'hotel_cleaning':   '#f59e0b',
+                },
                 taskTypes: [
                     { id: 'daily_cleaning', name: 'Daily Cleaning Service' },
                     { id: 'snowout_cleaning', name: 'Snowout Cleaning Service' },
@@ -649,11 +615,11 @@
                     { id: 70, name: 'Deodorize room' },
                 ],
                 templates: [
-                    { id: 1, name: 'Daily Cleaning Service', initials: 'DC', color: '#E91E63', itemCount: 14, defaultFor: 'daily_cleaning', enabledItems: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] },
-                    { id: 2, name: 'Snowout Cleaning Service', initials: 'SC', color: '#2196F3', itemCount: 11, defaultFor: 'snowout_cleaning', enabledItems: [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25] },
-                    { id: 3, name: 'Deep Cleaning Service', initials: 'DP', color: '#FF9800', itemCount: 14, defaultFor: 'deep_cleaning', enabledItems: [26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39] },
-                    { id: 4, name: 'General Cleaning Service', initials: 'GC', color: '#4CAF50', itemCount: 12, defaultFor: 'general_cleaning', enabledItems: [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51] },
-                    { id: 5, name: 'Hotel Cleaning Service', initials: 'HC', color: '#9C27B0', itemCount: 19, defaultFor: 'hotel_cleaning', enabledItems: [52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70] },
+                    { id: 1, name: 'Daily Cleaning Service', initials: 'DC', color: '#22c55e', itemCount: 14, defaultFor: 'daily_cleaning', enabledItems: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] },
+                    { id: 2, name: 'Snowout Cleaning Service', initials: 'SC', color: '#a855f7', itemCount: 11, defaultFor: 'snowout_cleaning', enabledItems: [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25] },
+                    { id: 3, name: 'Deep Cleaning Service', initials: 'DP', color: '#3b82f6', itemCount: 14, defaultFor: 'deep_cleaning', enabledItems: [26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39] },
+                    { id: 4, name: 'General Cleaning Service', initials: 'GC', color: '#14b8a6', itemCount: 12, defaultFor: 'general_cleaning', enabledItems: [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51] },
+                    { id: 5, name: 'Hotel Cleaning Service', initials: 'HC', color: '#f59e0b', itemCount: 19, defaultFor: 'hotel_cleaning', enabledItems: [52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70] },
                 ],
 
                 init() {
@@ -670,13 +636,14 @@
                         }
                     });
 
-                    // Auto-fill template name when "Default For" is selected
+                    // Auto-fill template name and color when "Default For" is selected
                     this.$watch('formData.defaultFor', (value) => {
                         if (value) {
                             const taskType = this.taskTypes.find(t => t.id === value);
                             if (taskType) {
                                 this.formData.name = taskType.name;
                             }
+                            this.formData.color = this.defaultColorMap[value] || '#3b82f6';
                         }
                     });
                 },
@@ -738,9 +705,18 @@
                     });
                 },
 
-                deleteTemplate(id) {
-                    if (confirm('Are you sure you want to delete this template?')) {
+                async deleteTemplate(id) {
+                    try {
+                        await window.showConfirmDialog(
+                            'Delete Template',
+                            'Are you sure you want to delete this checklist template? This action cannot be undone.',
+                            'Delete',
+                            'Cancel'
+                        );
                         this.templates = this.templates.filter(t => t.id !== id);
+                        setTimeout(() => window.showSuccessDialog('Template Deleted', 'The checklist template has been deleted successfully.'), 350);
+                    } catch (e) {
+                        // User cancelled
                     }
                 },
 
@@ -776,37 +752,94 @@
                     this.newChecklistItem = '';
                 },
 
-                saveTemplate() {
-                    if (!this.formData.name.trim()) return;
+                getUniqueTemplateName(baseName, excludeId = null) {
+                    const existing = this.templates
+                        .filter(t => excludeId ? t.id !== excludeId : true)
+                        .map(t => t.name.toLowerCase());
 
-                    if (this.showEditModal && this.editingId) {
-                        // Update existing template
-                        const index = this.templates.findIndex(t => t.id === this.editingId);
-                        if (index !== -1) {
-                            this.templates[index].name = this.formData.name;
-                            this.templates[index].initials = this.getInitials(this.formData.name);
-                            this.templates[index].color = this.formData.color;
-                            this.templates[index].defaultFor = this.formData.defaultFor;
-                            this.templates[index].enabledItems = [...this.formData.enabledItems];
-                            this.templates[index].itemCount = this.formData.enabledItems.length;
-                        }
-                    } else {
-                        // Add new template
-                        const newId = this.templates.length > 0
-                            ? Math.max(...this.templates.map(t => t.id)) + 1
-                            : 1;
-                        this.templates.push({
-                            id: newId,
-                            name: this.formData.name,
-                            initials: this.getInitials(this.formData.name),
-                            color: this.formData.color,
-                            defaultFor: this.formData.defaultFor,
-                            enabledItems: [],
-                            itemCount: 0
-                        });
+                    if (!existing.includes(baseName.toLowerCase())) {
+                        return baseName;
                     }
 
-                    this.closeModal();
+                    let counter = 1;
+                    let candidate;
+                    do {
+                        candidate = `${baseName} (${counter})`;
+                        counter++;
+                    } while (existing.includes(candidate.toLowerCase()));
+
+                    return candidate;
+                },
+
+                async saveTemplate() {
+                    if (!this.formData.name.trim()) {
+                        window.showErrorDialog('Missing Information', 'Please enter a template name.');
+                        return;
+                    }
+
+                    const isEditing = this.showEditModal && this.editingId;
+                    const originalName = this.formData.name.trim();
+                    const finalName = isEditing
+                        ? this.getUniqueTemplateName(originalName, this.editingId)
+                        : this.getUniqueTemplateName(originalName);
+                    const wasRenamed = finalName !== originalName;
+
+                    // Build confirmation message
+                    let confirmMessage = isEditing
+                        ? `Are you sure you want to update the template "${finalName}"?`
+                        : `Are you sure you want to create the template "${finalName}"?`;
+
+                    if (wasRenamed) {
+                        confirmMessage = `A template named "${originalName}" already exists. It will be created as "${finalName}" instead.\n\nDo you want to proceed?`;
+                    }
+
+                    try {
+                        await window.showConfirmDialog(
+                            isEditing ? 'Update Template' : 'Create Template',
+                            confirmMessage,
+                            isEditing ? 'Update' : 'Create',
+                            'Cancel'
+                        );
+                    } catch (e) {
+                        return; // User cancelled
+                    }
+
+                    try {
+                        if (isEditing) {
+                            const index = this.templates.findIndex(t => t.id === this.editingId);
+                            if (index !== -1) {
+                                this.templates[index].name = finalName;
+                                this.templates[index].initials = this.getInitials(finalName);
+                                this.templates[index].color = this.formData.color;
+                                this.templates[index].defaultFor = this.formData.defaultFor;
+                                this.templates[index].enabledItems = [...this.formData.enabledItems];
+                                this.templates[index].itemCount = this.formData.enabledItems.length;
+                            }
+                        } else {
+                            const newId = this.templates.length > 0
+                                ? Math.max(...this.templates.map(t => t.id)) + 1
+                                : 1;
+                            this.templates.push({
+                                id: newId,
+                                name: finalName,
+                                initials: this.getInitials(finalName),
+                                color: this.formData.color,
+                                defaultFor: this.formData.defaultFor,
+                                enabledItems: [],
+                                itemCount: 0
+                            });
+                        }
+
+                        this.closeModal();
+                        setTimeout(() => window.showSuccessDialog(
+                            isEditing ? 'Template Updated' : 'Template Created',
+                            isEditing
+                                ? `The checklist template "${finalName}" has been updated successfully.`
+                                : `The checklist template "${finalName}" has been created successfully.`
+                        ), 350);
+                    } catch (e) {
+                        window.showErrorDialog('Error', 'Something went wrong while saving the template. Please try again.');
+                    }
                 },
 
                 closeModal() {
@@ -815,7 +848,7 @@
                     this.showNewItemInput = false;
                     this.editingId = null;
                     this.newChecklistItem = '';
-                    this.formData = { name: '', color: '#E91E63', defaultFor: '', enabledItems: [] };
+                    this.formData = { name: '', color: '#22c55e', defaultFor: '', enabledItems: [] };
                 }
             }
         }

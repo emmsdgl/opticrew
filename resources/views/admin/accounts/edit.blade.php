@@ -20,9 +20,7 @@
 
         <!-- Edit Form -->
         <div class="max-w-4xl w-full mx-auto rounded-lg overflow-hidden">
-            <form method="POST" action="{{ route('admin.accounts.update', $user->id) }}">
-                @csrf
-                @method('PUT')
+            <form id="accountEditForm">
 
                 <dl>
                     <!-- Full Name -->
@@ -196,4 +194,55 @@
         </div>
 
     </section>
+
+    @push('scripts')
+    <script>
+        document.getElementById('accountEditForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            try {
+                await window.showConfirmDialog(
+                    'Update Account',
+                    'Are you sure you want to update this account\'s details?',
+                    'Update',
+                    'Cancel'
+                );
+            } catch (e) {
+                return;
+            }
+
+            const formData = new FormData(this);
+            formData.append('_method', 'PUT');
+
+            try {
+                const response = await fetch("{{ route('admin.accounts.update', $user->id) }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    window.showSuccessDialog(
+                        'Account Updated',
+                        data.message || 'The account has been updated successfully.',
+                        'OK',
+                        "{{ route('admin.accounts.show', $user->id) }}"
+                    );
+                } else {
+                    const errors = data.errors
+                        ? Object.values(data.errors).flat().join('\n')
+                        : (data.message || 'Failed to update account.');
+                    window.showErrorDialog('Update Failed', errors);
+                }
+            } catch (err) {
+                window.showErrorDialog('Error', 'Something went wrong. Please try again.');
+            }
+        });
+    </script>
+    @endpush
 </x-layouts.general-employer>

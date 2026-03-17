@@ -40,6 +40,23 @@ return [
         'select' => 'Kieli',
     ],
 
+    // Footer
+    'footer' => [
+        'description' => 'Uusimmat päivitykset, alennukset ja palvelut omalla henkilökohtaisella tililläsi.',
+        'consent' => 'Luomalla tilin hyväksyt tietosuojakäytäntömme ja annat suostumuksesi vastaanottaa päivityksiä Fin-noysilta.',
+        'about' => 'Tietoa',
+        'finnoys' => 'Fin-noys',
+        'careers' => 'Ura Fin-noysilla',
+        'castcrew' => 'CastCrew',
+        'support' => 'Tuki',
+        'contact' => 'Yhteystiedot',
+        'documentation' => 'Dokumentaatio',
+        'legal' => 'Lakiasiat',
+        'terms' => 'Käyttöehdot',
+        'privacy' => 'Tietosuojakäytäntö',
+        'copyright' => '© 2025 Fin-noys-CastCrew Kaikki oikeudet pidätetään.',
+    ],
+
     // Common
     'close' => 'Sulje',
     'open' => 'Avaa',

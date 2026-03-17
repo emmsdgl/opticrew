@@ -13,8 +13,9 @@ return [
     
     'floating_cards' => [
         'card1' => '" Proven track record in hotel and holiday cottages cleaning services. "',
-        'card2' => '" We prioritize delivering quality and ensure customer satisfaction. "',
-        'card3' => '" Licensed business with professional trained staff. "',
+        'card2' => '" Commitment to quality cleaning services. "',
+        'card3' => '" Flexible and responsive to your needs. "',
+        'card4' => '" Wide range of cleaning services. "',
     ],
     
     'team' => [
@@ -40,6 +41,27 @@ return [
         ],
     ],
     
+    'section2' => [
+        'team_intro' => 'Introducing the Development Team: Ela-vate',
+        'heading_before' => 'Cleaning is more than a task;',
+        'heading_highlight' => "it's a promise of comfort and care",
+        'tagline' => 'Behind Fin-noys:',
+        'tagline_sub' => 'Making Clean Spaces Possible',
+
+        'person1_name' => 'Merlyn Guzman',
+        'person1_role' => 'CEO',
+        'person1_desc' => 'Founder of Fin-noys',
+        'person2_name' => 'Earl Leonardo',
+        'person2_role' => 'CFO',
+        'person2_desc' => 'Co-Founder of Finnoys',
+        'person3_name' => 'Fin-noys Employees',
+        'person3_role' => 'Employees',
+        'person3_desc' => 'Enablers of Finnoys',
+
+        'flip_name' => 'Merlyn Guzman',
+        'flip_desc' => 'Founder of Fin-noys. Dedicated to maintaining comfort, care, and excellence in every clean space.',
+    ],
+
     'contact' => [
         'title' => 'Get In Touch',
         'subtitle' => 'We\'re here to help and answer any questions you might have',

@@ -3,7 +3,66 @@
 @section('title', 'About')
 
 @push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
+        /* Leaflet custom marker styles */
+        .leaflet-marker-custom {
+            width: 16px !important;
+            height: 16px !important;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            margin-left: -8px !important;
+            margin-top: -8px !important;
+        }
+        .leaflet-marker-custom.marker-primary {
+            width: 20px !important;
+            height: 20px !important;
+            background: #2563eb;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 12px rgba(37,99,235,0.5);
+            margin-left: -10px !important;
+            margin-top: -10px !important;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+            padding: 0 !important;
+        }
+        .leaflet-popup-content {
+            margin: 12px 14px !important;
+            font-family: inherit !important;
+        }
+        .leaflet-popup-tip {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+        }
+        .dark .leaflet-popup-content-wrapper {
+            background: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+        .dark .leaflet-popup-tip {
+            background: #1e293b !important;
+        }
+        .dark .leaflet-tile {
+            filter: brightness(0.7) contrast(1.1) saturate(0.8);
+        }
+        .leaflet-tooltip {
+            border-radius: 8px !important;
+            padding: 6px 10px !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        }
+        .dark .leaflet-tooltip {
+            background: #1e293b !important;
+            color: #e2e8f0 !important;
+            border-color: #334155 !important;
+        }
+        .dark .leaflet-tooltip::before {
+            border-right-color: #1e293b !important;
+        }
         body {
             background-image: url('{{ asset('images/backgrounds/aboutpage-bg.svg') }}');
             background-size: cover;
@@ -134,27 +193,26 @@
         <div class="z-10 w-full max-w-4xl mx-auto">
             <!-- Hello there text -->
             <p class="scroll-zoom-child mb-4 text-sm sm:text-base text-blue-500 dark:text-blue-400 font-semibold">
-                Hello there,
+                {{ __('about.section1.greeting') }}
             </p>
 
             <!-- Main Heading -->
             <h1 class="scroll-zoom-child text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
-                We are 
+                {{ __('about.section1.we_are') }}
                 <span class="text-blue-500 dark:text-blue-400 inline-flex items-center gap-2">
                     <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="Sparkle" class="h-6 sm:h-8 md:h-10 lg:h-12 w-auto inline-block">
-                    Fin-noys
+                    {{ __('about.section1.company_name') }}
                 </span>
             </h1>
 
             <!-- Subtitle -->
             <p class="scroll-zoom-child mt-6 text-sm sm:text-base md:text-lg text-gray-700 dark:text-gray-300 font-medium">
-                Your hassle-free buddy for a sparkling clean space.
+                {{ __('about.section1.subtitle') }}
             </p>
 
             <!-- Description -->
             <p class="scroll-zoom-child mt-6 sm:mt-8 text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed max-w-3xl mx-auto text-center sm:text-justify px-0 sm:px-4">
-                Fin-noys is a professional cleaning services provider with extensive experience in the hospitality industry 
-                and are dedicated to maintaining a clean, healthy environment and ensuring a secure efficient cleaning process.
+                {{ __('about.section1.description') }}
             </p>
         </div>
 
@@ -165,7 +223,7 @@
                 <img src="{{ asset('images/backgrounds/gradient-circle.svg') }}" alt="Decorator">
             </div>
             <p class="text-xs lg:text-sm text-gray-800 dark:text-gray-200 font-medium italic">
-                " Proven track record in hotel and holiday cottages cleaning services. "
+                {{ __('about.floating_cards.card1') }}
             </p>
         </div>
 
@@ -175,7 +233,7 @@
                 <img src="{{ asset('images/backgrounds/gradient-circle.svg') }}" alt="Decorator">
             </div>
             <p class="text-xs lg:text-sm text-gray-800 dark:text-gray-200 font-medium italic">
-                " Commitment to <span class="font-bold">quality cleaning services</span>. "
+                {{ __('about.floating_cards.card2') }}
             </p>
         </div>
 
@@ -185,7 +243,7 @@
                 <img src="{{ asset('images/backgrounds/gradient-circle.svg') }}" alt="Decorator">
             </div>
             <p class="text-xs lg:text-sm text-gray-800 dark:text-gray-200 font-medium italic">
-                " Flexible and responsive to your needs. "
+                {{ __('about.floating_cards.card3') }}
             </p>
         </div>
 
@@ -195,7 +253,7 @@
                 <img src="{{ asset('images/backgrounds/gradient-circle.svg') }}" alt="Decorator">
             </div>
             <p class="text-xs lg:text-sm text-gray-800 dark:text-gray-200 font-medium italic">
-                " Wide range of cleaning services. "
+                {{ __('about.floating_cards.card4') }}
             </p>
         </div>
     </section>
@@ -214,56 +272,56 @@
                 <div class="w-full lg:w-3/5 text-center lg:text-left">
                     <div class="space-y-3 sm:space-y-4 lg:space-y-6">
                         <h2 class="scroll-zoom-child text-blue-500 dark:text-blue-400 font-[fam-bold] text-[10px] sm:text-xs md:text-sm lg:text-base">
-                            Introducing the Development Team: Ela-vate
+                            {{ __('about.section2.team_intro') }}
                         </h2>
-                        
+
                         <h1 class="scroll-zoom-child text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl font-[fam-bold] leading-tight text-gray-900 dark:text-white">
-                            Cleaning is more than a task;
+                            {{ __('about.section2.heading_before') }}
                             <span class="text-blue-500 dark:text-blue-400 font-[fam-bold]">
-                                it's a promise of comfort and care
+                                {{ __('about.section2.heading_highlight') }}
                             </span>
                             <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="sparkle"
                                 class="inline-block h-4 sm:h-5 md:h-6 lg:h-7 xl:h-9 align-middle ml-1 sm:ml-2">
                         </h1>
                         
                         <p class="scroll-zoom-child font-[fam-bold] text-[10px] sm:text-xs md:text-sm lg:text-base text-blue-500 dark:text-blue-400 italic">
-                            Behind Fin-noys: <span class="not-italic">Making Clean Spaces Possible</span>
+                            {{ __('about.section2.tagline') }} <span class="not-italic">{{ __('about.section2.tagline_sub') }}</span>
                         </p>
                         
                         <div class="scroll-zoom-child flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 lg:gap-8 xl:gap-10 justify-center lg:justify-start pt-2 sm:pt-4">
                             <div class="flex flex-col items-center lg:items-start min-w-[100px] sm:min-w-[120px] lg:min-w-[140px]">
                                 <p class="font-[fam-bold] text-[#071957] dark:text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1">
-                                    Merlyn Guzman
+                                    {{ __('about.section2.person1_name') }}
                                 </p>
                                 <p class="font-[fam-regular] text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
-                                    CEO
+                                    {{ __('about.section2.person1_role') }}
                                 </p>
                                 <p class="font-[fam-regular] text-[9px] sm:text-xs text-gray-400 dark:text-gray-500">
-                                    Founder of Fin-noys
+                                    {{ __('about.section2.person1_desc') }}
                                 </p>
                             </div>
-                            
+
                             <div class="flex flex-col items-center lg:items-start min-w-[100px] sm:min-w-[120px] lg:min-w-[140px]">
                                 <p class="font-[fam-bold] text-[#071957] dark:text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1">
-                                    Earl Leonardo
+                                    {{ __('about.section2.person2_name') }}
                                 </p>
                                 <p class="font-[fam-regular] text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
-                                    CFO
+                                    {{ __('about.section2.person2_role') }}
                                 </p>
                                 <p class="font-[fam-regular] text-[9px] sm:text-xs text-gray-400 dark:text-gray-500">
-                                    Co-Founder of Finnoys
+                                    {{ __('about.section2.person2_desc') }}
                                 </p>
                             </div>
-                            
+
                             <div class="flex flex-col items-center lg:items-start min-w-[100px] sm:min-w-[120px] lg:min-w-[140px]">
                                 <p class="font-[fam-bold] text-[#071957] dark:text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1">
-                                    Fin-noys Employees
+                                    {{ __('about.section2.person3_name') }}
                                 </p>
                                 <p class="font-[fam-regular] text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400 mb-0.5">
-                                    Employees
+                                    {{ __('about.section2.person3_role') }}
                                 </p>
                                 <p class="font-[fam-regular] text-[9px] sm:text-xs text-gray-400 dark:text-gray-500">
-                                    Enablers of Finnoys
+                                    {{ __('about.section2.person3_desc') }}
                                 </p>
                             </div>
                         </div>
@@ -287,10 +345,10 @@
                                         rotate-y-180 [backface-visibility:hidden]
                                         border-2 border-blue-500/20 dark:border-blue-400/20">
                                 <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-[fam-bold] text-[#071957] dark:text-white mb-1.5 sm:mb-2 drop-shadow-md">
-                                    Merlyn Guzman
+                                    {{ __('about.section2.flip_name') }}
                                 </h3>
                                 <p class="text-[10px] sm:text-xs md:text-sm lg:text-base text-[#071957] dark:text-gray-300 leading-relaxed px-2 sm:px-3 md:px-4">
-                                    Founder of Fin-noys. Dedicated to maintaining comfort, care, and excellence in every clean space.
+                                    {{ __('about.section2.flip_desc') }}
                                 </p>
                             </div>
                         </div>
@@ -310,27 +368,19 @@
         <!-- Map Section - Full Height Left Side -->
         <div class="w-full lg:w-1/2 relative">
             <div class="map-full-height map-edge-glow lg:sticky lg:top-0 relative overflow-hidden">
-                <!-- Map Container -->
-                <div id="hs-grayscale-leaflet" class="w-full h-full relative z-10">
-                    <iframe
-                        src="https://www.openstreetmap.org/export/embed.html?bbox=120.976%2C14.599%2C120.986%2C14.605&amp;layer=mapnik&amp;marker=14.6020%2C120.9810"
-                        class="w-full h-full border-0 dark:brightness-90" 
-                        loading="lazy"
-                        title="Fin-noys Location Map"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-                
+                <!-- Leaflet Map Container -->
+                <div id="leaflet-map" class="w-full h-full relative z-10"></div>
+
                 <!-- Dark Mode Overlay -->
                 <div class="absolute inset-0 bg-blue-900/10 dark:bg-blue-900/30 pointer-events-none z-20"></div>
-                
+
                 <!-- Right Edge Gradient Glow - Blends with background -->
-                <div class="absolute top-0 right-0 w-32 sm:w-40 lg:w-48 xl:w-64 h-full pointer-events-none z-30 
+                <div class="absolute top-0 right-0 w-32 sm:w-40 lg:w-48 xl:w-64 h-full pointer-events-none z-30
                             bg-gradient-to-l from-white via-white/80 to-transparent
                             dark:from-slate-900 dark:via-slate-900/80 dark:to-transparent
                             opacity-90 dark:opacity-95">
                 </div>
-                
+
                 <!-- Enhanced Glow Effect Layer -->
                 <div class="absolute top-0 right-0 w-24 sm:w-32 lg:w-40 h-full pointer-events-none z-40
                             bg-gradient-to-l from-white/95 via-white/50 to-transparent
@@ -348,10 +398,10 @@
                     <!-- Header -->
                     <div class="scroll-zoom-child mb-6 text-center lg:text-left">
                         <h3 class="text-3xl sm:text-4xl md:text-5xl font-[fam-bold] text-[#071957] dark:text-white mb-3 sm:mb-4">
-                            Get In Touch
+                            {{ __('about.contact.title') }}
                         </h3>
                         <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                            We're here to help and answer any questions you might have
+                            {{ __('about.contact.subtitle') }}
                         </p>
                     </div>
 
@@ -365,7 +415,7 @@
                             </div>
                             <div class="text-left flex-1">
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
-                                    Head Office
+                                    {{ __('about.contact.head_office') }}
                                 </span>
                                 <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
                                     Saariselantie 6 C10, Saariselka 99830 Finland
@@ -380,7 +430,7 @@
                             </div>
                             <div class="text-left flex-1">
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
-                                    Email us at
+                                    {{ __('about.contact.email_us') }}
                                 </span>
                                 <a href="mailto:finnoys0823@gmail.com" 
                                    class="text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
@@ -396,7 +446,7 @@
                             </div>
                             <div class="text-left flex-1">
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
-                                    Contact us at
+                                    {{ __('about.contact.contact_us') }}
                                 </span>
                                 <a href="tel:09288515619" 
                                    class="text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
@@ -409,7 +459,7 @@
                         <li class="scroll-zoom-child pt-4 sm:pt-6 w-full max-w-md lg:max-w-none">
                             <div class="flex flex-col items-start gap-4">
                                 <span class="font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white">
-                                    Follow us on
+                                    {{ __('about.contact.follow_us') }}
                                 </span>
                                 <div class="flex flex-row gap-4 sm:gap-6">
                                     <!-- Facebook -->
@@ -498,6 +548,118 @@
             card.style.transform = 'translateY(20px)';
             card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             observer.observe(card);
+        });
+    </script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const locations = [
+                {
+                    id: 1,
+                    name: 'Fin-noys Head Office',
+                    description: 'Saariselantie 6 C10, Saariselka 99830 Finland',
+                    lat: 68.4101,
+                    lng: 27.4132,
+                    primary: true
+                },
+                {
+                    id: 2,
+                    name: 'Saariselka Service Area',
+                    description: 'Saariselka resort area coverage',
+                    lat: 68.4185,
+                    lng: 27.4310,
+                    primary: false
+                },
+                {
+                    id: 3,
+                    name: 'Ivalo Service Area',
+                    description: 'Ivalo district coverage',
+                    lat: 68.6573,
+                    lng: 27.5890,
+                    primary: false
+                },
+            ];
+
+            const isDark = document.documentElement.classList.contains('dark');
+
+            // Tile layers
+            const lightTile = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+            const darkTile = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+            const map = L.map('leaflet-map', {
+                center: [68.42, 27.43],
+                zoom: 10,
+                zoomControl: false,
+                attributionControl: false
+            });
+
+            // Add zoom control to bottom-left
+            L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
+            // Add attribution (small)
+            L.control.attribution({ position: 'bottomright', prefix: false })
+                .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a> &copy; <a href="https://carto.com/" target="_blank">CARTO</a>')
+                .addTo(map);
+
+            L.tileLayer(isDark ? darkTile : lightTile, {
+                maxZoom: 19,
+                subdomains: 'abcd'
+            }).addTo(map);
+
+            // Add markers
+            locations.forEach(loc => {
+                const markerIcon = L.divIcon({
+                    className: 'leaflet-marker-custom' + (loc.primary ? ' marker-primary' : ''),
+                    iconSize: loc.primary ? [20, 20] : [16, 16]
+                });
+
+                const marker = L.marker([loc.lat, loc.lng], { icon: markerIcon }).addTo(map);
+
+                // Tooltip (hover)
+                marker.bindTooltip(loc.name, {
+                    direction: 'top',
+                    offset: [0, -12],
+                    opacity: 0.95
+                });
+
+                // Popup (click)
+                marker.bindPopup(`
+                    <div style="min-width: 160px;">
+                        <p style="font-weight: 600; font-size: 13px; margin: 0 0 4px 0;">${loc.name}</p>
+                        <p style="font-size: 11px; color: #64748b; margin: 0;">${loc.description}</p>
+                        <p style="font-size: 10px; color: #94a3b8; margin: 4px 0 0 0;">
+                            ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}
+                        </p>
+                    </div>
+                `, { closeButton: false, offset: [0, -8] });
+            });
+
+            // Listen for dark mode changes
+            const darkObserver = new MutationObserver(() => {
+                const nowDark = document.documentElement.classList.contains('dark');
+                map.eachLayer(layer => {
+                    if (layer instanceof L.TileLayer) map.removeLayer(layer);
+                });
+                L.tileLayer(nowDark ? darkTile : lightTile, {
+                    maxZoom: 19,
+                    subdomains: 'abcd'
+                }).addTo(map);
+            });
+            darkObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+            // Fix map sizing on scroll into view
+            const mapSection = document.getElementById('container-3');
+            if (mapSection) {
+                const resizeObserver = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) map.invalidateSize();
+                    });
+                });
+                resizeObserver.observe(mapSection);
+            }
         });
     </script>
 @endpush

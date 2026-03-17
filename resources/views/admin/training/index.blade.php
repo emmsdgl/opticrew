@@ -583,7 +583,18 @@
                     },
 
                     async confirmBulkDelete() {
-                        if (!confirm(`Are you sure you want to delete ${this.selectedIds.length} training video(s)? This action cannot be undone.`)) return;
+                        const count = this.selectedIds.length;
+
+                        try {
+                            await window.showConfirmDialog(
+                                'Delete Training Videos',
+                                `Are you sure you want to delete ${count} training video(s)? This action cannot be undone.`,
+                                'Delete All',
+                                'Cancel'
+                            );
+                        } catch (e) {
+                            return;
+                        }
 
                         try {
                             const results = await Promise.all(
@@ -603,11 +614,11 @@
                             this.trainingVideos = this.trainingVideos.filter(v => !deletedIds.includes(v.id));
                             this.selectedIds = [];
                             if (this.currentPage > this.totalPages) this.currentPage = Math.max(1, this.totalPages);
-                            this.successTitle = 'Videos Deleted Successfully';
-                            this.successMessage = `${deletedIds.length} training video(s) have been removed.`;
-                            this.showSuccess = true;
+                            setTimeout(() => window.showSuccessDialog(
+                                'Videos Deleted',
+                                `${deletedIds.length} training video(s) have been removed successfully.`
+                            ), 350);
                         } catch (error) {
-                            console.error('Bulk delete error:', error);
                             window.showErrorDialog('Delete Failed', 'An error occurred while deleting the selected videos.');
                         }
                     },
@@ -741,7 +752,16 @@
                     },
 
                     async deleteVideo(video) {
-                        if (!confirm('Are you sure you want to delete "' + video.title + '"?')) return;
+                        try {
+                            await window.showConfirmDialog(
+                                'Delete Training Video',
+                                `Are you sure you want to delete "${video.title}"? This action cannot be undone.`,
+                                'Delete',
+                                'Cancel'
+                            );
+                        } catch (e) {
+                            return;
+                        }
 
                         try {
                             const response = await fetch(`/admin/training-videos/${video.id}`, {
@@ -756,17 +776,35 @@
                             if (data.success) {
                                 this.trainingVideos = this.trainingVideos.filter(v => v.id !== video.id);
                                 if (this.currentPage > this.totalPages) this.currentPage = Math.max(1, this.totalPages);
-                                this.successTitle = 'Video Deleted Successfully';
-                                this.successMessage =
-                                    'The training video has been removed and is no longer visible to employees.';
-                                this.showSuccess = true;
+                                setTimeout(() => window.showSuccessDialog(
+                                    'Video Deleted',
+                                    `The training video "${video.title}" has been removed and is no longer visible to employees.`
+                                ), 350);
                             } else {
                                 window.showErrorDialog('Delete Failed', data.message || 'Failed to delete training video.');
                             }
                         } catch (error) {
-                            console.error('Error:', error);
                             window.showErrorDialog('Delete Failed', 'An error occurred while deleting the training video.');
                         }
+                    },
+
+                    getUniqueVideoTitle(baseName, excludeId = null) {
+                        const existing = this.trainingVideos
+                            .filter(v => excludeId ? v.id !== excludeId : true)
+                            .map(v => v.title.toLowerCase());
+
+                        if (!existing.includes(baseName.toLowerCase())) {
+                            return baseName;
+                        }
+
+                        let counter = 1;
+                        let candidate;
+                        do {
+                            candidate = `${baseName} (${counter})`;
+                            counter++;
+                        } while (existing.includes(candidate.toLowerCase()));
+
+                        return candidate;
                     },
 
                     async saveVideo() {
@@ -786,6 +824,37 @@
                             window.showErrorDialog('Validation Error', 'Please select a video file to upload.');
                             return;
                         }
+
+                        const wasEditing = this.editingId !== null;
+                        const originalTitle = this.formData.title.trim();
+                        const finalTitle = wasEditing
+                            ? this.getUniqueVideoTitle(originalTitle, this.editingId)
+                            : this.getUniqueVideoTitle(originalTitle);
+                        const wasRenamed = finalTitle !== originalTitle;
+
+                        let confirmMessage;
+                        if (wasEditing) {
+                            confirmMessage = wasRenamed
+                                ? `A training video named "${originalTitle}" already exists. It will be saved as "${finalTitle}" instead.\n\nDo you want to proceed?`
+                                : `Are you sure you want to update "${finalTitle}"?`;
+                        } else {
+                            confirmMessage = wasRenamed
+                                ? `A training video named "${originalTitle}" already exists. It will be created as "${finalTitle}" instead.\n\nDo you want to proceed?`
+                                : `Are you sure you want to create the training video "${finalTitle}"?`;
+                        }
+
+                        try {
+                            await window.showConfirmDialog(
+                                wasEditing ? 'Update Training Video' : 'Create Training Video',
+                                confirmMessage,
+                                wasEditing ? 'Update' : 'Create',
+                                'Cancel'
+                            );
+                        } catch (e) {
+                            return;
+                        }
+
+                        this.formData.title = finalTitle;
                         this.isSubmitting = true;
 
                         const formData = new FormData();
@@ -848,12 +917,12 @@
                                     this.trainingVideos.push(savedVideo);
                                 }
                                 this.closeModal();
-                                this.successTitle = wasEditing ? 'Video Updated Successfully' :
-                                'Video Created Successfully';
-                                this.successMessage = wasEditing ?
-                                    'The training video has been updated and changes are now live.' :
-                                    'The training video has been added and is now available to employees.';
-                                this.showSuccess = true;
+                                setTimeout(() => window.showSuccessDialog(
+                                    wasEditing ? 'Video Updated Successfully' : 'Video Created Successfully',
+                                    wasEditing
+                                        ? `The training video "${savedVideo.title}" has been updated and changes are now live.`
+                                        : `The training video "${savedVideo.title}" has been added and is now available to employees.`
+                                ), 350);
                             } else {
                                 window.showErrorDialog('Save Failed', data.message || 'Failed to save training video.');
                             }

@@ -111,23 +111,21 @@
 
 <script>
 function bigCalendar(interviews) {
-    const eventColors = [
-        'bg-blue-100 dark:bg-blue-900/40 border-blue-200 dark:border-blue-800/50 text-blue-800 dark:text-blue-200',
-        'bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-800/50 text-purple-800 dark:text-purple-200',
-        'bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-800/50 text-green-800 dark:text-green-200',
-        'bg-amber-100 dark:bg-amber-900/40 border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200',
-        'bg-cyan-100 dark:bg-cyan-900/40 border-cyan-200 dark:border-cyan-800/50 text-cyan-800 dark:text-cyan-200',
-        'bg-pink-100 dark:bg-pink-900/40 border-pink-200 dark:border-pink-800/50 text-pink-800 dark:text-pink-200',
-    ];
+    const categoryEventColors = {
+        green:  'bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-800/50 text-green-800 dark:text-green-200',
+        purple: 'bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-800/50 text-purple-800 dark:text-purple-200',
+        orange: 'bg-orange-100 dark:bg-orange-900/40 border-orange-200 dark:border-orange-800/50 text-orange-800 dark:text-orange-200',
+        blue:   'bg-blue-100 dark:bg-blue-900/40 border-blue-200 dark:border-blue-800/50 text-blue-800 dark:text-blue-200',
+        red:    'bg-red-100 dark:bg-red-900/40 border-red-200 dark:border-red-800/50 text-red-800 dark:text-red-200',
+    };
 
-    const dotColors = [
-        'bg-blue-400 dark:bg-blue-500',
-        'bg-purple-400 dark:bg-purple-500',
-        'bg-green-400 dark:bg-green-500',
-        'bg-amber-400 dark:bg-amber-500',
-        'bg-cyan-400 dark:bg-cyan-500',
-        'bg-pink-400 dark:bg-pink-500',
-    ];
+    const categoryDotColors = {
+        green:  'bg-green-400 dark:bg-green-500',
+        purple: 'bg-purple-400 dark:bg-purple-500',
+        orange: 'bg-orange-400 dark:bg-orange-500',
+        blue:   'bg-blue-400 dark:bg-blue-500',
+        red:    'bg-red-400 dark:bg-red-500',
+    };
 
     const startHour = 0;
     const pxPerHour = 64;
@@ -140,6 +138,7 @@ function bigCalendar(interviews) {
             : (interview.interview_date || '').split(' ')[1] || '09:00:00';
         const [hh, mm] = timePart.split(':').map(Number);
 
+        const catColor = interview.category_color || 'blue';
         return {
             id: interview.id || idx,
             title: interview.job_title || 'Interview',
@@ -147,8 +146,9 @@ function bigCalendar(interviews) {
             hour: hh,
             minute: mm,
             hourIdx: hh - startHour,
-            colorClass: eventColors[idx % eventColors.length],
-            dotColor: dotColors[idx % dotColors.length],
+            categoryColor: catColor,
+            colorClass: categoryEventColors[catColor] || categoryEventColors['blue'],
+            dotColor: categoryDotColors[catColor] || categoryDotColors['blue'],
         };
     }).filter(e => e.hourIdx >= 0);
 

@@ -901,29 +901,36 @@
             </div>
         </div>
 
-        <!-- Reject Modal (inside drawer context) -->
-        <div x-show="showRejectModal" x-cloak class="fixed inset-0 z-[60] overflow-y-auto" style="display: none;">
-            <div class="flex items-center justify-center min-h-screen px-4">
-                <div class="fixed inset-0 bg-black/50" @click="showRejectModal = false"></div>
-                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Reject Appointment</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Please provide a reason for rejection. This will be sent to the client.
-                    </p>
-                    <textarea x-model="rejectionReason" rows="4"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 text-sm"
-                        placeholder="Enter rejection reason..."></textarea>
-                    <div class="flex gap-3 mt-4">
-                        <button @click="showRejectModal = false"
-                            class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm">
-                            Cancel
-                        </button>
-                        <button @click="rejectAppointment()" :disabled="!rejectionReason.trim() || rejecting"
-                            class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-                            <span x-show="!rejecting">Confirm Rejection</span>
-                            <span x-show="rejecting">Rejecting...</span>
-                        </button>
-                    </div>
+        <!-- Reject Modal (components/dialog style) -->
+        <div x-show="showRejectModal" x-cloak style="display: none;"
+            class="fixed inset-0 z-[120] flex items-center justify-center p-4"
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showRejectModal = false"></div>
+            <div x-show="showRejectModal"
+                x-transition:enter="dialog-spring-in" x-transition:leave="dialog-spring-out"
+                @click.stop
+                class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center">
+                <div class="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-circle-xmark text-red-500 text-lg"></i>
+                </div>
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Reject Appointment</h3>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-4">
+                    Please provide a reason for rejection. This will be sent to the client.
+                </p>
+                <textarea x-model="rejectionReason" rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 text-sm text-left mb-4"
+                    placeholder="Enter rejection reason..."></textarea>
+                <div class="flex gap-3">
+                    <button @click="showRejectModal = false"
+                        class="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        Cancel
+                    </button>
+                    <button @click="rejectAppointment()" :disabled="!rejectionReason.trim() || rejecting"
+                        class="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span x-show="!rejecting">Reject</span>
+                        <span x-show="rejecting">Rejecting...</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -973,7 +980,17 @@
                 },
 
                 async approveAppointment() {
-                    if (!confirm('Are you sure you want to approve this appointment?')) return;
+                    try {
+                        await window.showConfirmDialog(
+                            'Approve Appointment',
+                            'Are you sure you want to approve this appointment? The client will be notified.',
+                            'Approve',
+                            'Cancel'
+                        );
+                    } catch (e) {
+                        return;
+                    }
+
                     this.approving = true;
 
                     try {
@@ -987,14 +1004,13 @@
                         });
                         const data = await response.json();
                         if (response.ok && data.success) {
-                            window.showSuccessDialog('Appointment Approved', data.message);
-                            window.location.reload();
+                            window.showSuccessDialog('Appointment Approved', data.message, 'OK');
+                            setTimeout(() => window.location.reload(), 1500);
                         } else {
-                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve appointment');
+                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve appointment.');
                         }
                     } catch (error) {
-                        console.error('Error:', error);
-                        window.showErrorDialog('Approval Failed', 'An error occurred while approving the appointment');
+                        window.showErrorDialog('Approval Failed', 'An error occurred while approving the appointment.');
                     } finally {
                         this.approving = false;
                     }
@@ -1002,6 +1018,24 @@
 
                 async rejectAppointment() {
                     if (!this.rejectionReason.trim()) return;
+
+                    // Close reject modal first, then show confirmation
+                    this.showRejectModal = false;
+                    const reason = this.rejectionReason;
+
+                    try {
+                        await window.showConfirmDialog(
+                            'Confirm Rejection',
+                            'Are you sure you want to reject this appointment? The client will be notified with your reason.',
+                            'Reject',
+                            'Cancel'
+                        );
+                    } catch (e) {
+                        // User cancelled — reopen reject modal with reason preserved
+                        this.showRejectModal = true;
+                        return;
+                    }
+
                     this.rejecting = true;
 
                     try {
@@ -1013,19 +1047,18 @@
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({
-                                rejection_reason: this.rejectionReason
+                                rejection_reason: reason
                             })
                         });
                         const data = await response.json();
                         if (response.ok && data.success) {
-                            window.showSuccessDialog('Appointment Rejected', data.message);
-                            window.location.reload();
+                            window.showSuccessDialog('Appointment Rejected', data.message, 'OK');
+                            setTimeout(() => window.location.reload(), 1500);
                         } else {
-                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject appointment');
+                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject appointment.');
                         }
                     } catch (error) {
-                        console.error('Error:', error);
-                        window.showErrorDialog('Rejection Failed', 'An error occurred while rejecting the appointment');
+                        window.showErrorDialog('Rejection Failed', 'An error occurred while rejecting the appointment.');
                     } finally {
                         this.rejecting = false;
                     }

@@ -7,6 +7,8 @@
     'badges' => [],
     'price' => null,
     'backgroundImage' => null,
+    'liquidSurface' => false,
+    'liquidColors' => [],
     'textColor' => 'text-white',
     'darkTextColor' => 'text-white',
     'isActive' => false,
@@ -15,11 +17,25 @@
 
 <div class="carousel-item {{ $isActive ? 'active' : '' }} absolute inset-0 transition-opacity duration-700 ease-in-out {{ $isActive ? 'opacity-100 z-10' : 'opacity-0 z-0' }}">
     <div class="relative w-full h-full flex flex-col justify-center items-center text-center px-8 md:px-16">
-        
-        @if($backgroundImage)
+
+        @if($liquidSurface)
+            <div class="absolute inset-0 w-full h-full" style="background: #0a1628;">
+                <x-liquid-surface
+                    :colors="$liquidColors ?: ['#1e3a8a', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd']"
+                    :speed="0.8"
+                    :intensity="1.6"
+                    :grainIntensity="0.05"
+                    :gradientSize="0.5"
+                    :gradientCount="12"
+                    :color1Weight="0.6"
+                    :color2Weight="1.5"
+                    darkNavyColor="#0a1628"
+                />
+            </div>
+        @elseif($backgroundImage)
             <div class="absolute inset-0 w-full h-full">
-                <img src="{{ $backgroundImage }}" 
-                     alt="Background for {{ $title }}" 
+                <img src="{{ $backgroundImage }}"
+                     alt="Background for {{ $title }}"
                      class="w-full h-full object-cover">
             </div>
             <div class="absolute inset-0 bg-black/20 dark:bg-black/40"></div>

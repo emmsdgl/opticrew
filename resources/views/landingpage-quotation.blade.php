@@ -1,6 +1,6 @@
 @extends('components.layouts.general-landing')
 
-@section('title', 'Quotation')
+@section('title', __('quotation.title'))
 
 @push('styles')
     <style>
@@ -137,7 +137,7 @@
                             <button onclick="scrollToSection('step-1')" class="group transition-all duration-300"
                                 id="breadcrumb-step-1">
                                 <span class="text-sm font-medium transition-colors text-gray-400 dark:text-gray-500">
-                                    Service
+                                    {{ __('quotation.breadcrumb.service') }}
                                 </span>
                             </button>
                         </li>
@@ -153,7 +153,7 @@
                             <button onclick="scrollToSection('step-2')" class="group transition-all duration-300"
                                 id="breadcrumb-step-2">
                                 <span class="text-sm font-medium transition-colors text-gray-400 dark:text-gray-500">
-                                    Property
+                                    {{ __('quotation.breadcrumb.property') }}
                                 </span>
                             </button>
                         </li>
@@ -169,7 +169,7 @@
                             <button onclick="scrollToSection('step-3')" class="group transition-all duration-300"
                                 id="breadcrumb-step-3">
                                 <span class="text-sm font-medium transition-colors text-gray-400 dark:text-gray-500">
-                                    Contact
+                                    {{ __('quotation.breadcrumb.contact') }}
                                 </span>
                             </button>
                         </li>
@@ -180,14 +180,13 @@
             <!-- Text Contents -->
             <div class="w-full py-12 px-6">
                 <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                    Get a <span class="text-blue-600 dark:text-blue-400">Free Cleaning</span><br>
-                    Quote Instantly
+                    {{ __('quotation.hero.heading_prefix') }} <span class="text-blue-600 dark:text-blue-400">{{ __('quotation.hero.heading_highlight') }}</span><br>
+                    {{ __('quotation.hero.heading_suffix') }}
                 </h1>
-                <p class="text-base text-gray-600 dark:text-gray-300 font-medium py-4 lg:py-y">No hidden fees. No commitment
+                <p class="text-base text-gray-600 dark:text-gray-300 font-medium py-4 lg:py-y">{{ __('quotation.hero.subheading') }}
                 </p>
                 <p class="text-sm lg:text-base text-gray-500 dark:text-gray-400">
-                    Get your custom quote and calculate the approximate cost of service <span class="font-bold">according to
-                        your space</span>
+                    {{ __('quotation.hero.description') }} <span class="font-bold">{{ __('quotation.hero.description_bold') }}</span>
                 </p>
             </div>
         </section>
@@ -204,7 +203,7 @@
                             flex text-center items-center gap-2.5 text-sm
                             pointer-events-none
                             border-2 border-white/20">
-                    <span>Scroll for more</span>
+                    <span>{{ __('quotation.scroll_tooltip') }}</span>
                     <i class="fa-solid fa-chevron-down text-xs animate-pulse"></i>
                 </div> -->
 
@@ -218,15 +217,15 @@
                         <section id="step-1" class="scroll-section space-y-6 mb-16">
                             <div class="mb-8">
                                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                    Step 1: <span class="text-blue-600 dark:text-blue-400">Service Information</span>
+                                    {{ __('quotation.step1.title') }} <span class="text-blue-600 dark:text-blue-400">{{ __('quotation.step1.title_highlight') }}</span>
                                 </h2>
-                                <p class="text-gray-600 dark:text-gray-400">Tell us about your cleaning needs</p>
+                                <p class="text-gray-600 dark:text-gray-400">{{ __('quotation.step1.subtitle') }}</p>
                             </div>
 
                             <!-- Booking Type -->
                             <div class="space-y-3">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300">
-                                    Booking Type <span class="text-red-500">*</span>
+                                    {{ __('quotation.step1.booking_type_label') }} <span class="text-red-500">{{ __('quotation.required_mark') }}</span>
                                 </label>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <!-- Personal Option -->
@@ -241,10 +240,10 @@
                                                 <i
                                                     class="fa-solid fa-user text-[#081032] dark:text-blue-400 text-xl mt-1"></i>
                                                 <div class="flex-1">
-                                                    <h3 class="text-gray-900 dark:text-white mb-1">Personal
+                                                    <h3 class="text-gray-900 dark:text-white mb-1">{{ __('quotation.step1.personal') }}
                                                     </h3>
                                                     <p class="text-xs text-gray-600 dark:text-gray-400">
-                                                        I am looking for a single individual or small team for my residence
+                                                        {{ __('quotation.step1.personal_description') }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -263,11 +262,10 @@
                                                 <i
                                                     class="fa-solid fa-building text-[#081032] dark:text-blue-400 text-xl mt-1"></i>
                                                 <div class="flex-1">
-                                                    <h3 class="text-gray-900 dark:text-white mb-1">Company
+                                                    <h3 class="text-gray-900 dark:text-white mb-1">{{ __('quotation.step1.company') }}
                                                     </h3>
                                                     <p class="text-xs text-gray-600 dark:text-gray-400">
-                                                        If you are booking for a company with a multiple workers for
-                                                        cleaning
+                                                        {{ __('quotation.step1.company_description') }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -282,32 +280,32 @@
                                     $cleaningServices = [
                                         [
                                             'value' => 'deep_cleaning',
-                                            'title' => 'Deep Cleaning',
-                                            'description' => 'A thorough, top-to-bottom cleaning that tackles dirt and grime in hard-to-reach places.',
+                                            'title' => __('quotation.step1.deep_cleaning'),
+                                            'description' => __('quotation.step1.deep_cleaning_desc'),
                                             'icon' => 'fa-solid fa-spray-can-sparkles'
                                         ],
                                         [
                                             'value' => 'daily_room_cleaning',
-                                            'title' => 'Daily Room Cleaning',
-                                            'description' => 'Complete room refresh tailored for guest accommodations.',
+                                            'title' => __('quotation.step1.daily_room_cleaning'),
+                                            'description' => __('quotation.step1.daily_room_cleaning_desc'),
                                             'icon' => 'fa-solid fa-bed'
                                         ],
                                         [
                                             'value' => 'snowout_cleaning',
-                                            'title' => 'Snowout Cleaning',
-                                            'description' => 'Seasonal service focused on clearing snow and ice from cabin pathways for safety and accessibility.',
+                                            'title' => __('quotation.step1.snowout_cleaning'),
+                                            'description' => __('quotation.step1.snowout_cleaning_desc'),
                                             'icon' => 'fa-solid fa-snowflake'
                                         ],
                                         [
                                             'value' => 'light_daily_cleaning',
-                                            'title' => 'Light Daily Cleaning',
-                                            'description' => 'Routine upkeep designed to keep spaces fresh and presentable.',
+                                            'title' => __('quotation.step1.light_daily_cleaning'),
+                                            'description' => __('quotation.step1.light_daily_cleaning_desc'),
                                             'icon' => 'fa-solid fa-broom'
                                         ],
                                         [
                                             'value' => 'full_daily_cleaning',
-                                            'title' => 'Full Daily Cleaning',
-                                            'description' => 'Comprehensive cleaning service covering all areas for optimal hygiene and presentation.',
+                                            'title' => __('quotation.step1.full_daily_cleaning'),
+                                            'description' => __('quotation.step1.full_daily_cleaning_desc'),
                                             'icon' => 'fa-solid fa-house-circle-check'
                                         ],
                                     ];
@@ -315,62 +313,62 @@
                                     $companyServiceTypes = [
                                         [
                                             'value' => 'Hotel Rooms Cleaning',
-                                            'label' => 'Hotel Rooms Cleaning',
+                                            'label' => __('quotation.step1.hotel_rooms_cleaning'),
                                             'icon' => 'fa-solid fa-bed'
                                         ],
                                         [
                                             'value' => 'Light Daily Cleaning',
-                                            'label' => 'Light Daily Cleaning',
+                                            'label' => __('quotation.step1.light_daily_cleaning'),
                                             'icon' => 'fa-solid fa-broom'
                                         ],
                                         [
                                             'value' => 'Full Daily Cleaning',
-                                            'label' => 'Full Daily Cleaning',
+                                            'label' => __('quotation.step1.full_daily_cleaning'),
                                             'icon' => 'fa-solid fa-house-circle-check'
                                         ],
                                         [
                                             'value' => 'Deep Cleaning',
-                                            'label' => 'Deep Cleaning',
+                                            'label' => __('quotation.step1.deep_cleaning'),
                                             'icon' => 'fa-solid fa-spray-can-sparkles'
                                         ],
                                         [
                                             'value' => 'Snowout',
-                                            'label' => 'Snowout',
+                                            'label' => __('quotation.step1.snowout'),
                                             'icon' => 'fa-solid fa-snowflake'
                                         ],
                                         [
                                             'value' => 'Cabins',
-                                            'label' => 'Cabins',
+                                            'label' => __('quotation.step1.cabins'),
                                             'icon' => 'fa-solid fa-house'
                                         ],
                                         [
                                             'value' => 'Cottages',
-                                            'label' => 'Cottages',
+                                            'label' => __('quotation.step1.cottages'),
                                             'icon' => 'fa-solid fa-home'
                                         ],
                                         [
                                             'value' => 'Igloos',
-                                            'label' => 'Igloos',
+                                            'label' => __('quotation.step1.igloos'),
                                             'icon' => 'fa-solid fa-igloo'
                                         ],
                                         [
                                             'value' => 'Restaurant',
-                                            'label' => 'Restaurant',
+                                            'label' => __('quotation.step1.restaurant'),
                                             'icon' => 'fa-solid fa-utensils'
                                         ],
                                         [
                                             'value' => 'Reception',
-                                            'label' => 'Reception',
+                                            'label' => __('quotation.step1.reception'),
                                             'icon' => 'fa-solid fa-bell-concierge'
                                         ],
                                         [
                                             'value' => 'Saunas',
-                                            'label' => 'Saunas',
+                                            'label' => __('quotation.step1.saunas'),
                                             'icon' => 'fa-solid fa-hot-tub-person'
                                         ],
                                         [
                                             'value' => 'Hallway',
-                                            'label' => 'Hallway',
+                                            'label' => __('quotation.step1.hallway'),
                                             'icon' => 'fa-solid fa-door-open'
                                         ]
                                     ];
@@ -378,7 +376,7 @@
 
                                 <!-- Single Selection (Personal) -->
                                 <div x-show="formData.bookingType === 'personal'">
-                                    <x-client-components.quotation-page.service-dropdown label="Type of Cleaning Service"
+                                    <x-client-components.quotation-page.service-dropdown :label="__('quotation.step1.cleaning_service_label')"
                                         name="cleaning_service" :options="$cleaningServices" :required="true"
                                         :placeholdericon="'fa-solid fa-broom'" />
                                 </div>
@@ -386,9 +384,9 @@
                                 <!-- Multiple Selection (Company) - Card Based -->
                                 <div x-show="formData.bookingType === 'company'" class="space-y-3">
                                     <label class="block text-sm text-gray-700 dark:text-gray-300">
-                                        Service Type <span class="text-red-500">*</span>
+                                        {{ __('quotation.step1.service_type_label') }} <span class="text-red-500">{{ __('quotation.required_mark') }}</span>
                                     </label>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Select all services you need</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{{ __('quotation.step1.service_type_hint') }}</p>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         @foreach($companyServiceTypes as $service)
                                             <label class="relative flex cursor-pointer">
@@ -427,17 +425,17 @@
                                         $today = date('Y-m-d');
                                     @endphp
 
-                                    <x-client-components.quotation-page.service-datepicker label="Date of Service"
+                                    <x-client-components.quotation-page.service-datepicker :label="__('quotation.step1.date_of_service')"
                                         name="date_of_service" x-model="formData.dateOfService"
                                         ::required="formData.bookingType === 'personal'"
-                                        :min-date="$today" placeholder="What is your preferred date?" />
+                                        :min-date="$today" :placeholder="__('quotation.step1.date_placeholder')" />
 
                                 </div>
 
 
                                 <!-- Duration of Service -->
                                 <div class="space-y-2">
-                                    <x-client-components.quotation-page.quantity-picker label="Duration of Service"
+                                    <x-client-components.quotation-page.quantity-picker :label="__('quotation.step1.duration_of_service')"
                                         name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-door-open"
                                         ::required="formData.bookingType === 'personal'" :showUnit="false" />
 
@@ -451,43 +449,43 @@
                                         $urgencyType = [
                                             [
                                                 'value' => 'same_day',
-                                                'title' => 'Same-day (within 24h)',
-                                                'description' => 'Urgent cleaning service available within the next 24 hours for immediate needs.',
+                                                'title' => __('quotation.step1.same_day'),
+                                                'description' => __('quotation.step1.same_day_desc'),
                                                 'icon' => ''
                                             ],
                                             [
                                                 'value' => 'tomorrow',
-                                                'title' => 'Tomorrow / Next Day',
-                                                'description' => 'Schedule your cleaning service for the next day at your preferred time.',
+                                                'title' => __('quotation.step1.tomorrow'),
+                                                'description' => __('quotation.step1.tomorrow_desc'),
                                                 'icon' => ''
                                             ],
                                             [
                                                 'value' => 'this_week',
-                                                'title' => 'Within This Week (2–5 days from now)',
-                                                'description' => 'Book a cleaning service within the current week at your convenience.',
+                                                'title' => __('quotation.step1.this_week'),
+                                                'description' => __('quotation.step1.this_week_desc'),
                                                 'icon' => ''
                                             ],
                                             [
                                                 'value' => 'next_week',
-                                                'title' => 'Next Week (5–10 days from now)',
-                                                'description' => 'Plan ahead and schedule your cleaning for the upcoming week.',
+                                                'title' => __('quotation.step1.next_week'),
+                                                'description' => __('quotation.step1.next_week_desc'),
                                                 'icon' => ''
                                             ],
                                             [
                                                 'value' => 'this_month',
-                                                'title' => 'Within This Month',
-                                                'description' => 'Flexible scheduling option for any time within the current month.',
+                                                'title' => __('quotation.step1.this_month'),
+                                                'description' => __('quotation.step1.this_month_desc'),
                                                 'icon' => ''
                                             ],
                                             [
                                                 'value' => 'recurring',
-                                                'title' => 'Recurring Cleaning',
-                                                'description' => 'Set up regular cleaning service on a weekly, bi-weekly, or monthly schedule.',
+                                                'title' => __('quotation.step1.recurring'),
+                                                'description' => __('quotation.step1.recurring_desc'),
                                                 'icon' => ''
                                             ],
                                         ];
                                     @endphp
-                                    <x-client-components.quotation-page.service-dropdown label="Type of Urgency"
+                                    <x-client-components.quotation-page.service-dropdown :label="__('quotation.step1.urgency_label')"
                                         name="cleaning_service" :options="$urgencyType"
                                         ::required="formData.bookingType === 'personal'"
                                         :placeholdericon="'fa-solid fa-triangle-exclamation'" />
@@ -501,9 +499,9 @@
                         <section id="step-2" class="scroll-section space-y-6 mb-16">
                             <div class="mb-8">
                                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                    Step 2: <span class="text-blue-600 dark:text-blue-400">Property Information</span>
+                                    {{ __('quotation.step2.title') }} <span class="text-blue-600 dark:text-blue-400">{{ __('quotation.step2.title_highlight') }}</span>
                                 </h2>
-                                <p class="text-gray-600 dark:text-gray-400">Tell us about your property details</p>
+                                <p class="text-gray-600 dark:text-gray-400">{{ __('quotation.step2.subtitle') }}</p>
                             </div>
 
                             <!-- Type of Property and No. of Floors -->
@@ -513,108 +511,108 @@
                                         $propertyType = [
                                             [
                                                 'value' => 'apartment',
-                                                'title' => 'Apartment / Flat',
-                                                'description' => 'Single-level residential unit within a building',
+                                                'title' => __('quotation.step2.apartment'),
+                                                'description' => __('quotation.step2.apartment_desc'),
                                                 'icon' => 'fa-solid fa-building'
                                             ],
                                             [
                                                 'value' => 'detached_house',
-                                                'title' => 'Detached House',
-                                                'description' => 'Standalone house',
+                                                'title' => __('quotation.step2.detached_house'),
+                                                'description' => __('quotation.step2.detached_house_desc'),
                                                 'icon' => 'fa-solid fa-house'
                                             ],
                                             [
                                                 'value' => 'semi_detached',
-                                                'title' => 'Semi-Detached / Duplex',
-                                                'description' => 'Two attached houses sharing a wall',
+                                                'title' => __('quotation.step2.semi_detached'),
+                                                'description' => __('quotation.step2.semi_detached_desc'),
                                                 'icon' => 'fa-solid fa-house-chimney'
                                             ],
                                             [
                                                 'value' => 'townhouse',
-                                                'title' => 'Row House / Townhouse',
-                                                'description' => 'Series of attached homes',
+                                                'title' => __('quotation.step2.townhouse'),
+                                                'description' => __('quotation.step2.townhouse_desc'),
                                                 'icon' => 'fa-solid fa-city'
                                             ],
                                             [
                                                 'value' => 'student_apartment',
-                                                'title' => 'Student Apartment',
-                                                'description' => 'Shared unit, smaller rooms',
+                                                'title' => __('quotation.step2.student_apartment'),
+                                                'description' => __('quotation.step2.student_apartment_desc'),
                                                 'icon' => 'fa-solid fa-graduation-cap'
                                             ],
                                             [
                                                 'value' => 'summer_cottage',
-                                                'title' => 'Summer Cottage (Mökki)',
-                                                'description' => 'Seasonal or vacation home',
+                                                'title' => __('quotation.step2.summer_cottage'),
+                                                'description' => __('quotation.step2.summer_cottage_desc'),
                                                 'icon' => 'fa-solid fa-umbrella-beach'
                                             ],
                                             [
                                                 'value' => 'studio',
-                                                'title' => 'Studio / Small Apartment',
-                                                'description' => 'One-room units',
+                                                'title' => __('quotation.step2.studio'),
+                                                'description' => __('quotation.step2.studio_desc'),
                                                 'icon' => 'fa-solid fa-door-open'
                                             ],
                                             [
                                                 'value' => 'office',
-                                                'title' => 'Office / Workspace',
-                                                'description' => 'Business premises',
+                                                'title' => __('quotation.step2.office'),
+                                                'description' => __('quotation.step2.office_desc'),
                                                 'icon' => 'fa-solid fa-briefcase'
                                             ],
                                             [
                                                 'value' => 'retail',
-                                                'title' => 'Retail Store / Shop',
-                                                'description' => 'Storefront cleaning',
+                                                'title' => __('quotation.step2.retail'),
+                                                'description' => __('quotation.step2.retail_desc'),
                                                 'icon' => 'fa-solid fa-shop'
                                             ],
                                             [
                                                 'value' => 'hotel',
-                                                'title' => 'Hotel / Airbnb / Lodging',
-                                                'description' => 'Short-stay cleaning',
+                                                'title' => __('quotation.step2.hotel'),
+                                                'description' => __('quotation.step2.hotel_desc'),
                                                 'icon' => 'fa-solid fa-hotel'
                                             ],
                                             [
                                                 'value' => 'warehouse',
-                                                'title' => 'Warehouse / Storage',
-                                                'description' => 'Large area of storage, fewer materials, furniture',
+                                                'title' => __('quotation.step2.warehouse'),
+                                                'description' => __('quotation.step2.warehouse_desc'),
                                                 'icon' => 'fa-solid fa-warehouse'
                                             ],
                                             [
                                                 'value' => 'clinic',
-                                                'title' => 'Clinic / Healthcare Facility',
-                                                'description' => 'Sanitization standards required',
+                                                'title' => __('quotation.step2.clinic'),
+                                                'description' => __('quotation.step2.clinic_desc'),
                                                 'icon' => 'fa-solid fa-hospital'
                                             ],
                                             [
                                                 'value' => 'factory',
-                                                'title' => 'Factory / Industrial Unit',
-                                                'description' => 'Heavy-duty area',
+                                                'title' => __('quotation.step2.factory'),
+                                                'description' => __('quotation.step2.factory_desc'),
                                                 'icon' => 'fa-solid fa-industry'
                                             ],
                                             [
                                                 'value' => 'school',
-                                                'title' => 'School / University',
-                                                'description' => 'Large spaces with classrooms',
+                                                'title' => __('quotation.step2.school'),
+                                                'description' => __('quotation.step2.school_desc'),
                                                 'icon' => 'fa-solid fa-school'
                                             ],
                                             [
                                                 'value' => 'public_building',
-                                                'title' => 'Public Building / Municipality Office',
-                                                'description' => 'Government or civic buildings',
+                                                'title' => __('quotation.step2.public_building'),
+                                                'description' => __('quotation.step2.public_building_desc'),
                                                 'icon' => 'fa-solid fa-landmark'
                                             ],
                                             [
                                                 'value' => 'gym',
-                                                'title' => 'Gym / Fitness Center',
-                                                'description' => 'Equipment and locker area sanitation',
+                                                'title' => __('quotation.step2.gym'),
+                                                'description' => __('quotation.step2.gym_desc'),
                                                 'icon' => 'fa-solid fa-dumbbell'
                                             ],
                                         ];
                                     @endphp
-                                    <x-client-components.quotation-page.service-dropdown label="Type of Property"
+                                    <x-client-components.quotation-page.service-dropdown :label="__('quotation.step2.property_type_label')"
                                         name="property_type" :options="$propertyType" :required="true"
                                         :placeholdericon="'fa-solid fa-house'" />
                                 </div>
                                 <div class="space-y-2">
-                                        <x-client-components.quotation-page.quantity-picker label="Number of Floors"
+                                        <x-client-components.quotation-page.quantity-picker :label="__('quotation.step2.number_of_floors')"
                                         name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-layer-group"
                                         :required="true" :showUnit="false" />
 
@@ -624,13 +622,13 @@
                             <!-- No. of Rooms and No. of People Per Room -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div class="space-y-2">
-                                    <x-client-components.quotation-page.quantity-picker label="Number of Rooms"
+                                    <x-client-components.quotation-page.quantity-picker :label="__('quotation.step2.number_of_rooms')"
                                         name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-door-open"
                                         :required="true" :showUnit="false" />
                                 </div>
 
                                 <div class="space-y-2">
-                                    <x-client-components.quotation-page.quantity-picker label="Number of People Per Room"
+                                    <x-client-components.quotation-page.quantity-picker :label="__('quotation.step2.number_of_people_per_room')"
                                         name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-people-roof"
                                         :required="true" :showUnit="false" />
                                 </div>
@@ -639,7 +637,7 @@
                             <!-- Floor Area Value and Unit -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div class="space-y-2">
-                                    <x-client-components.quotation-page.quantity-picker label="Floor Area Value"
+                                    <x-client-components.quotation-page.quantity-picker :label="__('quotation.step2.floor_area_value')"
                                         name="rooms" :min="1" :max="20" :default="1" icon="fa-solid fa-ruler-combined"
                                         :required="true" :showUnit="false" />
                                 </div>
@@ -647,18 +645,18 @@
                                 <div class="space-y-2">
                                     @php
                                         $areaUnits = [
-                                            ['value' => 'sqm', 'label' => 'Square Meter (m² / sqm)'],
-                                            ['value' => 'sqft', 'label' => 'Square Foot (sq ft / ft²)'],
-                                            ['value' => 'sqyd', 'label' => 'Square Yard (yd²)'],
-                                            ['value' => 'are', 'label' => 'Are (a)'],
-                                            ['value' => 'hectare', 'label' => 'Hectare (ha)'],
-                                            ['value' => 'sqin', 'label' => 'Square Inch (in²)'],
+                                            ['value' => 'sqm', 'label' => __('quotation.step2.sqm')],
+                                            ['value' => 'sqft', 'label' => __('quotation.step2.sqft')],
+                                            ['value' => 'sqyd', 'label' => __('quotation.step2.sqyd')],
+                                            ['value' => 'are', 'label' => __('quotation.step2.are')],
+                                            ['value' => 'hectare', 'label' => __('quotation.step2.hectare')],
+                                            ['value' => 'sqin', 'label' => __('quotation.step2.sqin')],
                                         ];
                                     @endphp
 
-                                    <x-client-components.quotation-page.regular-dropdown label="Units" name="area_units"
+                                    <x-client-components.quotation-page.regular-dropdown :label="__('quotation.step2.units_label')" name="area_units"
                                         :options="$areaUnits" :multiple="false" :required="true"
-                                        placeholder="e.g., m² / sqm, sq..." />
+                                        :placeholder="__('quotation.step2.units_placeholder')" />
 
                                 </div>
                             </div>
@@ -668,7 +666,7 @@
                                 <!-- Use the Location Combobox Component -->
                                 <div @location-selected="handleLocationSelected($event.detail)"
                                     @location-option-changed="handleOptionChanged($event.detail)">
-                                    <x-client-components.quotation-page.location-combobox label="Property Location"
+                                    <x-client-components.quotation-page.location-combobox :label="__('quotation.step2.property_location')"
                                         name="property_location" :required="true" />
                                 </div>
                             </div>
@@ -691,7 +689,7 @@
                                     class="relative inline-block w-full max-w-3xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
                                     <div class="flex items-center justify-between mb-4">
                                         <h3 class="text-lg text-gray-900 dark:text-white">
-                                            Select Property Location
+                                            {{ __('quotation.location_modal.title') }}
                                         </h3>
                                         <button @click="showLocationPicker = false"
                                             class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -701,7 +699,7 @@
 
                                     <!-- Search Box -->
                                     <div class="mb-4">
-                                        <input type="text" id="location-search" placeholder="Search for a location..."
+                                        <input type="text" id="location-search" placeholder="{{ __('quotation.location_modal.search_placeholder') }}"
                                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
                                                         focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                                                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
@@ -714,10 +712,9 @@
 
                                     <!-- Selected Location Display -->
                                     <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">Selected
-                                            Location:</p>
+                                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">{{ __('quotation.location_modal.selected_location') }}</p>
                                         <p class="text-sm text-gray-600 dark:text-gray-400"
-                                            x-text="formData.propertyLocation || 'No location selected'"></p>
+                                            x-text="formData.propertyLocation || '{{ __('quotation.location_modal.no_location_selected') }}'"></p>
                                     </div>
 
                                     <!-- Confirm Button -->
@@ -725,11 +722,11 @@
                                         <button @click="showLocationPicker = false"
                                             class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600
                                                         text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-300">
-                                            Cancel
+                                            {{ __('quotation.location_modal.cancel') }}
                                         </button>
                                         <button @click="confirmLocation()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600
                                                         text-white font-medium rounded-lg transition-all duration-300">
-                                            Confirm Location
+                                            {{ __('quotation.location_modal.confirm_location') }}
                                         </button>
                                     </div>
                                 </div>
@@ -740,19 +737,19 @@
                         <section id="step-3" class="scroll-section space-y-6 mb-8">
                             <div class="mb-8">
                                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                    Step 3: <span class="text-blue-600 dark:text-blue-400">Contact Information</span>
+                                    {{ __('quotation.step3.title') }} <span class="text-blue-600 dark:text-blue-400">{{ __('quotation.step3.title_highlight') }}</span>
                                 </h2>
-                                <p class="text-gray-600 dark:text-gray-400">Please provide your contact details</p>
+                                <p class="text-gray-600 dark:text-gray-400">{{ __('quotation.step3.subtitle') }}</p>
                             </div>
 
                             <!-- Company Name (Company Only) -->
                             <div x-show="formData.bookingType === 'company'" class="space-y-2">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300">
-                                    Company Name <span class="text-red-500">*</span>
+                                    {{ __('quotation.step3.company_name') }} <span class="text-red-500">{{ __('quotation.required_mark') }}</span>
                                 </label>
                                 <div class="relative">
                                     <i class="fa-solid fa-building absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                    <input type="text" x-model="formData.companyName" placeholder="Enter company name"
+                                    <input type="text" x-model="formData.companyName" placeholder="{{ __('quotation.step3.company_name_placeholder') }}"
                                         :required="formData.bookingType === 'company'"
                                         class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
@@ -764,12 +761,12 @@
                             <!-- Contact Person Name -->
                             <div class="space-y-2">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300">
-                                    <span x-text="formData.bookingType === 'company' ? 'Contact Person Name' : 'Client Name'"></span>
-                                    <span class="text-red-500">*</span>
+                                    <span x-text="formData.bookingType === 'company' ? '{{ __('quotation.step3.contact_person_name') }}' : '{{ __('quotation.step3.client_name') }}'"></span>
+                                    <span class="text-red-500">{{ __('quotation.required_mark') }}</span>
                                 </label>
                                 <div class="relative">
                                     <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                    <input type="text" x-model="formData.clientName" placeholder="Enter your name"
+                                    <input type="text" x-model="formData.clientName" placeholder="{{ __('quotation.step3.name_placeholder') }}"
                                         required
                                         class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
@@ -781,11 +778,11 @@
                             <!-- Phone Number -->
                             <div class="space-y-2">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300">
-                                    Phone Number <span class="text-red-500">*</span>
+                                    {{ __('quotation.step3.phone_number') }} <span class="text-red-500">{{ __('quotation.required_mark') }}</span>
                                 </label>
                                 <div class="relative">
                                     <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                    <input type="tel" x-model="formData.phoneNumber" placeholder="+358 40 123 4567"
+                                    <input type="tel" x-model="formData.phoneNumber" placeholder="{{ __('quotation.step3.phone_placeholder') }}"
                                         required
                                         class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
@@ -797,12 +794,12 @@
                             <!-- Email Address -->
                             <div class="space-y-2">
                                 <label class="block text-sm text-gray-700 dark:text-gray-300">
-                                    Email Address <span class="text-red-500">*</span>
+                                    {{ __('quotation.step3.email_address') }} <span class="text-red-500">{{ __('quotation.required_mark') }}</span>
                                 </label>
                                 <div class="relative">
                                     <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                     <input type="email" x-model="formData.email"
-                                        placeholder="Where should we send the quotation?"
+                                        placeholder="{{ __('quotation.step3.email_placeholder') }}"
                                         required
                                         class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
@@ -817,7 +814,7 @@
                                     class="w-full py-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600
                                                 text-white rounded-full transition-all duration-300
                                                 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl text-base">
-                                    Get the price quotation
+                                    {{ __('quotation.step3.submit_button') }}
                                 </button>
                             </div>
                         </section>
@@ -947,7 +944,7 @@
                 confirmLocation() {
                     // Check if location is selected
                     if (!this.formData.propertyLocation) {
-                        window.showErrorDialog('Location Required', 'Please select a location on the map first.');
+                        window.showErrorDialog('{{ __('quotation.messages.location_required_title') }}', '{{ __('quotation.messages.location_required') }}');
                         return;
                     }
 
@@ -975,7 +972,7 @@
 
                             // Show loading state
                             const originalText = this.formData.propertyLocation;
-                            this.formData.propertyLocation = 'Getting your location...';
+                            this.formData.propertyLocation = '{{ __('quotation.messages.getting_location') }}';
 
                             // Reverse geocode to get address
                             if (typeof geocoder !== 'undefined' && geocoder) {
@@ -1019,52 +1016,52 @@
                                             });
                                         });
 
-                                        window.showSuccessDialog('Location Found', 'Address fields have been auto-filled.');
+                                        window.showSuccessDialog('{{ __('quotation.messages.location_found_title') }}', '{{ __('quotation.messages.location_found') }}');
                                     } else {
                                         this.formData.propertyLocation = originalText;
                                         console.error('Geocoder failed:', status);
-                                        window.showErrorDialog('Geocoding Failed', 'Unable to get address from coordinates. Please try again.');
+                                        window.showErrorDialog('{{ __('quotation.messages.geocoding_failed_title') }}', '{{ __('quotation.messages.geocoding_failed') }}');
                                     }
                                 });
                             } else {
                                 this.formData.propertyLocation = originalText;
-                                window.showErrorDialog('Geocoder Error', 'Geocoder not initialized. Please try again.');
+                                window.showErrorDialog('{{ __('quotation.messages.geocoder_error_title') }}', '{{ __('quotation.messages.geocoder_error') }}');
                             }
                         }, (error) => {
                             console.error('Error getting location:', error);
-                            let errorMessage = 'Unable to retrieve your location. ';
+                            let errorMessage = '{{ __('quotation.messages.location_error_prefix') }} ';
 
                             switch (error.code) {
                                 case error.PERMISSION_DENIED:
-                                    errorMessage += 'Please allow location access in your browser settings.';
+                                    errorMessage += '{{ __('quotation.messages.location_error_permission') }}';
                                     break;
                                 case error.POSITION_UNAVAILABLE:
-                                    errorMessage += 'Location information is unavailable.';
+                                    errorMessage += '{{ __('quotation.messages.location_error_unavailable') }}';
                                     break;
                                 case error.TIMEOUT:
-                                    errorMessage += 'Location request timed out.';
+                                    errorMessage += '{{ __('quotation.messages.location_error_timeout') }}';
                                     break;
                                 default:
-                                    errorMessage += 'An unknown error occurred.';
+                                    errorMessage += '{{ __('quotation.messages.location_error_unknown') }}';
                             }
 
-                            window.showErrorDialog('Location Error', errorMessage);
+                            window.showErrorDialog('{{ __('quotation.messages.location_error_title') }}', errorMessage);
                         });
                     } else {
-                        window.showErrorDialog('Not Supported', 'Geolocation is not supported by your browser.');
+                        window.showErrorDialog('{{ __('quotation.messages.geolocation_not_supported_title') }}', '{{ __('quotation.messages.geolocation_not_supported') }}');
                     }
                 },
 
                 async submitForm() {
                     // Basic validation
                     if (!this.formData.bookingType) {
-                        window.showErrorDialog('Booking Type Required', 'Please select a booking type (Personal or Company).');
+                        window.showErrorDialog('{{ __('quotation.messages.booking_type_required_title') }}', '{{ __('quotation.messages.booking_type_required') }}');
                         scrollToSection('step-1');
                         return;
                     }
 
                     if (!this.formData.clientName || !this.formData.phoneNumber || !this.formData.email) {
-                        window.showErrorDialog('Missing Information', 'Please fill in all required contact information.');
+                        window.showErrorDialog('{{ __('quotation.messages.missing_info_title') }}', '{{ __('quotation.messages.missing_info') }}');
                         scrollToSection('step-3');
                         return;
                     }
@@ -1075,7 +1072,7 @@
 
                     // Show loading state
                     submitButton.disabled = true;
-                    submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Submitting...';
+                    submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>{{ __('quotation.messages.submitting') }}';
 
                     try {
                         // Collect data from form fields directly
@@ -1222,7 +1219,7 @@
 
                         if (response.ok) {
                             // Success!
-                            window.showSuccessDialog('Quotation Submitted', result.message || 'Your quotation request has been submitted successfully! We will contact you soon.');
+                            window.showSuccessDialog('{{ __('quotation.messages.submission_success_title') }}', result.message || '{{ __('quotation.messages.submission_success') }}');
 
                             // Reset the HTML form to clear all inputs
                             const form = document.getElementById('quotation-form');
@@ -1281,14 +1278,14 @@
                             // Handle validation errors
                             if (result.errors) {
                                 const errorMessages = Object.values(result.errors).flat().join('\n');
-                                window.showErrorDialog('Validation Errors', 'Please fix the following errors: ' + errorMessages);
+                                window.showErrorDialog('{{ __('quotation.messages.validation_errors_title') }}', '{{ __('quotation.messages.validation_errors_prefix') }} ' + errorMessages);
                             } else {
-                                window.showErrorDialog('Submission Failed', result.message || 'Failed to submit quotation. Please try again.');
+                                window.showErrorDialog('{{ __('quotation.messages.submission_failed_title') }}', result.message || '{{ __('quotation.messages.submission_failed') }}');
                             }
                         }
                     } catch (error) {
                         console.error('Submission error:', error);
-                        window.showErrorDialog('Submission Error', 'An error occurred while submitting your request. Please check your internet connection and try again.');
+                        window.showErrorDialog('{{ __('quotation.messages.submission_error_title') }}', '{{ __('quotation.messages.submission_error') }}');
                     } finally {
                         // Restore button state
                         submitButton.disabled = false;

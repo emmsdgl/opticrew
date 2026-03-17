@@ -136,6 +136,10 @@ class ProfileController extends Controller
             $request->ip()
         );
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Profile updated successfully!']);
+        }
+
         // Redirect back to profile page based on role
         $role = $user->role;
         if ($role === 'admin') {
@@ -185,6 +189,10 @@ class ProfileController extends Controller
         // Update user record
         $user->profile_picture = $path;
         $user->save();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Profile picture updated successfully!', 'path' => asset($path)]);
+        }
 
         // Redirect back to profile page based on role
         $role = $user->role;

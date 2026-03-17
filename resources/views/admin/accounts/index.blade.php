@@ -331,50 +331,6 @@
 
     </section>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
-            <div class="mt-3">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
-                </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4 text-center">Delete Account</h3>
-                <div class="mt-2 px-4 py-3">
-                    <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
-                        This account will be soft-deleted and can be restored later. Enter your admin password to confirm.
-                    </p>
-
-                    <form id="deleteForm" method="POST" onsubmit="return validatePassword(event)">
-                        @csrf
-                        @method('DELETE')
-
-                        <div class="mb-4">
-                            <label for="admin_password"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Admin Password <span class="text-red-500">*</span>
-                            </label>
-                            <input type="password" id="admin_password" name="admin_password" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                placeholder="Enter your password">
-                            <p id="password_error" class="mt-1 text-sm text-red-600 hidden"></p>
-                        </div>
-
-                        <div class="flex gap-4">
-                            <button type="button" onclick="closeDeleteModal()"
-                                class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300">
-                                Cancel
-                            </button>
-                            <button type="submit"
-                                class="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">
-                                Delete
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Search functionality for main users table
         const searchInput = document.getElementById('searchInput');
@@ -411,66 +367,63 @@
             });
         }
 
-        // Delete modal functions
-        function confirmDelete(userId) {
-            const modal = document.getElementById('deleteModal');
-            const form = document.getElementById('deleteForm');
-            const passwordInput = document.getElementById('admin_password');
-            const errorMsg = document.getElementById('password_error');
-
-            form.action = `/admin/accounts/${userId}`;
-            passwordInput.value = '';
-            errorMsg.classList.add('hidden');
-            modal.classList.remove('hidden');
-        }
-
-        function closeDeleteModal() {
-            const modal = document.getElementById('deleteModal');
-            const passwordInput = document.getElementById('admin_password');
-            const errorMsg = document.getElementById('password_error');
-
-            passwordInput.value = '';
-            errorMsg.classList.add('hidden');
-            modal.classList.add('hidden');
-        }
-
-        async function validatePassword(event) {
-            event.preventDefault();
-            const password = document.getElementById('admin_password').value;
-            const errorMsg = document.getElementById('password_error');
-            const form = document.getElementById('deleteForm');
+        // Delete flow using components/dialog
+        async function confirmDelete(userId) {
+            let password;
 
             try {
-                const response = await fetch('/admin/accounts/verify-password', {
+                password = await window.showPasswordConfirmDialog(
+                    'Delete Account',
+                    'This account will be soft-deleted and can be restored later. Enter your admin password to confirm.',
+                    'Delete Account',
+                    'Cancel'
+                );
+            } catch (e) {
+                return;
+            }
+
+            try {
+                // Verify password
+                const verifyRes = await fetch('/admin/accounts/verify-password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
                     },
                     body: JSON.stringify({ password: password })
                 });
 
-                const data = await response.json();
+                const verifyData = await verifyRes.json();
 
-                if (data.valid) {
-                    form.submit();
+                if (!verifyData.valid) {
+                    window.showErrorDialog('Verification Failed', 'Incorrect password. Please try again.');
+                    return;
+                }
+
+                // Password verified — proceed with delete
+                const deleteRes = await fetch(`/admin/accounts/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (deleteRes.ok) {
+                    window.showSuccessDialog(
+                        'Account Deleted',
+                        'The account has been soft-deleted successfully and can be restored later.',
+                        'OK',
+                        '{{ route("admin.accounts.index") }}'
+                    );
                 } else {
-                    errorMsg.textContent = 'Incorrect password. Please try again.';
-                    errorMsg.classList.remove('hidden');
+                    const errData = await deleteRes.json().catch(() => ({}));
+                    window.showErrorDialog('Delete Failed', errData.message || 'Failed to delete the account. Please try again.');
                 }
             } catch (error) {
-                errorMsg.textContent = 'An error occurred. Please try again.';
-                errorMsg.classList.remove('hidden');
+                window.showErrorDialog('Error', 'Something went wrong. Please try again.');
             }
-
-            return false;
         }
-
-        // Close modal when clicking outside
-        document.getElementById('deleteModal').addEventListener('click', function (e) {
-            if (e.target === this) {
-                closeDeleteModal();
-            }
-        });
     </script>
 </x-layouts.general-employer>
