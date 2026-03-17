@@ -45,21 +45,32 @@ class LoginRequest extends FormRequest
         $password = $this->input('password');
         $remember = $this->boolean('remember');
 
-        // 1. If input is an email format, try email first
+        // 1. If input is an email format, try email first, then alternative_email
         if (filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
             if (Auth::attempt(['email' => $loginInput, 'password' => $password], $remember)) {
+                $this->checkIfBanned();
+                RateLimiter::clear($this->throttleKey());
+                return;
+            }
+
+            // Try alternative_email (employees may have Gmail stored here)
+            $userByAltEmail = \App\Models\User::where('alternative_email', $loginInput)->first();
+            if ($userByAltEmail && Auth::attempt(['email' => $userByAltEmail->email, 'password' => $password], $remember)) {
+                $this->checkIfBanned();
                 RateLimiter::clear($this->throttleKey());
                 return;
             }
         } else {
             // 2. Try username
             if (Auth::attempt(['username' => $loginInput, 'password' => $password], $remember)) {
+                $this->checkIfBanned();
                 RateLimiter::clear($this->throttleKey());
                 return;
             }
 
             // 3. Try name as fallback
             if (Auth::attempt(['name' => $loginInput, 'password' => $password], $remember)) {
+                $this->checkIfBanned();
                 RateLimiter::clear($this->throttleKey());
                 return;
             }
@@ -70,6 +81,25 @@ class LoginRequest extends FormRequest
         throw ValidationException::withMessages([
             'login' => trans('auth.failed'),
         ]);
+    }
+
+    /**
+     * Check if the authenticated user is banned. If so, log them out and abort.
+     */
+    protected function checkIfBanned(): void
+    {
+        $user = Auth::user();
+
+        if ($user && !$user->is_active) {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            session()->flash('banned', true);
+
+            throw ValidationException::withMessages([
+                'login' => 'Your account has been banned.',
+            ]);
+        }
     }
 
     /**

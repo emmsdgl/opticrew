@@ -2,28 +2,18 @@
     <section class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]" x-data="quotationDrawer()">
         <!-- Header -->
         <div class="flex flex-col gap-2">
-            <h1 class="text-sm font-bold text-gray-900 dark:text-white">Quotation Requests</h1>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Quotation Requests</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">View and manage price quotation requests from clients</p>
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden my-6">
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Pending review</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $quotations->where('status', 'pending_review')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Quoted</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $quotations->where('status', 'quoted')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Accepted</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $quotations->where('status', 'accepted')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Total</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $quotations->total() }}</p>
-            </div>
+        <div class="my-6">
+            <x-employer-components.stats-cards :stats="[
+                ['label' => 'Pending Review', 'value' => $quotations->where('status', 'pending_review')->count(), 'icon' => 'fi fi-rr-clock', 'iconColor' => '#eab308'],
+                ['label' => 'Quoted', 'value' => $quotations->where('status', 'quoted')->count(), 'icon' => 'fi fi-rr-file-invoice', 'iconColor' => '#3b82f6'],
+                ['label' => 'Accepted', 'value' => $quotations->where('status', 'accepted')->count(), 'icon' => 'fi fi-rr-check-circle', 'iconColor' => '#22c55e'],
+                ['label' => 'Total', 'value' => $quotations->total(), 'icon' => 'fi fi-rr-document', 'iconColor' => '#6b7280'],
+            ]" />
         </div>
 
         <!-- Quotations Table -->
@@ -153,11 +143,7 @@
             </table>
 
             <!-- Pagination -->
-            @if($quotations->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                {{ $quotations->links() }}
-            </div>
-            @endif
+            <x-pagination :paginator="$quotations" />
         </div>
         @else
         <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
@@ -191,7 +177,7 @@
                      x-transition:leave-start="translate-x-0"
                      x-transition:leave-end="translate-x-full"
                      @click.stop
-                     class="relative w-screen max-w-xl">
+                     class="relative w-screen max-w-sm">
 
                     <!-- Drawer Content -->
                     <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">

@@ -161,6 +161,35 @@
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
 
+        /* Gradual Blur Component */
+        .gradual-blur-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .gradual-blur-inner > div {
+            -webkit-backdrop-filter: inherit;
+            backdrop-filter: inherit;
+        }
+        .gradual-blur {
+            isolation: isolate;
+        }
+        @supports not (backdrop-filter: blur(1px)) {
+            .gradual-blur-inner > div {
+                background: rgba(0, 0, 0, 0.3);
+                opacity: 0.5;
+            }
+        }
+        .gradual-blur-fixed {
+            position: fixed !important;
+            left: 0;
+            right: 0;
+            pointer-events: none;
+            z-index: 60;
+        }
+        .gradual-blur-fixed.top-0 { top: 0; bottom: auto; }
+        .gradual-blur-fixed.bottom-0 { bottom: 0; top: auto; }
+
         @yield('additional-styles')
     </style>
 
@@ -380,6 +409,8 @@
     @include('components.footer')
 
     <!-- Common Scripts -->
+    <x-global-dialogs />
+
     @stack('scripts')
 
     <script>
@@ -496,7 +527,7 @@
             }
         });
     </script>
-    <x-global-dialogs />
+    <x-click-spark />
 </body>
 
 </html>

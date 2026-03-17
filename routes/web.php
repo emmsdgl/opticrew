@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\EmployeeTasksController;
 use App\Http\Controllers\Auth\ClientRegistrationController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentList;
@@ -52,6 +53,8 @@ Route::get('/', function () {
             return redirect()->route('client.dashboard');
         } elseif ($role === 'company') {
             return redirect()->route('manager.dashboard');
+        } elseif ($role === 'applicant') {
+            return redirect()->route('applicant.dashboard');
         }
     }
 
@@ -123,6 +126,11 @@ Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
 
+// Google OAuth Routes
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+Route::post('/auth/google/recruitment-apply', [GoogleAuthController::class, 'recruitmentApply'])->name('recruitment.google.apply');
+
 /*
 |-------------------------------------------------------------------------
 | Web Routes
@@ -154,6 +162,29 @@ Route::middleware(['auth', 'terms.accepted'])->group(function () {
 
     // TEST ROUTE - Create sample notifications (REMOVE THIS IN PRODUCTION)
     Route::get('/notifications/test/create', [NotificationController::class, 'createTestNotifications'])->name('notifications.test');
+
+    // --- GUIDED TOUR ROUTES ---
+    Route::post('/tour/complete', function (\Illuminate\Http\Request $request) {
+        $request->validate(['tour' => 'required|string|max:50']);
+        $user = auth()->user();
+        $completed = $user->tours_completed ?? [];
+        if (!in_array($request->tour, $completed)) {
+            $completed[] = $request->tour;
+            $user->tours_completed = $completed;
+            $user->save();
+        }
+        return response()->json(['success' => true]);
+    })->name('tour.complete');
+
+    Route::post('/tour/reset', function (\Illuminate\Http\Request $request) {
+        $request->validate(['tour' => 'required|string|max:50']);
+        $user = auth()->user();
+        $completed = $user->tours_completed ?? [];
+        $completed = array_values(array_filter($completed, fn($t) => $t !== $request->tour));
+        $user->tours_completed = $completed;
+        $user->save();
+        return response()->json(['success' => true]);
+    })->name('tour.reset');
 });
 
 // --- ADMIN ROUTES ---
@@ -208,6 +239,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::post('/{id}/approve', [\App\Http\Controllers\Admin\AppointmentController::class, 'approve'])->name('approve');
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\AppointmentController::class, 'reject'])->name('reject');
         Route::post('/{id}/assign-team', [\App\Http\Controllers\Admin\AppointmentController::class, 'assignTeam'])->name('assign-team');
+        Route::post('/{id}/manual-assign', [\App\Http\Controllers\Admin\AppointmentController::class, 'manualAssign'])->name('manual-assign');
     });
 
     // --- ADMIN QUOTATION ROUTES ---
@@ -219,18 +251,33 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     // --- ADMIN RECRUITMENT ROUTES ---
     Route::prefix('admin/recruitment')->name('admin.recruitment.')->group(function () {
         Route::get('/', [JobApplicationController::class, 'index'])->name('index');
+        Route::get('/interviews', [JobApplicationController::class, 'interviews'])->name('interviews');
         Route::get('/{id}', [JobApplicationController::class, 'show'])->name('show');
         Route::patch('/{id}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{id}/view', [JobApplicationController::class, 'viewResume'])->name('view');
+        Route::get('/{id}/preview', [JobApplicationController::class, 'previewResume'])->name('preview');
         Route::get('/{id}/download', [JobApplicationController::class, 'downloadResume'])->name('download');
         Route::delete('/{id}', [JobApplicationController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-delete', [JobApplicationController::class, 'bulkDestroy'])->name('bulk-destroy');
+        Route::post('/{id}/restore', [JobApplicationController::class, 'restore'])->name('restore');
+        Route::post('/duplicate/merge', [JobApplicationController::class, 'mergeDuplicate'])->name('merge-duplicate');
+        Route::post('/duplicate/ignore', [JobApplicationController::class, 'ignoreDuplicate'])->name('ignore-duplicate');
+        Route::patch('/applicant/{id}/role', [JobApplicationController::class, 'changeApplicantRole'])->name('change-role');
+        Route::patch('/applicant/{id}/ban', [JobApplicationController::class, 'toggleBanApplicant'])->name('toggle-ban');
+        Route::get('/{id}/setup-employee', [JobApplicationController::class, 'setupEmployee'])->name('setup-employee');
+        Route::post('/{id}/setup-employee', [JobApplicationController::class, 'storeEmployee'])->name('store-employee');
     });
 
     // --- ADMIN JOB POSTINGS ROUTES ---
     Route::prefix('admin/job-postings')->name('admin.job-postings.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\JobPostingController::class, 'index'])->name('index');
+        Route::get('/archived', [\App\Http\Controllers\Admin\JobPostingController::class, 'archived'])->name('archived');
         Route::post('/', [\App\Http\Controllers\Admin\JobPostingController::class, 'store'])->name('store');
         Route::put('/{id}', [\App\Http\Controllers\Admin\JobPostingController::class, 'update'])->name('update');
+        Route::post('/{id}/archive', [\App\Http\Controllers\Admin\JobPostingController::class, 'archive'])->name('archive');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\JobPostingController::class, 'restore'])->name('restore');
         Route::delete('/{id}', [\App\Http\Controllers\Admin\JobPostingController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-delete', [\App\Http\Controllers\Admin\JobPostingController::class, 'bulkDestroy'])->name('bulk-destroy');
     });
 
     // --- ADMIN TRAINING VIDEO ROUTES ---
@@ -332,6 +379,10 @@ Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
         ->name('employee.dashboard');
 
+    // Gmail account linking for employees
+    Route::get('/employee/link-google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'linkGoogle'])
+        ->name('employee.link-google');
+
     Route::get('/employee/requests/create', [EmployeeRequestsController::class, 'create'])->name('employee.requests.create');
     Route::post('/employee/requests/store', [EmployeeRequestsController::class, 'store'])->name('employee.requests.store');
     Route::post('/employee/requests/{id}/cancel', [EmployeeRequestsController::class, 'cancel'])->name('employee.requests.cancel');
@@ -402,6 +453,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
     Route::get('/client/appointments', [ClientAppointmentController::class, 'index'])->name('client.appointments');
     Route::post('/client/appointments/{id}/cancel', [ClientAppointmentController::class, 'cancel'])->name('client.appointment.cancel');
+    Route::get('/client/appointments/{id}/cancellation-policy', [ClientAppointmentController::class, 'getCancellationPolicy'])->name('client.appointment.cancellation-policy');
     Route::post('/client/appointments/{id}/feedback', [ClientAppointmentController::class, 'storeFeedback'])->name('client.appointment.feedback');
 
     Route::get('/client/pricing', function () {
@@ -426,6 +478,19 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     Route::post('/client/settings/update-password', [ProfileController::class, 'updatePassword'])->name('client.settings.update-password');
 });
 
+// --- APPLICANT ROUTES ---
+Route::middleware(['auth', 'terms.accepted', 'applicant'])->prefix('applicant')->name('applicant.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/saved', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'saved'])->name('saved');
+    Route::get('/interviews', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'interviews'])->name('interviews');
+    Route::get('/withdrawn', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'withdrawn'])->name('withdrawn');
+    Route::post('/jobs/{id}/toggle-save', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'toggleSaveJob'])->name('jobs.toggle-save');
+    Route::post('/apply/extract', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'extractResume'])->name('apply.extract');
+    Route::post('/apply/submit', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'submitApplication'])->name('apply.submit');
+    Route::post('/profile/update', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/applications/{id}/withdraw', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'withdrawApplication'])->name('applications.withdraw');
+});
+
 // --- MANAGER (CONTRACTED CLIENT) ROUTES ---
 Route::middleware(['auth', 'terms.accepted', 'manager'])->prefix('manager')->name('manager.')->group(function () {
     // Dashboard
@@ -440,14 +505,34 @@ Route::middleware(['auth', 'terms.accepted', 'manager'])->prefix('manager')->nam
     // Employees
     Route::get('/employees', [ManagerEmployeesController::class, 'index'])->name('employees');
 
+    // Checklist
+    Route::get('/checklist', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'index'])->name('checklist');
+    Route::post('/checklist', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'store'])->name('checklist.store');
+    Route::put('/checklist/{checklistId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'update'])->name('checklist.update');
+    Route::post('/checklist/{checklistId}/categories', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'addCategory'])->name('checklist.categories.add');
+    Route::put('/checklist/categories/{categoryId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'updateCategory'])->name('checklist.categories.update');
+    Route::delete('/checklist/categories/{categoryId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'deleteCategory'])->name('checklist.categories.delete');
+    Route::post('/checklist/categories/{categoryId}/items', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'addItem'])->name('checklist.items.add');
+    Route::put('/checklist/items/{itemId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'updateItem'])->name('checklist.items.update');
+    Route::delete('/checklist/items/{itemId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'deleteItem'])->name('checklist.items.delete');
+
     // Reports
     Route::get('/reports', [ManagerReportsController::class, 'index'])->name('reports');
+    Route::get('/reports/billing', [ManagerReportsController::class, 'billingReport'])->name('reports.billing');
+    Route::get('/reports/billing/pdf', [ManagerReportsController::class, 'billingPdf'])->name('reports.billing.pdf');
 
     // Activity
     Route::get('/activity', [ManagerActivityController::class, 'index'])->name('activity');
 
     // History
     Route::get('/history', [ManagerHistoryController::class, 'index'])->name('history');
+    Route::post('/history/{taskId}/review', [ManagerHistoryController::class, 'submitReview'])->name('history.review');
+
+    // Schedule optimization & helpers
+    Route::post('/schedule/optimize', [ManagerScheduleController::class, 'optimize'])->name('schedule.optimize');
+    Route::get('/schedule/employees', [ManagerScheduleController::class, 'getAvailableEmployees'])->name('schedule.employees');
+    Route::get('/schedule/check-holiday', [ManagerScheduleController::class, 'checkHoliday'])->name('schedule.check-holiday');
+    Route::post('/schedule/tasks/{taskId}/cancel', [ManagerScheduleController::class, 'cancelTask'])->name('schedule.tasks.cancel');
 
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');

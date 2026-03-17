@@ -5,6 +5,7 @@
         $navOptions = [
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('manager.dashboard')],
             ['label' => 'Schedule', 'icon' => 'fa-calendar-days', 'href' => route('manager.schedule')],
+            ['label' => 'Checklist', 'icon' => 'fa-clipboard-list', 'href' => route('manager.checklist')],
             ['label' => 'Employees', 'icon' => 'fa-users', 'href' => route('manager.employees')],
             ['label' => 'Reports', 'icon' => 'fa-chart-line', 'href' => route('manager.reports')],
             ['label' => 'Activity', 'icon' => 'fa-bell', 'href' => route('manager.activity')],

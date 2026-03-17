@@ -34,7 +34,7 @@ class QuotationController extends Controller
             });
         }
 
-        $quotations = $query->paginate(15);
+        $quotations = $query->paginate(5);
 
         return view('admin.quotations.index', compact('quotations'));
     }

@@ -6,12 +6,12 @@
 <div id="sidebar-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden transition-opacity duration-300"></div>
 
 <!-- Desktop Toggle Button (beside sidebar) -->
-<button id="sidebar-toggle" class="hidden lg:block fixed top-6 z-50 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md p-2 shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700" style="left: 272px;">
+<button id="sidebar-toggle" class="hidden lg:block fixed top-6 z-50 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md p-2 shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700" style="left: 296px;">
     <i class="fa-solid fa-bars text-lg"></i>
 </button>
 
 <!-- SIDEBAR -->
-<aside id="sidebar" class="fixed left-0 top-0 h-screen w-64 bg-[#FFFFFF] border-r border-[#D1D1D1] dark:bg-[#1E293B] dark:border-[#334155]
+<aside id="sidebar" class="fixed left-0 top-0 h-screen w-72 bg-[#FFFFFF] border-r border-[#D1D1D1] dark:bg-[#1E293B] dark:border-[#334155]
               flex flex-col justify-between transition-all duration-300 overflow-y-auto z-40
               -translate-x-full lg:translate-x-0">
 
@@ -24,12 +24,12 @@
                     <!-- Light Mode Logo (visible by default, hidden in dark mode) -->
                     <img src="{{ asset('images/finnoys-text-logo-light.svg') }}"
                         class="block dark:hidden h-24 w-auto sidebar-logo"
-                        alt="Finnoys Light Logo">
+                        alt="Fin-noys Light Logo">
 
                     <!-- Dark Mode Logo (hidden by default, visible in dark mode) -->
                     <img src="{{ asset('images/finnoys-text-logo.svg') }}"
                         class="hidden dark:block h-24 w-auto sidebar-logo"
-                        alt="Finnoys Dark Logo">
+                        alt="Fin-noys Dark Logo">
                 </a>
             </div>
 
@@ -49,14 +49,15 @@
                         @php
                             $hasActiveChild = false;
                             foreach ($nav['children'] as $child) {
-                                $childPath = isset($child['href']) ? trim(parse_url($child['href'], PHP_URL_PATH), '/') : '';
-                                if (isset($child['href']) && (
-                                    request()->url() === $child['href'] ||
-                                    request()->is($childPath) ||
-                                    request()->is($childPath.'/*')
-                                )) {
+                                if (isset($child['route']) && request()->routeIs($child['route'])) {
                                     $hasActiveChild = true;
                                     break;
+                                } elseif (!isset($child['route']) && isset($child['href'])) {
+                                    $childPath = trim(parse_url($child['href'], PHP_URL_PATH), '/');
+                                    if (request()->url() === $child['href'] || request()->is($childPath) || request()->is($childPath.'/*')) {
+                                        $hasActiveChild = true;
+                                        break;
+                                    }
                                 }
                             }
                         @endphp
@@ -81,12 +82,16 @@
                                  class="mt-1 ml-5 space-y-1">
                                 @foreach($nav['children'] as $child)
                                     @php
-                                        $childPath = isset($child['href']) ? trim(parse_url($child['href'], PHP_URL_PATH), '/') : '';
-                                        $isChildActive = isset($child['href']) && (
-                                            request()->url() === $child['href'] ||
-                                            request()->is($childPath) ||
-                                            request()->is($childPath.'/*')
-                                        );
+                                        if (isset($child['route'])) {
+                                            $isChildActive = request()->routeIs($child['route']);
+                                        } else {
+                                            $childPath = isset($child['href']) ? trim(parse_url($child['href'], PHP_URL_PATH), '/') : '';
+                                            $isChildActive = isset($child['href']) && (
+                                                request()->url() === $child['href'] ||
+                                                request()->is($childPath) ||
+                                                request()->is($childPath.'/*')
+                                            );
+                                        }
                                     @endphp
                                     <a href="{{ $child['href'] ?? '#' }}"
                                        class="flex items-center px-3 py-2.5 text-sm rounded-lg transition-colors duration-200

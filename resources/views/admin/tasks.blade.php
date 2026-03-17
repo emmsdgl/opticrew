@@ -26,10 +26,42 @@
             <!-- Templates Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <template x-for="template in templates" :key="template.id">
-                    <div class="bg-gray-800 dark:bg-gray-800 rounded-lg flex border-l-4 hover:bg-gray-750 dark:hover:bg-gray-750 transition-colors cursor-pointer"
-                         :style="'border-left-color: ' + template.color">
+                    <div class="relative bg-gray-800 dark:bg-gray-800 rounded-lg flex border-l-4 hover:bg-gray-750 dark:hover:bg-gray-750 transition-colors cursor-pointer h-16 group"
+                         :style="'border-left-color: ' + template.color"
+                         x-data="{ showTip: false }"
+                         @mouseenter="showTip = true" @mouseleave="showTip = false">
+
+                        <!-- Tooltip -->
+                        <div x-show="showTip" x-cloak
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 translate-y-1"
+                             class="absolute bottom-full left-0 mb-2 w-56 bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-3 z-50 pointer-events-none">
+                            <p class="text-xs font-semibold text-white mb-1.5" x-text="template.name"></p>
+                            <template x-if="template.enabledItems && template.enabledItems.length > 0">
+                                <ul class="space-y-1">
+                                    <template x-for="(itemId, i) in template.enabledItems.slice(0, 6)" :key="i">
+                                        <li class="flex items-start gap-1.5 text-[11px] text-gray-400">
+                                            <i class="fa-regular fa-circle-check text-[9px] mt-0.5 text-gray-500 flex-shrink-0"></i>
+                                            <span x-text="availableChecklistItems.find(c => c.id === itemId)?.name || 'Item #' + itemId" class="line-clamp-1"></span>
+                                        </li>
+                                    </template>
+                                    <template x-if="template.enabledItems.length > 6">
+                                        <li class="text-[11px] text-gray-500 italic" x-text="'+ ' + (template.enabledItems.length - 6) + ' more...'"></li>
+                                    </template>
+                                </ul>
+                            </template>
+                            <template x-if="!template.enabledItems || template.enabledItems.length === 0">
+                                <p class="text-[11px] text-gray-500 italic">No checklist items</p>
+                            </template>
+                            <div class="absolute -bottom-1 left-6 w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
+                        </div>
+
                         <!-- Color Badge with Initials -->
-                        <div class="flex items-center justify-center w-14 h-full min-h-[4rem]"
+                        <div class="flex items-center justify-center w-14 h-full"
                              :style="'background-color: ' + template.color">
                             <span class="text-white font-bold text-sm" x-text="template.initials"></span>
                         </div>
@@ -37,7 +69,7 @@
                         <!-- Content -->
                         <div class="flex-1 flex items-center justify-between px-4 py-3">
                             <div>
-                                <h3 class="text-sm font-semibold text-white" x-text="template.name"></h3>
+                                <h3 class="text-sm font-semibold text-white line-clamp-1" x-text="template.name"></h3>
                                 <p class="text-xs text-gray-400" x-text="template.itemCount + ' Items'"></p>
                             </div>
 

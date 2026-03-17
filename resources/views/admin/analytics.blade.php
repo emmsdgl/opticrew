@@ -9,7 +9,7 @@
                 <!-- Export Report Dropdown -->
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" type="button"
-                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                            class="inline-flex items-center gap-2 px-4 py-3 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
                         <i class="fa-solid fa-download"></i>
                         Export Report
                         <i class="fa-solid fa-chevron-down text-xs" :class="{ 'rotate-180': open }"></i>
@@ -200,11 +200,33 @@
             <!-- Customer Transactions - Scrollable -->
             <x-labelwithvalue label="Client Transactions" count="({{ count($tableData) }})" />
 
-            <div class="rounded-lg h-52 overflow-y-auto">
-                {{-- Customer Transactions Table from Database --}}
-                <x-datatable :columns="$columns" :data="$tableData" :striped="true" :hoverable="true"
-                    :responsive="true" />
-            </div>
+            @if(empty($tableData) || (count($tableData) === 1 && ($tableData[0]['name'] ?? '') === 'No customers yet'))
+                <div class="flex flex-col items-center justify-center py-12 text-center">
+                    <i class="fa-regular fa-handshake text-3xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                    <p class="text-xs font-medium text-gray-400 dark:text-gray-500">No client transactions yet</p>
+                    <p class="text-[10px] text-gray-300 dark:text-gray-600 mt-1">Client orders will appear here</p>
+                </div>
+            @else
+                <x-applicant-components.stack-list maxHeight="max-h-64">
+                    @foreach($tableData as $index => $row)
+                        @php
+                            $statusLabel = ($row['status'] ?? '') === 'contracted' ? 'Contracted' : 'External';
+                            $statusClass = ($row['status'] ?? '') === 'contracted'
+                                ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300'
+                                : 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300';
+                        @endphp
+                        <x-applicant-components.stack-item
+                            :colorIndex="$index"
+                            :initials="strtoupper(substr($row['name'] ?? '?', 0, 1))"
+                            :subtitle="($row['orders'] ?? 0) . ' ' . Str::plural('order', $row['orders'] ?? 0)"
+                            :title="$row['name'] ?? 'Unknown'"
+                            :detail="($row['orders'] ?? 0) . ' total ' . Str::plural('appointment', $row['orders'] ?? 0)"
+                            :badge="$statusLabel"
+                            :badgeClass="$statusClass"
+                        />
+                    @endforeach
+                </x-applicant-components.stack-list>
+            @endif
         </div>
     </div>
 </x-layouts.general-employer>

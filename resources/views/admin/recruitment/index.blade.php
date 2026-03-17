@@ -1,5 +1,5 @@
 <x-layouts.general-employer :title="'Job Applications'">
-    <section role="status" class="w-full flex flex-col lg:flex-col gap-4 p-4 md:p-6">
+    <section role="status" class="w-full flex flex-col lg:flex-col gap-4 py-6">
         <!-- Header -->
         <div class="flex flex-col gap-2 mb-2">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Job Applications</h1>
@@ -7,197 +7,13 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-px bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Pending</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->where('status', 'pending')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Reviewed</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->where('status', 'reviewed')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Interview</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->where('status', 'interview_scheduled')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Hired</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->where('status', 'hired')->count() }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Total applications</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $applications->total() }}</p>
-            </div>
-        </div>
-
-        <!-- Skills Templates Section -->
-        <div class="flex flex-col gap-4 w-full px-4 py-12" x-data="skillsTemplatesData()" id="skills-templates-section">
-            <div class="flex items-center justify-between">
-                <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Skills Templates</h2>
-                <button @click="showAddModal = true"
-                        class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                    Add Template
-                </button>
-            </div>
-
-            <!-- Templates Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <template x-for="template in templates" :key="template.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg flex border-l-4 hover:shadow-md transition-shadow cursor-pointer"
-                         :style="'border-left-color: ' + getCategoryColor(template.category)"
-                         style="border: 1px solid; border-left-width: 4px;"
-                         :class="'border-gray-200 dark:border-gray-700'">
-                        <!-- Color Badge with Initials -->
-                        <div class="flex items-center justify-center w-14 min-h-[4rem] rounded-l-md"
-                             :style="'background-color: ' + getCategoryColor(template.category)">
-                            <span class="text-white font-bold text-sm" x-text="getInitials(template.name)"></span>
-                        </div>
-
-                        <!-- Content -->
-                        <div class="flex-1 flex items-center justify-between px-4 py-3">
-                            <div>
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white" x-text="template.name"></h3>
-                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="template.skills.length + ' Skills'"></p>
-                            </div>
-
-                            <!-- 3-dot Menu -->
-                            <div class="relative" x-data="{ menuOpen: false }">
-                                <button @click.stop="menuOpen = !menuOpen"
-                                        class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                </button>
-
-                                <div x-show="menuOpen"
-                                     @click.away="menuOpen = false"
-                                     x-transition:enter="transition ease-out duration-100"
-                                     x-transition:enter-start="opacity-0 scale-95"
-                                     x-transition:enter-end="opacity-100 scale-100"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="opacity-100 scale-100"
-                                     x-transition:leave-end="opacity-0 scale-95"
-                                     class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50">
-                                    <button @click="editTemplate(template); menuOpen = false"
-                                            class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 rounded-t-lg">
-                                        <i class="fa-solid fa-pen text-xs"></i> Edit
-                                    </button>
-                                    <button @click="deleteTemplate(template.id); menuOpen = false"
-                                            class="w-full px-4 py-2 text-left text-sm text-red-500 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 rounded-b-lg">
-                                        <i class="fa-solid fa-trash text-xs"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- Empty State -->
-                <div x-show="templates.length === 0"
-                     class="col-span-full p-8 text-center border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                    <i class="fa-solid fa-tags text-3xl mb-3 block text-gray-300 dark:text-gray-600"></i>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No skills templates yet</p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Create templates to auto-populate skills when adding job postings</p>
-                </div>
-            </div>
-
-            <!-- Add/Edit Template Modal -->
-            <div x-show="showAddModal || showEditModal"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 p-4"
-                 @click.self="closeTemplateModal()">
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 border border-gray-200 dark:border-gray-700"
-                     x-transition>
-
-                    <!-- Modal Header -->
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white"
-                            x-text="showEditModal ? 'Edit Skills Template' : 'Add Skills Template'"></h3>
-                        <button @click="closeTemplateModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <i class="fa-solid fa-times"></i>
-                        </button>
-                    </div>
-
-                    <!-- Modal Body -->
-                    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                        <!-- Template Name -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Template Name *</label>
-                            <input type="text" x-model="templateForm.name"
-                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                placeholder="e.g., Cleaning Skills">
-                        </div>
-
-                        <!-- Category -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category *</label>
-                            <select x-model="templateForm.category"
-                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
-                                <option value="">Select a category</option>
-                                <option value="cleaning">Cleaning</option>
-                                <option value="logistics">Logistics</option>
-                                <option value="management">Management</option>
-                                <option value="customer-service">Customer Service</option>
-                                <option value="maintenance">Maintenance</option>
-                                <option value="administration">Administration</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-
-                        <!-- Skills -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Skills</label>
-
-                            <!-- Skills Pills -->
-                            <div class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-3 rounded-lg">
-                                <template x-for="(skill, idx) in templateForm.skills" :key="idx">
-                                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
-                                        <span x-text="skill"></span>
-                                        <button type="button" @click="templateForm.skills.splice(idx, 1)"
-                                                class="ml-0.5 text-blue-400 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-200">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </span>
-                                </template>
-                                <span x-show="templateForm.skills.length === 0" class="text-xs text-gray-400 dark:text-gray-500 py-1">No skills added yet</span>
-                            </div>
-
-                            <!-- Add Skill Input -->
-                            <div class="flex gap-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700">
-                                <input type="text" x-model="newSkillInput"
-                                    @keydown.enter.prevent="addSkillToTemplate()"
-                                    class="flex-1 px-4 py-2 rounded-lg focus:outline-none bg-white dark:bg-gray-700 dark:text-white text-sm"
-                                    placeholder="Type a skill and add...">
-                                <button type="button" @click="addSkillToTemplate()"
-                                    class="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-                        <button @click="closeTemplateModal()"
-                            class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
-                            Cancel
-                        </button>
-                        <button @click="saveTemplate()"
-                            :disabled="!templateForm.name.trim() || !templateForm.category"
-                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="fa-solid fa-save mr-2"></i>
-                            <span x-text="showEditModal ? 'Update' : 'Create'"></span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-employer-components.stats-cards :stats="[
+            ['label' => 'Pending', 'value' => $applications->where('status', 'pending')->count(), 'icon' => 'fi fi-rr-clock', 'iconColor' => '#eab308'],
+            ['label' => 'Reviewed', 'value' => $applications->where('status', 'reviewed')->count(), 'icon' => 'fi fi-rr-eye', 'iconColor' => '#3b82f6'],
+            ['label' => 'Interview', 'value' => $applications->where('status', 'interview_scheduled')->count(), 'icon' => 'fi fi-rr-calendar', 'iconColor' => '#8b5cf6'],
+            ['label' => 'Hired', 'value' => $applications->where('status', 'hired')->count(), 'icon' => 'fi fi-rr-check-circle', 'iconColor' => '#22c55e'],
+            ['label' => 'Total Applications', 'value' => $applications->total(), 'icon' => 'fi fi-rr-document', 'iconColor' => '#6b7280'],
+        ]" />
 
         <!-- Applications Section Header with Filters -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 my-4 mx-4">
@@ -223,7 +39,8 @@
                             'all' => 'All Status (' . $applications->total() . ')',
                             'pending' => 'Pending (' . $applications->where('status', 'pending')->count() . ')',
                             'reviewed' => 'Reviewed (' . $applications->where('status', 'reviewed')->count() . ')',
-                            'interview_scheduled' => 'Interview (' . $applications->where('status', 'interview_scheduled')->count() . ')',
+                            'interview_scheduled' =>
+                                'Interview (' . $applications->where('status', 'interview_scheduled')->count() . ')',
                             'hired' => 'Hired (' . $applications->where('status', 'hired')->count() . ')',
                             'rejected' => 'Rejected (' . $applications->where('status', 'rejected')->count() . ')',
                         ]"
@@ -237,165 +54,274 @@
                             'oldest' => 'Oldest',
                             'email_asc' => 'Email (A-Z)',
                             'email_desc' => 'Email (Z-A)',
-                        ]" id="recruitment-sort-dropdown" />
+                        ]"
+                            id="recruitment-sort-dropdown" />
+                    </div>
+
+                    <!-- View Archived Button -->
+                    <div class="w-full md:w-auto">
+                        <a href="{{ route('admin.job-postings.archived') }}"
+                            class="inline-flex items-center justify-center px-4 py-2 bg-gray-200 text-blue-950 hover:bg-gray-200 hover:text-blue-600 dark:text-white dark:bg-gray-800 text-xs font-medium rounded-lg transition duration-150 ease-in-out whitespace-nowrap h-full">
+                            <i class="fas fa-archive mr-2"></i>
+                            View Archived
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Success/Error Messages -->
-        @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
+        @if (session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative"
+                role="alert">
+                <span class="block sm:inline">{{ session('success') }}</span>
+            </div>
         @endif
 
-        @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
-        </div>
+        @if (session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
         @endif
 
         <!-- Applications List -->
         <div class="flex flex-col gap-6 w-full rounded-lg p-4" x-data="applicationDrawerData()">
 
-            @if($applications->count() > 0)
-            <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b border-gray-200 dark:border-gray-700">
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applicant</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Position</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Resume</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applied</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($applications as $application)
-                        <tr class="even:bg-gray-50 dark:even:bg-gray-800/50"
-                            data-email="{{ strtolower($application->email) }}"
-                            data-job="{{ strtolower($application->job_title) }}"
-                            data-status="{{ $application->status }}"
-                            data-date="{{ $application->created_at->timestamp }}">
-                            <!-- Applicant -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ $application->email }}</div>
-                                @if($application->alternative_email)
-                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Alt: {{ $application->alternative_email }}</div>
-                                @endif
-                            </td>
-
-                            <!-- Position -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900 dark:text-gray-200">{{ $application->job_title }}</div>
-                                @if($application->job_type)
-                                <div class="text-xs text-blue-600 dark:text-blue-400">{{ ucfirst(str_replace('-', ' ', $application->job_type)) }}</div>
-                                @endif
-                            </td>
-
-                            <!-- Resume -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <a href="{{ route('admin.recruitment.download', $application->id) }}"
-                                   class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs">
-                                    <i class="fa-solid fa-download mr-2"></i>
-                                    {{ Str::limit($application->resume_original_name, 15) }}
-                                </a>
-                            </td>
-
-                            <!-- Applied Date -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900 dark:text-gray-200">{{ $application->created_at->format('M d, Y') }}</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $application->created_at->format('h:i A') }}</div>
-                            </td>
-
-                            <!-- Status -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @switch($application->status)
-                                    @case('pending')
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">Pending</span>
-                                        @break
-                                    @case('reviewed')
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">Reviewed</span>
-                                        @break
-                                    @case('interview_scheduled')
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">Interview</span>
-                                        @break
-                                    @case('hired')
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Hired</span>
-                                        @break
-                                    @case('rejected')
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">Rejected</span>
-                                        @break
-                                    @default
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400">{{ ucfirst($application->status) }}</span>
-                                @endswitch
-                            </td>
-
-                            <!-- Action -->
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <button @click="openDrawer({{ $application->id }})"
-                                   class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                                    <i class="fa-regular fa-eye mr-1 text-xs"></i> View
-                                </button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-
-                <!-- Pagination -->
-                @if($applications->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                    {{ $applications->links() }}
+            <!-- Confirm Dialog for Applications -->
+            <template x-teleport="body">
+                <div x-show="showConfirm"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+                     style="display: none;">
+                    <div class="absolute inset-0 bg-black/30 dark:bg-black/50" @click="cancelConfirm()"></div>
+                    <div x-show="showConfirm"
+                         x-transition:enter="transition ease-out duration-300 delay-100"
+                         x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-90"
+                         class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-600 shadow-2xl overflow-hidden p-3">
+                        <div class="px-8 pt-10 pb-8 flex flex-col items-center text-center">
+                            <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-400 dark:border-amber-500 flex items-center justify-center mb-6">
+                                <svg class="w-7 h-7 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2" x-text="confirmTitle"></h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" x-text="confirmMessage"></p>
+                        </div>
+                        <div class="px-8 pb-8 flex gap-3">
+                            <button @click="cancelConfirm()" type="button"
+                                class="w-full px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 font-semibold text-sm rounded-xl transition-all duration-200">
+                                Cancel
+                            </button>
+                            <button @click="confirmAction()" type="button"
+                                class="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold text-sm rounded-xl transition-all duration-200">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                @endif
+            </template>
+
+            <!-- Bulk Actions Bar for Applications -->
+            <div x-show="selectedAppIds.length > 0" x-transition
+                class="flex flex-row justify-between items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <span class="text-sm font-medium text-blue-700 dark:text-blue-300"
+                    x-text="selectedAppIds.length + ' selected'"></span>
+                <div class = "flex flex-row gap-3">
+                    <button @click="bulkDeleteApps()"
+                        class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+                        <i class="fa-solid fa-trash mr-1"></i>Delete Selected
+                    </button>
+                    <button @click="deselectAllApps()"
+                        class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        Deselect All
+                    </button>
+                </div>
+
+
+
             </div>
+
+            @if ($applications->count() > 0)
+                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full min-w-[1000px]">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="px-4 py-4 w-10">
+                                    <input type="checkbox" @change="toggleAllApps($event)" :checked="allAppsSelected"
+                                        class="appearance-none w-4 h-4 rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 checked:bg-blue-600 checked:border-blue-600 checked:bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-colors">
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    Applicant</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    Position</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    Resume</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    Applied</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    Status</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($applications as $application)
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50"
+                                    data-email="{{ strtolower($application->email) }}"
+                                    data-job="{{ strtolower($application->job_title) }}"
+                                    data-status="{{ $application->status }}"
+                                    data-date="{{ $application->created_at->timestamp }}">
+                                    <!-- Checkbox -->
+                                    <td class="px-4 py-4 w-10">
+                                        <input type="checkbox" value="{{ $application->id }}"
+                                            @change="toggleApp({{ $application->id }})"
+                                            :checked="selectedAppIds.includes({{ $application->id }})"
+                                            class="appearance-none w-4 h-4 rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 checked:bg-blue-600 checked:border-blue-600 checked:bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-colors">
+                                    </td>
+
+                                    <!-- Applicant -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                            {{ $application->email }}</div>
+                                        @if ($application->alternative_email)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">Alt:
+                                                {{ $application->alternative_email }}</div>
+                                        @endif
+                                    </td>
+
+                                    <!-- Position -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-200">
+                                            {{ $application->job_title }}</div>
+                                        @if ($application->job_type)
+                                            <div class="text-xs text-blue-600 dark:text-blue-400">
+                                                {{ ucfirst(str_replace('-', ' ', $application->job_type)) }}</div>
+                                        @endif
+                                    </td>
+
+                                    <!-- Resume -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <a href="{{ route('admin.recruitment.download', $application->id) }}"
+                                            class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs">
+                                            <i class="fa-solid fa-download mr-2"></i>
+                                            {{ Str::limit($application->resume_original_name, 15) }}
+                                        </a>
+                                    </td>
+
+                                    <!-- Applied Date -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-200">
+                                            {{ $application->created_at->format('M d, Y') }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                            {{ $application->created_at->format('h:i A') }}</div>
+                                    </td>
+
+                                    <!-- Status -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @switch($application->status)
+                                            @case('pending')
+                                                <span
+                                                    class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">Pending</span>
+                                            @break
+
+                                            @case('reviewed')
+                                                <span
+                                                    class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">Reviewed</span>
+                                            @break
+
+                                            @case('interview_scheduled')
+                                                <span
+                                                    class="px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">Interview</span>
+                                            @break
+
+                                            @case('hired')
+                                                <span
+                                                    class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Hired</span>
+                                            @break
+
+                                            @case('rejected')
+                                                <span
+                                                    class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">Rejected</span>
+                                            @break
+
+                                            @default
+                                                <span
+                                                    class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400">{{ ucfirst($application->status) }}</span>
+                                        @endswitch
+                                    </td>
+
+                                    <!-- Action -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <button @click="openDrawer({{ $application->id }})"
+                                            class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                                            <i class="fa-regular fa-eye mr-1 text-xs"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    @if ($applications->hasPages())
+                        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                            {{ $applications->links() }}
+                        </div>
+                    @endif
+                </div>
             @else
-            <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
-                <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
-                <p class="text-base font-medium text-gray-500 dark:text-gray-400">No job applications found</p>
-                <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Applications submitted from the recruitment page will appear here</p>
-            </div>
+                <div
+                    class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+                    <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                    <p class="text-base font-medium text-gray-500 dark:text-gray-400">No job applications found</p>
+                    <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Applications submitted from the
+                        recruitment page will appear here</p>
+                </div>
             @endif
 
             <!-- Application Details Slide-in Drawer -->
             <div x-show="showDrawer" x-cloak class="fixed inset-0 z-50 overflow-hidden">
                 <!-- Backdrop -->
-                <div x-show="showDrawer"
-                     x-transition:enter="transition-opacity ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition-opacity ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     @click="closeDrawer()"
-                     class="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
+                <div x-show="showDrawer" x-transition:enter="transition-opacity ease-out duration-300"
+                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity ease-in duration-200"
+                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="closeDrawer()"
+                    class="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
 
                 <!-- Drawer Panel -->
                 <div class="fixed inset-y-0 right-0 flex max-w-full">
-                    <div x-show="showDrawer"
-                         x-transition:enter="transform transition ease-in-out duration-300"
-                         x-transition:enter-start="translate-x-full"
-                         x-transition:enter-end="translate-x-0"
-                         x-transition:leave="transform transition ease-in-out duration-200"
-                         x-transition:leave-start="translate-x-0"
-                         x-transition:leave-end="translate-x-full"
-                         @click.stop
-                         class="relative w-screen max-w-md sm:max-w-lg">
+                    <div x-show="showDrawer" x-transition:enter="transform transition ease-in-out duration-300"
+                        x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+                        x-transition:leave="transform transition ease-in-out duration-200"
+                        x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" @click.stop
+                        class="relative w-screen max-w-sm">
 
-                        <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
+                        <div
+                            class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
                             <!-- Header -->
-                            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-slate-800/50">
+                            <div
+                                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-slate-800/50">
                                 <div>
-                                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Application Details</h2>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400" x-show="selectedApp" x-text="'#' + selectedApp?.id"></p>
+                                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Application Details
+                                    </h2>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400" x-show="selectedApp"
+                                        x-text="'#' + selectedApp?.id"></p>
                                 </div>
                                 <button type="button" @click="closeDrawer()"
                                     class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
@@ -406,7 +332,8 @@
 
                                     <!-- Status Badge -->
                                     <div class="flex items-center gap-2 mb-6">
-                                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Status:</span>
+                                        <span
+                                            class="text-xs font-medium text-gray-500 dark:text-gray-400">Status:</span>
                                         <span class="px-3 py-1 text-xs rounded-full font-semibold"
                                             :class="getStatusClass(selectedApp.status)"
                                             x-text="getStatusLabel(selectedApp.status)"></span>
@@ -414,40 +341,51 @@
 
                                     <!-- Applicant Information -->
                                     <div class="mb-5">
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                        <h4
+                                            class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                             <i class="fa-solid fa-user-circle text-gray-600 dark:text-gray-400"></i>
                                             Applicant Information
                                         </h4>
-                                        <div class="space-y-3 text-sm py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                        <div
+                                            class="space-y-3 text-sm py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-gray-500 dark:text-gray-400">Email</span>
-                                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedApp.email"></span>
+                                                <span class="font-medium text-gray-900 dark:text-white"
+                                                    x-text="selectedApp.email"></span>
                                             </div>
-                                            <div class="flex justify-between items-center" x-show="selectedApp.alternative_email">
+                                            <div class="flex justify-between items-center"
+                                                x-show="selectedApp.alternative_email">
                                                 <span class="text-gray-500 dark:text-gray-400">Alt. Email</span>
-                                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedApp.alternative_email"></span>
+                                                <span class="font-medium text-gray-900 dark:text-white"
+                                                    x-text="selectedApp.alternative_email"></span>
                                             </div>
                                             <div class="flex justify-between items-center">
                                                 <span class="text-gray-500 dark:text-gray-400">Applied On</span>
-                                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedApp.created_at"></span>
+                                                <span class="font-medium text-gray-900 dark:text-white"
+                                                    x-text="selectedApp.created_at"></span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Position Applied For -->
                                     <div class="mb-5">
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                        <h4
+                                            class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                             <i class="fa-solid fa-briefcase text-gray-600 dark:text-gray-400"></i>
                                             Position Applied For
                                         </h4>
-                                        <div class="space-y-3 text-sm py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                        <div
+                                            class="space-y-3 text-sm py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-gray-500 dark:text-gray-400">Job Title</span>
-                                                <span class="font-medium text-gray-900 dark:text-white" x-text="selectedApp.job_title"></span>
+                                                <span class="font-medium text-gray-900 dark:text-white"
+                                                    x-text="selectedApp.job_title"></span>
                                             </div>
-                                            <div class="flex justify-between items-center" x-show="selectedApp.job_type">
+                                            <div class="flex justify-between items-center"
+                                                x-show="selectedApp.job_type">
                                                 <span class="text-gray-500 dark:text-gray-400">Employment Type</span>
-                                                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+                                                <span
+                                                    class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
                                                     x-text="selectedApp.job_type_label"></span>
                                             </div>
                                         </div>
@@ -455,156 +393,657 @@
 
                                     <!-- Resume -->
                                     <div class="mb-5">
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                                            <i class="fa-solid fa-file-pdf text-gray-600 dark:text-gray-400"></i>
+                                        <h4
+                                            class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                            <i class="fa-solid fa-file-lines text-gray-600 dark:text-gray-400"></i>
                                             Resume / Documents
                                         </h4>
-                                        <div class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
+                                        {{-- Primary resume --}}
+                                        <div
+                                            class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
                                             <div class="flex items-center gap-3">
-                                                <i class="fa-solid fa-file-pdf text-gray-500 text-xl"></i>
+                                                <i :class="selectedApp.resume_ext === 'pdf' ? 'fa-solid fa-file-pdf text-red-500 text-xl' : 'fa-solid fa-file-word text-blue-500 text-xl'"></i>
                                                 <div>
-                                                    <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="selectedApp.resume_name"></p>
-                                                    <p class="text-xs text-gray-500 dark:text-gray-400">PDF Document</p>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white"
+                                                        x-text="selectedApp.resume_name"></p>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400" x-text="selectedApp.resume_ext === 'pdf' ? 'PDF Document' : 'DOCX Document'"></p>
                                                 </div>
                                             </div>
-                                            <a :href="selectedApp.download_url"
-                                               class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                                                <i class="fa-solid fa-download"></i>
-                                            </a>
+                                            <div class="flex items-center gap-1">
+                                                <button @click="openViewer()"
+                                                    class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                    title="View">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                </button>
+                                                <a :href="selectedApp.download_url"
+                                                    class="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                    title="Download">
+                                                    <i class="fa-solid fa-download"></i>
+                                                </a>
+                                            </div>
                                         </div>
+                                        {{-- Additional documents (Cover Letter, etc.) --}}
+                                        <template x-for="(doc, idx) in (selectedApp.documents || [])" :key="idx">
+                                            <div class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between mt-2">
+                                                <div class="flex items-center gap-3">
+                                                    <i :class="doc.original_name?.endsWith('.pdf') ? 'fa-solid fa-file-pdf text-red-500 text-xl' : 'fa-solid fa-file-word text-blue-500 text-xl'"></i>
+                                                    <div>
+                                                        <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="doc.original_name"></p>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="doc.label"></p>
+                                                    </div>
+                                                </div>
+                                                <a :href="'/storage/' + doc.path"
+                                                    class="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                    title="Download" download>
+                                                    <i class="fa-solid fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </template>
                                     </div>
 
-                                    <!-- Update Status -->
+                                    {{-- Scenario #5: Duplicate Applicant Alert --}}
+                                    <template x-if="selectedApp?.duplicate_of">
+                                        <div class="mb-5 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg">
+                                            <div class="flex items-start gap-3">
+                                                <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
+                                                <div class="flex-1">
+                                                    <h4 class="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">Potential Duplicate Found</h4>
+                                                    <p class="text-xs text-amber-700 dark:text-amber-400 mb-3">
+                                                        This applicant shares a phone number with
+                                                        <strong x-text="selectedApp.duplicate_of.existing_email"></strong>
+                                                        (Application #<span x-text="selectedApp.duplicate_of.existing_id"></span>).
+                                                    </p>
+                                                    <div class="flex gap-2" x-show="!selectedApp.duplicate_resolved">
+                                                        <button @click="handleDuplicate('merge')"
+                                                            :disabled="isDuplicateProcessing"
+                                                            class="px-3 py-1.5 text-xs font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors disabled:opacity-50">
+                                                            <i class="fa-solid fa-code-merge mr-1"></i>Merge
+                                                        </button>
+                                                        <button @click="handleDuplicate('ignore')"
+                                                            :disabled="isDuplicateProcessing"
+                                                            class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50">
+                                                            <i class="fa-solid fa-xmark mr-1"></i>Ignore
+                                                        </button>
+                                                    </div>
+                                                    <p x-show="selectedApp.duplicate_resolved" class="text-xs font-medium text-green-600 dark:text-green-400">
+                                                        <i class="fa-solid fa-circle-check mr-1"></i><span x-text="selectedApp.duplicate_resolved"></span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- Status & Notes -->
                                     <div class="mb-5">
                                         <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                             <i class="fa-solid fa-sliders text-gray-600 dark:text-gray-400"></i>
-                                            Update Status
+                                            Status & Notes
                                         </h4>
-                                        <div class="space-y-3 py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Change Status</label>
-                                                <select x-model="drawerStatus"
-                                                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                                    <option value="pending">Pending</option>
-                                                    <option value="reviewed">Reviewed</option>
-                                                    <option value="interview_scheduled">Interview Scheduled</option>
-                                                    <option value="hired">Hired</option>
-                                                    <option value="rejected">Rejected</option>
-                                                </select>
-                                            </div>
+                                        <div class="space-y-3 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                            {{-- Admin Notes --}}
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Admin Notes</label>
-                                                <textarea x-model="drawerNotes" rows="3"
-                                                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                                <textarea x-model="drawerNotes" rows="2"
+                                                    :disabled="selectedApp?.status === 'hired' || selectedApp?.status === 'rejected'"
+                                                    class="w-full px-3 py-4 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                     placeholder="Add notes about this applicant..."></textarea>
                                             </div>
-                                            <button @click="updateStatus()"
-                                                :disabled="isUpdating"
-                                                class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
-                                                <span x-show="!isUpdating"><i class="fa-solid fa-save mr-2"></i>Update Status</span>
-                                                <span x-show="isUpdating">Updating...</span>
-                                            </button>
+
+                                            {{-- Pending state: waiting for review --}}
+                                            <div x-show="selectedApp?.status === 'pending'" class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700">
+                                                <p class="text-xs text-yellow-700 dark:text-yellow-300 flex items-center gap-2">
+                                                    <i class="fa-solid fa-clock"></i>
+                                                    Pending review. View the resume for 30 seconds to mark as reviewed.
+                                                </p>
+                                            </div>
+
+                                            {{-- Interview Scheduled info banner --}}
+                                            <div x-show="selectedApp?.status === 'interview_scheduled'" class="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700">
+                                                <p class="text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                                                    <i class="fa-solid fa-calendar-check"></i>
+                                                    Interview scheduled for <span class="font-semibold" x-text="selectedApp?.interview_date_display || selectedApp?.interview_date"></span>
+                                                </p>
+                                            </div>
+
+                                            {{-- Hired state --}}
+                                            <div x-show="selectedApp?.status === 'hired'" class="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
+                                                <p class="text-xs text-green-700 dark:text-green-300 flex items-center gap-2">
+                                                    <i class="fa-solid fa-circle-check"></i>
+                                                    This applicant has been <span class="font-bold">hired</span>.
+                                                </p>
+                                            </div>
+
+                                            {{-- Rejected state --}}
+                                            <div x-show="selectedApp?.status === 'rejected'" class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700">
+                                                <p class="text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+                                                    <i class="fa-solid fa-circle-xmark"></i>
+                                                    This applicant has been <span class="font-bold">rejected</span>.
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <!-- Timeline -->
                                     <div class="mb-5">
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                                            <i class="fa-solid fa-clock-rotate-left text-gray-600 dark:text-gray-400"></i>
+                                        <h4
+                                            class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                            <i
+                                                class="fa-solid fa-clock-rotate-left text-gray-600 dark:text-gray-400"></i>
                                             Timeline
                                         </h4>
-                                        <div class="space-y-3 py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                                            <div class="flex items-start gap-3">
-                                                <div class="w-2 h-2 mt-1.5 bg-blue-600 rounded-full flex-shrink-0"></div>
+                                        <div class="space-y-0 py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                            {{-- Static: Application Submitted --}}
+                                            <div class="flex items-start gap-3 relative pb-3">
+                                                <div class="flex flex-col items-center flex-shrink-0">
+                                                    <div class="w-2.5 h-2.5 mt-1 bg-blue-600 rounded-full"></div>
+                                                    <div class="w-px flex-1 bg-gray-300 dark:bg-gray-600 mt-1"
+                                                        x-show="selectedApp.status_history && selectedApp.status_history.length > 0"></div>
+                                                </div>
                                                 <div>
                                                     <p class="text-sm font-medium text-gray-900 dark:text-white">Application Submitted</p>
                                                     <p class="text-xs text-gray-500 dark:text-gray-400" x-text="selectedApp.created_at"></p>
                                                 </div>
                                             </div>
-                                            <div class="flex items-start gap-3" x-show="selectedApp.reviewed_at">
-                                                <div class="w-2 h-2 mt-1.5 bg-green-600 rounded-full flex-shrink-0"></div>
-                                                <div>
-                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Last Updated</p>
-                                                    <p class="text-xs text-gray-500 dark:text-gray-400" x-text="selectedApp.reviewed_at"></p>
+
+                                            {{-- Dynamic: Status History entries --}}
+                                            <template x-for="(entry, idx) in (selectedApp.status_history || []).filter(e => e.from !== null)" :key="idx">
+                                                <div class="flex items-start gap-3 relative pb-3">
+                                                    <div class="flex flex-col items-center flex-shrink-0">
+                                                        <div class="w-2.5 h-2.5 mt-1 rounded-full"
+                                                            :class="{
+                                                                'bg-blue-500': entry.to === 'reviewed',
+                                                                'bg-purple-500': entry.to === 'interview_scheduled',
+                                                                'bg-green-500': entry.to === 'hired',
+                                                                'bg-red-500': entry.to === 'rejected',
+                                                                'bg-gray-400': !['reviewed','interview_scheduled','hired','rejected'].includes(entry.to)
+                                                            }"></div>
+                                                        <div class="w-px flex-1 bg-gray-300 dark:bg-gray-600 mt-1"
+                                                            x-show="idx < (selectedApp.status_history || []).filter(e => e.from !== null).length - 1"></div>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="getTimelineLabel(entry)"></p>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="formatTimelineDate(entry.timestamp)"></p>
+                                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                                            by <span x-text="entry.by"></span>
+                                                        </p>
+                                                        <p x-show="entry.interview_date" class="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+                                                            <i class="fa-solid fa-calendar-day mr-1"></i>
+                                                            <span x-text="entry.interview_date ? new Date(entry.interview_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : ''"></span>
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </template>
                                         </div>
                                     </div>
 
                                     <!-- Quick Actions -->
-                                    <div>
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                    {{-- <div>
+                                        <h4
+                                            class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                             <i class="fa-solid fa-bolt text-gray-600 dark:text-gray-400"></i>
                                             Quick Actions
                                         </h4>
                                         <div class="space-y-2">
                                             <a :href="'mailto:' + selectedApp.email"
-                                               class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                                 <i class="fa-solid fa-envelope text-gray-600 dark:text-gray-400"></i>
-                                                <span class="text-sm text-gray-700 dark:text-gray-300">Send Email</span>
+                                                <span class="text-sm text-gray-700 dark:text-gray-300">Send
+                                                    Email</span>
                                             </a>
                                             <a :href="selectedApp.download_url"
-                                               class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                                 <i class="fa-solid fa-download text-gray-600 dark:text-gray-400"></i>
-                                                <span class="text-sm text-gray-700 dark:text-gray-300">Download Resume</span>
+                                                <span class="text-sm text-gray-700 dark:text-gray-300">Download
+                                                    Resume</span>
                                             </a>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </template>
 
                             <!-- Footer -->
-                            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
-                                <button @click="closeDrawer()"
-                                    class="w-full px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
-                                    Close
-                                </button>
+                            <div
+                                class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50 space-y-3">
+
+                                {{-- Pending: just close --}}
+                                <div x-show="selectedApp?.status === 'pending'">
+                                    <button @click="closeDrawer()"
+                                        class="w-full px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
+                                        Close
+                                    </button>
+                                </div>
+
+                                {{-- Reviewed: Schedule Interview + Reject --}}
+                                <template x-if="selectedApp?.status === 'reviewed'">
+                                    <div class="space-y-3">
+                                        <div x-show="showDatePicker" x-transition class="space-y-3">
+                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Select Interview Date</label>
+
+                                            {{-- Custom Calendar Picker --}}
+                                            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                                                {{-- Month navigation --}}
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <button @click="calPrev()" type="button" class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                                        <i class="fa-solid fa-chevron-left text-[10px] text-gray-500 dark:text-gray-400"></i>
+                                                    </button>
+                                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-200" x-text="calMonthLabel"></span>
+                                                    <button @click="calNext()" type="button" class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                                        <i class="fa-solid fa-chevron-right text-[10px] text-gray-500 dark:text-gray-400"></i>
+                                                    </button>
+                                                </div>
+
+                                                {{-- Day-of-week headers --}}
+                                                <div class="grid grid-cols-7 gap-0.5 mb-1">
+                                                    <template x-for="d in ['Mo','Tu','We','Th','Fr','Sa','Su']" :key="d">
+                                                        <div class="text-center text-[9px] font-semibold text-gray-400 dark:text-gray-500 py-1" x-text="d"></div>
+                                                    </template>
+                                                </div>
+
+                                                {{-- Day grid --}}
+                                                <div class="grid grid-cols-7 gap-0.5">
+                                                    <template x-for="cell in calCells" :key="cell.key">
+                                                        <div class="relative group">
+                                                            <button type="button"
+                                                                @click="selectCalDate(cell)"
+                                                                :disabled="!cell.inMonth || cell.isPast || cell.isBooked || cell.isHoliday || cell.isSunday"
+                                                                :class="{
+                                                                    'text-gray-300 dark:text-gray-600 cursor-default': !cell.inMonth,
+                                                                    'text-gray-300 dark:text-gray-600 cursor-not-allowed line-through': cell.inMonth && cell.isPast && !cell.isHoliday && !cell.isSunday,
+                                                                    'bg-red-100 dark:bg-red-900/30 text-red-400 dark:text-red-500 cursor-not-allowed': cell.inMonth && cell.isBooked && !cell.isPast && !cell.isHoliday,
+                                                                    'bg-orange-100 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400 cursor-not-allowed': cell.inMonth && cell.isHoliday && !cell.isPast,
+                                                                    'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed': cell.inMonth && cell.isSunday && !cell.isHoliday && !cell.isPast && !cell.isBooked,
+                                                                    'bg-purple-600 text-white font-bold shadow-sm ring-2 ring-purple-300 dark:ring-purple-500': cell.isSelected && cell.inMonth && !cell.isBooked && !cell.isHoliday && !cell.isSunday,
+                                                                    'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold': cell.isToday && !cell.isSelected && cell.inMonth && !cell.isBooked && !cell.isPast && !cell.isHoliday && !cell.isSunday,
+                                                                    'hover:bg-purple-100 dark:hover:bg-purple-900/30 text-gray-700 dark:text-gray-300 cursor-pointer': cell.inMonth && !cell.isPast && !cell.isBooked && !cell.isHoliday && !cell.isSunday && !cell.isSelected && !cell.isToday,
+                                                                }"
+                                                                class="flex items-center justify-center w-8 h-8 mx-auto rounded-lg text-[10px] transition-all duration-150">
+                                                                <span x-text="cell.day"></span>
+                                                            </button>
+
+                                                            {{-- Tooltip for booked dates --}}
+                                                            <template x-if="cell.isBooked && cell.inMonth && !cell.isPast">
+                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-44 pointer-events-none">
+                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
+                                                                        <p class="font-bold text-red-300 mb-0.5"><i class="fa-solid fa-ban mr-1"></i>Unavailable</p>
+                                                                        <template x-for="b in cell.bookedBy" :key="b.id">
+                                                                            <p class="truncate"><span x-text="b.job_title"></span> — <span x-text="b.email"></span></p>
+                                                                        </template>
+                                                                    </div>
+                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
+                                                                </div>
+                                                            </template>
+
+                                                            {{-- Tooltip for holidays --}}
+                                                            <template x-if="cell.isHoliday && cell.inMonth && !cell.isPast">
+                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-40 pointer-events-none">
+                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
+                                                                        <p class="font-bold text-orange-300 mb-0.5"><i class="fa-solid fa-calendar-xmark mr-1"></i>Holiday</p>
+                                                                        <p x-text="cell.holidayName"></p>
+                                                                    </div>
+                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
+                                                                </div>
+                                                            </template>
+
+                                                            {{-- Tooltip for Sundays --}}
+                                                            <template x-if="cell.isSunday && !cell.isHoliday && cell.inMonth && !cell.isPast && !cell.isBooked">
+                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-32 pointer-events-none">
+                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg text-center">
+                                                                        <p class="font-bold text-gray-400"><i class="fa-solid fa-ban mr-1"></i>Sunday</p>
+                                                                    </div>
+                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+
+                                                {{-- Legend --}}
+                                                <div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-purple-600"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Selected</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Booked</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Holiday</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Sunday</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="w-2.5 h-2.5 rounded-sm bg-gray-900 dark:bg-white"></span>
+                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Today</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Selected date & time display --}}
+                                            <div x-show="interviewDate" class="space-y-2">
+                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
+                                                    <i class="fa-solid fa-calendar-check text-purple-500 text-xs"></i>
+                                                    <span class="text-xs font-semibold text-purple-700 dark:text-purple-300" x-text="interviewDate ? new Date(interviewDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : ''"></span>
+                                                </div>
+
+                                                {{-- Time picker --}}
+                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
+                                                    <i class="fa-solid fa-clock text-purple-500 text-xs"></i>
+                                                    <label class="text-xs font-medium text-purple-700 dark:text-purple-300">Time:</label>
+                                                    <input type="time" x-model="interviewTime"
+                                                        class="flex-1 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-transparent border-none outline-none focus:ring-0 p-0"
+                                                    />
+                                                </div>
+
+                                                {{-- Duration picker --}}
+                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
+                                                    <i class="fa-solid fa-hourglass-half text-purple-500 text-xs"></i>
+                                                    <label class="text-xs font-medium text-purple-700 dark:text-purple-300">Duration:</label>
+                                                    <select x-model="interviewDuration"
+                                                        class="flex-1 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-transparent border-none outline-none focus:ring-0 p-0 cursor-pointer">
+                                                        <option value="15">15 minutes</option>
+                                                        <option value="30">30 minutes</option>
+                                                        <option value="45">45 minutes</option>
+                                                        <option value="60">1 hour</option>
+                                                        <option value="90">1 hour 30 minutes</option>
+                                                        <option value="120">2 hours</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {{-- Action buttons --}}
+                                            <div class="flex gap-2">
+                                                <button @click="
+                                                    if (interviewDate && interviewTime) {
+                                                        const conflicts = checkTimeOverlap(interviewDate, interviewTime, interviewDuration);
+                                                        if (conflicts) {
+                                                            const details = conflicts.map(c => {
+                                                                const [ch, cm] = (c.time || '09:00').split(':').map(Number);
+                                                                const cEnd = ch * 60 + cm + (c.duration || 60);
+                                                                const fmtT = (mins) => {
+                                                                    const hh = Math.floor(mins / 60);
+                                                                    const mm = mins % 60;
+                                                                    const ampm = hh < 12 ? 'AM' : 'PM';
+                                                                    const disp = hh === 0 ? 12 : (hh > 12 ? hh - 12 : hh);
+                                                                    return String(disp).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ' ' + ampm;
+                                                                };
+                                                                return c.job_title + ' (' + c.email + ') — ' + fmtT(ch * 60 + cm) + ' to ' + fmtT(cEnd);
+                                                            }).join('\n');
+                                                            window.showErrorDialog('Schedule Conflict', 'The selected time slot overlaps with an existing interview:\n\n' + details);
+                                                        } else {
+                                                            setStatus('interview_scheduled', { interview_date: interviewDate + ' ' + interviewTime + ':00', interview_duration: parseInt(interviewDuration) });
+                                                        }
+                                                    }"
+                                                    :disabled="!interviewDate || !interviewTime || isUpdating"
+                                                    class="flex-1 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50">
+                                                    <i class="fa-solid fa-calendar-check mr-1.5"></i>Confirm Schedule
+                                                </button>
+                                                <button @click="showDatePicker = false; interviewDate = ''; interviewTime = '09:00'; interviewDuration = '60'"
+                                                    class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div x-show="!showDatePicker" class="flex gap-2">
+                                            <button @click="showDatePicker = true; buildCalCells()"
+                                                :disabled="isUpdating"
+                                                class="flex-1 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50">
+                                                <i class="fa-solid fa-calendar-plus mr-1.5"></i>Schedule Interview
+                                            </button>
+                                            <button @click="setStatus('rejected')"
+                                                :disabled="isUpdating"
+                                                class="flex-1 px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
+                                                <i class="fa-solid fa-xmark mr-1.5"></i>Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                {{-- Interview Scheduled: Hire + Reject --}}
+                                <template x-if="selectedApp?.status === 'interview_scheduled'">
+                                    <div class="flex gap-2">
+                                        <button @click="setStatus('hired')"
+                                            :disabled="isUpdating"
+                                            class="flex-1 px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+                                            <i class="fa-solid fa-circle-check mr-1.5"></i>Hire
+                                        </button>
+                                        <button @click="setStatus('rejected')"
+                                            :disabled="isUpdating"
+                                            class="flex-1 px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
+                                            <i class="fa-solid fa-xmark mr-1.5"></i>Reject
+                                        </button>
+                                    </div>
+                                </template>
+
+                                {{-- Hired/Rejected: just close --}}
+                                <div x-show="selectedApp?.status === 'hired' || selectedApp?.status === 'rejected'">
+                                    <button @click="closeDrawer()"
+                                        class="w-full px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
+                                        Close
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {{-- ── Resume Viewer Modal ── --}}
+            <template x-teleport="body">
+            <div>
+                <div
+                    x-show="showViewer"
+                    style="display:none"
+                    class="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                >
+                    <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden"
+                        @click.stop
+                        x-transition:enter="transition ease-out duration-250"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100">
+
+                        {{-- Viewer Header --}}
+                        <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <i class="fa-solid fa-file-word text-blue-500 text-lg flex-shrink-0"></i>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate" x-text="selectedApp?.resume_name"></p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500" x-text="selectedApp?.email"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 flex-shrink-0">
+                                {{-- Timer --}}
+                                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
+                                    :class="viewerElapsed >= 30 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+                                    <i class="fa-solid fa-stopwatch text-[10px]"></i>
+                                    <span x-text="formatViewerTime(viewerElapsed)"></span>
+                                    <i x-show="viewerElapsed >= 30" class="fa-solid fa-circle-check text-green-500 text-[10px]"></i>
+                                </div>
+                                {{-- Auto-review hint --}}
+                                <span x-show="selectedApp?.status === 'pending' && viewerElapsed < 30"
+                                    class="text-[10px] text-gray-400 dark:text-gray-500 hidden sm:inline">
+                                    Auto-review at 30s
+                                </span>
+                                {{-- Download --}}
+                                <a :href="selectedApp?.download_url"
+                                    class="p-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    title="Download">
+                                    <i class="fa-solid fa-download text-sm"></i>
+                                </a>
+                                {{-- Close --}}
+                                <button @click="closeViewer()"
+                                    class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                                    <i class="fa-solid fa-xmark text-gray-600 dark:text-gray-300 text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Viewer Body --}}
+                        <div class="flex-1 min-h-0 bg-gray-100 dark:bg-gray-800">
+                            <iframe
+                                x-show="showViewer && viewerUrl"
+                                :src="viewerUrl"
+                                class="w-full h-full border-0"
+                                sandbox="allow-scripts allow-same-origin allow-popups"
+                            ></iframe>
+                        </div>
+
+                        {{-- Viewer Footer --}}
+                        <div class="flex items-center justify-between px-5 py-2.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+                            <p class="text-xs text-gray-400 dark:text-gray-500">
+                                <span x-show="selectedApp?.status === 'pending' && viewerElapsed >= 30">
+                                    <i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Status will be updated to <span class="font-semibold text-green-600 dark:text-green-400">Reviewed</span> when you close this viewer.
+                                </span>
+                                <span x-show="selectedApp?.status !== 'pending'">
+                                    Status: <span class="font-semibold capitalize" x-text="selectedApp?.status?.replace('_', ' ')"></span>
+                                </span>
+                                <span x-show="selectedApp?.status === 'pending' && viewerElapsed < 30">
+                                    View for at least 30 seconds to auto-mark as reviewed.
+                                </span>
+                            </p>
+                            <button @click="closeViewer()"
+                                class="text-xs font-semibold px-4 py-1.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 transition-colors">
+                                Close Viewer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </template>
+
         </div>
 
+        {{-- Registered Applicants section moved to Accounts page --}}
+
         <!-- Job Postings Section -->
-        <div class="flex flex-col gap-6 w-full rounded-lg p-4"
-            x-data="jobPostingsData()">
+        <div class="flex flex-col gap-6 w-full rounded-lg p-4" x-data="jobPostingsData()">
+
+            <!-- Confirm Dialog for Job Postings -->
+            <template x-teleport="body">
+                <div x-show="showConfirm"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+                     style="display: none;">
+                    <div class="absolute inset-0 bg-black/30 dark:bg-black/50" @click="cancelConfirm()"></div>
+                    <div x-show="showConfirm"
+                         x-transition:enter="transition ease-out duration-300 delay-100"
+                         x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-90"
+                         class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-600 shadow-2xl overflow-hidden p-3">
+                        <div class="px-8 pt-10 pb-8 flex flex-col items-center text-center">
+                            <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-400 dark:border-amber-500 flex items-center justify-center mb-6">
+                                <svg class="w-7 h-7 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2" x-text="confirmTitle"></h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" x-text="confirmMessage"></p>
+                        </div>
+                        <div class="px-8 pb-8 flex gap-3">
+                            <button @click="cancelConfirm()" type="button"
+                                class="w-full px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 font-semibold text-sm rounded-xl transition-all duration-200">
+                                Cancel
+                            </button>
+                            <button @click="confirmAction()" type="button"
+                                class="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold text-sm rounded-xl transition-all duration-200">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
 
             <div class="flex items-center justify-between">
                 <x-labelwithvalue label="Job Postings" count="" />
                 <button @click="openModal()"
-                    class="px-4 py-2 text-blue-600 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                    class="px-4 py-2 text-blue-600 rounded-lg hover:bg-blue-700 hover:text-white hover:dark:bg-gray-800 hover:dark:text-white transition-colors text-sm font-medium">
                     <i class="fa-solid fa-plus mr-2"></i>Add Job Posting
                 </button>
             </div>
 
+            <!-- Bulk Actions Bar for Job Postings -->
+            <div x-show="selectedJobIds.length > 0" x-transition
+                class="flex flex-row justify-between items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <span class="text-sm font-medium text-blue-700 dark:text-blue-300"
+                    x-text="selectedJobIds.length + ' selected'"></span>
+                <div class="flex flex-row gap-3">
+                    <button @click="bulkDeleteJobs()"
+                        class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+                        <i class="fa-solid fa-trash mr-1"></i>Delete Selected
+                    </button>
+                    <button @click="deselectAllJobs()"
+                        class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        Deselect All
+                    </button>
+                </div>
+            </div>
+
             <!-- Job Postings Table -->
-            <div x-show="jobPostings.length > 0" class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                <table class="w-full">
+            <div x-show="jobPostings.length > 0"
+                class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="w-full min-w-[1000px]">
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-700">
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Job Title</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Type</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Location</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Salary</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applicants</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
+                            <th class="px-4 py-4 w-10">
+                                <input type="checkbox" @change="toggleAllJobs($event)" :checked="allJobsSelected"
+                                    class="appearance-none w-4 h-4 rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 checked:bg-blue-600 checked:border-blue-600 checked:bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-colors">
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 max-w-[250px]">Job
+                                Title</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Type
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                Location</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                Salary</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                Applicants</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                Status</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-for="(job, index) in jobPostings" :key="index">
                             <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <!-- Checkbox -->
+                                <td class="px-4 py-4 w-10">
+                                    <input type="checkbox" :value="job.id" @change="toggleJob(job.id)"
+                                        :checked="selectedJobIds.includes(job.id)"
+                                        class="appearance-none w-4 h-4 rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 checked:bg-blue-600 checked:border-blue-600 checked:bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-colors">
+                                </td>
+
                                 <!-- Job Title + Icon -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 max-w-[250px]">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                                             :class="getIconBgClass(job.iconColor)">
-                                            <i class="fas text-sm" :class="[job.icon, getIconTextClass(job.iconColor)]"></i>
+                                            <i class="fas text-sm"
+                                                :class="[job.icon, getIconTextClass(job.iconColor)]"></i>
                                         </div>
-                                        <div>
-                                            <div class="text-sm font-semibold text-gray-900 dark:text-white" x-text="job.title"></div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 max-w-[200px] truncate" x-text="job.description"></div>
+                                        <div class="min-w-0">
+                                            <div class="text-sm font-semibold text-gray-900 dark:text-white truncate"
+                                                x-text="job.title"></div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                                                x-text="job.description"></div>
                                         </div>
                                     </div>
                                 </td>
@@ -612,8 +1051,7 @@
                                 <!-- Type -->
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full"
-                                        :class="getTypeBadgeClass(job.type)"
-                                        x-text="job.typeBadge"></span>
+                                        :class="getTypeBadgeClass(job.type)" x-text="job.typeBadge"></span>
                                 </td>
 
                                 <!-- Location -->
@@ -626,30 +1064,40 @@
 
                                 <!-- Salary -->
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-semibold text-gray-900 dark:text-white" x-text="job.salary"></div>
+                                    <div class="text-sm font-semibold text-gray-900 dark:text-white"
+                                        x-text="job.salary"></div>
                                 </td>
 
                                 <!-- Applicants -->
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900 dark:text-gray-200" x-text="(job.applicantCount || 0) + ' ' + ((job.applicantCount === 1) ? 'applicant' : 'applicants')"></div>
+                                    <div class="text-sm text-gray-900 dark:text-gray-200"
+                                        x-text="(job.applicantCount || 0) + ' ' + ((job.applicantCount === 1) ? 'applicant' : 'applicants')">
+                                    </div>
                                 </td>
 
                                 <!-- Status -->
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full"
-                                        :class="job.is_active ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'"
-                                        x-text="job.is_active ? 'Active' : 'Inactive'"></span>
+                                        :class="getJobStatusClass(job.status)"
+                                        x-text="getJobStatusLabel(job.status)"></span>
                                 </td>
 
                                 <!-- Action -->
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                     <div class="flex items-center justify-end gap-3">
+                                        <button @click="viewJob(index)"
+                                            class="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                                            title="View">
+                                            <i class="fa-regular fa-eye text-sm"></i>
+                                        </button>
                                         <button @click="editJob(index)"
-                                            class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                            title="Edit">
                                             <i class="fa-solid fa-pen text-sm"></i>
                                         </button>
-                                        <button @click="deleteJob(index)"
-                                            class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                                        <button @click="archiveJob(index)"
+                                            class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                            title="Delete">
                                             <i class="fa-solid fa-trash text-sm"></i>
                                         </button>
                                     </div>
@@ -663,262 +1111,189 @@
 
             <!-- Empty State -->
             <template x-if="jobPostings.length === 0">
-                <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+                <div
+                    class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
                     <i class="fa-solid fa-briefcase text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
                     <p class="text-base font-medium text-gray-500 dark:text-gray-400">No job postings yet</p>
-                    <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Click "Add Job Posting" to create your first job listing</p>
+                    <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Click "Add Job Posting" to create your
+                        first job listing</p>
                 </div>
             </template>
 
             <!-- Job Posting Modal -->
-            <div x-show="showModal" x-cloak
-                @click="closeModal()"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4"
-                style="display: none;">
-                <div @click.stop
-                    class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
-                    x-show="showModal" x-transition>
+            <x-employer-components.job-posting-modal />
+            <!-- Success Dialog -->
+            <template x-teleport="body">
+                <x-employer-components.success-dialog title="Success" message="" buttonText="Back to Recruitment" />
+            </template>
 
-                    <!-- Modal Header -->
-                    <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white" x-text="editingIndex !== null ? 'Edit Job Posting' : 'Create Job Posting'"></h3>
-                        <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <i class="fa-solid fa-times text-xl"></i>
-                        </button>
-                    </div>
+            <!-- Job Posting View Drawer -->
+            <div x-show="showJobDrawer" x-cloak class="fixed inset-0 z-50 overflow-hidden">
+                <!-- Backdrop -->
+                <div x-show="showJobDrawer" x-transition:enter="transition-opacity ease-out duration-300"
+                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity ease-in duration-200"
+                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                    @click="closeJobDrawer()"
+                    class="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
 
-                    <!-- Modal Body -->
-                    <div class="p-6 space-y-4">
-                        <!-- Title -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Title *</label>
-                            <input type="text" x-model="formData.title" required
-                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                placeholder="e.g., Deep Cleaning Specialist">
-                        </div>
+                <!-- Drawer Panel -->
+                <div class="fixed inset-y-0 right-0 flex max-w-full">
+                    <div x-show="showJobDrawer" x-transition:enter="transform transition ease-in-out duration-300"
+                        x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+                        x-transition:leave="transform transition ease-in-out duration-200"
+                        x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+                        @click.stop
+                        class="relative w-screen max-w-sm">
 
-                        <!-- Description -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description *</label>
-                            <textarea x-model="formData.description" rows="3" required
-                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                placeholder="Atleast 180 characters"></textarea>
-                        </div>
-
-                        <!-- Location: State/Region & City -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <!-- State/Region Dropdown -->
-                            <div class="relative">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">State / Region *</label>
-                                <button type="button" @click="toggleStateDropdown()"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm text-left flex items-center justify-between"
-                                    :class="formData.state ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'">
-                                    <span x-text="formData.state || 'Select state/region'"></span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
+                            <!-- Header -->
+                            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-slate-800/50">
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Job Posting Details</h2>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400" x-text="viewingJob?.title"></p>
+                                </div>
+                                <button type="button" @click="closeJobDrawer()"
+                                    class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
-                                <div x-show="showStateDropdown" @click.away="showStateDropdown = false"
-                                    x-transition
-                                    class="absolute z-30 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                    <template x-for="state in statesList" :key="state.iso2">
-                                        <div @click="selectState(state)"
-                                            class="px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
-                                            :class="formData.state === state.name ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium' : ''"
-                                            x-text="state.name"></div>
-                                    </template>
-                                    <div x-show="statesList.length === 0" class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 text-center">Loading...</div>
+                            </div>
+
+                            <!-- Body -->
+                            <template x-if="viewingJob">
+                                <div class="flex-1 overflow-y-auto p-6">
+
+                                    <!-- Job Info -->
+                                    <div class="mb-5">
+                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                            <i class="fa-solid fa-briefcase text-gray-600 dark:text-gray-400"></i>
+                                            Job Information
+                                        </h4>
+                                        <div class="space-y-3 text-sm py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-500 dark:text-gray-400">Title</span>
+                                                <span class="font-medium text-gray-900 dark:text-white" x-text="viewingJob.title"></span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-500 dark:text-gray-400">Type</span>
+                                                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full"
+                                                    :class="getTypeBadgeClass(viewingJob.type)" x-text="viewingJob.typeBadge"></span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-500 dark:text-gray-400">Location</span>
+                                                <span class="font-medium text-gray-900 dark:text-white" x-text="viewingJob.location"></span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-500 dark:text-gray-400">Salary</span>
+                                                <span class="font-medium text-gray-900 dark:text-white" x-text="viewingJob.salary"></span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-500 dark:text-gray-400">Status</span>
+                                                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full"
+                                                    :class="getJobStatusClass(viewingJob.status)"
+                                                    x-text="getJobStatusLabel(viewingJob.status)"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Required Skills -->
+                                    <div class="mb-5" x-show="viewingJob.requiredSkills && viewingJob.requiredSkills.length > 0">
+                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                            <i class="fa-solid fa-star text-gray-600 dark:text-gray-400"></i>
+                                            Required Skills
+                                        </h4>
+                                        <div class="flex flex-wrap gap-1.5 py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                            <template x-for="skill in viewingJob.requiredSkills" :key="skill">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                                    x-text="skill"></span>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <!-- Applicant Suitability Ranking -->
+                                    <div class="mb-5">
+                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                            <i class="fa-solid fa-ranking-star text-gray-600 dark:text-gray-400"></i>
+                                            Applicant Suitability Ranking
+                                            <span class="text-xs font-normal text-gray-400 dark:text-gray-500"
+                                                x-text="'(' + rankedApplicants.length + ' applicant' + (rankedApplicants.length !== 1 ? 's' : '') + ')'"></span>
+                                        </h4>
+
+                                        <template x-if="rankedApplicants.length === 0">
+                                            <div class="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                                <i class="fa-solid fa-users-slash text-2xl text-gray-300 dark:text-gray-600 mb-2 block"></i>
+                                                <p class="text-xs text-gray-400 dark:text-gray-500">No applicants for this position yet</p>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="rankedApplicants.length > 0">
+                                            <div class="space-y-2">
+                                                <template x-for="(applicant, idx) in rankedApplicants" :key="applicant.id">
+                                                    <div class="flex items-center gap-3 py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                                                        <!-- Rank -->
+                                                        <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                                                            :class="idx === 0 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                     idx === 1 ? 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300' :
+                                                                     idx === 2 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                                     'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'"
+                                                            x-text="idx + 1"></div>
+
+                                                        <!-- Info -->
+                                                        <div class="flex-1 min-w-0">
+                                                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                                                                x-text="applicant.name || applicant.email"></p>
+                                                            <p class="text-xs text-gray-400 dark:text-gray-500 truncate" x-show="applicant.name"
+                                                                x-text="applicant.email"></p>
+                                                            <!-- Matched skills -->
+                                                            <div class="flex flex-wrap gap-1 mt-1.5" x-show="applicant.matchedSkills.length > 0">
+                                                                <template x-for="s in applicant.matchedSkills" :key="s">
+                                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                                        x-text="s"></span>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Score -->
+                                                        <div class="flex-shrink-0 text-right">
+                                                            <div class="text-lg font-bold"
+                                                                :class="applicant.score >= 75 ? 'text-green-600 dark:text-green-400' :
+                                                                         applicant.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' :
+                                                                         applicant.score >= 25 ? 'text-orange-500 dark:text-orange-400' :
+                                                                         'text-red-500 dark:text-red-400'"
+                                                                x-text="applicant.score + '%'"></div>
+                                                            <p class="text-[10px] text-gray-400 dark:text-gray-500"
+                                                                x-text="applicant.matchedSkills.length + '/' + (viewingJob.requiredSkills?.length || 0) + ' skills'"></p>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+
                                 </div>
-                            </div>
+                            </template>
 
-                            <!-- City Dropdown -->
-                            <div class="relative">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">City *</label>
-                                <button type="button" @click="if(citiesList.length > 0) toggleCityDropdown()"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm text-left flex items-center justify-between"
-                                    :class="[
-                                        formData.city ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500',
-                                        citiesList.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
-                                    ]">
-                                    <span x-text="formData.city || 'Select city'"></span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                                <div x-show="showCityDropdown" @click.away="showCityDropdown = false"
-                                    x-transition
-                                    class="absolute z-30 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                    <template x-for="city in citiesList" :key="city.name">
-                                        <div @click="selectCity(city)"
-                                            class="px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
-                                            :class="formData.city === city.name ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium' : ''"
-                                            x-text="city.name"></div>
-                                    </template>
-                                    <div x-show="citiesList.length === 0" class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 text-center">Select a state first</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Two Column Layout -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                            <!-- Salary -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Salary *</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 dark:text-gray-400">&euro;</span>
-                                    <input type="text" x-model="formData.salary" required
-                                          class="w-full pl-8 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                        placeholder="e.g., 30 - 40/hr">
-                                </div>
-                            </div>
-
-                            <!-- Job Type -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Type *</label>
-                                <select x-model="formData.type" @change="updateTypeBadge()"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
-                                    <option value="full-time">Full-time</option>
-                                    <option value="part-time">Part-time</option>
-                                    <option value="remote">Remote</option>
-                                </select>
-                            </div>
-
-                            <!-- Category -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category *</label>
-                                <select x-model="formData.category" @change="updateCategoryIcon()"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
-                                    <template x-for="cat in categoryOptions" :key="cat.value">
-                                        <option :value="cat.value" x-text="cat.label" :selected="formData.category === cat.value"></option>
-                                    </template>
-                                </select>
-                            </div>
-
-                            <!-- Status -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                                <select x-model="formData.is_active"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
-                                    <option :value="true">Active</option>
-                                    <option :value="false">Inactive</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Required Skills (Pills) -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Required Skills</label>
-
-                            <!-- Skills Pills Display -->
-                            <div class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-3 rounded-lg">
-                                <template x-for="(skill, idx) in formData.requiredSkills" :key="idx">
-                                    <span x-show="skill.trim() !== ''"
-                                          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
-                                        <span x-text="skill"></span>
-                                        <button type="button" @click="removeSkill(idx)"
-                                                class="ml-0.5 text-blue-400 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-200">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </span>
-                                </template>
-                                <span x-show="formData.requiredSkills.filter(s => s.trim() !== '').length === 0"
-                                      class="text-xs text-gray-400 dark:text-gray-500 py-1">No skills added — select a category to auto-populate</span>
-                            </div>
-
-                            <!-- Add Skill Input -->
-                            <div class="flex gap-2">
-                                <input type="text" x-model="newSkillInput"
-                                    @keydown.enter.prevent="addSkillPill()"
-                                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                    placeholder="Type a skill to add...">
-                                <button type="button" @click="addSkillPill()"
-                                    class="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Required Documents -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Required Documents</label>
-
-                            <!-- Docs Pills Display -->
-                            <div class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-3 rounded-lg">
-                                <template x-for="(doc, idx) in formData.requiredDocs" :key="idx">
-                                    <span x-show="doc.name && doc.name.trim() !== ''"
-                                          class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
-                                        <span x-text="doc.name"></span>
-                                        <span x-show="doc.type"
-                                              class="ml-0.5 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400"
-                                              x-text="doc.type"></span>
-                                        <button type="button" @click="removeDoc(idx)"
-                                                class="ml-0.5 text-purple-400 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-200">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </span>
-                                </template>
-                                <span x-show="formData.requiredDocs.filter(d => d.name && d.name.trim() !== '').length === 0"
-                                      class="text-xs text-gray-400 dark:text-gray-500 py-1">No documents added</span>
-                            </div>
-
-                            <!-- Add Document Input -->
-                            <div class="flex gap-2">
-                                <input type="text" x-model="newDocInput"
-                                    @keydown.enter.prevent="addDocPill()"
-                                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                    placeholder="Type a document to add...">
-                                <select x-model="newDocType"
-                                    class="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
-                                    <option value="">Type</option>
-                                    <option value="PDF">PDF</option>
-                                    <option value="DOC">DOC</option>
-                                    <option value="DOCX">DOCX</option>
-                                    <option value="JPG">JPG</option>
-                                    <option value="PNG">PNG</option>
-                                    <option value="XLS">XLS</option>
-                                    <option value="XLSX">XLSX</option>
-                                    <option value="CSV">CSV</option>
-                                    <option value="TXT">TXT</option>
-                                    <option value="Any">Any</option>
-                                </select>
-                                <button type="button" @click="addDocPill()"
-                                    class="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                                    <i class="fa-solid fa-plus"></i>
+                            <!-- Footer -->
+                            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
+                                <button @click="closeJobDrawer()"
+                                    class="w-full px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
+                                    Close
                                 </button>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
-                        <button @click="closeModal()" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
-                            Cancel
-                        </button>
-                        <button @click="saveJob()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                            <i class="fa-solid fa-save mr-2"></i>
-                            <span x-text="editingIndex !== null ? 'Update' : 'Create'"></span>
-                        </button>
                     </div>
                 </div>
             </div>
-
-            <!-- Success Dialog -->
-            <x-employer-components.success-dialog
-                title="Success"
-                message=""
-                buttonText="Back to Recruitment" />
 
         </div>
 
     </section>
 
     @php
-        $applicationsData = $applications->getCollection()->map(function($app) {
+        $applicationsData = $applications->getCollection()->map(function ($app) use ($duplicateAlerts) {
+            $dupAlert = $duplicateAlerts[$app->id] ?? null;
             return [
                 'id' => $app->id,
                 'email' => $app->email,
@@ -929,266 +1304,410 @@
                 'status' => $app->status,
                 'admin_notes' => $app->admin_notes,
                 'resume_name' => $app->resume_original_name,
+                'resume_ext' => strtolower(pathinfo($app->resume_original_name ?? '', PATHINFO_EXTENSION)),
+                'documents' => $app->documents ?? [],
+                'view_url' => route('admin.recruitment.view', $app->id),
+                'preview_url' => route('admin.recruitment.preview', $app->id),
                 'download_url' => route('admin.recruitment.download', $app->id),
+                'interview_date' => $app->interview_date ? $app->interview_date->format('Y-m-d') : null,
+                'interview_time' => $app->interview_date ? $app->interview_date->format('H:i') : '09:00',
+                'interview_duration' => $app->interview_duration ?? 60,
+                'interview_date_display' => $app->interview_date
+                    ? $app->interview_date->format('M d, Y \a\t h:i A') . ' (' . ($app->interview_duration >= 60 ? floor($app->interview_duration/60).'h'.($app->interview_duration%60 ? ' '.$app->interview_duration%60 .'m' : '') : ($app->interview_duration ?? 60).'m') . ')'
+                    : null,
                 'created_at' => $app->created_at->format('M d, Y h:i A'),
                 'reviewed_at' => $app->reviewed_at ? $app->reviewed_at->format('M d, Y h:i A') : null,
+                'status_history' => $app->status_history ?? [],
+                'duplicate_of' => $dupAlert ? [
+                    'existing_id' => $dupAlert['existing_application_id'],
+                    'existing_email' => $dupAlert['existing_email'],
+                    'phone' => $dupAlert['phone'],
+                    'notification_id' => $dupAlert['notification_id'],
+                ] : null,
+                'duplicate_resolved' => null,
             ];
         });
+
+        // Collect all booked interview dates (for overlap check)
+        $bookedInterviews = \App\Models\JobApplication::whereNotNull('interview_date')
+            ->whereIn('status', ['interview_scheduled', 'hired'])
+            ->select('id', 'interview_date', 'interview_duration', 'job_title', 'email')
+            ->get()
+            ->map(fn($a) => [
+                'id' => $a->id,
+                'date' => $a->interview_date->format('Y-m-d'),
+                'time' => $a->interview_date->format('H:i'),
+                'duration' => $a->interview_duration ?? 60,
+                'job_title' => $a->job_title,
+                'email' => $a->email,
+            ]);
+
+        // Collect holidays (admin-created + general)
+        $holidays = \App\Models\Holiday::all()->map(fn($h) => [
+            'date' => $h->date->format('Y-m-d'),
+            'name' => $h->name,
+        ]);
     @endphp
 
     <script>
-    // ===== SKILLS TEMPLATES (global store for cross-component access) =====
-    const SKILLS_TEMPLATES_STORE = {
-        templates: [
-            { id: 1, name: 'Cleaning Skills', category: 'cleaning', skills: ['Floor Mopping', 'Vacuuming', 'Window Cleaning', 'Sanitization', 'Waste Disposal', 'Surface Polishing'] },
-            { id: 2, name: 'Logistics Skills', category: 'logistics', skills: ['Inventory Management', 'Supply Coordination', 'Vehicle Maintenance', 'Route Planning', 'Warehouse Operations'] },
-            { id: 3, name: 'Management Skills', category: 'management', skills: ['Team Leadership', 'Scheduling', 'Quality Control', 'Client Communication', 'Performance Review', 'Budget Management'] },
-            { id: 4, name: 'Customer Service Skills', category: 'customer-service', skills: ['Communication', 'Complaint Handling', 'Problem Solving', 'Active Listening', 'Conflict Resolution'] },
-            { id: 5, name: 'Maintenance Skills', category: 'maintenance', skills: ['Equipment Repair', 'Preventive Maintenance', 'Safety Compliance', 'Tool Operation', 'Troubleshooting'] },
-            { id: 6, name: 'Administration Skills', category: 'administration', skills: ['Data Entry', 'Filing', 'Report Generation', 'Calendar Management', 'Email Correspondence'] },
-        ],
-        getSkillsForCategory(category) {
-            const template = this.templates.find(t => t.category === category);
-            return template ? [...template.skills] : [];
+        // Search functionality for applications table
+        const recruitmentSearchInput = document.getElementById('recruitmentSearchInput');
+        if (recruitmentSearchInput) {
+            recruitmentSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('tbody tr[data-email]');
+
+                rows.forEach(row => {
+                    const email = row.getAttribute('data-email') || '';
+                    const job = row.getAttribute('data-job') || '';
+
+                    const matches = email.includes(searchTerm) || job.includes(searchTerm);
+                    row.style.display = matches ? '' : 'none';
+                });
+            });
         }
-    };
 
-    const CATEGORY_META = {
-        'cleaning':         { icon: 'fa-broom',           color: '#3B82F6' },
-        'logistics':        { icon: 'fa-dolly',            color: '#F97316' },
-        'management':       { icon: 'fa-user-tie',         color: '#8B5CF6' },
-        'customer-service': { icon: 'fa-headset',          color: '#22C55E' },
-        'maintenance':      { icon: 'fa-spray-can',        color: '#EF4444' },
-        'administration':   { icon: 'fa-clipboard-check',  color: '#3B82F6' },
-        'other':            { icon: 'fa-briefcase',        color: '#6B7280' },
-    };
+        // Sort functionality
+        const sortDropdown = document.getElementById('recruitment-sort-dropdown');
+        if (sortDropdown) {
+            sortDropdown.addEventListener('change', function() {
+                const sortBy = this.value;
+                const tbody = document.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr[data-email]'));
 
-    function skillsTemplatesData() {
-        return {
-            showAddModal: false,
-            showEditModal: false,
-            editingId: null,
-            newSkillInput: '',
-            templateForm: {
-                name: '',
-                category: '',
-                skills: []
-            },
-            templates: SKILLS_TEMPLATES_STORE.templates,
-
-            getInitials(name) {
-                return name.split(' ')
-                    .map(word => word.charAt(0).toUpperCase())
-                    .slice(0, 2)
-                    .join('');
-            },
-
-            getCategoryColor(category) {
-                return CATEGORY_META[category]?.color || '#6B7280';
-            },
-
-            getCategoryIcon(category) {
-                return CATEGORY_META[category]?.icon || 'fa-briefcase';
-            },
-
-            editTemplate(template) {
-                this.editingId = template.id;
-                this.templateForm = {
-                    name: template.name,
-                    category: template.category,
-                    skills: [...template.skills]
-                };
-                this.showEditModal = true;
-            },
-
-            deleteTemplate(id) {
-                const template = this.templates.find(t => t.id === id);
-                window.showConfirmDialog({
-                    title: 'Delete Template',
-                    message: `Are you sure you want to delete "${template ? template.name : 'this template'}"? This action cannot be undone.`,
-                    confirmText: 'Delete',
-                    cancelText: 'Cancel',
-                    onConfirm: () => {
-                        const idx = this.templates.findIndex(t => t.id === id);
-                        if (idx !== -1) {
-                            this.templates.splice(idx, 1);
-                        }
-                        window.showSuccessDialog('Template Deleted', `The skills template has been removed successfully.`);
+                rows.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'oldest':
+                            return parseInt(a.dataset.date) - parseInt(b.dataset.date);
+                        case 'newest':
+                            return parseInt(b.dataset.date) - parseInt(a.dataset.date);
+                        case 'email_asc':
+                            return a.dataset.email.localeCompare(b.dataset.email);
+                        case 'email_desc':
+                            return b.dataset.email.localeCompare(a.dataset.email);
+                        default:
+                            return 0;
                     }
                 });
-            },
 
-            addSkillToTemplate() {
-                const skill = this.newSkillInput.trim();
-                if (skill && !this.templateForm.skills.includes(skill)) {
-                    this.templateForm.skills.push(skill);
-                }
-                this.newSkillInput = '';
-            },
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        }
 
-            saveTemplate() {
-                if (!this.templateForm.name.trim() || !this.templateForm.category) return;
+        // Applicant profiles search
+        const applicantSearchInput = document.getElementById('applicantSearchInput');
+        if (applicantSearchInput) {
+            applicantSearchInput.addEventListener('input', function() {
+                const q = this.value.toLowerCase();
+                document.querySelectorAll('.applicant-row').forEach(row => {
+                    const name = row.dataset.name || '';
+                    const email = row.dataset.email || '';
+                    row.style.display = (name.includes(q) || email.includes(q)) ? '' : 'none';
+                });
+            });
+        }
 
-                const isEditing = this.showEditModal && this.editingId;
-                window.showConfirmDialog({
-                    title: isEditing ? 'Update Template' : 'Create Template',
-                    message: isEditing
-                        ? `Are you sure you want to update "${this.templateForm.name}"?`
-                        : `Are you sure you want to create the template "${this.templateForm.name}"?`,
-                    confirmText: isEditing ? 'Update' : 'Create',
-                    cancelText: 'Cancel',
-                    onConfirm: () => {
-                        if (isEditing) {
-                            const idx = this.templates.findIndex(t => t.id === this.editingId);
-                            if (idx !== -1) {
-                                this.templates[idx].name = this.templateForm.name;
-                                this.templates[idx].category = this.templateForm.category;
-                                this.templates[idx].skills = [...this.templateForm.skills];
-                            }
-                        } else {
-                            const newId = this.templates.length > 0
-                                ? Math.max(...this.templates.map(t => t.id)) + 1
-                                : 1;
-                            this.templates.push({
-                                id: newId,
-                                name: this.templateForm.name,
-                                category: this.templateForm.category,
-                                skills: [...this.templateForm.skills]
+        function applicationDrawerData() {
+            const applications = @json($applicationsData);
+            const bookedInterviews = @json($bookedInterviews);
+            const holidays = @json($holidays);
+
+            return {
+                showDrawer: false,
+                selectedApp: null,
+                drawerStatus: '',
+                drawerNotes: '',
+                isUpdating: false,
+                interviewDate: '',
+                interviewTime: '09:00',
+                interviewDuration: '60',
+                showDatePicker: false,
+                // Calendar picker state
+                calMonth: new Date().getMonth(),
+                calYear: new Date().getFullYear(),
+                calCells: [],
+                // Resume viewer state
+                showViewer: false,
+                viewerUrl: '',
+                viewerStartTime: null,
+                viewerTimerInterval: null,
+                viewerElapsed: 0,
+                selectedAppIds: [],
+                showConfirm: false,
+                confirmTitle: '',
+                confirmMessage: '',
+                pendingConfirmAction: null,
+                isDuplicateProcessing: false,
+
+                async handleDuplicate(action) {
+                    if (!this.selectedApp?.duplicate_of) return;
+                    this.isDuplicateProcessing = true;
+
+                    const url = action === 'merge'
+                        ? '/admin/recruitment/duplicate/merge'
+                        : '/admin/recruitment/duplicate/ignore';
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                new_application_id: this.selectedApp.id,
+                                existing_application_id: this.selectedApp.duplicate_of.existing_id
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            this.selectedApp.duplicate_resolved = action === 'merge'
+                                ? 'Merged successfully'
+                                : 'Duplicate dismissed';
+                        }
+                    } catch (e) {
+                        console.error('Duplicate handling error:', e);
+                    }
+                    this.isDuplicateProcessing = false;
+                },
+
+                get allAppsSelected() {
+                    return applications.length > 0 && this.selectedAppIds.length === applications.length;
+                },
+
+                toggleApp(id) {
+                    const idx = this.selectedAppIds.indexOf(id);
+                    if (idx > -1) {
+                        this.selectedAppIds.splice(idx, 1);
+                    } else {
+                        this.selectedAppIds.push(id);
+                    }
+                },
+
+                toggleAllApps(event) {
+                    if (event.target.checked) {
+                        this.selectedAppIds = applications.map(a => a.id);
+                    } else {
+                        this.selectedAppIds = [];
+                    }
+                },
+
+                deselectAllApps() {
+                    this.selectedAppIds = [];
+                },
+
+                bulkDeleteApps() {
+                    this.confirmTitle = 'Delete Applications';
+                    this.confirmMessage = `Are you sure you want to delete ${this.selectedAppIds.length} application(s)? This action cannot be undone.`;
+                    this.pendingConfirmAction = 'bulkDeleteApps';
+                    this.showConfirm = true;
+                },
+
+                async doBulkDeleteApps() {
+                    try {
+                        const response = await fetch('/admin/recruitment/bulk-delete', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                ids: this.selectedAppIds
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            // Remove deleted rows from the DOM immediately
+                            this.selectedAppIds.forEach(id => {
+                                const checkbox = document.querySelector(`input[type="checkbox"][value="${id}"]`);
+                                if (checkbox) {
+                                    const row = checkbox.closest('tr');
+                                    if (row) row.remove();
+                                }
                             });
+                            this.selectedAppIds = [];
+                            window.showSuccessDialog('Successfully Deleted', data.message, 'Back to Recruitment', window.location.href);
+                        } else {
+                            window.showErrorDialog('Delete Failed', data.message || 'Failed to delete applications.');
                         }
-                        this.closeTemplateModal();
-                        window.showSuccessDialog(
-                            isEditing ? 'Template Updated' : 'Template Created',
-                            isEditing
-                                ? 'The skills template has been updated successfully.'
-                                : 'The skills template has been created successfully.'
-                        );
+                    } catch (error) {
+                        console.error('Error:', error);
+                        window.showErrorDialog('Delete Failed', 'An error occurred while deleting applications.');
                     }
-                });
-            },
+                },
 
-            closeTemplateModal() {
-                this.showAddModal = false;
-                this.showEditModal = false;
-                this.editingId = null;
-                this.newSkillInput = '';
-                this.templateForm = { name: '', category: '', skills: [] };
-            }
-        };
-    }
+                confirmAction() {
+                    this.showConfirm = false;
+                    if (this.pendingConfirmAction === 'bulkDeleteApps') {
+                        this.doBulkDeleteApps();
+                    }
+                    this.pendingConfirmAction = null;
+                },
 
-    // Search functionality for applications table
-    const recruitmentSearchInput = document.getElementById('recruitmentSearchInput');
-    if (recruitmentSearchInput) {
-        recruitmentSearchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const rows = document.querySelectorAll('tbody tr[data-email]');
+                cancelConfirm() {
+                    this.showConfirm = false;
+                    this.pendingConfirmAction = null;
+                },
 
-            rows.forEach(row => {
-                const email = row.getAttribute('data-email') || '';
-                const job = row.getAttribute('data-job') || '';
+                openDrawer(id) {
+                    this.selectedApp = applications.find(a => a.id === id);
+                    if (this.selectedApp) {
+                        this.drawerStatus = this.selectedApp.status;
+                        this.drawerNotes = this.selectedApp.admin_notes || '';
+                        this.interviewDate = this.selectedApp.interview_date ? this.selectedApp.interview_date.split('T')[0].split(' ')[0] : '';
+                        this.interviewTime = this.selectedApp.interview_time || '09:00';
+                        this.interviewDuration = this.selectedApp.interview_duration || '60';
+                        this.showDatePicker = false;
+                        this.calMonth = new Date().getMonth();
+                        this.calYear = new Date().getFullYear();
+                        this.buildCalCells();
+                        this.showDrawer = true;
+                        document.body.style.overflow = 'hidden';
+                    }
+                },
 
-                const matches = email.includes(searchTerm) || job.includes(searchTerm);
-                row.style.display = matches ? '' : 'none';
-            });
-        });
-    }
+                closeDrawer() {
+                    this.closeViewer();
+                    this.showDrawer = false;
+                    this.selectedApp = null;
+                    document.body.style.overflow = 'auto';
+                },
 
-    // Sort functionality
-    const sortDropdown = document.getElementById('recruitment-sort-dropdown');
-    if (sortDropdown) {
-        sortDropdown.addEventListener('change', function() {
-            const sortBy = this.value;
-            const tbody = document.querySelector('tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr[data-email]'));
+                // ── Calendar picker methods ──
+                fmtDate(d) {
+                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                },
 
-            rows.sort((a, b) => {
-                switch (sortBy) {
-                    case 'oldest':
-                        return parseInt(a.dataset.date) - parseInt(b.dataset.date);
-                    case 'newest':
-                        return parseInt(b.dataset.date) - parseInt(a.dataset.date);
-                    case 'email_asc':
-                        return a.dataset.email.localeCompare(b.dataset.email);
-                    case 'email_desc':
-                        return b.dataset.email.localeCompare(a.dataset.email);
-                    default:
-                        return 0;
-                }
-            });
+                isDateBooked(dateStr) {
+                    // Check if any OTHER application (not the current one) has an interview on this date
+                    return bookedInterviews.some(b => b.date === dateStr && b.id !== this.selectedApp?.id);
+                },
 
-            rows.forEach(row => tbody.appendChild(row));
-        });
-    }
+                getBookedInfo(dateStr) {
+                    return bookedInterviews.filter(b => b.date === dateStr && b.id !== this.selectedApp?.id);
+                },
 
-    function applicationDrawerData() {
-        const applications = @json($applicationsData);
+                isHoliday(dateStr) {
+                    return holidays.some(h => h.date === dateStr);
+                },
 
-        return {
-            showDrawer: false,
-            selectedApp: null,
-            drawerStatus: '',
-            drawerNotes: '',
-            isUpdating: false,
+                getHolidayName(dateStr) {
+                    const h = holidays.find(h => h.date === dateStr);
+                    return h ? h.name : '';
+                },
 
-            openDrawer(id) {
-                this.selectedApp = applications.find(a => a.id === id);
-                if (this.selectedApp) {
-                    this.drawerStatus = this.selectedApp.status;
-                    this.drawerNotes = this.selectedApp.admin_notes || '';
-                    this.showDrawer = true;
-                    document.body.style.overflow = 'hidden';
-                }
-            },
+                /**
+                 * Check for overlapping interviews using: start1 < end2 AND end1 > start2
+                 * Returns the conflicting booking or null.
+                 */
+                checkTimeOverlap(date, time, duration) {
+                    const [h1, m1] = time.split(':').map(Number);
+                    const newStart = h1 * 60 + m1;
+                    const newEnd = newStart + parseInt(duration);
 
-            closeDrawer() {
-                this.showDrawer = false;
-                this.selectedApp = null;
-                document.body.style.overflow = 'auto';
-            },
+                    const conflicts = bookedInterviews.filter(b => {
+                        if (b.date !== date || b.id === this.selectedApp?.id) return false;
+                        const [bh, bm] = (b.time || '09:00').split(':').map(Number);
+                        const bStart = bh * 60 + bm;
+                        const bEnd = bStart + (b.duration || 60);
+                        // Overlap check: start1 < end2 AND end1 > start2
+                        return newStart < bEnd && newEnd > bStart;
+                    });
 
-            getStatusClass(status) {
-                const classes = {
-                    'pending': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400',
-                    'reviewed': 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400',
-                    'interview_scheduled': 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400',
-                    'hired': 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400',
-                    'rejected': 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400',
-                };
-                return classes[status] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400';
-            },
+                    return conflicts.length > 0 ? conflicts : null;
+                },
 
-            getStatusLabel(status) {
-                const labels = {
-                    'pending': 'Pending',
-                    'reviewed': 'Reviewed',
-                    'interview_scheduled': 'Interview Scheduled',
-                    'hired': 'Hired',
-                    'rejected': 'Rejected',
-                };
-                return labels[status] || status;
-            },
+                buildCalCells() {
+                    const first = new Date(this.calYear, this.calMonth, 1);
+                    const last = new Date(this.calYear, this.calMonth + 1, 0);
+                    let startDay = first.getDay() || 7;
+                    const today = this.fmtDate(new Date());
+                    const cells = [];
 
-            updateStatus() {
-                if (!this.selectedApp) return;
+                    // Prev month padding
+                    const prevLast = new Date(this.calYear, this.calMonth, 0);
+                    for (let i = startDay - 1; i >= 1; i--) {
+                        const day = prevLast.getDate() - i + 1;
+                        const d = new Date(this.calYear, this.calMonth - 1, day);
+                        cells.push({ key: 'p'+day, day, date: this.fmtDate(d), inMonth: false, isPast: true, isToday: false, isBooked: false, isSelected: false, bookedBy: [] });
+                    }
 
-                const statusLabels = {
-                    'pending': 'Pending',
-                    'reviewed': 'Reviewed',
-                    'interview_scheduled': 'Interview Scheduled',
-                    'hired': 'Hired',
-                    'rejected': 'Rejected',
-                };
-                const newStatusLabel = statusLabels[this.drawerStatus] || this.drawerStatus;
+                    // Current month
+                    for (let day = 1; day <= last.getDate(); day++) {
+                        const d = new Date(this.calYear, this.calMonth, day);
+                        const dateStr = this.fmtDate(d);
+                        const isPast = dateStr < today;
+                        const isSunday = d.getDay() === 0;
+                        cells.push({
+                            key: 'c'+day,
+                            day,
+                            date: dateStr,
+                            inMonth: true,
+                            isPast,
+                            isToday: dateStr === today,
+                            isBooked: this.isDateBooked(dateStr),
+                            isHoliday: this.isHoliday(dateStr),
+                            holidayName: this.getHolidayName(dateStr),
+                            isSunday,
+                            isSelected: dateStr === this.interviewDate,
+                            bookedBy: this.getBookedInfo(dateStr),
+                        });
+                    }
 
-                window.showConfirmDialog({
-                    title: 'Update Application Status',
-                    message: `Are you sure you want to change the status to "${newStatusLabel}"?`,
-                    confirmText: 'Update',
-                    cancelText: 'Cancel',
-                    onConfirm: async () => {
-                        this.isUpdating = true;
+                    // Next month padding
+                    const remaining = 42 - cells.length;
+                    for (let day = 1; day <= remaining; day++) {
+                        const d = new Date(this.calYear, this.calMonth + 1, day);
+                        cells.push({ key: 'n'+day, day, date: this.fmtDate(d), inMonth: false, isPast: false, isToday: false, isBooked: false, isSelected: false, bookedBy: [] });
+                    }
 
+                    this.calCells = cells;
+                },
+
+                calPrev() {
+                    this.calMonth--;
+                    if (this.calMonth < 0) { this.calMonth = 11; this.calYear--; }
+                    this.buildCalCells();
+                },
+
+                calNext() {
+                    this.calMonth++;
+                    if (this.calMonth > 11) { this.calMonth = 0; this.calYear++; }
+                    this.buildCalCells();
+                },
+
+                selectCalDate(cell) {
+                    if (!cell.inMonth || cell.isPast || cell.isBooked || cell.isHoliday || cell.isSunday) return;
+                    this.interviewDate = cell.date;
+                    this.buildCalCells();
+                },
+
+                get calMonthLabel() {
+                    return new Date(this.calYear, this.calMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                },
+
+                openViewer() {
+                    if (!this.selectedApp) return;
+                    // Use the preview endpoint — handles both PDF (inline) and DOCX (server-side HTML conversion)
+                    this.viewerUrl = this.selectedApp.preview_url;
+                    this.showViewer = true;
+                    this.viewerStartTime = Date.now();
+                    this.viewerElapsed = 0;
+                    this.viewerTimerInterval = setInterval(() => {
+                        this.viewerElapsed = Math.floor((Date.now() - this.viewerStartTime) / 1000);
+                    }, 1000);
+                },
+
+                async closeViewer() {
+                    if (this.viewerTimerInterval) {
+                        clearInterval(this.viewerTimerInterval);
+                        this.viewerTimerInterval = null;
+                    }
+                    // Auto-mark as reviewed if viewed for 60+ seconds and status is still pending
+                    if (this.selectedApp && this.viewerElapsed >= 30 && this.selectedApp.status === 'pending') {
                         try {
                             const response = await fetch(`/admin/recruitment/${this.selectedApp.id}/status`, {
                                 method: 'PATCH',
@@ -1197,162 +1716,238 @@
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                                     'Accept': 'application/json'
                                 },
-                                body: JSON.stringify({
-                                    status: this.drawerStatus,
-                                    admin_notes: this.drawerNotes
-                                })
+                                body: JSON.stringify({ status: 'reviewed', admin_notes: this.selectedApp.admin_notes || '' })
                             });
-
                             if (response.ok) {
-                                this.selectedApp.status = this.drawerStatus;
-                                this.selectedApp.admin_notes = this.drawerNotes;
+                                this.selectedApp.status = 'reviewed';
+                                this.drawerStatus = 'reviewed';
                                 this.selectedApp.reviewed_at = new Date().toLocaleString('en-US', {
                                     month: 'short', day: '2-digit', year: 'numeric',
                                     hour: '2-digit', minute: '2-digit', hour12: true
                                 });
-                                window.showSuccessDialog('Status Updated', `Application status has been changed to "${newStatusLabel}".`, 'Continue', window.location.href);
-                            } else {
-                                window.showErrorDialog('Update Failed', 'Failed to update status. Please try again.');
+                                // Update local timeline
+                                if (!this.selectedApp.status_history) this.selectedApp.status_history = [];
+                                this.selectedApp.status_history.push({
+                                    from: 'pending',
+                                    to: 'reviewed',
+                                    timestamp: new Date().toISOString(),
+                                    by: 'Auto-review (30s)',
+                                });
                             }
-                        } catch (error) {
-                            console.error('Error:', error);
-                            window.showErrorDialog('Update Failed', 'An error occurred while updating the status.');
-                        } finally {
-                            this.isUpdating = false;
+                        } catch (e) {
+                            console.error('Auto-review failed:', e);
                         }
                     }
-                });
-            }
-        };
-    }
+                    this.showViewer = false;
+                    this.viewerUrl = '';
+                    this.viewerElapsed = 0;
+                },
 
-    const CSC_API_KEY = @json($cscApiKey);
-    const CSC_BASE_URL = 'https://api.countrystatecity.in/v1';
-    const FINLAND_ISO2 = 'FI';
+                formatViewerTime(seconds) {
+                    const m = Math.floor(seconds / 60);
+                    const s = seconds % 60;
+                    return m > 0 ? `${m}m ${s}s` : `${s}s`;
+                },
 
-    async function cscFetch(endpoint) {
-        try {
-            const response = await fetch(`${CSC_BASE_URL}${endpoint}`, {
-                headers: { 'X-CSCAPI-KEY': CSC_API_KEY }
-            });
-            if (!response.ok) return [];
-            return await response.json();
-        } catch (error) {
-            console.error('CSC API fetch error:', error);
-            return [];
+                getTimelineLabel(entry) {
+                    const labels = {
+                        'reviewed': 'Marked as Reviewed',
+                        'interview_scheduled': 'Interview Scheduled',
+                        'hired': 'Hired',
+                        'rejected': 'Rejected',
+                        'pending': 'Reset to Pending',
+                    };
+                    return labels[entry.to] || `Status changed to ${entry.to}`;
+                },
+
+                formatTimelineDate(timestamp) {
+                    if (!timestamp) return '';
+                    const d = new Date(timestamp);
+                    return d.toLocaleDateString('en-US', {
+                        month: 'short', day: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', hour12: true
+                    });
+                },
+
+                getStatusClass(status) {
+                    const classes = {
+                        'pending': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400',
+                        'reviewed': 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400',
+                        'interview_scheduled': 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400',
+                        'hired': 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400',
+                        'rejected': 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400',
+                    };
+                    return classes[status] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400';
+                },
+
+                getStatusLabel(status) {
+                    const labels = {
+                        'pending': 'Pending',
+                        'reviewed': 'Reviewed',
+                        'interview_scheduled': 'Interview Scheduled',
+                        'hired': 'Hired',
+                        'rejected': 'Rejected',
+                    };
+                    return labels[status] || status;
+                },
+
+                async setStatus(newStatus, extraData = {}) {
+                    if (!this.selectedApp) return;
+                    this.isUpdating = true;
+
+                    const payload = {
+                        status: newStatus,
+                        admin_notes: this.drawerNotes,
+                        ...extraData
+                    };
+
+                    try {
+                        const response = await fetch(`/admin/recruitment/${this.selectedApp.id}/status`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            this.selectedApp.status = newStatus;
+                            this.drawerStatus = newStatus;
+                            this.selectedApp.admin_notes = this.drawerNotes;
+                            if (extraData.interview_date) {
+                                const fullDate = extraData.interview_date;
+                                const datePart = fullDate.split(' ')[0];
+                                const timePart = fullDate.split(' ')[1] || '09:00:00';
+                                this.selectedApp.interview_date = datePart;
+                                this.selectedApp.interview_time = timePart.substring(0, 5);
+                                this.selectedApp.interview_duration = extraData.interview_duration || 60;
+
+                                const dur = parseInt(extraData.interview_duration || 60);
+                                const durLabel = dur >= 60 ? Math.floor(dur/60) + 'h' + (dur%60 ? ' ' + dur%60 + 'm' : '') : dur + 'm';
+
+                                const dt = new Date(datePart + 'T' + timePart);
+                                this.selectedApp.interview_date_display = dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+                                    + ' at ' + dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+                                    + ' (' + durLabel + ')';
+
+                                // Update booked interviews for overlap checking within same session
+                                const existingIdx = bookedInterviews.findIndex(b => b.id === this.selectedApp.id);
+                                const booking = {
+                                    id: this.selectedApp.id,
+                                    date: datePart,
+                                    time: timePart.substring(0, 5),
+                                    duration: extraData.interview_duration || 60,
+                                    job_title: this.selectedApp.job_title,
+                                    email: this.selectedApp.email
+                                };
+                                if (existingIdx >= 0) { bookedInterviews[existingIdx] = booking; }
+                                else { bookedInterviews.push(booking); }
+                            }
+                            this.selectedApp.reviewed_at = new Date().toLocaleString('en-US', {
+                                month: 'short', day: '2-digit', year: 'numeric',
+                                hour: '2-digit', minute: '2-digit', hour12: true
+                            });
+                            window.location.reload();
+                        } else {
+                            window.showErrorDialog('Update Failed', 'Failed to update status. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        window.showErrorDialog('Update Failed', 'An error occurred while updating the status.');
+                    } finally {
+                        this.isUpdating = false;
+                    }
+                }
+            };
         }
-    }
 
-    function jobPostingsData() {
-        // Map database records to JS format
-        const applicantCounts = @json($applicantCounts ?? new \stdClass);
-        const dbJobPostings = @json($jobPostings ?? []).map(job => ({
-            id: job.id,
-            title: job.title,
-            description: job.description,
-            location: job.location,
-            salary: job.salary,
-            type: job.type,
-            typeBadge: job.type_badge,
-            icon: job.icon,
-            iconColor: job.icon_color,
-            is_active: job.is_active,
-            requiredSkills: job.required_skills || [],
-            requiredDocs: (job.required_docs || []).map(d => typeof d === 'string' ? { name: d, type: '' } : d),
-            applicantCount: applicantCounts[job.title] || 0
-        }));
+        function jobPostingsData() {
+            // Map database records to JS format
+            const applicantCounts = @json($applicantCounts ?? new \stdClass());
+            const allApps = @json($allApplications ?? []);
+            const dbJobPostings = @json($jobPostings ?? []).map(job => ({
+                id: job.id,
+                title: job.title,
+                description: job.description,
+                location: job.location,
+                salary: job.salary,
+                type: job.type,
+                typeBadge: job.type_badge,
+                icon: job.icon,
+                iconColor: job.icon_color,
+                is_active: job.is_active,
+                status: job.status || 'published',
+                requiredSkills: job.required_skills || [],
+                requiredDocs: job.required_docs || [],
+                benefits: job.benefits || [],
+                applicantCount: applicantCounts[job.title] || 0
+            }));
 
-        return {
-            showModal: false,
-            showSuccess: false,
-            successTitle: '',
-            successMessage: '',
-            successButtonText: 'Back to Recruitment',
-            editingIndex: null,
-            isSubmitting: false,
-            newSkillInput: '',
-            newDocInput: '',
-            newDocType: '',
-            statesList: [],
-            citiesList: [],
-            showStateDropdown: false,
-            showCityDropdown: false,
-            selectedStateIso2: '',
-            categoryOptions: [
-                { value: 'cleaning', label: 'Cleaning', icon: 'fa-broom', color: 'blue' },
-                { value: 'logistics', label: 'Logistics', icon: 'fa-dolly', color: 'orange' },
-                { value: 'management', label: 'Management', icon: 'fa-user-tie', color: 'purple' },
-                { value: 'customer-service', label: 'Customer Service', icon: 'fa-headset', color: 'green' },
-                { value: 'maintenance', label: 'Maintenance', icon: 'fa-spray-can', color: 'red' },
-                { value: 'administration', label: 'Administration', icon: 'fa-clipboard-check', color: 'blue' },
-                { value: 'other', label: 'Other', icon: 'fa-briefcase', color: 'blue' },
-            ],
-            formData: {
-                id: null,
-                title: '',
-                description: '',
-                state: '',
-                city: '',
-                salary: '',
-                type: 'full-time',
-                typeBadge: 'Full-time Employee',
-                category: 'cleaning',
-                icon: 'fa-broom',
-                iconColor: 'blue',
-                is_active: true,
-                requiredSkills: [],
-                requiredDocs: []
-            },
-            jobPostings: dbJobPostings,
-
-            async init() {
-                const states = await cscFetch(`/countries/${FINLAND_ISO2}/states`);
-                this.statesList = states.sort((a, b) => a.name.localeCompare(b.name));
-            },
-
-            toggleStateDropdown() {
-                this.showCityDropdown = false;
-                this.showStateDropdown = !this.showStateDropdown;
-            },
-
-            toggleCityDropdown() {
-                this.showStateDropdown = false;
-                this.showCityDropdown = !this.showCityDropdown;
-            },
-
-            async selectState(state) {
-                this.formData.state = state.name;
-                this.selectedStateIso2 = state.iso2;
-                this.showStateDropdown = false;
-                this.formData.city = '';
-                this.citiesList = [];
-
-                const cities = await cscFetch(`/countries/${FINLAND_ISO2}/states/${state.iso2}/cities`);
-                this.citiesList = cities.sort((a, b) => a.name.localeCompare(b.name));
-            },
-
-            selectCity(city) {
-                this.formData.city = city.name;
-                this.showCityDropdown = false;
-            },
-
-            openModal() {
-                this.showModal = true;
-                document.body.style.overflow = 'hidden';
-            },
-
-            closeModal() {
-                this.showModal = false;
-                this.editingIndex = null;
-                this.resetForm();
-                document.body.style.overflow = 'auto';
-            },
-
-            resetForm() {
-                this.formData = {
+            return {
+                showModal: false,
+                showSuccess: false,
+                successTitle: '',
+                successMessage: '',
+                successButtonText: 'Back to Recruitment',
+                successRedirectUrl: '',
+                editingIndex: null,
+                isSubmitting: false,
+                selectedJobIds: [],
+                showConfirm: false,
+                confirmTitle: '',
+                confirmMessage: '',
+                pendingConfirmAction: null,
+                pendingDeleteIndex: null,
+                // Job posting view drawer
+                showJobDrawer: false,
+                viewingJob: null,
+                rankedApplicants: [],
+                get allJobsSelected() {
+                    return this.jobPostings.length > 0 && this.selectedJobIds.length === this.jobPostings.length;
+                },
+                stateOptions: [],
+                cityOptions: [],
+                cscApiKey: @json($cscApiKey),
+                cscBaseUrl: 'https://api.countrystatecity.in/v1',
+                finlandIso2: 'FI',
+                jobCategories: [
+                    { value: 'cleaning', label: 'Cleaning', description: 'General and deep cleaning roles', icon: 'fa-broom', color: 'green' },
+                    { value: 'management', label: 'Management', description: 'Supervisory and leadership positions', icon: 'fa-user-tie', color: 'purple' },
+                    { value: 'logistics', label: 'Logistics', description: 'Supply chain and equipment handling', icon: 'fa-dolly', color: 'orange' },
+                    { value: 'quality-assurance', label: 'Quality Assurance', description: 'Inspection and compliance checks', icon: 'fa-clipboard-check', color: 'purple' },
+                    { value: 'customer-service', label: 'Customer Service', description: 'Client communication and support', icon: 'fa-headset', color: 'blue' },
+                    { value: 'operations', label: 'Operations', description: 'Day-to-day business operations', icon: 'fa-briefcase', color: 'orange' },
+                    { value: 'maintenance', label: 'Maintenance', description: 'Facility and equipment upkeep', icon: 'fa-wrench', color: 'red' },
+                ],
+                defaultSkillsMap: {
+                    'cleaning': ['Surface Sanitization', 'Disinfection Procedures', 'Waste Disposal', 'Deep Cleaning', 'Carpet Cleaning', 'Restroom Sanitation'],
+                    'management': ['Team Leadership', 'Staff Supervision', 'Task Delegation', 'Performance Monitoring', 'Workflow Management'],
+                    'logistics': ['Inventory Management', 'Supply Coordination', 'Route Planning', 'Resource Scheduling', 'Time Management'],
+                    'quality-assurance': ['Quality Inspection', 'Safety Compliance', 'Cleaning Standards', 'Process Monitoring', 'Issue Reporting', 'Quality Control'],
+                    'customer-service': ['Client Communication', 'Complaint Handling', 'Service Coordination', 'Professional Communication', 'Client Support'],
+                    'operations': ['Operations Coordination', 'Task Prioritization', 'Workflow Optimization', 'Resource Management', 'Service Monitoring', 'Operational Reporting'],
+                    'maintenance': ['Equipment Maintenance', 'Preventive Maintenance', 'Facility Maintenance', 'Minor Repairs', 'Equipment Troubleshooting', 'Maintenance Reporting'],
+                },
+                defaultDocs: [
+                    { name: 'Resume', fileType: 'docx,pdf' },
+                    { name: 'Cover Letter', fileType: 'docx,pdf' },
+                ],
+                defaultBenefits: ['Occupational health care', 'Lodging benefits', 'Commuting benefits', 'Occupational accident insurance', 'Public Holidays', 'Annual paid leave'],
+                defaultDescriptionMap: {
+                    'cleaning': 'This role is responsible for maintaining cleanliness and sanitation across assigned areas. Duties include sweeping, mopping, vacuuming, dusting, disinfecting surfaces, and ensuring that facilities are hygienic and presentable. The role also involves proper waste disposal, restocking cleaning supplies, and following safety and sanitation standards.',
+                    'management': 'This role oversees daily operations and ensures that cleaning teams perform their tasks efficiently and according to company standards. Responsibilities include supervising staff, scheduling shifts, assigning tasks, monitoring performance, and resolving operational issues to maintain high service quality.',
+                    'logistics': 'This role manages the distribution and tracking of cleaning supplies, equipment, and other resources. The role ensures that teams have the necessary materials to perform their duties, coordinates deliveries, and maintains inventory records to support smooth operational workflows.',
+                    'quality-assurance': 'This role ensures that cleaning services meet company standards and client expectations. This role involves conducting inspections, monitoring cleaning procedures, identifying areas for improvement, and ensuring compliance with health and safety regulations.',
+                    'customer-service': 'The Customer Service Representative acts as the primary point of contact for clients. Responsibilities include responding to inquiries, addressing concerns or complaints, coordinating service requests, and ensuring that customers receive professional and satisfactory service.',
+                    'operations': 'The Operations Coordinator manages the day-to-day activities of the cleaning services team. This role involves organizing workflows, monitoring service delivery, coordinating staff assignments, and ensuring that operational processes run efficiently.',
+                    'maintenance': 'The Maintenance Technician is responsible for maintaining and repairing cleaning equipment and facility assets. Duties include performing routine inspections, preventive maintenance, minor repairs, and ensuring that equipment operates safely and efficiently.',
+                },
+                formData: {
                     id: null,
                     title: '',
-                    description: '',
+                    description: 'This role is responsible for maintaining cleanliness and sanitation across assigned areas. Duties include sweeping, mopping, vacuuming, dusting, disinfecting surfaces, and ensuring that facilities are hygienic and presentable. The role also involves proper waste disposal, restocking cleaning supplies, and following safety and sanitation standards.',
                     state: '',
                     city: '',
                     salary: '',
@@ -1360,285 +1955,683 @@
                     typeBadge: 'Full-time Employee',
                     category: 'cleaning',
                     icon: 'fa-broom',
-                    iconColor: 'blue',
+                    iconColor: 'green',
                     is_active: true,
-                    requiredSkills: [],
-                    requiredDocs: []
-                };
-                this.citiesList = [];
-                this.selectedStateIso2 = '';
-            },
+                    requiredSkills: ['Surface Sanitization', 'Disinfection Procedures', 'Waste Disposal', 'Deep Cleaning', 'Carpet Cleaning', 'Restroom Sanitation'],
+                    requiredDocs: [{ name: 'Resume', fileType: 'docx' }, { name: 'Cover Letter', fileType: 'docx' }],
+                    benefits: ['Occupational health care', 'Lodging benefits', 'Commuting benefits', 'Occupational accident insurance', 'Public Holidays', 'Annual paid leave']
+                },
+                jobPostings: dbJobPostings,
 
-            async editJob(index) {
-                this.editingIndex = index;
-                const job = this.jobPostings[index];
+                viewJob(index) {
+                    const job = this.jobPostings[index];
+                    this.viewingJob = job;
+                    this.rankedApplicants = this.calculateRanking(job);
+                    this.showJobDrawer = true;
+                    document.body.style.overflow = 'hidden';
+                },
 
-                // Parse "City, State" format from existing location
-                let state = '';
-                let city = '';
-                if (job.location) {
-                    const parts = job.location.split(', ');
-                    if (parts.length >= 2) {
-                        city = parts[0].trim();
-                        state = parts[1].trim();
+                closeJobDrawer() {
+                    this.showJobDrawer = false;
+                    this.viewingJob = null;
+                    this.rankedApplicants = [];
+                    document.body.style.overflow = 'auto';
+                },
+
+                calculateRanking(job) {
+                    const jobSkills = (job.requiredSkills || []).map(s => s.toLowerCase().trim());
+                    if (jobSkills.length === 0) {
+                        // No required skills — return applicants with 0% score
+                        return allApps
+                            .filter(a => a.job_title === job.title)
+                            .map(a => ({ ...a, score: 0, matchedSkills: [] }));
+                    }
+
+                    // Get applicants for this job title
+                    const applicants = allApps.filter(a => a.job_title === job.title);
+
+                    return applicants.map(a => {
+                        const applicantSkills = (a.skills || '').split(/[,;]+/).map(s => s.toLowerCase().trim()).filter(Boolean);
+                        const matched = [];
+
+                        jobSkills.forEach(reqSkill => {
+                            // Check if any applicant skill contains the required skill or vice versa
+                            const found = applicantSkills.some(aSkill =>
+                                aSkill.includes(reqSkill) || reqSkill.includes(aSkill)
+                            );
+                            if (found) {
+                                // Use the original casing from job posting
+                                const origIdx = jobSkills.indexOf(reqSkill);
+                                matched.push(job.requiredSkills[origIdx]);
+                            }
+                        });
+
+                        const score = Math.round((matched.length / jobSkills.length) * 100);
+                        return { ...a, score, matchedSkills: matched };
+                    }).sort((a, b) => b.score - a.score);
+                },
+
+                toggleJob(id) {
+                    const idx = this.selectedJobIds.indexOf(id);
+                    if (idx > -1) {
+                        this.selectedJobIds.splice(idx, 1);
                     } else {
-                        state = job.location.trim();
+                        this.selectedJobIds.push(id);
                     }
-                }
+                },
 
-                // Reverse-map icon to category
-                const matchedCat = this.categoryOptions.find(c => c.icon === job.icon) || this.categoryOptions[0];
-
-                this.formData = {
-                    id: job.id,
-                    title: job.title,
-                    description: job.description,
-                    state: state,
-                    city: city,
-                    salary: job.salary,
-                    type: job.type,
-                    typeBadge: job.typeBadge,
-                    category: matchedCat.value,
-                    icon: job.icon,
-                    iconColor: job.iconColor,
-                    is_active: job.is_active,
-                    requiredSkills: job.requiredSkills?.length ? [...job.requiredSkills] : [],
-                    requiredDocs: job.requiredDocs?.length ? [...job.requiredDocs] : []
-                };
-
-                // Load cities for the selected state
-                if (state) {
-                    const matchedState = this.statesList.find(s => s.name === state);
-                    if (matchedState) {
-                        this.selectedStateIso2 = matchedState.iso2;
-                        const cities = await cscFetch(`/countries/${FINLAND_ISO2}/states/${matchedState.iso2}/cities`);
-                        this.citiesList = cities.sort((a, b) => a.name.localeCompare(b.name));
+                toggleAllJobs(event) {
+                    if (event.target.checked) {
+                        this.selectedJobIds = this.jobPostings.map(j => j.id);
+                    } else {
+                        this.selectedJobIds = [];
                     }
-                }
+                },
 
-                this.openModal();
-            },
+                deselectAllJobs() {
+                    this.selectedJobIds = [];
+                },
 
-            deleteJob(index) {
-                const job = this.jobPostings[index];
-                window.showConfirmDialog({
-                    title: 'Delete Job Posting',
-                    message: `Are you sure you want to delete "${job.title}"? This action cannot be undone.`,
-                    confirmText: 'Delete',
-                    cancelText: 'Cancel',
-                    onConfirm: async () => {
-                        if (!job.id) {
-                            this.jobPostings.splice(index, 1);
-                            window.showSuccessDialog('Job Posting Deleted', 'The job posting has been removed successfully.');
-                            return;
+                bulkDeleteJobs() {
+                    this.confirmTitle = 'Archive Job Postings';
+                    this.confirmMessage = `Are you sure you want to archive ${this.selectedJobIds.length} job posting(s)? They can be restored from the Archived section.`;
+                    this.pendingConfirmAction = 'bulkDeleteJobs';
+                    this.showConfirm = true;
+                },
+
+                async doBulkDeleteJobs() {
+                    try {
+                        const response = await fetch('/admin/job-postings/bulk-delete', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                ids: this.selectedJobIds
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            this.jobPostings = this.jobPostings.filter(j => !this.selectedJobIds.includes(j.id));
+                            this.successTitle = 'Job Postings Archived';
+                            this.successMessage = data.message;
+                            this.successRedirectUrl = window.location.href;
+                            this.showSuccess = true;
+                            this.selectedJobIds = [];
+                        } else {
+                            window.showErrorDialog('Archive Failed', data.message || 'Failed to archive job postings.');
                         }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        window.showErrorDialog('Archive Failed', 'An error occurred while archiving job postings.');
+                    }
+                },
 
-                        try {
-                            const response = await fetch(`/admin/job-postings/${job.id}`, {
-                                method: 'DELETE',
+                openModal() {
+                    this.showModal = true;
+                    document.body.style.overflow = 'hidden';
+                },
+
+                closeModal() {
+                    this.showModal = false;
+                    this.editingIndex = null;
+                    this.resetForm();
+                    document.body.style.overflow = 'auto';
+                },
+
+                resetForm() {
+                    this.formData = {
+                        id: null,
+                        title: '',
+                        description: this.defaultDescriptionMap['cleaning'] || '',
+                        state: '',
+                        city: '',
+                        salary: '',
+                        type: 'full-time',
+                        typeBadge: 'Full-time Employee',
+                        category: 'cleaning',
+                        icon: 'fa-broom',
+                        iconColor: 'green',
+                        is_active: true,
+                        requiredSkills: [...(this.defaultSkillsMap['cleaning'] || [])],
+                        requiredDocs: this.defaultDocs.map(d => ({...d})),
+                        benefits: [...this.defaultBenefits]
+                    };
+                    this.cityOptions = [];
+                },
+
+                populateDefaults(categoryValue) {
+                    this.formData.requiredSkills = [...(this.defaultSkillsMap[categoryValue] || [])];
+                    this.formData.description = this.defaultDescriptionMap[categoryValue] || '';
+                    this.formData.requiredDocs = this.defaultDocs.map(d => ({...d}));
+                    this.formData.benefits = [...this.defaultBenefits];
+                },
+
+                getApplicantCount(job) {
+                    return allApps.filter(a => a.job_title === job.title).length;
+                },
+
+                get editingHasApplicants() {
+                    if (this.editingIndex === null) return false;
+                    const job = this.jobPostings[this.editingIndex];
+                    return job ? this.getApplicantCount(job) > 0 : false;
+                },
+
+                editJob(index) {
+                    this.editingIndex = index;
+                    const job = this.jobPostings[index];
+                    // Parse "City, State" from location
+                    const parts = (job.location || '').split(',').map(p => p.trim());
+                    const city = parts[0] || '';
+                    const state = parts[1] || '';
+                    // Find category by matching icon
+                    const matchedCat = this.jobCategories.find(c => c.icon === job.icon) || this.jobCategories[0];
+                    this.formData = {
+                        id: job.id,
+                        title: job.title,
+                        description: job.description,
+                        state: state,
+                        city: city,
+                        salary: job.salary,
+                        type: job.type,
+                        typeBadge: job.typeBadge,
+                        category: matchedCat.value,
+                        icon: job.icon,
+                        iconColor: job.iconColor,
+                        is_active: job.is_active,
+                        status: job.status || 'published',
+                        requiredSkills: job.requiredSkills?.length ? [...job.requiredSkills] : [...(this.defaultSkillsMap[matchedCat.value] || [])],
+                        requiredDocs: job.requiredDocs?.length ? job.requiredDocs.map(d => typeof d === 'string' ? {name: d, fileType: 'any'} : {...d}) : this.defaultDocs.map(d => ({...d})),
+                        benefits: job.benefits?.length ? [...job.benefits] : [...this.defaultBenefits]
+                    };
+                    // Load cities for the selected state
+                    if (state) {
+                        const stateObj = this.stateOptions.find(s => s.name === state);
+                        if (stateObj) {
+                            this.loadCities(stateObj.iso2);
+                        }
+                    }
+                    this.openModal();
+                },
+
+                archiveJob(index) {
+                    this.confirmTitle = 'Archive Job Posting';
+                    this.confirmMessage = 'Are you sure you want to archive this job posting? It will no longer be visible to applicants.';
+                    this.pendingConfirmAction = 'archiveJob';
+                    this.pendingDeleteIndex = index;
+                    this.showConfirm = true;
+                },
+
+                async doArchiveJob(index) {
+                    const job = this.jobPostings[index];
+                    if (!job.id) return;
+
+                    try {
+                        const response = await fetch(`/admin/job-postings/${job.id}/archive`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            this.jobPostings.splice(index, 1);
+                            this.successTitle = 'Job Posting Archived';
+                            this.successMessage = 'The job posting has been archived successfully.';
+                            this.successRedirectUrl = window.location.href;
+                            this.showSuccess = true;
+                        } else {
+                            window.showErrorDialog('Archive Failed', data.message || 'Failed to archive job posting.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        window.showErrorDialog('Archive Failed', 'An error occurred while archiving the job posting.');
+                    }
+                },
+
+                deleteJob(index) {
+                    this.confirmTitle = 'Archive Job Posting';
+                    this.confirmMessage = 'Are you sure you want to archive this job posting? It can be restored from the Archived section.';
+                    this.pendingConfirmAction = 'deleteJob';
+                    this.pendingDeleteIndex = index;
+                    this.showConfirm = true;
+                },
+
+                async doDeleteJob(index) {
+                    const job = this.jobPostings[index];
+                    if (!job.id) {
+                        this.jobPostings.splice(index, 1);
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/admin/job-postings/${job.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            this.jobPostings.splice(index, 1);
+                            this.successTitle = 'Job Posting Archived';
+                            this.successMessage = 'The job posting has been moved to archived.';
+                            this.successRedirectUrl = window.location.href;
+                            this.showSuccess = true;
+                        } else {
+                            window.showErrorDialog('Archive Failed', data.message || 'Failed to archive job posting.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        window.showErrorDialog('Archive Failed', 'An error occurred while archiving the job posting.');
+                    }
+                },
+
+                confirmAction() {
+                    this.showConfirm = false;
+                    if (this.pendingConfirmAction === 'bulkDeleteJobs') {
+                        this.doBulkDeleteJobs();
+                    } else if (this.pendingConfirmAction === 'deleteJob') {
+                        this.doDeleteJob(this.pendingDeleteIndex);
+                    } else if (this.pendingConfirmAction === 'archiveJob') {
+                        this.doArchiveJob(this.pendingDeleteIndex);
+                    } else if (this.pendingConfirmAction === 'publishDraft') {
+                        this.doPublishDraft();
+                    }
+                    this.pendingConfirmAction = null;
+                    this.pendingDeleteIndex = null;
+                },
+
+                cancelConfirm() {
+                    this.showConfirm = false;
+                    this.pendingConfirmAction = null;
+                    this.pendingDeleteIndex = null;
+                },
+
+                async cscFetch(endpoint) {
+                    try {
+                        const response = await fetch(`${this.cscBaseUrl}${endpoint}`, {
+                            headers: { 'X-CSCAPI-KEY': this.cscApiKey }
+                        });
+                        if (!response.ok) return [];
+                        return await response.json();
+                    } catch (error) {
+                        console.error('CSC API error:', error);
+                        return [];
+                    }
+                },
+
+                async loadStates() {
+                    const states = await this.cscFetch(`/countries/${this.finlandIso2}/states`);
+                    this.stateOptions = states.sort((a, b) => a.name.localeCompare(b.name));
+                },
+
+                async onStateChange() {
+                    this.formData.city = '';
+                    this.cityOptions = [];
+                    if (!this.formData.state) return;
+                    const stateObj = this.stateOptions.find(s => s.name === this.formData.state);
+                    if (stateObj) {
+                        await this.loadCities(stateObj.iso2);
+                    }
+                },
+
+                async loadCities(stateIso2) {
+                    const cities = await this.cscFetch(`/countries/${this.finlandIso2}/states/${stateIso2}/cities`);
+                    this.cityOptions = cities.sort((a, b) => a.name.localeCompare(b.name));
+                },
+
+                init() {
+                    this.loadStates();
+                },
+
+                async saveJob() {
+                    if (!this.formData.title || !this.formData.description || !this.formData.state || !this.formData.city || !this.formData
+                        .salary) {
+                        window.showErrorDialog('Validation Error', 'Please fill in all required fields.');
+                        return;
+                    }
+
+                    this.isSubmitting = true;
+
+                    // Filter out empty skills and docs
+                    const requiredSkills = this.formData.requiredSkills.filter(s => s.trim() !== '');
+                    const requiredDocs = this.formData.requiredDocs.filter(d => typeof d === 'object' ? d.name.trim() !== '' : d.trim() !== '');
+
+                    // Combine city and state into location string
+                    const location = `${this.formData.city}, ${this.formData.state}`;
+
+                    // Prepare data for API
+                    // When editing, preserve current status; when creating new, publish
+                    const status = (this.editingIndex !== null && this.formData.status)
+                        ? this.formData.status
+                        : 'published';
+
+                    const payload = {
+                        title: this.formData.title,
+                        description: this.formData.description,
+                        location: location,
+                        salary: this.formData.salary,
+                        type: this.formData.type,
+                        type_badge: this.formData.typeBadge,
+                        icon: this.formData.icon,
+                        icon_color: this.formData.iconColor,
+                        is_active: status === 'published' ? this.formData.is_active : false,
+                        status: status,
+                        required_skills: requiredSkills,
+                        required_docs: requiredDocs,
+                        benefits: this.formData.benefits
+                    };
+
+                    try {
+                        let response;
+                        if (this.editingIndex !== null && this.formData.id) {
+                            // Update existing job
+                            response = await fetch(`/admin/job-postings/${this.formData.id}`, {
+                                method: 'PUT',
                                 headers: {
                                     'Content-Type': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                                     'Accept': 'application/json'
-                                }
+                                },
+                                body: JSON.stringify(payload)
                             });
-
-                            const data = await response.json();
-                            if (data.success) {
-                                this.jobPostings.splice(index, 1);
-                                window.showSuccessDialog('Job Posting Deleted', 'The job posting has been removed successfully.');
-                            } else {
-                                window.showErrorDialog('Delete Failed', data.message || 'Failed to delete job posting.');
-                            }
-                        } catch (error) {
-                            console.error('Error:', error);
-                            window.showErrorDialog('Delete Failed', 'An error occurred while deleting the job posting.');
+                        } else {
+                            // Create new job
+                            response = await fetch('/admin/job-postings', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify(payload)
+                            });
                         }
-                    }
-                });
-            },
 
-            saveJob() {
-                if (!this.formData.title || !this.formData.description || !this.formData.state || !this.formData.city || !this.formData.salary) {
-                    window.showErrorDialog('Validation Error', 'Please fill in all required fields.');
-                    return;
-                }
+                        const data = await response.json();
+                        if (data.success) {
+                            // Map response data to JS format
+                            const savedJob = {
+                                id: data.data.id,
+                                title: data.data.title,
+                                description: data.data.description,
+                                location: data.data.location,
+                                salary: data.data.salary,
+                                type: data.data.type,
+                                typeBadge: data.data.type_badge,
+                                icon: data.data.icon,
+                                iconColor: data.data.icon_color,
+                                is_active: data.data.is_active,
+                                status: data.data.status || 'published',
+                                requiredSkills: data.data.required_skills || [],
+                                requiredDocs: data.data.required_docs || [],
+                                benefits: data.data.benefits || []
+                            };
 
-                const wasEditing = this.editingIndex !== null;
-                window.showConfirmDialog({
-                    title: wasEditing ? 'Update Job Posting' : 'Create Job Posting',
-                    message: wasEditing
-                        ? `Are you sure you want to update "${this.formData.title}"?`
-                        : `Are you sure you want to create the job posting "${this.formData.title}"?`,
-                    confirmText: wasEditing ? 'Update' : 'Create',
-                    cancelText: 'Cancel',
-                    onConfirm: async () => {
-                        this.isSubmitting = true;
-
-                        const requiredSkills = this.formData.requiredSkills.filter(s => s.trim() !== '');
-                        const requiredDocs = this.formData.requiredDocs.filter(d => d.name && d.name.trim() !== '');
-                        const location = `${this.formData.city}, ${this.formData.state}`;
-
-                        const payload = {
-                            title: this.formData.title,
-                            description: this.formData.description,
-                            location: location,
-                            salary: this.formData.salary,
-                            type: this.formData.type,
-                            type_badge: this.formData.typeBadge,
-                            icon: this.formData.icon,
-                            icon_color: this.formData.iconColor,
-                            is_active: this.formData.is_active,
-                            required_skills: requiredSkills,
-                            required_docs: requiredDocs
-                        };
-
-                        try {
-                            let response;
-                            if (wasEditing && this.formData.id) {
-                                response = await fetch(`/admin/job-postings/${this.formData.id}`, {
-                                    method: 'PUT',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                        'Accept': 'application/json'
-                                    },
-                                    body: JSON.stringify(payload)
-                                });
+                            const wasEditing = this.editingIndex !== null;
+                            if (wasEditing) {
+                                this.jobPostings[this.editingIndex] = savedJob;
                             } else {
-                                response = await fetch('/admin/job-postings', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                        'Accept': 'application/json'
-                                    },
-                                    body: JSON.stringify(payload)
-                                });
+                                this.jobPostings.unshift(savedJob);
                             }
-
-                            const data = await response.json();
-                            if (data.success) {
-                                const savedJob = {
-                                    id: data.data.id,
-                                    title: data.data.title,
-                                    description: data.data.description,
-                                    location: data.data.location,
-                                    salary: data.data.salary,
-                                    type: data.data.type,
-                                    typeBadge: data.data.type_badge,
-                                    icon: data.data.icon,
-                                    iconColor: data.data.icon_color,
-                                    is_active: data.data.is_active,
-                                    requiredSkills: data.data.required_skills || [],
-                                    requiredDocs: (data.data.required_docs || []).map(d => typeof d === 'string' ? { name: d, type: '' } : d)
-                                };
-
-                                if (wasEditing) {
-                                    this.jobPostings[this.editingIndex] = savedJob;
-                                } else {
-                                    this.jobPostings.unshift(savedJob);
-                                }
-                                this.closeModal();
-                                window.showSuccessDialog(
-                                    wasEditing ? 'Job Posting Updated' : 'Job Posting Created',
-                                    wasEditing
-                                        ? 'The job posting has been updated successfully.'
-                                        : 'The job posting has been created and is now visible to applicants.'
-                                );
-                            } else {
-                                window.showErrorDialog('Save Failed', data.message || 'Failed to save job posting.');
-                            }
-                        } catch (error) {
-                            console.error('Error:', error);
-                            window.showErrorDialog('Save Failed', 'An error occurred while saving the job posting.');
-                        } finally {
-                            this.isSubmitting = false;
+                            this.closeModal();
+                            this.successTitle = wasEditing ? 'Job Posting Updated' : 'Job Posting Created';
+                            this.successMessage = wasEditing ?
+                                'The job posting has been updated successfully.' :
+                                'The job posting has been created and is now visible to applicants.';
+                            this.showSuccess = true;
+                        } else {
+                            window.showErrorDialog('Save Failed', data.message || 'Failed to save job posting.');
                         }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        window.showErrorDialog('Save Failed', 'An error occurred while saving the job posting.');
+                    } finally {
+                        this.isSubmitting = false;
                     }
-                });
-            },
+                },
 
-            updateTypeBadge() {
-                const badges = {
-                    'full-time': 'Full-time Employee',
-                    'part-time': 'Part-time Employee',
-                    'remote': 'Remote'
-                };
-                this.formData.typeBadge = badges[this.formData.type] || 'Full-time Employee';
-            },
+                publishDraft() {
+                    this.confirmTitle = 'Publish Job Posting';
+                    this.confirmMessage = 'Are you sure you want to publish this draft? It will become visible to applicants.';
+                    this.pendingConfirmAction = 'publishDraft';
+                    this.showConfirm = true;
+                },
 
-            updateCategoryIcon() {
-                const cat = this.categoryOptions.find(c => c.value === this.formData.category);
-                if (cat) {
-                    this.formData.icon = cat.icon;
-                    this.formData.iconColor = cat.color;
+                async doPublishDraft() {
+                    this.formData.status = 'published';
+                    this.formData.is_active = true;
+
+                    this.isSubmitting = true;
+
+                    const requiredSkills = this.formData.requiredSkills.filter(s => s.trim() !== '');
+                    const requiredDocs = this.formData.requiredDocs.filter(d => typeof d === 'object' ? d.name.trim() !== '' : d.trim() !== '');
+                    const location = `${this.formData.city}, ${this.formData.state}`;
+
+                    const payload = {
+                        title: this.formData.title,
+                        description: this.formData.description,
+                        location: location,
+                        salary: this.formData.salary,
+                        type: this.formData.type,
+                        type_badge: this.formData.typeBadge,
+                        icon: this.formData.icon,
+                        icon_color: this.formData.iconColor,
+                        is_active: true,
+                        status: 'published',
+                        required_skills: requiredSkills,
+                        required_docs: requiredDocs,
+                        benefits: this.formData.benefits
+                    };
+
+                    try {
+                        const response = await fetch(`/admin/job-postings/${this.formData.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            const savedJob = {
+                                id: data.data.id,
+                                title: data.data.title,
+                                description: data.data.description,
+                                location: data.data.location,
+                                salary: data.data.salary,
+                                type: data.data.type,
+                                typeBadge: data.data.type_badge,
+                                icon: data.data.icon,
+                                iconColor: data.data.icon_color,
+                                is_active: data.data.is_active,
+                                status: data.data.status || 'published',
+                                requiredSkills: data.data.required_skills || [],
+                                requiredDocs: data.data.required_docs || [],
+                                benefits: data.data.benefits || []
+                            };
+
+                            this.jobPostings[this.editingIndex] = savedJob;
+                            this.closeModal();
+                            this.successTitle = 'Job Posting Published';
+                            this.successMessage = 'The draft has been published and is now visible to applicants.';
+                            this.successRedirectUrl = window.location.href;
+                            this.showSuccess = true;
+                        } else {
+                            window.showErrorDialog('Publish Failed', data.message || 'Failed to publish the job posting.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        window.showErrorDialog('Publish Failed', 'An error occurred while publishing the job posting.');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                updateTypeBadge() {
+                    const badges = {
+                        'full-time': 'Full-time Employee',
+                        'part-time': 'Part-time Employee',
+                        'remote': 'Remote'
+                    };
+                    this.formData.typeBadge = badges[this.formData.type] || 'Full-time Employee';
+                },
+
+                getCategoryLabel(value) {
+                    const cat = this.jobCategories.find(c => c.value === value);
+                    return cat ? cat.label : 'Select Category';
+                },
+
+
+                getIconBgClass(color) {
+                    const classes = {
+                        'blue': 'bg-blue-50 dark:bg-blue-900/30',
+                        'green': 'bg-green-50 dark:bg-green-900/30',
+                        'purple': 'bg-purple-50 dark:bg-purple-900/30',
+                        'orange': 'bg-orange-50 dark:bg-orange-900/30',
+                        'red': 'bg-red-50 dark:bg-red-900/30'
+                    };
+                    return classes[color] || classes['blue'];
+                },
+
+                getIconTextClass(color) {
+                    const classes = {
+                        'blue': 'text-blue-600 dark:text-blue-400',
+                        'green': 'text-green-600 dark:text-green-400',
+                        'purple': 'text-purple-600 dark:text-purple-400',
+                        'orange': 'text-orange-600 dark:text-orange-400',
+                        'red': 'text-red-600 dark:text-red-400'
+                    };
+                    return classes[color] || classes['blue'];
+                },
+
+                getTypeBadgeClass(type) {
+                    const classes = {
+                        'full-time': 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                        'part-time': 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+                        'remote': 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+                    };
+                    return classes[type] || classes['full-time'];
+                },
+
+                getJobStatusClass(status) {
+                    const classes = {
+                        'published': 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400',
+                        'draft': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400',
+                        'archived': 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+                        'inactive': 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                    };
+                    return classes[status] || classes['published'];
+                },
+
+                getJobStatusLabel(status) {
+                    const labels = {
+                        'published': 'Active',
+                        'draft': 'Draft',
+                        'archived': 'Archived',
+                        'inactive': 'Inactive'
+                    };
+                    return labels[status] || 'Active';
+                },
+
+                async saveAsDraft() {
+                    if (!this.formData.title || !this.formData.description || !this.formData.state || !this.formData.city || !this.formData.salary) {
+                        window.showErrorDialog('Validation Error', 'Please fill in all required fields.');
+                        return;
+                    }
+
+                    // Show confirmation dialog
+                    try {
+                        await window.showConfirmDialog(
+                            'Save as Draft',
+                            'Are you sure you want to save this job posting as a draft?',
+                            'Save as Draft',
+                            'Cancel'
+                        );
+                    } catch (e) {
+                        return; // User cancelled
+                    }
+
+                    this.isSubmitting = true;
+
+                    const requiredSkills = this.formData.requiredSkills.filter(s => s.trim() !== '');
+                    const requiredDocs = this.formData.requiredDocs.filter(d => typeof d === 'object' ? d.name.trim() !== '' : d.trim() !== '');
+                    const location = `${this.formData.city}, ${this.formData.state}`;
+
+                    const payload = {
+                        title: this.formData.title,
+                        description: this.formData.description,
+                        location: location,
+                        salary: this.formData.salary,
+                        type: this.formData.type,
+                        type_badge: this.formData.typeBadge,
+                        icon: this.formData.icon,
+                        icon_color: this.formData.iconColor,
+                        is_active: false,
+                        status: 'draft',
+                        required_skills: requiredSkills,
+                        required_docs: requiredDocs,
+                        benefits: this.formData.benefits
+                    };
+
+                    try {
+                        const response = await fetch('/admin/job-postings', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            const savedJob = {
+                                id: data.data.id,
+                                title: data.data.title,
+                                description: data.data.description,
+                                location: data.data.location,
+                                salary: data.data.salary,
+                                type: data.data.type,
+                                typeBadge: data.data.type_badge,
+                                icon: data.data.icon,
+                                iconColor: data.data.icon_color,
+                                is_active: data.data.is_active,
+                                status: data.data.status || 'draft',
+                                requiredSkills: data.data.required_skills || [],
+                                requiredDocs: data.data.required_docs || [],
+                                benefits: data.data.benefits || []
+                            };
+                            this.jobPostings.unshift(savedJob);
+                            this.closeModal();
+                            this.successTitle = 'Saved as Draft';
+                            this.successMessage = 'Job posting successfully saved as draft.';
+                            this.showSuccess = true;
+                        } else {
+                            window.showErrorDialog('Save Failed', data.message || 'Failed to save job posting as draft.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        window.showErrorDialog('Save Failed', 'An error occurred while saving the job posting.');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
                 }
-                // Auto-populate skills from matching template
-                const templateSkills = SKILLS_TEMPLATES_STORE.getSkillsForCategory(this.formData.category);
-                if (templateSkills.length > 0) {
-                    this.formData.requiredSkills = templateSkills;
-                }
-            },
-
-            addSkillPill() {
-                const skill = this.newSkillInput.trim();
-                if (skill && !this.formData.requiredSkills.includes(skill)) {
-                    // Remove empty placeholder if present
-                    this.formData.requiredSkills = this.formData.requiredSkills.filter(s => s.trim() !== '');
-                    this.formData.requiredSkills.push(skill);
-                }
-                this.newSkillInput = '';
-            },
-
-            removeSkill(index) {
-                this.formData.requiredSkills.splice(index, 1);
-            },
-
-            addDocPill() {
-                const name = this.newDocInput.trim();
-                if (name && !this.formData.requiredDocs.some(d => d.name === name)) {
-                    this.formData.requiredDocs.push({ name: name, type: this.newDocType || '' });
-                }
-                this.newDocInput = '';
-                this.newDocType = '';
-            },
-
-            removeDoc(index) {
-                this.formData.requiredDocs.splice(index, 1);
-            },
-
-            getIconBgClass(color) {
-                const classes = {
-                    'blue': 'bg-blue-50 dark:bg-blue-900/30',
-                    'green': 'bg-green-50 dark:bg-green-900/30',
-                    'purple': 'bg-purple-50 dark:bg-purple-900/30',
-                    'orange': 'bg-orange-50 dark:bg-orange-900/30',
-                    'red': 'bg-red-50 dark:bg-red-900/30'
-                };
-                return classes[color] || classes['blue'];
-            },
-
-            getIconTextClass(color) {
-                const classes = {
-                    'blue': 'text-blue-600 dark:text-blue-400',
-                    'green': 'text-green-600 dark:text-green-400',
-                    'purple': 'text-purple-600 dark:text-purple-400',
-                    'orange': 'text-orange-600 dark:text-orange-400',
-                    'red': 'text-red-600 dark:text-red-400'
-                };
-                return classes[color] || classes['blue'];
-            },
-
-            getTypeBadgeClass(type) {
-                const classes = {
-                    'full-time': 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-                    'part-time': 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-                    'remote': 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
-                };
-                return classes[type] || classes['full-time'];
-            }
-        };
-    }
+            };
+        }
     </script>
 </x-layouts.general-employer>

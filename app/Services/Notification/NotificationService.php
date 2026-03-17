@@ -913,6 +913,158 @@ class NotificationService
     }
 
     /**
+     * Notify applicant when their application is submitted.
+     */
+    public function notifyApplicantApplicationSubmitted($application, User $user): ?Notification
+    {
+        return $this->create(
+            $user,
+            Notification::TYPE_APPLICATION_SUBMITTED,
+            'Application Submitted',
+            "Your application for {$application->job_title} has been submitted successfully.",
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'icon' => 'paper-plane',
+                'color' => 'blue',
+            ]
+        );
+    }
+
+    /**
+     * Notify applicant when their application status changes.
+     */
+    public function notifyApplicantStatusChanged($application, string $oldStatus, string $newStatus): ?Notification
+    {
+        $user = User::where('email', $application->email)->first();
+        if (!$user) return null;
+
+        $labels = [
+            'pending' => 'Pending',
+            'reviewed' => 'Under Review',
+            'interview_scheduled' => 'Interview Scheduled',
+            'hired' => 'Hired',
+            'rejected' => 'Not Selected',
+        ];
+
+        $newLabel = $labels[$newStatus] ?? ucfirst($newStatus);
+        $title = match($newStatus) {
+            'reviewed' => 'Application Under Review',
+            'interview_scheduled' => 'Interview Scheduled',
+            'hired' => 'Congratulations! You\'re Hired',
+            'rejected' => 'Application Update',
+            default => 'Application Status Updated',
+        };
+        $message = match($newStatus) {
+            'reviewed' => "Your application for {$application->job_title} is now being reviewed by our team.",
+            'interview_scheduled' => "An interview has been scheduled for your {$application->job_title} application." . ($application->interview_date ? " Date: {$application->interview_date->format('M d, Y')}" : ''),
+            'hired' => "You've been hired for the {$application->job_title} position! We'll be in touch with next steps.",
+            'rejected' => "Thank you for your interest in the {$application->job_title} position. Unfortunately, we've decided to move forward with other candidates.",
+            default => "Your application for {$application->job_title} has been updated to: {$newLabel}.",
+        };
+
+        $colors = [
+            'reviewed' => 'blue',
+            'interview_scheduled' => 'purple',
+            'hired' => 'green',
+            'rejected' => 'red',
+        ];
+
+        return $this->create(
+            $user,
+            Notification::TYPE_APPLICATION_STATUS_CHANGED,
+            $title,
+            $message,
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'icon' => match($newStatus) {
+                    'reviewed' => 'eye',
+                    'interview_scheduled' => 'calendar-check',
+                    'hired' => 'circle-check',
+                    'rejected' => 'circle-xmark',
+                    default => 'bell',
+                },
+                'color' => $colors[$newStatus] ?? 'gray',
+            ]
+        );
+    }
+
+    /**
+     * Notify applicant when they withdraw their application.
+     */
+    public function notifyApplicantApplicationWithdrawn($application, User $user): ?Notification
+    {
+        return $this->create(
+            $user,
+            Notification::TYPE_APPLICATION_WITHDRAWN,
+            'Application Withdrawn',
+            "You have withdrawn your application for {$application->job_title}.",
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'icon' => 'rotate-left',
+                'color' => 'gray',
+            ]
+        );
+    }
+
+    /**
+     * Notify admins when an applicant withdraws their application.
+     */
+    public function notifyAdminsApplicationWithdrawn($application): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_APPLICATION_WITHDRAWN,
+            'Application Withdrawn',
+            "{$application->email} has withdrawn their application for {$application->job_title}.",
+            [
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'email' => $application->email,
+                'icon' => 'rotate-left',
+                'color' => 'red',
+                'action_url' => route('admin.recruitment.index'),
+                'action_text' => 'View Applications'
+            ]
+        );
+    }
+
+    /**
+     * Scenario #5: Notify admins when a potential duplicate applicant is detected (same phone, different email).
+     */
+    public function notifyAdminsDuplicateApplicant($newApplication, $existingApplication, string $phone): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        $existingProfile = json_decode($existingApplication->applicant_profile, true) ?? [];
+        $existingName = trim(($existingProfile['first_name'] ?? '') . ' ' . ($existingProfile['last_name'] ?? '')) ?: $existingApplication->email;
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_DUPLICATE_APPLICANT,
+            'Potential Duplicate Found',
+            "New applicant {$newApplication->email} has the same phone number ({$phone}) as existing applicant {$existingName} ({$existingApplication->email}). Please review and choose to Merge or Ignore.",
+            [
+                'new_application_id' => $newApplication->id,
+                'existing_application_id' => $existingApplication->id,
+                'phone' => $phone,
+                'new_email' => $newApplication->email,
+                'existing_email' => $existingApplication->email,
+                'icon' => 'users',
+                'color' => 'yellow',
+                'action_url' => route('admin.recruitment.index'),
+                'action_text' => 'Review Duplicates'
+            ]
+        );
+    }
+
+    /**
      * Notify all admins when an employee submits an absence/leave request (web form).
      */
     public function notifyAdminsEmployeeRequest($employeeRequest, $employeeName): Collection
@@ -934,6 +1086,143 @@ class NotificationService
                 'icon' => 'user-clock',
                 'color' => 'yellow',
                 'action_url' => route('admin.attendance'),
+            ]
+        );
+    }
+
+    // ============================================
+    // Scenario Notification Methods
+    // ============================================
+
+    /**
+     * SCENARIO #10: Notify admins about a last-minute task decline by an employee.
+     * Sends urgent notification to all admins/dispatchers.
+     */
+    public function notifyAdminsLastMinuteDecline($task, $employeeName): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LAST_MINUTE_DECLINE,
+            'URGENT: Last-Minute Task Decline',
+            "⚠️ {$employeeName} has declined task \"{$task->task_description}\" scheduled for {$serviceDate} with less than 24 hours notice. Immediate reassignment required.",
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-triangle',
+                'color' => 'red',
+                'action_url' => '/admin/appointments',
+                'action_text' => 'Reassign Task'
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #9: Notify admins about CRITICAL_WARNING for incomplete staffing.
+     */
+    public function notifyAdminsCriticalWarning($task, string $message): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_CRITICAL_WARNING,
+            'CRITICAL WARNING: Incomplete Staffing',
+            $message,
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-circle',
+                'color' => 'red',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #14: Notify qualified employees about an unstaffed job opportunity.
+     */
+    public function notifyEmployeesJobOpportunity($task, $employees): Collection
+    {
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+
+        $notifications = collect();
+        foreach ($employees as $employee) {
+            if ($employee->user) {
+                $notifications->push($this->create(
+                    $employee->user,
+                    Notification::TYPE_JOB_OPPORTUNITY,
+                    'Job Opportunity Available',
+                    "A task \"{$task->task_description}\" on {$serviceDate} needs a team member. Are you available?",
+                    [
+                        'task_id' => $task->id,
+                        'task_description' => $task->task_description,
+                        'service_date' => $serviceDate,
+                        'icon' => 'briefcase',
+                        'color' => 'blue',
+                        'action_url' => '/employee/tasks',
+                        'action_text' => 'View Opportunity'
+                    ]
+                ));
+            }
+        }
+
+        return $notifications;
+    }
+
+    /**
+     * SCENARIO #15: CRITICAL_ESCALATION - No one accepting within 60 minutes.
+     */
+    public function notifyAdminsCriticalEscalation($task): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_CRITICAL_ESCALATION,
+            'CRITICAL ESCALATION: Unassigned Task',
+            "⚠️ Task \"{$task->task_description}\" on {$serviceDate} has had no acceptance for 60+ minutes. System will auto-assign to the employee with no pending tasks.",
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-triangle',
+                'color' => 'red',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #11: Notify manager about emergency leave request.
+     */
+    public function notifyManagerEmergencyLeave($leaveRequest, $employeeName, $escalationLevel): Collection
+    {
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+        $titles = [
+            1 => 'Urgent Reminder: Emergency Leave Pending',
+            2 => 'ALERT: Emergency Leave Pending',
+            3 => 'CRITICAL: Emergency Leave - System Action Required',
+        ];
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_EMERGENCY_LEAVE_ESCALATION,
+            $titles[$escalationLevel] ?? 'Emergency Leave Notification',
+            "Emergency leave for {$employeeName} requires immediate attention. Escalation Level: {$escalationLevel}.",
+            [
+                'leave_request_id' => $leaveRequest->id,
+                'employee_name' => $employeeName,
+                'escalation_level' => $escalationLevel,
+                'urgency' => $escalationLevel >= 3 ? 'critical' : 'high',
+                'icon' => 'user-clock',
+                'color' => $escalationLevel >= 3 ? 'red' : 'yellow',
             ]
         );
     }

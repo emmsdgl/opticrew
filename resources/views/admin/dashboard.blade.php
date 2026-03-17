@@ -3,14 +3,14 @@
 
         <!-- Left Panel -->
         <div class="flex flex-col gap-6 flex-1 w-full">
-            <div>
+            <div id="tour-welcome-card">
                 <x-herocard :headerName="$admin->full_name ?? 'Admin'" :headerDesc="'Welcome to the admin dashboard. Track tasks and manage them in the dashboard'" :headerIcon="'hero-employer'" />
             </div>
 
             <p class="text-sm font-sans font-bold text-gray-800 dark:text-gray-200">
                 My Calendar
             </p>
-            <div class="w-full border border-dashed rounded-lg border-gray-400 dark:border-gray-700">
+            <div id="tour-calendar" class="w-full border border-dashed rounded-lg border-gray-400 dark:border-gray-700">
                 <x-calendar :holidays="$holidays" />
             </div>
 
@@ -142,12 +142,14 @@
                     return { completed, total, percentage };
                 }
             }">
+                <div id="tour-task-overview">
                 <x-labelwithvalue label="Task Overview" :count="'(' . $taskCount . ')'" />
 
                 <div
                     class="h-72 overflow-y-auto w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                     <x-employee-components.task-overview-list :items="$tasks" fixedHeight="18rem" maxHeight="24rem"
                         emptyTitle="No tasks this month" emptyMessage="There are no tasks scheduled for this month." />
+                </div>
                 </div>
 
                 <!-- Task Details Slide-in Drawer -->
@@ -173,7 +175,7 @@
                              x-transition:leave-start="translate-x-0"
                              x-transition:leave-end="translate-x-full"
                              @click.stop
-                             class="relative w-screen max-w-md sm:max-w-lg">
+                             class="relative w-screen max-w-sm">
 
                             <!-- Drawer Content -->
                             <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
@@ -420,7 +422,7 @@
         </div>
 
         <!-- Right Panel -->
-        <div class="flex flex-col gap-6 w-full lg:w-1/3">
+        <div id="tour-right-panel" class="flex flex-col gap-6 w-full lg:w-1/3">
             {{-- LIVEWIRE ATTENDANCE CHART - AUTO REFRESHES --}}
             @livewire('admin.attendance-chart')
 
@@ -429,4 +431,48 @@
             @livewire('admin.recent-arrivals')
         </div>
     </section>
+
+    <x-guided-tour tourName="admin-dashboard" :steps="json_encode([
+        [
+            'title' => 'Welcome to Your Dashboard',
+            'description' => 'This is your central hub for managing the entire system. Let us walk you through the key features available to you.',
+            'side' => 'bottom',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#sidebar',
+            'title' => 'Navigation Sidebar',
+            'description' => 'Access all major sections from here: Accounts, Tasks, Appointments, Recruitment, Training, Attendance, History, and Analytics.',
+            'side' => 'right',
+            'align' => 'start',
+        ],
+        [
+            'element' => '#tour-welcome-card',
+            'title' => 'Welcome Card',
+            'description' => 'Your personalized welcome card shows a quick greeting and summary of your dashboard.',
+            'side' => 'bottom',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-calendar',
+            'title' => 'Calendar',
+            'description' => 'View your monthly calendar with holidays and important dates at a glance.',
+            'side' => 'top',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-task-overview',
+            'title' => 'Task Overview',
+            'description' => 'Monitor all scheduled tasks here. Click any task to view its full details, assigned team, and checklist progress.',
+            'side' => 'top',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-right-panel',
+            'title' => 'Attendance & Arrivals',
+            'description' => 'Track employee attendance stats and see who recently clocked in. This panel updates automatically.',
+            'side' => 'left',
+            'align' => 'start',
+        ],
+    ])" />
 </x-layouts.general-employer>

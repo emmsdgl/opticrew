@@ -41,9 +41,16 @@ class AccountController extends Controller
                   ->whereHas('client', function($q) {
                       $q->where('client_type', 'personal');
                   });
+        } elseif ($accountType === 'applicants') {
+            $query->where('role', 'applicant');
         }
 
-        $users = $query->paginate(15);
+        // Exclude applicants from 'all' view (they have their own section)
+        if ($accountType === 'all') {
+            $query->where('role', '!=', 'applicant');
+        }
+
+        $users = $query->paginate(5);
 
         // Get counts for each type
         $employeesCount = User::where('role', 'employee')->count();
@@ -56,8 +63,12 @@ class AccountController extends Controller
             ->whereHas('client', function($q) {
                 $q->where('client_type', 'personal');
             })->count();
+        $applicantsCount = User::where('role', 'applicant')->count();
 
-        return view('admin.accounts.index', compact('users', 'accountType', 'employeesCount', 'contractedCompanyCount', 'companyCount', 'personalCount'));
+        // Get registered applicants (paginated separately)
+        $applicants = User::where('role', 'applicant')->orderBy('created_at', 'desc')->paginate(5, ['*'], 'applicants_page');
+
+        return view('admin.accounts.index', compact('users', 'accountType', 'employeesCount', 'contractedCompanyCount', 'companyCount', 'personalCount', 'applicantsCount', 'applicants'));
     }
 
     /**
@@ -354,7 +365,7 @@ class AccountController extends Controller
                   });
         }
 
-        $users = $query->paginate(15);
+        $users = $query->paginate(5);
 
         // Get counts for each type
         $employeesCount = User::onlyTrashed()->where('role', 'employee')->count();

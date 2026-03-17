@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\Employee;
-use App\Models\Location;
+use App\Models\ContractedClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -22,11 +22,21 @@ class ManagerDashboardController extends Controller
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
 
-        // Get tasks for this contracted client
-        $clientId = $user->id;
+        $contractedClient = ContractedClient::where('user_id', $user->id)->first();
+
+        if (!$contractedClient) {
+            return view('manager.dashboard', [
+                'todayTasks' => collect(),
+                'stats' => ['todayTasks' => 0, 'completedToday' => 0, 'onDuty' => 0, 'totalEmployees' => 0, 'weekTasks' => 0, 'locations' => 0],
+                'taskOverview' => ['completed' => 0, 'inProgress' => 0, 'scheduled' => 0, 'onHold' => 0],
+                'recentActivity' => [],
+            ]);
+        }
+
+        $locationIds = $contractedClient->locations()->pluck('id');
 
         // Today's tasks
-        $todayTasks = Task::where('client_id', $clientId)
+        $todayTasks = Task::whereIn('location_id', $locationIds)
             ->whereDate('scheduled_date', $today)
             ->with(['location', 'assignedEmployees'])
             ->orderBy('scheduled_time')
@@ -35,65 +45,70 @@ class ManagerDashboardController extends Controller
 
         // Statistics
         $stats = [
-            'todayTasks' => Task::where('client_id', $clientId)
+            'todayTasks' => Task::whereIn('location_id', $locationIds)
                 ->whereDate('scheduled_date', $today)
                 ->count(),
-            'completedToday' => Task::where('client_id', $clientId)
+            'completedToday' => Task::whereIn('location_id', $locationIds)
                 ->whereDate('scheduled_date', $today)
                 ->where('status', 'Completed')
                 ->count(),
-            'onDuty' => Employee::whereHas('tasks', function ($query) use ($clientId, $today) {
-                $query->where('client_id', $clientId)
+            'onDuty' => Employee::whereHas('tasks', function ($query) use ($locationIds, $today) {
+                $query->whereIn('location_id', $locationIds)
                     ->whereDate('scheduled_date', $today)
                     ->whereIn('status', ['In Progress', 'Scheduled']);
             })->count(),
-            'totalEmployees' => Employee::whereHas('tasks', function ($query) use ($clientId) {
-                $query->where('client_id', $clientId);
+            'totalEmployees' => Employee::whereHas('tasks', function ($query) use ($locationIds) {
+                $query->whereIn('location_id', $locationIds);
             })->count(),
-            'weekTasks' => Task::where('client_id', $clientId)
+            'weekTasks' => Task::whereIn('location_id', $locationIds)
                 ->whereBetween('scheduled_date', [$startOfWeek, $endOfWeek])
                 ->count(),
-            'locations' => Location::where('contracted_client_id', $clientId)->count(),
+            'locations' => $contractedClient->locations()->count(),
         ];
 
         // Task overview for the week
         $taskOverview = [
-            'completed' => Task::where('client_id', $clientId)
+            'completed' => Task::whereIn('location_id', $locationIds)
                 ->whereBetween('scheduled_date', [$startOfWeek, $endOfWeek])
                 ->where('status', 'Completed')
                 ->count(),
-            'inProgress' => Task::where('client_id', $clientId)
+            'inProgress' => Task::whereIn('location_id', $locationIds)
                 ->whereBetween('scheduled_date', [$startOfWeek, $endOfWeek])
                 ->where('status', 'In Progress')
                 ->count(),
-            'scheduled' => Task::where('client_id', $clientId)
+            'scheduled' => Task::whereIn('location_id', $locationIds)
                 ->whereBetween('scheduled_date', [$startOfWeek, $endOfWeek])
                 ->whereIn('status', ['Scheduled', 'Pending'])
                 ->count(),
-            'onHold' => Task::where('client_id', $clientId)
+            'onHold' => Task::whereIn('location_id', $locationIds)
                 ->whereBetween('scheduled_date', [$startOfWeek, $endOfWeek])
                 ->where('status', 'On Hold')
                 ->count(),
         ];
 
-        // Recent activity (placeholder - can be enhanced with actual activity logging)
-        $recentActivity = [
-            [
-                'icon' => 'check-circle',
-                'message' => 'Task completed at Location A',
-                'time' => '2 hours ago',
-            ],
-            [
-                'icon' => 'user-plus',
-                'message' => 'New employee assigned to task',
-                'time' => '4 hours ago',
-            ],
-            [
-                'icon' => 'calendar-plus',
-                'message' => 'New task scheduled for tomorrow',
-                'time' => 'Yesterday',
-            ],
-        ];
+        // Real recent activity from task updates
+        $recentActivity = Task::whereIn('location_id', $locationIds)
+            ->with('location')
+            ->orderBy('updated_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($task) {
+                $locationName = $task->location->name ?? 'Unknown';
+
+                switch ($task->status) {
+                    case 'Completed':
+                        return ['icon' => 'check-circle', 'message' => "Task completed at {$locationName}", 'time' => $task->updated_at->diffForHumans()];
+                    case 'In Progress':
+                        return ['icon' => 'spinner', 'message' => "Task in progress at {$locationName}", 'time' => $task->updated_at->diffForHumans()];
+                    case 'On Hold':
+                        return ['icon' => 'pause', 'message' => "Task on hold at {$locationName}", 'time' => $task->updated_at->diffForHumans()];
+                    case 'Cancelled':
+                        return ['icon' => 'xmark-circle', 'message' => "Task cancelled at {$locationName}", 'time' => $task->updated_at->diffForHumans()];
+                    default:
+                        return ['icon' => 'calendar-plus', 'message' => "New task scheduled at {$locationName}", 'time' => $task->updated_at->diffForHumans()];
+                }
+            })
+            ->toArray();
 
         return view('manager.dashboard', compact(
             'todayTasks',

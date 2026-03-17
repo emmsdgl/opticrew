@@ -24,6 +24,8 @@ class User extends Authenticatable
         'name',
         'username',
         'email',
+        'alternative_email',
+        'google_id',
         'email_verified_at',
         'profile_picture',
         'phone',
@@ -31,6 +33,8 @@ class User extends Authenticatable
         'password',
         'role',
         'terms_accepted_at',
+        'is_active',
+        'tours_completed',
     ];
 
     // Define the relationship
@@ -74,6 +78,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'terms_accepted_at' => 'datetime',
+        'tours_completed' => 'array',
     ];
 
 }

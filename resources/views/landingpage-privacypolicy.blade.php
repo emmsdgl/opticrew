@@ -361,13 +361,29 @@
     document.addEventListener('DOMContentLoaded', function() {
         const agreeBtn = document.querySelector('.btn-agree');
         const declineBtn = document.querySelector('.btn-decline');
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromRecruitment = urlParams.get('from') === 'recruitment';
+        const jobId = urlParams.get('job') || '';
 
         agreeBtn.addEventListener('click', function() {
-            window.showSuccessDialog('Policy Accepted', 'Thank you for accepting the Privacy Policy.');
+            // Set cookie for 30 days
+            document.cookie = 'finnoys_policy_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
+
+            if (fromRecruitment) {
+                const redirectUrl = '/recruitment' + (jobId ? '?apply_job=' + jobId : '');
+                window.showSuccessDialog('Policy Accepted', 'Thank you for accepting the Privacy Policy.', 'Continue', redirectUrl);
+            } else {
+                window.showSuccessDialog('Policy Accepted', 'Thank you for accepting the Privacy Policy.');
+            }
         });
 
         declineBtn.addEventListener('click', function() {
-            if(confirm('You must accept the Privacy Policy to continue using the platform.')) {
+            if (fromRecruitment) {
+                const redirectUrl = '/recruitment' + (jobId ? '?apply_job=' + jobId : '');
+                window.showErrorDialog('Policy Required', 'You must accept the Privacy Policy before applying.', 'Back to Recruitment', redirectUrl);
+            } else {
+                if(confirm('You must accept the Privacy Policy to continue using the platform.')) {
+                }
             }
         });
     });

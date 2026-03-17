@@ -48,6 +48,22 @@ class Notification extends Model
     const TYPE_TASK_PROGRESS_ADMIN = 'task_progress_admin';
     const TYPE_JOB_APPLICATION_SUBMITTED = 'job_application_submitted';
 
+    // Applicant notification types
+    const TYPE_APPLICATION_SUBMITTED = 'application_submitted';
+    const TYPE_APPLICATION_STATUS_CHANGED = 'application_status_changed';
+    const TYPE_APPLICATION_WITHDRAWN = 'application_withdrawn';
+
+    // Scenario notification types
+    const TYPE_LAST_MINUTE_DECLINE = 'last_minute_decline';
+    const TYPE_CRITICAL_WARNING = 'critical_warning';
+    const TYPE_CRITICAL_ESCALATION = 'critical_escalation';
+    const TYPE_JOB_OPPORTUNITY = 'job_opportunity';
+    const TYPE_EMERGENCY_LEAVE = 'emergency_leave';
+    const TYPE_EMERGENCY_LEAVE_ESCALATION = 'emergency_leave_escalation';
+    const TYPE_TASK_UNSTAFFED = 'task_unstaffed';
+    const TYPE_OVERTIME_ALERT = 'overtime_alert';
+    const TYPE_DUPLICATE_APPLICANT = 'duplicate_applicant';
+
     protected $fillable = [
         'user_id',
         'type',

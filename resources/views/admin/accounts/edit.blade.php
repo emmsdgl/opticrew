@@ -59,13 +59,41 @@
                             Email address <span class="text-red-500">*</span>
                         </dt>
                         <dd class="mt-1 sm:col-span-2 sm:mt-0">
-                            <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
-                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                            @if($user->google_id && $user->role !== 'employee')
+                                {{-- Non-employee Google users: their primary email IS the Google email --}}
+                                <input type="email" value="{{ $user->email }}" readonly
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-not-allowed">
+                                <input type="hidden" name="email" value="{{ $user->email }}">
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                    <i class="fa-solid fa-lock text-[10px] text-amber-500"></i>
+                                    This email is linked to a Google account and cannot be changed
+                                </p>
+                            @else
+                                <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                            @endif
                             @error('email')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </dd>
                     </div>
+
+                    {{-- Personal email (employees with linked Google account) --}}
+                    @if($user->role === 'employee' && $user->google_id && $user->alternative_email)
+                    <div class="px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center bg-white dark:bg-gray-900">
+                        <dt class="text-sm font-semibold text-gray-900 dark:text-white">
+                            Personal email (Gmail)
+                        </dt>
+                        <dd class="mt-1 sm:col-span-2 sm:mt-0">
+                            <input type="email" value="{{ $user->alternative_email }}" readonly
+                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-not-allowed">
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                <i class="fa-solid fa-lock text-[10px] text-amber-500"></i>
+                                This email is linked to a Google account and cannot be changed
+                            </p>
+                        </dd>
+                    </div>
+                    @endif
 
                     <!-- Phone -->
                     <div class="px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center bg-white dark:bg-gray-900">

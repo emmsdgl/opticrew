@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\Task;
+use App\Models\ContractedClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,24 +16,28 @@ class ManagerEmployeesController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        $clientId = $user->id;
+        $contractedClient = ContractedClient::where('user_id', Auth::user()->id)->first();
 
-        // Get employees who have been assigned to tasks for this client
-        $employees = Employee::whereHas('tasks', function ($query) use ($clientId) {
-            $query->where('client_id', $clientId);
+        if (!$contractedClient) {
+            return view('manager.employees', ['employees' => collect()]);
+        }
+
+        $locationIds = $contractedClient->locations()->pluck('id');
+
+        // Get employees who have been assigned to tasks at this client's locations
+        $employees = Employee::whereHas('tasks', function ($query) use ($locationIds) {
+            $query->whereIn('location_id', $locationIds);
         })
         ->with('user')
         ->get()
-        ->map(function ($employee) use ($clientId) {
-            // Calculate efficiency and completed tasks for this client
-            $totalTasks = Task::where('client_id', $clientId)
+        ->map(function ($employee) use ($locationIds) {
+            $totalTasks = Task::whereIn('location_id', $locationIds)
                 ->whereHas('assignedEmployees', function ($q) use ($employee) {
                     $q->where('employee_id', $employee->id);
                 })
                 ->count();
 
-            $completedTasks = Task::where('client_id', $clientId)
+            $completedTasks = Task::whereIn('location_id', $locationIds)
                 ->where('status', 'Completed')
                 ->whereHas('assignedEmployees', function ($q) use ($employee) {
                     $q->where('employee_id', $employee->id);

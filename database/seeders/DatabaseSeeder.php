@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
+            ProductionSeeder::class,        // Seeds admin, employees, locations, settings, etc.
             TrainingVideoSeeder::class,     // Creates training videos for employee app
         ]);
     }

@@ -59,29 +59,47 @@ class PayrollReport extends Component
                     $regularHoursToday = $dailyHoursWorked;
                 }
                 
-                // Add to totals.
-                $totalOvertimeHours += $overtimeHoursToday;
+                // Add to totals (only count non-premium OT here; premium OT handled separately)
                 if ($isSundayOrHoliday) {
                     $totalSundayHolidayHours += $dailyHoursWorked;
                 } else {
                     $totalRegularHours += $regularHoursToday;
+                    $totalOvertimeHours += $overtimeHoursToday;
                 }
             }
     
-            // --- FINAL PAY CALCULATION BASED ON CONFIRMED RULES ---
-    
-            // 1. Calculate pay for all regular hours (including the base pay for overtime hours).
-            $basePay = ($totalRegularHours + $totalOvertimeHours) * $this->baseRate;
-            
-            // 2. Calculate the specific 1.5% overtime BONUS.
-            $overtimeBonusPay = $totalOvertimeHours * ($this->baseRate * 0.015); // 13 * 1.5% = 0.195
-    
-            // 3. Calculate the double pay BONUS for Sunday/Holiday hours.
-            // This is the extra amount on top of the base pay they already received.
-            $sundayHolidayBonusPay = $totalSundayHolidayHours * $this->baseRate; // The second "half" of double pay.
-    
+            // --- FINAL PAY CALCULATION ---
+
+            // 1. Regular hours at base rate (€13.00/hr)
+            $regularPay = $totalRegularHours * $this->baseRate;
+
+            // 2. Overtime hours at overtime rate (base + €0.50 = €13.50/hr)
+            $overtimeRate = $this->baseRate + 0.50;
+            $overtimePay = $totalOvertimeHours * $overtimeRate;
+
+            // 3. Sunday/Holiday: double rate for regular hours, double + €0.50 for overtime
+            // Note: totalSundayHolidayHours includes both regular and OT on those days
+            // We need to split Sunday/Holiday hours into regular vs overtime
+            $sundayRegularHours = 0;
+            $sundayOvertimeHours = 0;
+            foreach ($attendancesByDate as $date => $attendances) {
+                $clockInDate = new Carbon($date);
+                $isSundayOrHoliday = $clockInDate->isSunday() || $this->isPublicHoliday($clockInDate);
+                if (!$isSundayOrHoliday) continue;
+
+                $dailyMinutesWorked = $attendances->sum('total_minutes_worked');
+                $dailyHoursWorked = $dailyMinutesWorked / 60;
+                if ($dailyHoursWorked > 8) {
+                    $sundayRegularHours += 8;
+                    $sundayOvertimeHours += $dailyHoursWorked - 8;
+                } else {
+                    $sundayRegularHours += $dailyHoursWorked;
+                }
+            }
+            $sundayHolidayPay = ($sundayRegularHours * $this->baseRate * 2) + ($sundayOvertimeHours * ($this->baseRate * 2 + 0.50));
+
             // 4. Sum everything up.
-            $totalPay = $basePay + $overtimeBonusPay + $sundayHolidayBonusPay;
+            $totalPay = $regularPay + $overtimePay + $sundayHolidayPay;
             $totalHours = $totalRegularHours + $totalOvertimeHours + $totalSundayHolidayHours;
             
             $this->payrollData[] = [

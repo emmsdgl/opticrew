@@ -28,7 +28,7 @@
                 </div>
                 
                 <!-- Security Question Dropdown -->
-                <div class="input-container">
+                <div id="security-question-container" class="input-container hidden">
                     <i class="fas fa-question-circle absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 z-10"></i>
                     <select id="dropdown-security-questions" name="security_question" required
                         class="input-field w-full pl-12 pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700">
@@ -37,7 +37,7 @@
                 </div>
 
                 <!-- Security Answer Input -->
-                <div class="input-container w-full relative">
+                <div id="security-answer-container" class="input-container w-full relative hidden">
                     <i class="fa-solid fa-comment absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 z-10"></i>
                     <input
                         type="text"

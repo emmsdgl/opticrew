@@ -2,30 +2,18 @@
     <section class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]" x-data="appointmentDrawer()">
         <!-- Header -->
         <div class="flex flex-col gap-2">
-            <h1 class="text-sm font-bold text-gray-900 dark:text-white">Client Appointments</h1>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Client Appointments</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">Manage and approve client appointment requests</p>
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 my-12 gap-px bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Pending appointments</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $counts['pending'] }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Approved appointments</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $counts['approved'] }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Rejected appointments</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $counts['rejected'] }}</p>
-            </div>
-            <div class="bg-white dark:bg-slate-900 px-6 py-5">
-                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 ml-3">Success rate</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">
-                    {{ $counts['total'] > 0 ? number_format(($counts['approved'] / $counts['total']) * 100, 1) : '0.0' }}<span
-                        class="text-lg font-medium text-gray-400 dark:text-slate-400">%</span></p>
-            </div>
+        <div class="my-12">
+            <x-employer-components.stats-cards :stats="[
+                ['label' => 'Pending Appointments', 'value' => $counts['pending'], 'icon' => 'fi fi-rr-clock', 'iconColor' => '#eab308'],
+                ['label' => 'Approved Appointments', 'value' => $counts['approved'], 'icon' => 'fi fi-rr-check-circle', 'iconColor' => '#22c55e'],
+                ['label' => 'Rejected Appointments', 'value' => $counts['rejected'], 'icon' => 'fi fi-rr-cross-circle', 'iconColor' => '#ef4444'],
+                ['label' => 'Success Rate', 'value' => ($counts['total'] > 0 ? number_format(($counts['approved'] / $counts['total']) * 100, 1) : '0.0') . '%', 'icon' => 'fi fi-rr-chart-pie', 'iconColor' => '#3b82f6'],
+            ]" />
         </div>
 
         <!-- Appointments to be Approved -->
@@ -404,7 +392,7 @@
                     x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
                     x-transition:leave="transform transition ease-in-out duration-200"
                     x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" @click.stop
-                    class="relative w-screen max-w-xl">
+                    class="relative w-screen max-w-sm">
 
                     <!-- Drawer Content -->
                     <div

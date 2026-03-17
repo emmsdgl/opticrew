@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Models\DayOff;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -44,6 +45,44 @@ class AttendanceController extends Controller
                 'message' => 'You are already clocked in',
                 'attendance' => $existingAttendance
             ], 400);
+        }
+
+        // SCENARIO #12: Clock-in blocked if employee has pending emergency leave for today
+        // "Pending leave request requires manager review. Please contact Dispatch."
+        $pendingEmergencyLeave = DayOff::where('employee_id', $employee->id)
+            ->where('is_emergency', true)
+            ->where('status', 'pending')
+            ->where('date', '<=', $today)
+            ->where(function ($q) use ($today) {
+                $q->where('end_date', '>=', $today)
+                  ->orWhereNull('end_date');
+            })
+            ->first();
+
+        if ($pendingEmergencyLeave) {
+            return response()->json([
+                'message' => 'Clock-in blocked: Pending leave request requires manager review. Please contact Dispatch.',
+                'error_code' => 'LEAVE_PENDING_REVIEW',
+                'leave_request_id' => $pendingEmergencyLeave->id,
+            ], 403);
+        }
+
+        // Also block if approved leave covers today
+        $approvedLeave = DayOff::where('employee_id', $employee->id)
+            ->where('status', 'approved')
+            ->where('date', '<=', $today)
+            ->where(function ($q) use ($today) {
+                $q->where('end_date', '>=', $today)
+                  ->orWhereNull('end_date');
+            })
+            ->first();
+
+        if ($approvedLeave) {
+            return response()->json([
+                'message' => 'Clock-in blocked: You have an approved leave for today.',
+                'error_code' => 'ON_APPROVED_LEAVE',
+                'leave_request_id' => $approvedLeave->id,
+            ], 403);
         }
 
         // Handle photo upload

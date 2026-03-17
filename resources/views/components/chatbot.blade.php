@@ -219,7 +219,7 @@
 
                     const isUser = el.classList.contains('bg-blue-600') || el.classList.contains('bg-[#5B5FEF]');
                     const role = isUser ? 'user' : 'assistant';
-                    const text = el.textContent.trim();
+                    const text = el.dataset.rawText || el.textContent.trim();
                     messages.push({ role, text });
                 });
 
@@ -272,6 +272,26 @@
             updateUnreadBadge();
         }
 
+        // Convert basic markdown to HTML (safe subset only)
+        function formatMarkdown(text) {
+            // Escape HTML entities first to prevent XSS
+            const escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+
+            return escaped
+                // Bold: **text**
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                // Italic: *text*
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                // Bullet points: * item or - item at start of line
+                .replace(/^[\*\-]\s+(.+)/gm, '<span class="flex"><span class="mr-2">&bull;</span><span>$1</span></span>')
+                // Line breaks
+                .replace(/\n/g, '<br>');
+        }
+
         // Append message to chat UI
         function appendMessage(role, text, saveToStorage = true) {
             const messageWrapper = document.createElement('div');
@@ -282,12 +302,13 @@
 
             // Message bubble
             const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm break-words whitespace-pre-wrap ${
+            messageDiv.className = `chat-message max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm break-words ${
                 isUser
                     ? 'bg-[#5B5FEF] text-white rounded-br-sm'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm'
             }`;
-            messageDiv.textContent = text;
+            messageDiv.dataset.rawText = text;
+            messageDiv.innerHTML = isUser ? formatMarkdown(text) : formatMarkdown(text);
 
             messageWrapper.appendChild(messageDiv);
             messagesContainer.appendChild(messageWrapper);

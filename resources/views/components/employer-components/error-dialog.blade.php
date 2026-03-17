@@ -16,7 +16,7 @@
      style="display: none;">
 
     <!-- Backdrop -->
-    <div class="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm"></div>
+    <div class="absolute inset-0 bg-black/30 dark:bg-black/50"></div>
 
     <!-- Dialog Card -->
     <div x-show="showError"
