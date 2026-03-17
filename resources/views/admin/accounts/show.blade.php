@@ -53,8 +53,33 @@
                         </span>
                     </dd>
                 </div>
-                <!-- Verification Status -->
+                <!-- Alternative Email (Gmail) -->
+                @if($user->alternative_email)
                 <div class="px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4 bg-white dark:bg-gray-900">
+                    <dt class="text-sm font-semibold text-gray-900 dark:text-white">Personal email (Gmail)</dt>
+                    <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300 sm:col-span-2 sm:mt-0">
+                        <i class="fa-solid fa-envelope text-gray-400 mr-1.5"></i>{{ $user->alternative_email }}
+                    </dd>
+                </div>
+                @endif
+                <!-- Google Account Status -->
+                <div class="px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4 {{ $user->alternative_email ? 'bg-gray-50 dark:bg-gray-800/50' : 'bg-white dark:bg-gray-900' }}">
+                    <dt class="text-sm font-semibold text-gray-900 dark:text-white">Google account</dt>
+                    <dd class="mt-1 text-sm sm:col-span-2 sm:mt-0">
+                        @if($user->google_id)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                <i class="fa-brands fa-google mr-1"></i> Linked
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                                <i class="fa-brands fa-google mr-1"></i> Not linked
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">Employee will be prompted to link on next login</span>
+                        @endif
+                    </dd>
+                </div>
+                <!-- Verification Status -->
+                <div class="px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4 {{ $user->alternative_email ? 'bg-white dark:bg-gray-900' : ($user->google_id !== null ? 'bg-gray-50 dark:bg-gray-800/50' : 'bg-gray-50 dark:bg-gray-800/50') }}">
                     <dt class="text-sm font-semibold text-gray-900 dark:text-white">Verification status</dt>
                     <dd class="mt-1 text-sm sm:col-span-2 sm:mt-0">
                         @if($user->email_verified_at)

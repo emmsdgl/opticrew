@@ -69,20 +69,46 @@
         <!-- Left Panel - Dashboard Content -->
         <div
             class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
+
+            {{-- Gmail Account Linking Prompt --}}
+            @if(!auth()->user()->google_id)
+            <div class="w-full mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex items-center justify-between relative z-10"
+                 x-data="{ dismissed: false }" x-show="!dismissed" x-transition>
+                <div class="flex items-center gap-3">
+                    <i class="fa-brands fa-google text-amber-600 text-lg"></i>
+                    <div>
+                        <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Link Your Gmail Account</p>
+                        <p class="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                            For account verification and security, please link your personal Gmail account. This allows you to sign in with Google.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0 ml-4">
+                    <a href="{{ route('employee.link-google') }}"
+                       class="px-3 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 transition-colors">
+                        <i class="fa-brands fa-google mr-1"></i> Link Gmail
+                    </a>
+                    <button @click="dismissed = true" class="p-1.5 text-amber-400 hover:text-amber-600 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            @endif
+
             <!-- Inner Up - Dashboard Header -->
-            <div
+            <div id="tour-emp-welcome"
                 class="w-full mt-6 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
                 <x-herocard :headerName="$employee->user->name ?? 'Employee'" :headerDesc="'Welcome to the employee dashboard. Track tasks and manage them'" :headerIcon="'hero-employee'" />
             </div>
             <!-- Inner Middle - Calendar -->
             <x-labelwithvalue label="My Calendar" count="" />
-            <div
+            <div id="tour-emp-calendar"
                 class="w-full rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
                 <x-calendar :holidays="$holidays" calendar-id="desktop" />
             </div>
 
             <!-- Inner Down - Tasks Particulars -->
-            <div class="w-full rounded-lg h-56 sm:h-56 md:h-auto">
+            <div id="tour-emp-tasks" class="w-full rounded-lg h-56 sm:h-56 md:h-auto">
                 <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
                 <div class="rounded-lg my-6">
 
@@ -115,7 +141,7 @@
                 </div>
             </div>
             <!-- Inner Down - Lessons -->
-            <div class="w-full rounded-lg h-48 sm:h-56 md:h-auto flex flex-col gap-6">
+            <div id="tour-emp-lessons" class="w-full rounded-lg h-48 sm:h-56 md:h-auto flex flex-col gap-6">
                 <div class="flex flex-row justify-between items-center w-full">
                     <x-labelwithvalue label="Current Lessons" count="" />
                     @php
@@ -150,7 +176,7 @@
         </div>
 
         <!-- Right Panel - Tasks Details -->
-        <div
+        <div id="tour-emp-right-panel"
             class="flex flex-col gap-6 w-full lg:w-1/3 rounded-lg p-4">
 
             <!-- Inner Up - Tasks Summary (OPTIMIZED) -->
@@ -735,4 +761,48 @@
         });
     </script>
 @endpush
+
+    <x-guided-tour tourName="employee-dashboard" :steps="json_encode([
+        [
+            'title' => 'Welcome to Your Dashboard',
+            'description' => 'This is your personal workspace where you can manage your tasks, track attendance, and monitor your progress. Let us show you around!',
+            'side' => 'bottom',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#sidebar',
+            'title' => 'Navigation Menu',
+            'description' => 'Access your Tasks, Courses, Performance reviews, Attendance records, and History from here.',
+            'side' => 'right',
+            'align' => 'start',
+        ],
+        [
+            'element' => '#tour-emp-calendar',
+            'title' => 'Your Calendar',
+            'description' => 'Keep track of your schedule, holidays, and important dates on your personal calendar.',
+            'side' => 'top',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-emp-tasks',
+            'title' => 'Your To-Do List',
+            'description' => 'All your assigned tasks appear here. Click any task to see the full details including location, team members, and checklist.',
+            'side' => 'top',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-emp-lessons',
+            'title' => 'Training Courses',
+            'description' => 'Continue your learning here. Watch assigned training videos and track your course completion progress.',
+            'side' => 'top',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-emp-right-panel',
+            'title' => 'Tasks Summary & Attendance',
+            'description' => 'View your task completion stats and log your daily attendance from this panel.',
+            'side' => 'left',
+            'align' => 'start',
+        ],
+    ])" />
 </x-layouts.general-employee>

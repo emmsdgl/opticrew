@@ -272,24 +272,28 @@
     />
 
     {{-- Applied Positions --}}
+    <div id="tour-app-my-applications">
     <x-labelwithvalue
         label="My Applications"
         count="{{ $myApplications->count() }}"
         class="mt-6 mb-2 text-blue-700 dark:text-gray-700"
     />
     <x-applicant-components.applied-positions :applications="$myApplications" :jobPostings="$jobPostings" />
-    
+    </div>
+
     {{-- Available Positions --}}
     @php
         $appliedTitles = $myApplications->pluck('job_title')->map(fn($t) => strtolower(trim($t)))->toArray();
         $availableCount = $jobPostings->filter(fn($job) => !in_array(strtolower(trim($job->title)), $appliedTitles))->count();
     @endphp
+    <div id="tour-app-available-jobs">
     <x-labelwithvalue
         label="Available Job Positions"
         count="{{ $availableCount }}"
         class="mt-6 mb-2 text-blue-700 dark:text-gray-700"
     />
     <x-applicant-components.available-positions :jobPostings="$jobPostings" :applications="$myApplications" :savedJobIds="$savedJobIds ?? []" />
+    </div>
 
     {{-- Apply Modal (global — listens for open-apply-modal window events) --}}
     <x-applicant-components.apply-modal />
@@ -725,4 +729,33 @@
     @endpush
     @endif
 
+    <x-guided-tour tourName="applicant-dashboard" :steps="json_encode([
+        [
+            'title' => 'Welcome to the Job Portal',
+            'description' => 'Find and apply for available positions here. Let us show you how to navigate the portal!',
+            'side' => 'bottom',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#sidebar',
+            'title' => 'Navigation Menu',
+            'description' => 'Access your Dashboard, Saved jobs, Interview schedules, and Withdrawn applications from here.',
+            'side' => 'right',
+            'align' => 'start',
+        ],
+        [
+            'element' => '#tour-app-my-applications',
+            'title' => 'My Applications',
+            'description' => 'Track the status of all your submitted job applications here. See which ones are pending, under review, or have received responses.',
+            'side' => 'bottom',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-app-available-jobs',
+            'title' => 'Available Positions',
+            'description' => 'Browse all open job positions. Click on any job to view details and apply. You can also save jobs for later.',
+            'side' => 'top',
+            'align' => 'center',
+        ],
+    ])" />
 </x-layouts.general-applicant>

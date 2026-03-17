@@ -113,13 +113,13 @@
                             @php
                                 if ($user->role === 'employee') {
                                     $title = $user->employee->position ?? 'Employee';
-                                    $subtitle = $user->employee->department ?? 'N/A';
+                                    $subtitle = $user->username ? '@' . $user->username : '@';
                                 } elseif ($user->client && $user->client->client_type === 'company') {
                                     $title = 'Company Account';
-                                    $subtitle = ucfirst($user->client->client_type);
+                                    $subtitle = $user->username ? '@' . $user->username : '@';
                                 } else {
                                     $title = 'Personal Account';
-                                    $subtitle = $user->client ? ucfirst($user->client->client_type) : 'User';
+                                    $subtitle = $user->username ? '@' . $user->username : '@';
                                 }
 
                                 if ($user->role === 'employee') {
@@ -150,7 +150,12 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $user->name }}</div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-semibold {{ !$user->is_active ? 'text-red-500 line-through dark:text-red-400' : 'text-gray-900 dark:text-white' }}">{{ $user->name }}</span>
+                                                @if(!$user->is_active)
+                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">BANNED</span>
+                                                @endif
+                                            </div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->email }}</div>
                                         </div>
                                     </div>
@@ -164,8 +169,10 @@
 
                                 <!-- Status -->
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user->email_verified_at)
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Active</span>
+                                    @if($user->google_id)
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Verified</span>
+                                    @elseif($user->email_verified_at)
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">Not Linked</span>
                                     @else
                                         <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">Pending</span>
                                     @endif
@@ -184,7 +191,7 @@
 
                                 <!-- Action -->
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="flex items-center justify-end gap-3">
+                                    <div class="flex items-center justify-end gap-2" x-data="{ open: false }">
                                         <a href="{{ route('admin.accounts.show', $user->id) }}"
                                             class="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                                             title="View">
@@ -195,11 +202,39 @@
                                             title="Edit">
                                             <i class="fa-solid fa-pen text-sm"></i>
                                         </a>
-                                        <button onclick="confirmDelete({{ $user->id }})"
-                                            class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                                            title="Delete">
-                                            <i class="fa-solid fa-trash text-sm"></i>
-                                        </button>
+
+                                        <!-- More Actions Dropdown -->
+                                        <div class="relative">
+                                            <button @click="open = !open" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="More actions">
+                                                <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+                                            </button>
+                                            <div x-show="open" @click.away="open = false" x-transition
+                                                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 py-1">
+
+                                                @if($user->role !== 'admin')
+                                                    <!-- Change Role -->
+                                                    <button @click="open = false; openChangeRoleModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->role }}')"
+                                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                                        <i class="fa-solid fa-user-tag text-xs text-blue-500"></i> Change Role
+                                                    </button>
+
+                                                    <!-- Ban/Unban -->
+                                                    <button @click="open = false; toggleBanUser({{ $user->id }}, '{{ $user->name }}', {{ $user->is_active ? 'true' : 'false' }})"
+                                                        class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 {{ $user->is_active ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
+                                                        <i class="fa-solid {{ $user->is_active ? 'fa-ban' : 'fa-check-circle' }} text-xs"></i>
+                                                        {{ $user->is_active ? 'Ban User' : 'Unban User' }}
+                                                    </button>
+
+                                                    <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                                @endif
+
+                                                <!-- Delete -->
+                                                <button @click="open = false; confirmDelete({{ $user->id }})"
+                                                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+                                                    <i class="fa-solid fa-trash text-xs"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -239,14 +274,15 @@
 
         @if($applicants->count() > 0)
             <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                <table class="w-full min-w-[700px]" id="applicantsTable">
+                <table class="w-full min-w-[800px]" id="applicantsTable">
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-700">
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applicant</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Provider</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Registered</th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Applications</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Applications</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -271,7 +307,12 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $applicant->name }}</div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-semibold {{ !$applicant->is_active ? 'text-red-500 line-through dark:text-red-400' : 'text-gray-900 dark:text-white' }}">{{ $applicant->name }}</span>
+                                                @if(!$applicant->is_active)
+                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">BANNED</span>
+                                                @endif
+                                            </div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400">{{ $applicant->email }}</div>
                                         </div>
                                     </div>
@@ -291,8 +332,10 @@
 
                                 <!-- Status -->
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($applicant->email_verified_at)
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Active</span>
+                                    @if($applicant->google_id)
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Verified</span>
+                                    @elseif($applicant->email_verified_at)
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">Not Linked</span>
                                     @else
                                         <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">Pending</span>
                                     @endif
@@ -305,10 +348,52 @@
                                 </td>
 
                                 <!-- Applications Count -->
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ $appCount > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400' }}">
                                         {{ $appCount }} {{ Str::plural('application', $appCount) }}
                                     </span>
+                                </td>
+
+                                <!-- Action -->
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end gap-2" x-data="{ open: false }">
+                                        <a href="{{ route('admin.accounts.show', $applicant->id) }}"
+                                            class="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                                            title="View">
+                                            <i class="fa-regular fa-eye text-sm"></i>
+                                        </a>
+
+                                        <!-- More Actions Dropdown -->
+                                        <div class="relative">
+                                            <button @click="open = !open" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="More actions">
+                                                <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+                                            </button>
+                                            <div x-show="open" @click.away="open = false" x-transition
+                                                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 py-1">
+
+                                                <!-- Change Role -->
+                                                <button @click="open = false; openChangeRoleModal({{ $applicant->id }}, '{{ $applicant->name }}', '{{ $applicant->role }}')"
+                                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                                    <i class="fa-solid fa-user-tag text-xs text-blue-500"></i> Change Role
+                                                </button>
+
+                                                <!-- Ban/Unban -->
+                                                <button @click="open = false; toggleBanUser({{ $applicant->id }}, '{{ $applicant->name }}', {{ $applicant->is_active ? 'true' : 'false' }})"
+                                                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 {{ $applicant->is_active ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
+                                                    <i class="fa-solid {{ $applicant->is_active ? 'fa-ban' : 'fa-check-circle' }} text-xs"></i>
+                                                    {{ $applicant->is_active ? 'Ban User' : 'Unban User' }}
+                                                </button>
+
+                                                <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                                                <!-- Delete -->
+                                                <button @click="open = false; confirmDelete({{ $applicant->id }})"
+                                                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+                                                    <i class="fa-solid fa-trash text-xs"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -330,6 +415,61 @@
         @endif
 
     </section>
+
+    <!-- Change Role Modal -->
+    <div id="changeRoleModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                    <i class="fas fa-user-tag text-blue-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4 text-center">Change User Role</h3>
+                <p id="changeRoleUserName" class="text-sm text-gray-500 dark:text-gray-400 text-center mt-1"></p>
+                <div class="mt-4 px-4 py-3">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select New Role</label>
+                    <select id="newRoleSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
+                        <option value="employee">Employee</option>
+                        <option value="applicant">Applicant</option>
+                        <option value="external_client">External Client</option>
+                    </select>
+                    <p id="roleChangeError" class="mt-2 text-sm text-red-600 hidden"></p>
+                    <div class="flex gap-4 mt-4">
+                        <button type="button" onclick="closeChangeRoleModal()"
+                            class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="submitChangeRole()"
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
+                            Change Role
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ban Confirmation Modal -->
+    <div id="banModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <div id="banModalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <i class="fas fa-ban text-red-600 text-xl"></i>
+                </div>
+                <h3 id="banModalTitle" class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4 text-center">Ban User</h3>
+                <p id="banModalMessage" class="text-sm text-gray-500 dark:text-gray-400 text-center mt-2 px-4"></p>
+                <div class="flex gap-4 mt-6 px-4">
+                    <button type="button" onclick="closeBanModal()"
+                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300">
+                        Cancel
+                    </button>
+                    <button type="button" id="banConfirmBtn" onclick="submitToggleBan()"
+                        class="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">
+                        Ban User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -471,6 +611,120 @@
             if (e.target === this) {
                 closeDeleteModal();
             }
+        });
+
+        // ═══════════════════════════════════════════
+        // Change Role functionality
+        // ═══════════════════════════════════════════
+        let changeRoleUserId = null;
+
+        function openChangeRoleModal(userId, userName, currentRole) {
+            changeRoleUserId = userId;
+            document.getElementById('changeRoleUserName').textContent = `Change role for: ${userName}`;
+            document.getElementById('newRoleSelect').value = currentRole;
+            document.getElementById('roleChangeError').classList.add('hidden');
+            document.getElementById('changeRoleModal').classList.remove('hidden');
+        }
+
+        function closeChangeRoleModal() {
+            changeRoleUserId = null;
+            document.getElementById('changeRoleModal').classList.add('hidden');
+        }
+
+        async function submitChangeRole() {
+            const newRole = document.getElementById('newRoleSelect').value;
+            const errorEl = document.getElementById('roleChangeError');
+
+            try {
+                const response = await fetch(`/admin/recruitment/applicant/${changeRoleUserId}/role`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ role: newRole })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeChangeRoleModal();
+                    window.location.reload();
+                } else {
+                    errorEl.textContent = data.message || 'Failed to change role.';
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorEl.textContent = 'An error occurred. Please try again.';
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('changeRoleModal').addEventListener('click', function (e) {
+            if (e.target === this) closeChangeRoleModal();
+        });
+
+        // ═══════════════════════════════════════════
+        // Ban/Unban functionality
+        // ═══════════════════════════════════════════
+        let banUserId = null;
+
+        function toggleBanUser(userId, userName, isActive) {
+            banUserId = userId;
+            const iconDiv = document.getElementById('banModalIcon');
+            const title = document.getElementById('banModalTitle');
+            const message = document.getElementById('banModalMessage');
+            const confirmBtn = document.getElementById('banConfirmBtn');
+
+            if (isActive) {
+                iconDiv.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100';
+                iconDiv.innerHTML = '<i class="fas fa-ban text-red-600 text-xl"></i>';
+                title.textContent = 'Ban User';
+                message.textContent = `Are you sure you want to ban "${userName}"? They will no longer be able to access the system.`;
+                confirmBtn.textContent = 'Ban User';
+                confirmBtn.className = 'flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700';
+            } else {
+                iconDiv.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100';
+                iconDiv.innerHTML = '<i class="fas fa-check-circle text-green-600 text-xl"></i>';
+                title.textContent = 'Unban User';
+                message.textContent = `Are you sure you want to unban "${userName}"? They will regain access to the system.`;
+                confirmBtn.textContent = 'Unban User';
+                confirmBtn.className = 'flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700';
+            }
+
+            document.getElementById('banModal').classList.remove('hidden');
+        }
+
+        function closeBanModal() {
+            banUserId = null;
+            document.getElementById('banModal').classList.add('hidden');
+        }
+
+        async function submitToggleBan() {
+            try {
+                const response = await fetch(`/admin/recruitment/applicant/${banUserId}/ban`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeBanModal();
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to update user status.');
+                }
+            } catch (error) {
+                alert('An error occurred. Please try again.');
+            }
+        }
+
+        document.getElementById('banModal').addEventListener('click', function (e) {
+            if (e.target === this) closeBanModal();
         });
     </script>
 </x-layouts.general-employer>

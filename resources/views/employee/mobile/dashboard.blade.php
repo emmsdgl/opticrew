@@ -1,6 +1,31 @@
 {{-- MOBILE EMPLOYEE DASHBOARD --}}
 <section class="flex flex-col gap-4 p-4 min-h-[calc(100vh-5rem)]">
 
+    {{-- Gmail Account Linking Prompt (Mobile) --}}
+    @if(!auth()->user()->google_id)
+    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4"
+         x-data="{ dismissed: false }" x-show="!dismissed" x-transition>
+        <div class="flex items-start gap-3">
+            <i class="fa-brands fa-google text-amber-600 text-lg mt-0.5"></i>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Link Your Gmail Account</p>
+                <p class="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                    For security, please link your personal Gmail account to enable Google sign-in.
+                </p>
+                <div class="flex items-center gap-2 mt-2">
+                    <a href="{{ route('employee.link-google') }}"
+                       class="px-3 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 transition-colors">
+                        <i class="fa-brands fa-google mr-1"></i> Link Gmail
+                    </a>
+                    <button @click="dismissed = true" class="px-3 py-1.5 text-amber-600 text-xs font-medium hover:bg-amber-100 rounded-lg transition-colors">
+                        Dismiss
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Mobile Hero Card - Solid Blue Background --}}
     <div class="bg-[#2A6DFA] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <h2 class="text-2xl font-bold text-white mb-2">

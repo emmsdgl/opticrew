@@ -1,7 +1,7 @@
 <x-layouts.general-manager :title="'Manager Dashboard'">
     <div class="flex flex-col gap-6 w-full">
         <!-- Welcome Header -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div id="tour-mgr-welcome" class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                     Welcome back, {{ Auth::user()->name }}
@@ -20,7 +20,7 @@
         </div>
 
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div id="tour-mgr-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <!-- Total Tasks Today -->
             <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200">
                 <div class="flex items-center justify-between">
@@ -89,7 +89,7 @@
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Today's Tasks (Left Column - 2/3 width) -->
-            <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div id="tour-mgr-tasks" class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                 <div class="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Today's Tasks</h2>
                     <a href="{{ route('manager.schedule') }}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
@@ -180,7 +180,7 @@
             </div>
 
             <!-- Right Column - Quick Stats & Activity -->
-            <div class="space-y-6">
+            <div id="tour-mgr-activity" class="space-y-6">
                 <!-- Task Status Overview -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                     <div class="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700">
@@ -253,4 +253,41 @@
             </div>
         </div>
     </div>
+
+    <x-guided-tour tourName="manager-dashboard" :steps="json_encode([
+        [
+            'title' => 'Welcome to the Manager Dashboard',
+            'description' => 'This is your command center for managing tasks, employees, and schedules. Let us walk you through the key features.',
+            'side' => 'bottom',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#sidebar',
+            'title' => 'Navigation Menu',
+            'description' => 'Access Schedule management, Checklists, Employee oversight, Reports, Activity logs, and History from here.',
+            'side' => 'right',
+            'align' => 'start',
+        ],
+        [
+            'element' => '#tour-mgr-stats',
+            'title' => 'Quick Statistics',
+            'description' => 'Get an at-a-glance view of today\'s tasks, employee count on duty, weekly schedule, and active locations.',
+            'side' => 'bottom',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-mgr-tasks',
+            'title' => 'Today\'s Tasks',
+            'description' => 'View and manage all tasks scheduled for today. Each task shows its status, location, time, and assigned team size.',
+            'side' => 'right',
+            'align' => 'start',
+        ],
+        [
+            'element' => '#tour-mgr-activity',
+            'title' => 'Task Overview & Activity',
+            'description' => 'Monitor task completion status and recent activity. Stay updated on what\'s happening across your managed locations.',
+            'side' => 'left',
+            'align' => 'start',
+        ],
+    ])" />
 </x-layouts.general-manager>

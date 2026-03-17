@@ -193,6 +193,35 @@
                     </script>
                 @endif
 
+                <!-- Banned Account Dialog -->
+                @if (session('banned'))
+                    <div x-data="{ showBanned: true }" x-show="showBanned" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="display: none;">
+                        <div class="absolute inset-0 bg-black/30"></div>
+                        <div x-show="showBanned" x-transition:enter="transition ease-out duration-300 delay-100" x-transition:enter-start="opacity-0 scale-90 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0" class="relative w-full max-w-sm bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden p-3">
+                            <div class="px-8 pt-10 pb-6 flex flex-col items-center text-center">
+                                <div class="w-14 h-14 rounded-full bg-red-100 border-2 border-red-400 flex items-center justify-center mb-6">
+                                    <i class="fa-solid fa-ban text-red-500 text-2xl"></i>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2">Account Suspended</h3>
+                                <p class="text-sm text-gray-500 leading-relaxed">Your account has been banned from accessing the system. If you believe this is a mistake, please contact Finnoys support.</p>
+                            </div>
+                            <div class="px-8 pb-8 flex flex-col gap-3">
+                                <a href="https://mail.google.com/mail/?view=cm&to=finnoys0823@gmail.com&su=Account%20Ban%20Appeal&body=Hello%20Finnoys%20Support%2C%0A%0AI%20believe%20my%20account%20has%20been%20banned%20by%20mistake.%20Please%20review%20my%20account.%0A%0AThank%20you."
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 text-sm no-underline">
+                                    <i class="fa-solid fa-envelope mr-2"></i>Contact Us via Email
+                                </a>
+                                <button @click="showBanned = false" type="button" class="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-all duration-200">
+                                    Close
+                                </button>
+                                <p class="text-xs text-gray-400 text-center mt-1">
+                                    <i class="fa-solid fa-envelope text-[10px] mr-1"></i>finnoys0823@gmail.com
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- LOGIN FIELD -->
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon"></i>

@@ -3,7 +3,7 @@
 ])
 
 <!-- Topbar -->
-<header class="flex items-center justify-between px-3 sm:px-6 h-24 border-b border-gray-50 dark:border-gray-700 sticky top-0 z-10 bg-white dark:bg-[#0F172A] flex-shrink-0">
+<header class="flex items-center justify-between px-3 sm:px-6 h-24 border-b border-gray-50 dark:border-gray-700 sticky top-0 z-40 bg-white dark:bg-[#0F172A] flex-shrink-0">
     <div class="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
         <!-- Mobile Menu Button (Hamburger) -->
         <button id="mobile-menu-toggle" class="lg:hidden text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors p-2 flex-shrink-0">
@@ -165,8 +165,14 @@
                         </a>
 
                         <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
-                        
-                        
+
+                        <button type="button" id="replay-tour-btn"
+                            onclick="document.dispatchEvent(new CustomEvent('replay-tour', { detail: null })); document.getElementById('profile-dropdown').classList.add('invisible','opacity-0','scale-95'); document.getElementById('profile-dropdown').classList.remove('opacity-100','scale-100');"
+                            class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fa-solid fa-route w-5 text-gray-500 dark:text-gray-400"></i>
+                            <span class="ml-3">Replay Guide</span>
+                        </button>
+
                         <a href="{{
                             auth()->user()->role === 'admin' ? route('admin.helpcenter') :
                             (auth()->user()->role === 'employee' ? route('employee.helpcenter') :

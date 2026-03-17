@@ -79,7 +79,7 @@ class ChatbotController extends Controller
             return 'Sorry, the chatbot is not properly configured. Please contact support.';
         }
 
-        $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+        $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
         // System instruction for Fin-noys chatbot
         $systemInstruction = "You are the Fin-noys Cleaning Service Assistant. Your primary goal is to answer questions about the company's services and help users navigate the website.\n\n" .
@@ -131,7 +131,7 @@ class ChatbotController extends Controller
                     ],
                     'generationConfig' => [
                         'temperature' => 0.7,
-                        'maxOutputTokens' => 500,
+                        'maxOutputTokens' => 1024,
                         'topP' => 0.9,
                         'topK' => 40,
                     ]

@@ -212,19 +212,19 @@
             }">
 
             <!-- Inner Up - Dashboard Header -->
-            <div
+            <div id="tour-client-welcome"
                 class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-40 sm:h-44 md:h-48 flex items-center">
                     <x-herocard :headerName="$client->first_name ?? 'Client'" :headerDesc="'Welcome to the dashboard. What needs cleaning today?'" :headerIcon="'hero-client'" />
             </div>
 
             <!-- Inner Middle - Calendar -->
             <x-labelwithvalue label="My Calendar" count="" />
-            <div class="w-full pb-6 rounded-lg h-auto sm:h-72 md:h-80 lg:h-auto">
+            <div id="tour-client-calendar" class="w-full pb-6 rounded-lg h-auto sm:h-72 md:h-80 lg:h-auto">
                 <x-calendar :holidays="$holidays" />
             </div>
 
             <!-- Inner Bottom - Appointments List -->
-            <div class="flex flex-col">
+            <div id="tour-client-appointments" class="flex flex-col">
                 <div class="flex flex-row justify-between">
                     <x-labelwithvalue label="Appointments Today" :count="'(' . $stats['ongoing'] . ')'" />
                     <div class="flex flex-row gap-2">
@@ -341,7 +341,7 @@
         </div>
 
         <!-- Right Panel - Attendance Overview -->
-        <div class="flex flex-col gap-3 w-full lg:w-1/3 rounded-lg h-auto">
+        <div id="tour-client-right-panel" class="flex flex-col gap-3 w-full lg:w-1/3 rounded-lg h-auto">
             <!-- Ready To Book Card - NEW -->
             <div id="ready-card" class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <!-- Background Image for Light Mode -->
@@ -510,4 +510,41 @@
     }
     </script>
     @endpush
+
+    <x-guided-tour tourName="client-dashboard" :steps="json_encode([
+        [
+            'title' => 'Welcome to Your Dashboard',
+            'description' => 'This is your personal space to manage appointments and book cleaning services. Let us show you around!',
+            'side' => 'bottom',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#sidebar',
+            'title' => 'Navigation Menu',
+            'description' => 'Quickly navigate to your Appointments, Pricing information, and service History from here.',
+            'side' => 'right',
+            'align' => 'start',
+        ],
+        [
+            'element' => '#tour-client-calendar',
+            'title' => 'Your Calendar',
+            'description' => 'View your scheduled appointments and important dates on this calendar.',
+            'side' => 'top',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-client-appointments',
+            'title' => 'Today\'s Appointments',
+            'description' => 'See all your appointments for today. Use the filter and sort options to find specific bookings. Click any appointment for full details.',
+            'side' => 'top',
+            'align' => 'center',
+        ],
+        [
+            'element' => '#tour-client-right-panel',
+            'title' => 'Book & Track',
+            'description' => 'Book new cleaning services and view your upcoming appointments from this panel.',
+            'side' => 'left',
+            'align' => 'start',
+        ],
+    ])" />
 </x-layouts.general-client>

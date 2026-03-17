@@ -68,54 +68,70 @@ class GoogleAuthController extends Controller
             return $this->handleRecruitmentCallback($googleUser);
         }
 
+        if ($purpose === 'link_account') {
+            session()->forget('google_auth_purpose');
+            return $this->handleLinkAccountCallback($googleUser);
+        }
+
         return $this->handleLoginCallback($googleUser);
     }
 
     /**
-     * Handle Google callback for Login (Client accounts).
+     * Handle Google callback for Login (all roles).
      */
     private function handleLoginCallback($googleUser)
     {
+        // 1. Try to find user by google_id
         $user = User::where('google_id', $googleUser->getId())->first();
 
         if (!$user) {
+            // 2. Try primary email match
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if ($user) {
+                // Link Google ID to existing account
                 $user->update(['google_id' => $googleUser->getId()]);
             } else {
-                $user = DB::transaction(function () use ($googleUser) {
-                    $nameParts = explode(' ', $googleUser->getName(), 2);
-                    $firstName = $nameParts[0];
-                    $lastName = $nameParts[1] ?? '';
+                // 3. Try alternative_email match (employees have Gmail stored here after conversion)
+                $user = User::where('alternative_email', $googleUser->getEmail())->first();
 
-                    $user = User::create([
-                        'name' => $googleUser->getName(),
-                        'email' => $googleUser->getEmail(),
-                        'google_id' => $googleUser->getId(),
-                        'profile_picture' => $googleUser->getAvatar(),
-                        'email_verified_at' => now(),
-                        'role' => 'external_client',
-                        'terms_accepted_at' => now(),
-                    ]);
+                if ($user) {
+                    // Link Google ID to the employee account found by alternative email
+                    $user->update(['google_id' => $googleUser->getId()]);
+                } else {
+                    // 4. No match — create new external_client account
+                    $user = DB::transaction(function () use ($googleUser) {
+                        $nameParts = explode(' ', $googleUser->getName(), 2);
+                        $firstName = $nameParts[0];
+                        $lastName = $nameParts[1] ?? '';
 
-                    Client::create([
-                        'user_id' => $user->id,
-                        'client_type' => 'personal',
-                        'first_name' => $firstName,
-                        'last_name' => $lastName,
-                        'is_active' => true,
-                    ]);
+                        $user = User::create([
+                            'name' => $googleUser->getName(),
+                            'email' => $googleUser->getEmail(),
+                            'google_id' => $googleUser->getId(),
+                            'profile_picture' => $googleUser->getAvatar(),
+                            'email_verified_at' => now(),
+                            'role' => 'external_client',
+                            'terms_accepted_at' => now(),
+                        ]);
 
-                    return $user;
-                });
+                        Client::create([
+                            'user_id' => $user->id,
+                            'client_type' => 'personal',
+                            'first_name' => $firstName,
+                            'last_name' => $lastName,
+                            'is_active' => true,
+                        ]);
+
+                        return $user;
+                    });
+                }
             }
         }
 
         // Block banned users
         if (!$user->is_active) {
-            return redirect()->route('login')->with('error',
-                'Your account has been banned. Please contact the administrator for more information.');
+            return redirect()->route('login')->with('banned', true);
         }
 
         if ($googleUser->getAvatar() && $user->profile_picture !== $googleUser->getAvatar()) {
@@ -179,8 +195,7 @@ class GoogleAuthController extends Controller
         // Block banned users
         if (!$user->is_active) {
             session()->forget(['google_auth_purpose', 'recruitment_data']);
-            return redirect()->route('recruitment')->with('error',
-                'Your account has been banned. Please contact the administrator for more information.');
+            return redirect()->route('login')->with('banned', true);
         }
 
         if ($googleUser->getAvatar() && $user->profile_picture !== $googleUser->getAvatar()) {
@@ -196,6 +211,57 @@ class GoogleAuthController extends Controller
         // recruitment_data is kept intentionally — the dashboard will consume it
 
         return redirect()->route('applicant.dashboard')->with('open_apply_modal', true);
+    }
+
+    /**
+     * Initiate Google OAuth for account linking (authenticated employees).
+     */
+    public function linkGoogle()
+    {
+        if (auth()->user()->google_id) {
+            return redirect()->route('employee.dashboard')
+                ->with('info', 'Your Google account is already linked.');
+        }
+
+        session(['google_auth_purpose' => 'link_account']);
+        return Socialite::driver('google')->redirect();
+    }
+
+    /**
+     * Handle Google callback for account linking.
+     */
+    private function handleLinkAccountCallback($googleUser)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in first to link your Google account.');
+        }
+
+        // Check if this Google ID is already linked to another account
+        $existingUser = User::where('google_id', $googleUser->getId())
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($existingUser) {
+            return redirect($this->dashboardUrl($user->role))
+                ->with('error', 'This Google account is already linked to another user. Please use a different Google account.');
+        }
+
+        // Link the Google account
+        $user->update([
+            'google_id' => $googleUser->getId(),
+            'alternative_email' => $user->alternative_email ?: $googleUser->getEmail(),
+        ]);
+
+        if ($googleUser->getAvatar() && !$user->profile_picture) {
+            $user->update(['profile_picture' => $googleUser->getAvatar()]);
+        }
+
+        UserActivityLog::log($user->id, UserActivityLog::TYPE_LOGIN, 'Linked Google account', null, request()->ip());
+
+        return redirect($this->dashboardUrl($user->role))
+            ->with('success', 'Your Google account has been linked successfully. You can now sign in with Google.');
     }
 
     /**

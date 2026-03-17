@@ -162,6 +162,29 @@ Route::middleware(['auth', 'terms.accepted'])->group(function () {
 
     // TEST ROUTE - Create sample notifications (REMOVE THIS IN PRODUCTION)
     Route::get('/notifications/test/create', [NotificationController::class, 'createTestNotifications'])->name('notifications.test');
+
+    // --- GUIDED TOUR ROUTES ---
+    Route::post('/tour/complete', function (\Illuminate\Http\Request $request) {
+        $request->validate(['tour' => 'required|string|max:50']);
+        $user = auth()->user();
+        $completed = $user->tours_completed ?? [];
+        if (!in_array($request->tour, $completed)) {
+            $completed[] = $request->tour;
+            $user->tours_completed = $completed;
+            $user->save();
+        }
+        return response()->json(['success' => true]);
+    })->name('tour.complete');
+
+    Route::post('/tour/reset', function (\Illuminate\Http\Request $request) {
+        $request->validate(['tour' => 'required|string|max:50']);
+        $user = auth()->user();
+        $completed = $user->tours_completed ?? [];
+        $completed = array_values(array_filter($completed, fn($t) => $t !== $request->tour));
+        $user->tours_completed = $completed;
+        $user->save();
+        return response()->json(['success' => true]);
+    })->name('tour.reset');
 });
 
 // --- ADMIN ROUTES ---
@@ -241,6 +264,8 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::post('/duplicate/ignore', [JobApplicationController::class, 'ignoreDuplicate'])->name('ignore-duplicate');
         Route::patch('/applicant/{id}/role', [JobApplicationController::class, 'changeApplicantRole'])->name('change-role');
         Route::patch('/applicant/{id}/ban', [JobApplicationController::class, 'toggleBanApplicant'])->name('toggle-ban');
+        Route::get('/{id}/setup-employee', [JobApplicationController::class, 'setupEmployee'])->name('setup-employee');
+        Route::post('/{id}/setup-employee', [JobApplicationController::class, 'storeEmployee'])->name('store-employee');
     });
 
     // --- ADMIN JOB POSTINGS ROUTES ---
@@ -351,6 +376,10 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
 Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
         ->name('employee.dashboard');
+
+    // Gmail account linking for employees
+    Route::get('/employee/link-google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'linkGoogle'])
+        ->name('employee.link-google');
 
     Route::get('/employee/requests/create', [EmployeeRequestsController::class, 'create'])->name('employee.requests.create');
     Route::post('/employee/requests/store', [EmployeeRequestsController::class, 'store'])->name('employee.requests.store');

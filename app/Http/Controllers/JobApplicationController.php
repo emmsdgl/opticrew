@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Mail\ApplicationReceivedAfterHours;
 use App\Mail\ApplicationStatusUpdate;
+use App\Models\Employee;
 use App\Models\JobApplication;
 use App\Models\JobPosting;
 use App\Models\User;
 use App\Services\Notification\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 
 class JobApplicationController extends Controller
 {
@@ -275,14 +278,44 @@ class JobApplicationController extends Controller
 
         $application->update($updateData);
 
-        // Scenario #10: Role transition — change applicant to employee when hired
+        // Scenario #10: Role transition — redirect to employee setup when hired
         if ($validated['status'] === 'hired' && $oldStatus !== 'hired') {
-            $applicantUser = User::where('email', $application->email)
-                ->where('role', 'applicant')
+            // Check if an employee account already exists with this email
+            $existingEmployee = User::where('email', $application->email)
+                ->where('role', 'employee')
                 ->first();
 
-            if ($applicantUser) {
-                $applicantUser->update(['role' => 'employee']);
+            if ($existingEmployee) {
+                // Existing employee — check if Gmail is linked
+                if (!$existingEmployee->google_id) {
+                    // Send email/notification and flash message about Gmail linking
+                    session()->flash('gmail_link_prompt', true);
+                    session()->flash('gmail_link_user_id', $existingEmployee->id);
+                    session()->flash('gmail_link_user_name', $existingEmployee->name);
+                }
+                // Skip employee creation — already exists
+            } else {
+                // Redirect admin to employee account setup page (pre-filled from applicant data)
+                // Send notifications first
+                if ($oldStatus !== $validated['status'] && $application->status !== 'withdrawn') {
+                    try {
+                        $recipients = [$application->email];
+                        if ($application->alternative_email) {
+                            $recipients[] = $application->alternative_email;
+                        }
+                        Mail::to($recipients)->send(new ApplicationStatusUpdate($application));
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send application status email: ' . $e->getMessage());
+                    }
+                    try {
+                        app(NotificationService::class)->notifyApplicantStatusChanged($application, $oldStatus, $validated['status']);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send applicant status notification: ' . $e->getMessage());
+                    }
+                }
+
+                return redirect()->route('admin.recruitment.setup-employee', $application->id)
+                    ->with('success', 'Applicant marked as hired. Please complete the employee account setup.');
             }
         }
 
@@ -719,5 +752,130 @@ loadingTask.promise.then(pdf=>{
             'message' => $newStatus ? 'User has been unbanned.' : 'User has been banned.',
             'is_active' => $newStatus,
         ]);
+    }
+
+    /**
+     * Show the employee account setup form for a hired applicant.
+     */
+    public function setupEmployee($id)
+    {
+        $application = JobApplication::findOrFail($id);
+
+        if ($application->status !== 'hired') {
+            return redirect()->route('admin.recruitment.show', $id)
+                ->with('error', 'Only hired applicants can be set up as employees.');
+        }
+
+        // Check if employee already exists
+        $existingEmployee = User::where('email', $application->email)
+            ->where('role', 'employee')
+            ->whereHas('employee')
+            ->first();
+
+        if ($existingEmployee) {
+            return redirect()->route('admin.recruitment.show', $id)
+                ->with('error', 'An employee account already exists for this applicant.');
+        }
+
+        // Get applicant profile data
+        $profile = json_decode($application->applicant_profile, true) ?? [];
+
+        // Find the applicant user (may have been created via Google OAuth)
+        $applicantUser = User::where('email', $application->email)
+            ->where('role', 'applicant')
+            ->first();
+
+        return view('admin.recruitment.setup-employee', compact('application', 'profile', 'applicantUser'));
+    }
+
+    /**
+     * Process the employee account creation for a hired applicant.
+     */
+    public function storeEmployee(Request $request, $id)
+    {
+        $application = JobApplication::findOrFail($id);
+
+        if ($application->status !== 'hired') {
+            return redirect()->route('admin.recruitment.show', $id)
+                ->with('error', 'Only hired applicants can be set up as employees.');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username'],
+            'email_username' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:20'],
+            'password' => ['required', 'confirmed', Password::min(8)],
+            'skills' => ['nullable', 'array'],
+            'years_of_experience' => ['required', 'integer', 'min:0'],
+            'salary_per_hour' => ['required', 'numeric', 'min:0'],
+            'has_driving_license' => ['nullable', 'boolean'],
+            'efficiency' => ['required', 'numeric', 'min:0.01', 'max:9.99'],
+        ]);
+
+        $finnoyEmail = trim($validated['email_username']) . '@finnoys.com';
+
+        // Check if email already in use (by a different user)
+        $existingEmail = User::where('email', $finnoyEmail)->first();
+        if ($existingEmail) {
+            return redirect()->back()->withInput()
+                ->withErrors(['email_username' => 'The email ' . $finnoyEmail . ' is already taken.']);
+        }
+
+        // Find the applicant user (may exist from Google sign-up)
+        $applicantUser = User::where('email', $application->email)
+            ->where('role', 'applicant')
+            ->first();
+
+        if ($applicantUser) {
+            // Convert existing applicant user to employee
+            // Store original gmail as alternative_email for Google login, set Finnoys email as primary
+            $applicantUser->update([
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'alternative_email' => $applicantUser->email, // preserve Gmail for Google login
+                'email' => $finnoyEmail,
+                'phone' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'employee',
+                'email_verified_at' => now(),
+            ]);
+            $user = $applicantUser;
+        } else {
+            // Create new user account (applicant had no user account)
+            $user = User::create([
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'email' => $finnoyEmail,
+                'alternative_email' => $application->email, // store their personal gmail
+                'phone' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'employee',
+                'email_verified_at' => now(),
+            ]);
+        }
+
+        // Create the employee profile record
+        Employee::create([
+            'user_id' => $user->id,
+            'skills' => json_encode($validated['skills'] ?? []),
+            'is_active' => true,
+            'is_day_off' => false,
+            'is_busy' => false,
+            'efficiency' => $validated['efficiency'],
+            'has_driving_license' => $validated['has_driving_license'] ?? false,
+            'years_of_experience' => $validated['years_of_experience'],
+            'salary_per_hour' => $validated['salary_per_hour'],
+            'months_employed' => 0,
+        ]);
+
+        // Archive: store conversion note in the application
+        $application->update([
+            'admin_notes' => ($application->admin_notes ? $application->admin_notes . "\n" : '')
+                . "[Employee Created] Converted to employee account (User #{$user->id}, {$finnoyEmail}) on " . now()->format('M d, Y h:i A') . " by " . (auth()->user()->name ?? 'Admin') . ".",
+        ]);
+
+        return redirect()->route('admin.accounts.show', $user->id)
+            ->with('success', 'Employee account created successfully for ' . $user->name . '. Their applicant history has been archived.');
     }
 }

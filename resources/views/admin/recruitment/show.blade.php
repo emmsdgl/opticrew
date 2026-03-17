@@ -43,6 +43,50 @@
         </div>
         @endif
 
+        {{-- Existing employee without Gmail linked --}}
+        @if(session('gmail_link_prompt'))
+        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex items-start gap-4">
+            <div class="flex-shrink-0">
+                <i class="fa-brands fa-google text-amber-600 text-xl mt-0.5"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-300">Gmail Account Not Linked</h3>
+                <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                    <strong>{{ session('gmail_link_user_name') }}</strong> is already an existing employee in the system, but their Gmail account is not yet linked.
+                    For security purposes, they should link their personal Gmail account. They will be prompted to do so upon their next login.
+                </p>
+            </div>
+        </div>
+        @endif
+
+        {{-- Hired but no employee profile yet — show setup button --}}
+        @if($application->status === 'hired')
+            @php
+                $existingEmployee = \App\Models\User::where('email', $application->email)->where('role', 'employee')->whereHas('employee')->first();
+                $applicantNoProfile = \App\Models\User::where('email', $application->email)->where('role', 'applicant')->first();
+                $needsSetup = !$existingEmployee && ($applicantNoProfile || !\App\Models\User::where('email', $application->email)->where('role', 'employee')->exists());
+            @endphp
+            @if($needsSetup)
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-center justify-between">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-user-plus text-blue-600 text-xl mt-0.5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">Employee Account Required</h3>
+                        <p class="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                            This applicant has been hired but doesn't have an employee account yet. Set up their Finnoys employee account to complete the onboarding.
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('admin.recruitment.setup-employee', $application->id) }}"
+                   class="flex-shrink-0 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fa-solid fa-user-plus mr-2"></i>Setup Employee Account
+                </a>
+            </div>
+            @endif
+        @endif
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Content -->
             <div class="lg:col-span-2 space-y-6">
