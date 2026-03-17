@@ -477,12 +477,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
 });
 
 // --- APPLICANT ROUTES ---
-// Route::middleware(['auth', 'terms.accepted', 'applicant'])->prefix('applicant')->name('applicant.')->group(function () {
-//     Route::get('/dashboard', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'dashboard'])->name('dashboard');
-// });
-
-// TEMPORARY: Applicant routes without authentication (for development)
-Route::prefix('applicant')->name('applicant.')->group(function () {
+Route::middleware(['auth', 'terms.accepted', 'applicant'])->prefix('applicant')->name('applicant.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('/saved', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'saved'])->name('saved');
     Route::get('/interviews', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'interviews'])->name('interviews');

@@ -88,7 +88,7 @@
                             <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
                                 This is an automated message from Finnoys Cleaning Services.<br>
                                 Please do not reply to this email. If you have questions, contact us at
-                                <a href="mailto:no-reply@finnoys.com" style="color: #3b82f6; text-decoration: none;">no-reply@finnoys.com</a>
+                                <a href="mailto:no-reply@finnoys.com" style="color: #3b82f6; text-decoration: none;">finnoys0823@gmail.com</a>
                             </p>
                         </td>
                     </tr>

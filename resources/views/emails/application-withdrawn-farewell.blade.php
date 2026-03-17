@@ -73,7 +73,7 @@
                                 This is an automated message from Finnoys Cleaning Services.<br>
                                 You will not receive any further automated emails regarding this application.<br>
                                 If you have questions, contact us at
-                                <a href="mailto:no-reply@finnoys.com" style="color: #3b82f6; text-decoration: none;">no-reply@finnoys.com</a>
+                                <a href="mailto:no-reply@finnoys.com" style="color: #3b82f6; text-decoration: none;">finnoys0823@gmail.com</a>
                             </p>
                         </td>
                     </tr>
