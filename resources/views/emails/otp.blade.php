@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fin-noys Account Verification</title>
+    <title>Finnoys Account Verification</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&display=swap"
@@ -127,7 +127,7 @@
         </div>
 
         <div class="title font-bold">
-            <h2>Fin-noys Account<br>Verification</h2>
+            <h2>Finnoys Account<br>Verification</h2>
         </div>
 
         <div class="description">

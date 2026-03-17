@@ -100,7 +100,7 @@ Route::get('/privacypolicy', function () {
     return view('landingpage-privacypolicy');
 })->name('privacypolicy');
 
-// Careers in Fin-noys
+// Careers in Finnoys
 Route::get('/recruitment', function () {
     $jobPostings = \App\Models\JobPosting::active()->orderBy('created_at', 'desc')->get();
     return view('landingpage-recruitment', compact('jobPostings'));

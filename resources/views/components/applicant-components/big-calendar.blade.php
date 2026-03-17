@@ -134,11 +134,10 @@ function bigCalendar(interviews) {
 
     // Pre-process interviews into event objects
     const parsedEvents = interviews.map((interview, idx) => {
-        const dateStr = (interview.interview_date || '').split('T')[0].split(' ')[0];
-        const timePart = (interview.interview_date || '').includes('T')
-            ? interview.interview_date.split('T')[1]
-            : (interview.interview_date || '').split(' ')[1] || '09:00:00';
-        const [hh, mm] = timePart.split(':').map(Number);
+        const dt = new Date(interview.interview_date);
+        const dateStr = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+        const hh = dt.getHours();
+        const mm = dt.getMinutes();
 
         return {
             id: interview.id || idx,

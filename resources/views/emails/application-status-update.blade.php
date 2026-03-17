@@ -14,7 +14,7 @@
                     {{-- Header --}}
                     <tr>
                         <td style="background: linear-gradient(135deg, #0a1628 0%, #1a2d50 100%); padding: 30px 40px; text-align: center;">
-                            <h1 style="color: #ffffff; font-size: 22px; margin: 0; font-weight: 600;">FIN-NOYS</h1>
+                            <h1 style="color: #ffffff; font-size: 22px; margin: 0; font-weight: 600;">FINNOYS</h1>
                             <p style="color: #8899bb; font-size: 11px; margin: 4px 0 0; letter-spacing: 1px;">CLEANING SERVICES</p>
                         </td>
                     </tr>

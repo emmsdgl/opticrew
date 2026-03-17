@@ -131,45 +131,86 @@ class ApplicantDashboardController extends Controller
         $tempPath = $file->store('temp-resumes');
         $fullPath = storage_path('app/' . str_replace('/', DIRECTORY_SEPARATOR, $tempPath));
 
+        // Collect text from multiple extraction methods, pick the best one.
+        $candidates = [];
+
         // 1. For DOCX: extract text natively from XML (cleanest output)
-        $text = '';
         if ($ext === 'docx') {
-            $text = $this->extractDocxText($fullPath);
+            $t = $this->extractDocxText($fullPath);
+            if (trim($t)) $candidates['docx_xml'] = $t;
         }
 
         // 2. For PDFs: use smalot/pdfparser (handles font encodings & CMap)
-        if (!trim($text) && $ext === 'pdf') {
+        if ($ext === 'pdf') {
             try {
                 $parser = new \Smalot\PdfParser\Parser();
                 $pdf    = $parser->parseFile($fullPath);
-                $text   = $pdf->getText();
+                $t      = $pdf->getText();
+                if (trim($t)) $candidates['pdfparser'] = $t;
             } catch (\Throwable $e) {
                 \Log::warning('PdfParser failed', ['error' => $e->getMessage()]);
             }
         }
 
-        // 3. Fall back to Python OCR script if nothing so far
-        if (!trim($text)) {
-            $text = $this->callOcrExtract($fullPath);
+        // 3. Python OCR script (works locally, may not be available on hosting)
+        $t = $this->callOcrExtract($fullPath);
+        if (trim($t)) $candidates['python_ocr'] = $t;
+
+        // 4. PHP-native FlateDecode extraction for PDFs
+        if ($ext === 'pdf') {
+            $t = $this->extractPdfText($fullPath);
+            if (trim($t)) $candidates['php_native'] = $t;
         }
 
-        // 4. Last resort for PDFs: PHP-native FlateDecode extraction
-        if (!trim($text) && $ext === 'pdf') {
-            $text = $this->extractPdfText($fullPath);
+        // Score each candidate and pick the one that yields the most fields.
+        $bestFields = $this->emptyFields();
+        $bestScore  = -1;
+        $bestMethod = 'none';
+        $bestText   = '';
+
+        foreach ($candidates as $method => $candidateText) {
+            // Skip candidates with very poor text quality (garbled output)
+            if (!$this->isTextReadable($candidateText)) {
+                \Log::debug("Resume extract: skipping '$method' — failed readability check");
+                continue;
+            }
+
+            $fields     = $this->extractFieldsFromText($candidateText);
+            $fieldScore = $this->scoreExtractedFields($fields);
+
+            if ($fieldScore > $bestScore) {
+                $bestScore  = $fieldScore;
+                $bestFields = $fields;
+                $bestMethod = $method;
+                $bestText   = $candidateText;
+            }
         }
 
-        $fields = trim($text) ? $this->extractFieldsFromText($text) : $this->emptyFields();
+        // If no readable candidate found, try the best raw candidate anyway
+        if ($bestScore < 0 && !empty($candidates)) {
+            $longestText = '';
+            foreach ($candidates as $method => $candidateText) {
+                if (strlen($candidateText) > strlen($longestText)) {
+                    $longestText = $candidateText;
+                    $bestMethod  = $method . '_fallback';
+                }
+            }
+            $bestFields = $this->extractFieldsFromText($longestText);
+            $bestText   = $longestText;
+        }
 
         \Log::debug('Resume extract', [
-            'ext'    => $ext,
-            'chars'  => strlen($text),
-            'text_preview' => mb_substr($text, 0, 1000),
-            'fields' => $fields,
+            'ext'        => $ext,
+            'method'     => $bestMethod,
+            'candidates' => array_map('strlen', $candidates),
+            'chars'      => strlen($bestText),
+            'text_preview' => mb_substr($bestText, 0, 1000),
+            'fields'     => $bestFields,
         ]);
 
         Storage::delete($tempPath);
 
-        return response()->json(['success' => true, 'fields' => $fields]);
+        return response()->json(['success' => true, 'fields' => $bestFields]);
     }
 
     /**
@@ -411,6 +452,64 @@ class ApplicantDashboardController extends Controller
             'skills'            => '',
             'languages'         => '',
         ];
+    }
+
+    /**
+     * Check if extracted text is readable (not garbled/encoded).
+     * Returns false if the text is mostly non-ASCII or non-word characters,
+     * which indicates a failed PDF text extraction.
+     */
+    private function isTextReadable(string $text): bool
+    {
+        $text = trim($text);
+        if (strlen($text) < 20) return false;
+
+        // Count characters that are normal readable text (letters, digits, common punctuation, whitespace)
+        $readable = preg_match_all('/[a-zA-Z0-9\s.,;:!?\'\"\-@\/\(\)\+#&]/', $text);
+        $total    = mb_strlen($text);
+
+        if ($total === 0) return false;
+
+        $ratio = $readable / $total;
+
+        // If less than 50% of characters are readable, text is likely garbled
+        if ($ratio < 0.50) return false;
+
+        // Check for recognizable English words — at least a few common resume words should appear
+        $commonWords = ['experience', 'education', 'skills', 'email', 'phone', 'address',
+                        'name', 'work', 'university', 'college', 'resume', 'summary',
+                        'references', 'objective', 'profile', 'contact', 'languages'];
+        $lowerText   = mb_strtolower($text);
+        $wordHits    = 0;
+        foreach ($commonWords as $word) {
+            if (str_contains($lowerText, $word)) $wordHits++;
+        }
+
+        // If we have decent readable ratio OR at least 2 common words, consider it readable
+        return $ratio >= 0.70 || $wordHits >= 2;
+    }
+
+    /**
+     * Score extracted fields by how many were successfully populated.
+     * Weighted: name/email/phone are most important.
+     */
+    private function scoreExtractedFields(array $fields): int
+    {
+        $score = 0;
+        $weights = [
+            'first_name' => 3, 'last_name' => 3, 'email' => 2, 'phone' => 2,
+            'skills' => 2, 'city' => 1, 'country' => 1, 'birthdate' => 1,
+            'linkedin' => 1, 'languages' => 1, 'middle_initial' => 1,
+            'alternative_email' => 1,
+        ];
+
+        foreach ($weights as $key => $weight) {
+            if (!empty($fields[$key])) {
+                $score += $weight;
+            }
+        }
+
+        return $score;
     }
 
     /**
