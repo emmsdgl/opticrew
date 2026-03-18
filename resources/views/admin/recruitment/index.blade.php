@@ -1813,6 +1813,14 @@
                         });
 
                         if (response.ok) {
+                            const data = await response.json();
+
+                            // If server returns a redirect (e.g. hire -> employee setup), navigate there
+                            if (data.redirect) {
+                                window.location.href = data.redirect;
+                                return;
+                            }
+
                             this.selectedApp.status = newStatus;
                             this.drawerStatus = newStatus;
                             this.selectedApp.admin_notes = this.drawerNotes;

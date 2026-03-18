@@ -29,11 +29,14 @@
                     <i class="fa-solid fa-circle-check text-green-600 text-xl mt-0.5"></i>
                 </div>
                 <div>
-                    <h3 class="text-sm font-semibold text-green-800 dark:text-green-300">Hired Applicant</h3>
+                    <h3 class="text-sm font-semibold text-green-800 dark:text-green-300">Applicant Details</h3>
                     <p class="text-sm text-green-700 dark:text-green-400 mt-1">
                         <strong>{{ $profile['first_name'] ?? '' }} {{ $profile['last_name'] ?? '' }}</strong>
                         &mdash; {{ $application->email }}
                         &mdash; Applied for <strong>{{ $application->job_title }}</strong>
+                    </p>
+                    <p class="text-xs text-green-600 dark:text-green-500 mt-1">
+                        <i class="fa-solid fa-info-circle mr-1"></i> The applicant will be marked as hired once this employee account is successfully created.
                     </p>
                     @if($applicantUser && $applicantUser->google_id)
                     <p class="text-xs text-green-600 dark:text-green-500 mt-1">

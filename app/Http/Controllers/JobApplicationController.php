@@ -276,9 +276,8 @@ class JobApplicationController extends Controller
             $updateData['interview_duration'] = $validated['interview_duration'];
         }
 
-        $application->update($updateData);
-
         // Scenario #10: Role transition — redirect to employee setup when hired
+        // Status will only be updated to 'hired' after employee account is successfully created
         if ($validated['status'] === 'hired' && $oldStatus !== 'hired') {
             // Check if an employee account already exists with this email
             $existingEmployee = User::where('email', $application->email)
@@ -286,37 +285,32 @@ class JobApplicationController extends Controller
                 ->first();
 
             if ($existingEmployee) {
-                // Existing employee — check if Gmail is linked
+                // Existing employee exists — update status normally and check Gmail link
+                $application->update($updateData);
+
                 if (!$existingEmployee->google_id) {
-                    // Send email/notification and flash message about Gmail linking
                     session()->flash('gmail_link_prompt', true);
                     session()->flash('gmail_link_user_id', $existingEmployee->id);
                     session()->flash('gmail_link_user_name', $existingEmployee->name);
                 }
-                // Skip employee creation — already exists
             } else {
-                // Redirect admin to employee account setup page (pre-filled from applicant data)
-                // Send notifications first
-                if ($oldStatus !== $validated['status'] && $application->status !== 'withdrawn') {
-                    try {
-                        $recipients = [$application->email];
-                        if ($application->alternative_email) {
-                            $recipients[] = $application->alternative_email;
-                        }
-                        Mail::to($recipients)->send(new ApplicationStatusUpdate($application));
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send application status email: ' . $e->getMessage());
-                    }
-                    try {
-                        app(NotificationService::class)->notifyApplicantStatusChanged($application, $oldStatus, $validated['status']);
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send applicant status notification: ' . $e->getMessage());
-                    }
+                // Don't update status yet — redirect to employee account setup
+                // Status will be set to 'hired' only after account is created in storeEmployee()
+                $redirectUrl = route('admin.recruitment.setup-employee', $application->id);
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'redirect' => $redirectUrl,
+                        'message' => 'Please complete the employee account setup.',
+                    ]);
                 }
 
-                return redirect()->route('admin.recruitment.setup-employee', $application->id)
-                    ->with('success', 'Applicant marked as hired. Please complete the employee account setup.');
+                return redirect($redirectUrl)
+                    ->with('info', 'Please complete the employee account setup to finalize the hire.');
             }
+        } else {
+            $application->update($updateData);
         }
 
         // Send email and in-app notification when status changes
@@ -761,9 +755,9 @@ loadingTask.promise.then(pdf=>{
     {
         $application = JobApplication::findOrFail($id);
 
-        if ($application->status !== 'hired') {
+        if (!in_array($application->status, ['interview_scheduled', 'hired'])) {
             return redirect()->route('admin.recruitment.show', $id)
-                ->with('error', 'Only hired applicants can be set up as employees.');
+                ->with('error', 'Only interviewed or hired applicants can be set up as employees.');
         }
 
         // Check if employee already exists
@@ -795,9 +789,9 @@ loadingTask.promise.then(pdf=>{
     {
         $application = JobApplication::findOrFail($id);
 
-        if ($application->status !== 'hired') {
+        if (!in_array($application->status, ['interview_scheduled', 'hired'])) {
             return redirect()->route('admin.recruitment.show', $id)
-                ->with('error', 'Only hired applicants can be set up as employees.');
+                ->with('error', 'Only interviewed or hired applicants can be set up as employees.');
         }
 
         $validated = $request->validate([
@@ -869,11 +863,43 @@ loadingTask.promise.then(pdf=>{
             'months_employed' => 0,
         ]);
 
-        // Archive: store conversion note in the application
+        // Update application status to 'hired' now that employee account is created
+        $oldStatus = $application->status;
+        $history = $application->status_history ?? [];
+        if ($oldStatus !== 'hired') {
+            $history[] = [
+                'from' => $oldStatus,
+                'to' => 'hired',
+                'timestamp' => now()->toIso8601String(),
+                'by' => auth()->user()->name ?? 'Admin',
+            ];
+        }
+
         $application->update([
+            'status' => 'hired',
+            'reviewed_at' => now(),
+            'status_history' => $history,
             'admin_notes' => ($application->admin_notes ? $application->admin_notes . "\n" : '')
                 . "[Employee Created] Converted to employee account (User #{$user->id}, {$finnoyEmail}) on " . now()->format('M d, Y h:i A') . " by " . (auth()->user()->name ?? 'Admin') . ".",
         ]);
+
+        // Send hire notifications now that account is successfully created
+        if ($oldStatus !== 'hired') {
+            try {
+                $recipients = [$application->email];
+                if ($application->alternative_email) {
+                    $recipients[] = $application->alternative_email;
+                }
+                Mail::to($recipients)->send(new ApplicationStatusUpdate($application));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send application status email: ' . $e->getMessage());
+            }
+            try {
+                app(NotificationService::class)->notifyApplicantStatusChanged($application, $oldStatus, 'hired');
+            } catch (\Exception $e) {
+                \Log::error('Failed to send applicant status notification: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->route('admin.accounts.show', $user->id)
             ->with('success', 'Employee account created successfully for ' . $user->name . '. Their applicant history has been archived.');
