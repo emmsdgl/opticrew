@@ -71,13 +71,13 @@ return [
     ],
 
     // ===== SECTION 3: PRICING =====
-    'section3' => [
-        'subtitle' => 'Pricing',
-        'title_before' => 'Find the',
-        'title_highlight' => 'best plan',
-        'title_after' => 'for your cleaning needs.',
-        'description' => 'Flexible cleaning plans designed to keep your space spotless — on your schedule, your way.',
-    ],
+    // 'section3' => [
+    //     'subtitle' => 'Pricing',
+    //     'title_before' => 'Find the',
+    //     'title_highlight' => 'best plan',
+    //     'title_after' => 'for your cleaning needs.',
+    //     'description' => 'Flexible cleaning plans designed to keep your space spotless — on your schedule, your way.',
+    // ],
 
     'pricing' => [
         // Card 1: Contractual Daily Cleaning

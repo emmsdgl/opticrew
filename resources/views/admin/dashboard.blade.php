@@ -12,7 +12,7 @@
                     My Calendar
                 </p>
                 <div id="tour-calendar"
-                    class="w-full border border-dashed rounded-lg border-gray-400 dark:border-gray-700">
+                    class="w-full rounded-lg bg-white shadow-sm dark:bg-gray-800/40">
                     <x-calendar :holidays="$holidays" />
                 </div>
 
@@ -147,7 +147,7 @@
                     <div id="tour-task-overview gap-6">
                         <x-labelwithvalue label="Task Overview" :count="'(' . $taskCount . ')'" />
 
-                        <div class="h-72 overflow-y-auto w-full rounded-lg">
+                        <div class="h-72 overflow-y-auto w-full rounded-lg my-3 bg-white shadow-sm dark:bg-gray-800/40">
                             <x-employee-components.task-overview-list :items="$tasks" fixedHeight="18rem"
                                 maxHeight="24rem" emptyTitle="No tasks this month"
                                 emptyMessage="There are no tasks scheduled for this month." />

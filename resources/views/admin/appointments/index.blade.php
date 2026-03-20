@@ -146,7 +146,7 @@
                                     <div class="text-sm text-gray-900 dark:text-gray-200">
                                         {{ $appointment->service_date->format('M d, Y') }}</div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ \Carbon\Carbon::parse($appointment->service_time)->format('H:i') }}
+                                        {{ $appointment->formatted_service_time ?? '-' }}
                                         @if ($appointment->is_sunday)
                                             <span
                                                 class="ml-1 text-orange-600 dark:text-orange-400 font-semibold">(Sunday)</span>
@@ -317,7 +317,7 @@
                                     <div class="text-sm text-gray-900 dark:text-gray-200">
                                         {{ $appointment->service_date->format('M d, Y') }}</div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ \Carbon\Carbon::parse($appointment->service_time)->format('H:i') }}
+                                        {{ $appointment->formatted_service_time ?? '-' }}
                                         @if ($appointment->is_sunday)
                                             <span
                                                 class="ml-1 text-orange-600 dark:text-orange-400 font-semibold">(Sunday)</span>
@@ -646,24 +646,17 @@
                                                         <div
                                                             class="border-b border-gray-200 dark:border-gray-600 pb-4">
                                                             <div class="flex justify-between items-start mb-2">
-                                                                <span
-                                                                    class="text-sm font-semibold text-gray-500 dark:text-gray-400"
-                                                                    x-text="'Unit ' + (idx + 1)"></span>
+                                                                <div>
+                                                                    <span class="text-sm font-semibold text-gray-900 dark:text-white"
+                                                                        x-text="unit.name || ('Unit ' + (idx + 1))"></span>
+                                                                    <div class="text-xs text-gray-400 dark:text-gray-500"
+                                                                        x-show="unit.size" x-text="unit.size + ' m²'"></div>
+                                                                </div>
                                                                 <template x-if="unit.price">
                                                                     <span
                                                                         class="text-sm font-bold text-blue-600 dark:text-blue-400"
                                                                         x-text="'€' + parseFloat(unit.price).toFixed(2)"></span>
                                                                 </template>
-                                                            </div>
-                                                            <div class="flex gap-8 text-sm">
-                                                                <span class="text-gray-600 dark:text-gray-400">Name:
-                                                                    <span
-                                                                        class="font-medium text-gray-900 dark:text-white"
-                                                                        x-text="unit.name || '-'"></span></span>
-                                                                <span class="text-gray-600 dark:text-gray-400">Size:
-                                                                    <span
-                                                                        class="font-medium text-gray-900 dark:text-white"
-                                                                        x-text="(unit.size || '-') + ' m²'"></span></span>
                                                             </div>
                                                         </div>
                                                     </template>

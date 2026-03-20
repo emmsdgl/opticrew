@@ -154,6 +154,7 @@
 </style>
 
 <body class="bg-white text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
+    <x-material-ui.page-loader />
     {{$sidebar}}
 
     <!-- MAIN CONTENT -->
@@ -393,6 +394,9 @@
     @livewireScripts
     <x-global-dialogs />
     <x-click-spark />
+    @auth
+        <x-material-ui.sonner />
+    @endauth
 </body>
 
 </html>

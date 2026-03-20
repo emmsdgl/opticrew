@@ -97,7 +97,7 @@
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-500 dark:text-gray-400">Service Time</span>
                                 <span class="font-medium text-gray-900 dark:text-white text-right"
-                                    x-text="formatDrawerTime(getDrawerData('serviceTime') || getDrawerData('service_time'))"></span>
+                                    x-text="getDrawerData('formatted_service_time') || formatDrawerTime(getDrawerData('serviceTime') || getDrawerData('service_time'))"></span>
                             </div>
                             <div class="flex justify-between items-center" x-show="getDrawerData('location') || getDrawerData('cabin_name')">
                                 <span class="text-gray-500 dark:text-gray-400">Service Location</span>
@@ -119,16 +119,11 @@
                                 <div class="">
                                     <template x-for="(unit, index) in getDrawerData('unit_details')" :key="index">
                                         <div class="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg mb-2">
-                                            <div class="flex items-center gap-1 flex-1 min-w-0">
-                                                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 flex-shrink-0"
-                                                    x-text="'Unit ' + (index + 1)"></span>
-                                                <div class="flex items-center gap-2 flex-1 min-w-0">
-                                                    <span class="font-medium text-gray-900 dark:text-white text-sm truncate"
-                                                        x-text="unit.name || '-'"></span>
-                                                    <span class="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
-                                                        Size: <span x-text="unit.size || '-'"></span> m²
-                                                    </span>
-                                                </div>
+                                            <div class="flex-1 min-w-0">
+                                                <span class="text-sm font-semibold text-gray-900 dark:text-white"
+                                                    x-text="unit.name || ('Unit ' + (index + 1))"></span>
+                                                <div class="text-xs text-gray-400 dark:text-gray-500" x-show="unit.size"
+                                                    x-text="unit.size + ' m²'"></div>
                                             </div>
                                             <div class="text-right flex-shrink-0 ml-3" x-show="unit.price">
                                                 <span class="text-base font-bold text-gray-900 dark:text-white">
@@ -143,10 +138,9 @@
                             <template x-if="!getDrawerData('unit_details') || !Array.isArray(getDrawerData('unit_details')) || getDrawerData('unit_details').length === 0">
                                 <div class="flex justify-between items-center py-2.5 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                                        <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 flex-shrink-0">Unit 1</span>
-                                        <div class="flex items-center gap-2 flex-1 min-w-0">
-                                            <span class="font-medium text-gray-900 dark:text-white text-sm truncate"
-                                                x-text="getDrawerData('cabin_name') || '-'"></span>
+                                        <div class="flex-1 min-w-0">
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white"
+                                                x-text="getDrawerData('cabin_name') || 'Unit 1'"></span>
                                             <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0" x-show="getDrawerData('unit_size')">
                                                 Size: <span x-text="getDrawerData('unit_size') || '-'"></span> m²
                                             </span>

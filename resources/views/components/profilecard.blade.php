@@ -45,6 +45,7 @@
              } else {
                  // Enter edit mode
                  this.editing = true;
+                 window.dispatchEvent(new CustomEvent('profile-edit-toggled', { detail: { editing: true } }));
              }
          }
      }">
@@ -59,25 +60,25 @@
                         class="profile-progress-ring" transform="rotate(-90 50 50)"/>
                 <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+                        <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#60A5FA;stop-opacity:1" />
                     </linearGradient>
                 </defs>
             </svg>
             
             <!-- Avatar -->
-            <div id="profile-avatar" class="{{ $currentSize['avatar'] }} rounded-full bg-purple-100 dark:bg-purple-900/30 overflow-hidden shadow-xl relative">
+            <div id="profile-avatar" class="{{ $currentSize['avatar'] }} rounded-full bg-blue-100 dark:bg-blue-900/30 overflow-hidden shadow-xl relative">
                 @if($avatar)
                     <img src="{{ $avatar }}" alt="{{ $name }}" class="w-full h-full object-cover">
                 @else
-                    <div class="w-full h-full flex items-center justify-center text-purple-600 dark:text-purple-400 text-5xl">
+                    <div class="w-full h-full flex items-center justify-center text-blue-600 dark:text-blue-400 text-5xl">
                         {{ strtoupper(substr($name, 0, 1)) }}
                     </div>
                 @endif
             </div>
             
             <!-- Status Badge -->
-            <div class="absolute -top-2 -right-2 bg-purple-600 dark:bg-purple-500 rounded-full p-2.5 shadow-lg animate-bounce-slow">
+            <div class="absolute -top-2 -right-2 bg-blue-600 dark:bg-blue-500 rounded-full p-2.5 shadow-lg animate-bounce-slow">
                 <span class="text-xl">{{ $statusIcon }}</span>
             </div>
         </div>
@@ -177,7 +178,7 @@
             <input type="hidden" name="name" x-model="name">
 
             <!-- Email -->
-            <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200">
+            <div class="group rounded-2xl p-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
                 <div class="flex items-start gap-3">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
                         <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,7 +198,7 @@
             </div>
 
             <!-- Phone -->
-            <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200">
+            <div class="group rounded-2xl p-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
                 <div class="flex items-start gap-3">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
                         <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,7 +219,7 @@
             </div>
 
             <!-- Username (Editable) -->
-            <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200">
+            <div class="group rounded-2xl p-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
                 <div class="flex items-start gap-3">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
                         <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,7 +240,7 @@
             </div>
 
             <!-- Location -->
-            <div class="group rounded-2xl p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 w-full">
+            <div class="group rounded-2xl p-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 w-full">
                 <div class="flex items-start gap-3">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
                         <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

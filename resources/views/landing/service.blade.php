@@ -10,6 +10,20 @@
 
 </head>
 <style>
+    @keyframes auroraShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .aurora-text {
+        background: linear-gradient(135deg, #60a5fa, #3b82f6, #818cf8, #6366f1, #3b82f6, #60a5fa);
+        background-size: 300% 300%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: auroraShift 6s ease-in-out infinite;
+    }
+
     [data-carousel-slide-to][aria-current="true"] {
         background-color: #6366f1;
         /* blue-500 */
@@ -418,19 +432,17 @@
                 </button>
             </div>
 
-            <!-- PRICING -->
-            <div id="container-3">
-                <!-- PRICING -->
-                <div id="container-3" class="bg-white px-6 py-24 sm:py-32 lg:px-8 relative isolate">
+            {{-- PRICING SECTION REMOVED - now in landingpage-quotation --}}
+            {{--
                     <div class="mx-auto max-w-4xl text-center">
                         <h2 class="text-sm text-blue-600">Pricing</h2>
                         <p
-                            class="p-12 pb-6 pt-6 justify-center mt-2 text-5xl font-[fam-bold] tracking-tight text-gray-900 sm:text-6xl">
-                            Find the <span class="text-blue-600 font-[fam-bold]">best plan</span> for your cleaning
+                            class="p-12 pb-6 pt-6 justify-center mt-2 text-6xl font-[fam-bold] tracking-tight text-gray-900 sm:text-6xl">
+                            Find the <span class="aurora-text font-[fam-bold] text-6xl">best plan</span> for your cleaning
                             needs
                         </p>
                     </div>
-                    <p class="mx-auto mt-6 max-w-3xl text-center text-lg text-gray-600 sm:text-xl">
+                    <p class="mx-auto mt-6 max-w-3xl text-center text-base text-gray-600 sm:text-xl">
                         Flexible cleaning plans designed to keep your space spotless — on your schedule, your way.
                     </p>
 
@@ -438,7 +450,7 @@
                     <div class="mx-auto mt-16 p-6 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <!-- CARD TEMPLATE -->
                         <div
-                            class="relative bg-white/60 h-[30rem] rounded-3xl p-8 ring-1 ring-gray-900/10 transition-all duration-300 hover:bg-gray-900 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl">
+                            class="relative bg-gradient-to-br from-white/80 via-blue-50/60 to-indigo-50/60 h-[30rem] rounded-3xl p-8 ring-1 ring-gray-900/10 transition-all duration-300 hover:bg-gradient-to-br hover:from-gray-900 hover:via-gray-900 hover:to-blue-950 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl">
                             <h3 class="text-base font-[fam-bold] text-blue-600 group-hover:text-blue-400">Contractual
                                 Daily
                                 Cleaning</h3>
@@ -476,7 +488,7 @@
 
                         <!-- DUPLICATE 2 MORE TIMES -->
                         <div
-                            class="relative bg-white/60 rounded-3xl p-8 ring-1 ring-gray-900/10 transition-all duration-300 hover:bg-gray-900 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl">
+                            class="relative bg-gradient-to-br from-white/80 via-blue-50/60 to-indigo-50/60 rounded-3xl p-8 ring-1 ring-gray-900/10 transition-all duration-300 hover:bg-gradient-to-br hover:from-gray-900 hover:via-gray-900 hover:to-blue-950 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl">
                             <h3 class="text-base font-[fam-bold] text-blue-600 group-hover:text-blue-400">Interval
                                 Cleaning
                             </h3>
@@ -514,7 +526,7 @@
                         </div>
 
                         <div
-                            class="relative bg-white/60 rounded-3xl p-8 ring-1 ring-gray-900/10 transition-all duration-300 hover:bg-gray-900 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl">
+                            class="relative bg-gradient-to-br from-white/80 via-blue-50/60 to-indigo-50/60 rounded-3xl p-8 ring-1 ring-gray-900/10 transition-all duration-300 hover:bg-gradient-to-br hover:from-gray-900 hover:via-gray-900 hover:to-blue-950 hover:text-white hover:scale-105 hover:z-[5] group shadow-sm hover:shadow-2xl">
                             <h3 class="text-base font-[fam-bold] text-blue-600 group-hover:text-blue-400">On-Call
                                 Cleaning
                             </h3>
@@ -551,8 +563,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
-            </div>
+            --}}
 
             <!-- LOCATION -->
             <div id="container-2" class="mt-3 w-full">

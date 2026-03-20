@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Notification;
 use App\Services\Notification\NotificationService;
 use Illuminate\Support\Facades\Auth;
 
@@ -70,6 +71,37 @@ class NotificationController extends Controller
         $this->notificationService->delete($id);
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Get latest unread notifications as JSON (for sonner polling).
+     */
+    public function getLatestUnread(Request $request)
+    {
+        $user = Auth::user();
+        $since = $request->query('since');
+
+        $query = Notification::where('user_id', $user->id)
+            ->whereNull('read_at')
+            ->orderBy('created_at', 'desc')
+            ->limit(5);
+
+        if ($since) {
+            $query->where('created_at', '>', $since);
+        }
+
+        $notifications = $query->get()->map(function ($n) {
+            return [
+                'id' => $n->id,
+                'title' => $n->title,
+                'message' => $n->message,
+                'type' => $n->type,
+                'data' => $n->data,
+                'created_at' => $n->created_at->toIso8601String(),
+            ];
+        });
+
+        return response()->json(['notifications' => $notifications]);
     }
 
     /**

@@ -46,6 +46,8 @@ class ClientAppointment extends Model
         'cancelled_by',
     ];
 
+    protected $appends = ['formatted_service_time'];
+
     protected $casts = [
         'service_date' => 'date',
         'service_time' => 'datetime',
@@ -64,6 +66,16 @@ class ClientAppointment extends Model
         'cancellation_fee' => 'decimal:2',
         'cancelled_at' => 'datetime',
     ];
+
+    /**
+     * Get the service time formatted as H:i (e.g., "06:15")
+     * The raw DB column is TIME, but cast as datetime adds today's date incorrectly.
+     */
+    public function getFormattedServiceTimeAttribute(): ?string
+    {
+        if (!$this->service_time) return null;
+        return \Carbon\Carbon::parse($this->getRawOriginal('service_time'))->format('g:i A');
+    }
 
     // Relationships
     public function client()

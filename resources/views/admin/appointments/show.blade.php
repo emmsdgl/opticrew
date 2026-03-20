@@ -166,7 +166,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Service Time</p>
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($appointment->service_time)->format('g:i A') }}</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->formatted_service_time ?? '-' }}</p>
                             </div>
                         </div>
 
@@ -178,8 +178,13 @@
                                     @foreach($appointment->unit_details as $index => $unit)
                                         <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                                             <div class="flex justify-between items-start mb-2">
-                                                <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                                                    Unit {{ $index + 1 }}
+                                                <div>
+                                                    <div class="text-xs font-semibold text-gray-900 dark:text-white">
+                                                        {{ $unit['name'] ?? 'Unit ' . ($index + 1) }}
+                                                    </div>
+                                                    @if(isset($unit['size']))
+                                                        <div class="text-xs text-gray-400 dark:text-gray-500">{{ $unit['size'] }} m²</div>
+                                                    @endif
                                                 </div>
                                                 @if(isset($unit['price']))
                                                 <div class="text-right">

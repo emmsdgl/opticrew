@@ -10,7 +10,22 @@
 ])
 
 <div x-data="{ skeletonLoaded: false }"
-     x-init="$nextTick(() => { setTimeout(() => skeletonLoaded = true, 300) })"
+     x-init="$nextTick(() => {
+         function tryFinish() {
+             if (document.readyState === 'complete') {
+                 skeletonLoaded = true;
+                 window.dispatchEvent(new Event('skeletons-done'));
+             } else {
+                 window.addEventListener('load', () => {
+                     setTimeout(() => {
+                         skeletonLoaded = true;
+                         window.dispatchEvent(new Event('skeletons-done'));
+                     }, 200);
+                 });
+             }
+         }
+         tryFinish();
+     })"
      class="w-full flex-1">
 
     {{-- Skeleton Overlay - shown immediately at full width --}}

@@ -1,43 +1,13 @@
 <x-layouts.general-stepper-form title="Client Appointment Form" :steps="['Client Details', 'Appointment Details', 'Confirmation']" :currentStep="$currentStep ?? 1">
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50" x-data="{ toasts: [] }">
-        <template x-for="toast in toasts" :key="toast.id">
-            <div x-show="toast.show"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 transform translate-x-full"
-                 x-transition:enter-end="opacity-100 transform translate-x-0"
-                 x-transition:leave="transition ease-in duration-300"
-                 x-transition:leave-start="opacity-100 transform translate-x-0"
-                 x-transition:leave-end="opacity-0 transform translate-x-full"
-                 class="flex items-center w-full max-w-sm p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-lg dark:text-gray-400 dark:bg-gray-800 border-l-4"
-                 :class="toast.type === 'error' ? 'border-red-500' : 'border-blue-500'"
-                 role="alert">
-                <!-- Icon -->
-                <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg"
-                     :class="toast.type === 'error' ? 'text-red-500 bg-red-100 dark:bg-red-800 dark:text-red-200' : 'text-blue-500 bg-blue-100 dark:bg-blue-800 dark:text-blue-200'">
-                    <svg x-show="toast.type === 'error'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
-                    <svg x-show="toast.type === 'info'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <!-- Message -->
-                <div class="ml-3 text-sm font-normal" x-text="toast.message"></div>
-                <!-- Close Button -->
-                <button type="button"
-                        @click="toast.show = false"
-                        class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700">
-                    <span class="sr-only">Close</span>
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 14 14">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                    </svg>
-                </button>
-            </div>
-        </template>
-    </div>
-
     <div class="max-w-6xl mx-auto" x-data="appointmentForm()">
+
+        <!-- Breadcrumb -->
+        <div class="pt-6">
+            <x-employer-components.breadcrumb :items="[
+                ['label' => 'Dashboard', 'url' => route('client.dashboard')],
+                ['label' => 'Book a Service', 'url' => '#'],
+            ]" />
+        </div>
 
         <!-- STEP 1: CLIENT DETAILS -->
         <div x-show="currentStep === 1" x-transition:enter="transition ease-out duration-300"
@@ -46,96 +16,110 @@
             <div class="rounded-xl p-8 md:p-8">
                 <h2
                     class="text-2xl font-sans font-bold italic w-full items-center text-center mb-2 mt-8 text-gray-900 dark:text-white">
-                    What's the details of the client?
+                    What are the details of the client?
                 </h2>
 
-                <div class="p-48 pt-3 mt-6 m-12">
+                <div class="px-56 pt-3 mt-6">
                     <!-- Name Fields -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">First
-                                Name <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                    <i class="fi fi-rr-user"></i>
-                                </span>
-                                <input type="text" x-model="formData.first_name" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Firstname">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Last
-                                Name <span class="text-red-500">*</span></label>
-                            <input type="text" x-model="formData.last_name" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Lastname">
-                        </div>
+                        <x-material-ui.input-field label="First Name" model="formData.first_name" icon="fi fi-rr-user" placeholder="Firstname" required />
+                        <x-material-ui.input-field label="Last Name" model="formData.last_name" icon="fi fi-rr-user" placeholder="Lastname" required />
                     </div>
 
                     <!-- Email Address -->
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Email
-                            Address <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fi fi-rr-envelope"></i>
-                            </span>
-                            <input type="email" x-model="formData.email" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Ex: yourname@example.com">
-                        </div>
+                        <x-material-ui.input-field label="Email Address" type="email" model="formData.email" icon="fi fi-rr-envelope" placeholder="Ex: yourname@example.com" required />
                     </div>
 
                     <!-- Finnish Address Structure -->
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Street
-                            Address <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fi fi-rr-marker"></i>
-                            </span>
-                            <input type="text" x-model="formData.street_address" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Ex: Mannerheimintie 123 A 45">
+                        <x-material-ui.input-field label="Street Address" model="formData.street_address" icon="fi fi-rr-marker" placeholder="Ex: Mannerheimintie 123 A 45" required />
+                    </div>
+
+                    <!-- Region (State) and City -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        {{-- Region Dropdown --}}
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Region (Maakunta)<span class="text-red-500">*</span></label>
+                            <div class="relative" x-data="{ regionOpen: false, regionSearch: '' }">
+                                <button type="button" @click="regionOpen = !regionOpen"
+                                    class="w-full flex items-center justify-between px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-sm">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fi fi-rr-map-marker text-blue-500 text-xs"></i>
+                                        <span x-text="formData.state || 'Select Region...'" :class="formData.state ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"></span>
+                                    </span>
+                                    <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="regionOpen && 'rotate-180'"></i>
+                                </button>
+                                <div x-show="regionOpen" @click.away="regionOpen = false" x-transition
+                                    class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-hidden">
+                                    <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                                        <input type="text" x-model="regionSearch" placeholder="Search region..."
+                                            class="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    <div class="max-h-48 overflow-y-auto">
+                                        <template x-for="s in cscStates.filter(s => s.name.toLowerCase().includes(regionSearch.toLowerCase()))" :key="s.iso2">
+                                            <button type="button"
+                                                @click="formData.state = s.name; regionOpen = false; regionSearch = ''; onStateChange();"
+                                                class="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-left"
+                                                :class="formData.state === s.name ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
+                                                <span class="text-gray-900 dark:text-white" x-text="s.name"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- City Dropdown --}}
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Municipality (Kunta) <span class="text-red-500">*</span></label>
+                            <div class="relative" x-data="{ cityOpen: false, citySearch: '' }">
+                                <button type="button" @click="if (cscCities.length > 0) cityOpen = !cityOpen"
+                                    :class="cscCities.length === 0 ? 'opacity-50 cursor-not-allowed' : ''"
+                                    class="w-full flex items-center justify-between px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-sm">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fi fi-rr-building text-blue-500 text-xs"></i>
+                                        <span x-text="formData.city || 'Select City...'" :class="formData.city ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"></span>
+                                    </span>
+                                    <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="cityOpen && 'rotate-180'"></i>
+                                </button>
+                                <div x-show="cityOpen" @click.away="cityOpen = false" x-transition
+                                    class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-hidden">
+                                    <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                                        <input type="text" x-model="citySearch" placeholder="Search city..."
+                                            class="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    <div class="max-h-48 overflow-y-auto">
+                                        <template x-for="c in cscCities.filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase()))" :key="c.name">
+                                            <button type="button"
+                                                @click="formData.city = c.name; cityOpen = false; citySearch = ''; onCityChange();"
+                                                class="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-left"
+                                                :class="formData.city === c.name ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
+                                                <span class="text-gray-900 dark:text-white" x-text="c.name"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Postal Code and City -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Postal
-                                Code <span class="text-red-500">*</span></label>
-                            <input type="text" x-model="formData.postal_code" required
-                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="00100" maxlength="5">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">City <span class="text-red-500">*</span></label>
-                            <input type="text" x-model="formData.city" required
-                                   class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Helsinki">
-                        </div>
+                    <!-- Postal Code (auto-filled) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Postal Code <span class="text-red-500">*</span></label>
+                        <x-material-ui.input-field model="formData.postal_code" icon="fi fi-rr-map-pin" placeholder="00100" maxlength="5" required />
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Auto-filled from city selection. You can edit manually.</p>
                     </div>
 
                     <!-- Mobile Number -->
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Mobile
-                            Number <span class="text-red-500">*</span></label>
                         <div class="flex gap-2">
-                            <div class="relative w-36">
-                                <select x-model="formData.country_code" required class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <div class="w-36 flex-shrink-0">
+                                <select x-model="formData.country_code" required class="w-full h-full px-3 py-3 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                           focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                                           focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
+                                           transition-all duration-200">
                                     <option value="+358">🇫🇮 +358</option>
                                     <option value="+46">🇸🇪 +46</option>
                                     <option value="+47">🇳🇴 +47</option>
@@ -144,10 +128,9 @@
                                     <option value="+44">🇬🇧 +44</option>
                                 </select>
                             </div>
-                            <input type="tel" x-model="formData.mobile_number" required class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="40 1234567">
+                            <div class="flex-1">
+                                <x-material-ui.input-field label="Mobile Number" type="tel" model="formData.mobile_number" icon="fi fi-rr-phone-call" placeholder="40 1234567" required />
+                            </div>
                         </div>
                     </div>
 
@@ -156,28 +139,64 @@
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                             District (Kaupunginosa) <span class="text-red-500">*</span>
                         </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fi fi-rr-marker"></i>
-                            </span>
-                            <input type="text" x-model="formData.district"
-                                   @input="searchDistrict()"
-                                   @focus="showDistrictSuggestions = true"
-                                   class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Ex: Kallio, Kamppi, Punavuori">
 
-                            <!-- District Suggestions Dropdown -->
-                            <div x-show="showDistrictSuggestions && filteredDistricts.length > 0"
-                                 @click.outside="showDistrictSuggestions = false"
-                                 class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                <template x-for="district in filteredDistricts" :key="district">
-                                    <div @click="selectDistrict(district)"
-                                         class="px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer text-gray-900 dark:text-white">
-                                        <span x-text="district"></span>
+                        <div class="relative">
+                            {{-- Trigger button --}}
+                            <button type="button"
+                                @click="if (formData.state && formData.city && !districtLoading) districtOpen = !districtOpen"
+                                :disabled="!formData.state || !formData.city || districtLoading"
+                                class="w-full flex items-center justify-between px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="flex items-center gap-2">
+                                    <i class="fi fi-rr-marker text-blue-500 text-xs"></i>
+                                    <span x-show="districtLoading"><i class="fa-solid fa-spinner fa-spin text-blue-400 text-xs mr-1"></i>Loading...</span>
+                                    <span x-show="!districtLoading && !isCustomDistrict" x-text="formData.district || 'Select District...'"
+                                          :class="formData.district ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"></span>
+                                    <span x-show="!districtLoading && isCustomDistrict" class="text-gray-900 dark:text-white"
+                                          x-text="customDistrictValue || 'Others (type below)'"></span>
+                                </span>
+                                <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="districtOpen && 'rotate-180'"></i>
+                            </button>
+
+                            {{-- Dropdown panel --}}
+                            <div x-show="districtOpen" @click.away="districtOpen = false" x-transition
+                                class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-72 overflow-hidden">
+
+                                {{-- Search --}}
+                                <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                                    <input type="text" x-model="districtSearch" placeholder="Search district..."
+                                        class="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+
+                                {{-- District options (always visible) --}}
+                                <div class="max-h-40 overflow-y-auto">
+                                    <template x-for="d in filteredDistricts.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase()))" :key="d">
+                                        <button type="button"
+                                            @click="isCustomDistrict = false; customDistrictValue = ''; formData.district = d; districtOpen = false; districtSearch = '';"
+                                            class="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-left"
+                                            :class="formData.district === d && !isCustomDistrict ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
+                                            <span class="text-gray-900 dark:text-white" x-text="d"></span>
+                                        </button>
+                                    </template>
+                                </div>
+
+                                {{-- Others: text input always at the bottom --}}
+                                <div class="p-2.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                    <label class="block text-[10px] font-semibold text-gray-400 dark:text-gray-500 mb-1 uppercase tracking-wider">Others</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="text" x-model="customDistrictValue" x-ref="customDistrictInput"
+                                               @input="isCustomDistrict = true; formData.district = customDistrictValue"
+                                               @focus="isCustomDistrict = true"
+                                               @keydown.enter.prevent="if (customDistrictValue.trim()) { formData.district = customDistrictValue.trim(); districtOpen = false; }"
+                                               class="flex-1 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                               placeholder="Type district name...">
+                                        <button type="button"
+                                            @click="if (customDistrictValue.trim()) { formData.district = customDistrictValue.trim(); districtOpen = false; }"
+                                            :disabled="!customDistrictValue.trim()"
+                                            class="px-3 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
+                                            <i class="fas fa-check"></i>
+                                        </button>
                                     </div>
-                                </template>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -186,7 +205,7 @@
                     <!-- Navigation -->
                     <div class="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
                         <a href="{{ route('client.dashboard') }}">
-                            <button type="button" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full
+                            <button type="button" class="px-6 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full
                             hover:bg-gray-300 transition-colors">
                                 <i class="fi fi-rr-angle-left mr-2"></i>Back
                             </button>
@@ -210,186 +229,263 @@
                     What's the appointment details?
                 </h2>
 
-                <div class="p-48 pt-3 mt-6 m-12">
+                <div class="px-48 pt-3 mt-6">
                     <div class="mb-6">
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Service
                             Type <span class="text-red-500">*</span></label>
-                        <select x-model="formData.service_type" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                   bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select a Service</option>
-                            <option value="Final Cleaning">Final Cleaning (Cabins/Cottages & Holiday Apartments)</option>
-                            <option value="Deep Cleaning">Deep Cleaning (Hourly Rate)</option>
-                        </select>
+                        <x-material-ui.select-dropdown
+                            model="formData.service_type"
+                            placeholder="Select a Service"
+                            placeholderDesc="Choose from available cleaning services"
+                            placeholderIcon="fas fa-broom"
+                            :options="[
+                                ['value' => 'Final Cleaning', 'label' => 'Final Cleaning', 'description' => 'Cabins/Cottages & Holiday Apartments', 'icon' => 'fas fa-house', 'iconBg' => 'bg-rose-50 dark:bg-rose-900/30', 'iconColor' => 'text-rose-500 dark:text-rose-400'],
+                                ['value' => 'Deep Cleaning', 'label' => 'Deep Cleaning', 'description' => 'Hourly Rate — €48/hr', 'icon' => 'fas fa-spray-can-sparkles', 'iconBg' => 'bg-blue-50 dark:bg-blue-900/30', 'iconColor' => 'text-blue-500 dark:text-blue-400'],
+                                ['value' => 'Daily Cleaning', 'label' => 'Daily Cleaning', 'description' => 'Hourly Rate — €35/hr', 'icon' => 'fas fa-calendar-day', 'iconBg' => 'bg-green-50 dark:bg-green-900/30', 'iconColor' => 'text-green-500 dark:text-green-400'],
+                                ['value' => 'Snowout Cleaning', 'label' => 'Snow Out Cleaning', 'description' => 'Hourly Rate — €55/hr', 'icon' => 'fas fa-snowflake', 'iconBg' => 'bg-purple-50 dark:bg-purple-900/30', 'iconColor' => 'text-purple-500 dark:text-purple-400'],
+                                ['value' => 'General Cleaning', 'label' => 'General Cleaning', 'description' => 'Hourly Rate — €40/hr', 'icon' => 'fas fa-broom', 'iconBg' => 'bg-teal-50 dark:bg-teal-900/30', 'iconColor' => 'text-teal-500 dark:text-teal-400'],
+                                ['value' => 'Hotel Cleaning', 'label' => 'Hotel Cleaning', 'description' => 'Hourly Rate — €42/hr', 'icon' => 'fas fa-hotel', 'iconBg' => 'bg-amber-50 dark:bg-amber-900/30', 'iconColor' => 'text-amber-500 dark:text-amber-400'],
+                            ]"
+                        />
                     </div>
 
-                    <!-- Service Date and Time -->
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div>
-                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Service
-                                Date <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                    <i class="fi fi-rr-calendar"></i>
-                                </span>
-                                <input type="date" x-model="formData.service_date" required @change="checkDateAndCalculate()"
-                                       :min="new Date().toISOString().split('T')[0]"
-                                       class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <!-- Sunday/Holiday indicator -->
-                            <div x-show="formData.is_sunday || formData.is_holiday" class="mt-2 text-xs text-orange-600 dark:text-orange-400 flex items-center">
-                                <i class="fi fi-rr-calendar-star mr-1"></i>
-                                <span x-show="formData.is_holiday && !formData.is_sunday">Holiday - Double the price will apply</span>
-                                <span x-show="formData.is_sunday && !formData.is_holiday">Sunday - Double the price will apply</span>
-                                <span x-show="formData.is_sunday && formData.is_holiday">Sunday & Holiday - Double the price will apply</span>
-                            </div>
-
-                            <!-- Date notice: blocked (tomorrow) -->
-                            <div x-show="dateNotice === 'blocked'" x-cloak
-                                 class="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                                <div class="flex items-start">
-                                    <i class="fi fi-rr-circle-exclamation text-red-500 mt-0.5 mr-2 flex-shrink-0"></i>
-                                    <p class="text-sm text-red-700 dark:text-red-400" x-text="dateNoticeMessage"></p>
-                                </div>
-                            </div>
-
-                            <!-- Date notice: priority available (2 days) -->
-                            <div x-show="dateNotice === 'priority'" x-cloak
-                                 class="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                                <div class="flex items-start">
-                                    <i class="fi fi-rr-triangle-warning text-amber-500 mt-0.5 mr-2 flex-shrink-0"></i>
-                                    <p class="text-sm text-amber-700 dark:text-amber-400" x-text="dateNoticeMessage"></p>
-                                </div>
-                                <label class="flex items-center mt-3 cursor-pointer group">
-                                    <input type="checkbox" x-model="formData.is_priority"
-                                           class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded
-                                                  focus:ring-blue-500 focus:ring-2">
-                                    <span class="ml-2 text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                        Priority Clean — I need this service on short notice
-                                    </span>
-                                </label>
-                            </div>
+                    <!-- Service Date (full width) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Service
+                            Date <span class="text-red-500">*</span></label>
+                        <div x-effect="if (formData.service_date) checkDateAndCalculate()">
+                            <x-material-ui.calendar-picker model="formData.service_date" :min="now()->toDateString()" />
                         </div>
+                        <!-- Sunday/Holiday indicator -->
+                        <div x-show="formData.is_sunday || formData.is_holiday" class="mt-2 text-xs text-orange-600 dark:text-orange-400 flex items-center">
+                            <i class="fi fi-rr-calendar-star mr-1"></i>
+                            <span x-show="formData.is_holiday && !formData.is_sunday">Holiday - Double the price will apply</span>
+                            <span x-show="formData.is_sunday && !formData.is_holiday">Sunday - Double the price will apply</span>
+                            <span x-show="formData.is_sunday && formData.is_holiday">Sunday & Holiday - Double the price will apply</span>
+                        </div>
+                    </div>
 
-                        <div>
+                    <!-- Date notice: blocked (tomorrow) — full width -->
+                    <div x-show="dateNotice === 'blocked'" x-cloak
+                         class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg w-full">
+                        <div class="flex items-start">
+                            <i class="fi fi-rr-circle-exclamation text-red-500 mt-0.5 mr-2 flex-shrink-0"></i>
+                            <p class="text-sm text-red-700 dark:text-red-400" x-text="dateNoticeMessage"></p>
+                        </div>
+                    </div>
+
+                    <!-- Date notice: priority available (2 days) — full width -->
+                    <div x-show="dateNotice === 'priority'" x-cloak
+                         class="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg w-full">
+                        <div class="flex items-start">
+                            <i class="fi fi-rr-triangle-warning text-amber-500 mt-0.5 mr-2 flex-shrink-0"></i>
+                            <p class="text-sm text-amber-700 dark:text-amber-400" x-text="dateNoticeMessage"></p>
+                        </div>
+                        <label class="flex items-center mt-3 cursor-pointer group">
+                            <input type="checkbox" x-model="formData.is_priority"
+                                   class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded
+                                          focus:ring-blue-500 focus:ring-2">
+                            <span class="ml-2 text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                Priority Clean — I need this service on short notice
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Service Time and Number of Units (side by side) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {{-- Service Time --}}
+                        <div x-data="{ timeOpen: false, timeSearch: '' }">
                             <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Service
                                 Time <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                    <i class="fi fi-rr-clock"></i>
-                                </span>
-                                <input type="time" x-model="formData.service_time" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                {{-- Trigger --}}
+                                <button type="button" @click="timeOpen = !timeOpen"
+                                    class="w-full flex items-center justify-between px-4 py-2.5 border border-gray-400 dark:border-gray-700 rounded-xl
+                                           focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                                           focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
+                                           bg-white dark:bg-gray-800 text-sm transition-all duration-200">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fi fi-rr-clock text-sm text-blue-600"></i>
+                                        <span x-show="loadingSlots" class="text-gray-400"><i class="fa-solid fa-spinner fa-spin text-xs mr-1"></i>Loading...</span>
+                                        <span x-show="!loadingSlots" :class="formData.service_time ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"
+                                              x-text="formData.service_time ? (() => { const [h,m] = formData.service_time.split(':'); const hr = +h > 12 ? +h-12 : (+h||12); return hr+':'+m+' '+(+h>=12?'PM':'AM'); })() : 'Select time...'"></span>
+                                    </span>
+                                    <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="timeOpen && 'rotate-180'"></i>
+                                </button>
+
+                                {{-- Dropdown --}}
+                                <div x-show="timeOpen" @click.away="timeOpen = false" x-transition
+                                    class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
+                                    {{-- Search --}}
+                                    <div class="p-2 border-b border-gray-100 dark:border-gray-700">
+                                        <input type="text" x-model="timeSearch" placeholder="Search time..."
+                                            class="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    {{-- Time list (Blade-rendered, Alpine-toggled) --}}
+                                    <div class="max-h-48 overflow-y-auto time-scroll">
+                                        @for($h = 6; $h <= 21; $h++)
+                                            @foreach(['00','15','30','45'] as $m)
+                                                @php
+                                                    $val = str_pad($h, 2, '0', STR_PAD_LEFT) . ':' . $m;
+                                                    $hr = $h > 12 ? $h - 12 : ($h == 0 ? 12 : $h);
+                                                    $ampm = $h >= 12 ? 'PM' : 'AM';
+                                                    $lbl = $hr . ':' . $m . ' ' . $ampm;
+                                                @endphp
+                                                <button type="button"
+                                                    x-show="!timeSearch || '{{ strtolower($lbl) }}'.includes(timeSearch.toLowerCase()) || '{{ $val }}'.includes(timeSearch)"
+                                                    @click="if (!bookedSlots.includes('{{ $val }}')) { formData.service_time = '{{ $val }}'; timeOpen = false; timeSearch = ''; }"
+                                                    :disabled="bookedSlots.includes('{{ $val }}')"
+                                                    class="w-full flex items-center justify-between px-4 py-2 text-sm transition-colors text-left"
+                                                    :class="{
+                                                        'bg-blue-50 dark:bg-blue-900/20': formData.service_time === '{{ $val }}' && !bookedSlots.includes('{{ $val }}'),
+                                                        'hover:bg-blue-50 dark:hover:bg-blue-900/20': !bookedSlots.includes('{{ $val }}'),
+                                                        'opacity-40 cursor-not-allowed line-through': bookedSlots.includes('{{ $val }}'),
+                                                    }">
+                                                    <span :class="bookedSlots.includes('{{ $val }}') ? 'text-gray-400 dark:text-gray-600' : 'text-gray-900 dark:text-white'">{{ $lbl }}</span>
+                                                    <span class="text-xs" :class="bookedSlots.includes('{{ $val }}') ? 'text-red-400 dark:text-red-500' : 'text-gray-400 dark:text-gray-500'"
+                                                          x-text="bookedSlots.includes('{{ $val }}') ? 'Booked' : '{{ $val }}'"></span>
+                                                </button>
+                                            @endforeach
+                                        @endfor
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Number of Units -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                            Number of Units <span class="text-red-500">*</span>
-                        </label>
-                        <div class="flex items-center gap-3">
-                            <button type="button"
-                                    @click="formData.units = Math.max(1, formData.units - 1)"
-                                    :disabled="formData.units <= 1"
-                                    :class="formData.units <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300 dark:hover:bg-gray-600'"
-                                    class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
-                                <i class="fi fi-rr-minus text-sm"></i>
-                            </button>
-                            <input type="number"
-                                   x-model.number="formData.units"
-                                   @input="formData.units = Math.max(1, Math.min(20, parseInt(formData.units) || 1))"
-                                   min="1"
-                                   max="20"
-                                   required
-                                   class="w-32 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-center
-                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold text-lg
-                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <button type="button"
-                                    @click="formData.units = Math.min(20, formData.units + 1)"
-                                    :disabled="formData.units >= 20"
-                                    :class="formData.units >= 20 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300 dark:hover:bg-gray-600'"
-                                    class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
-                                <i class="fi fi-rr-plus text-sm"></i>
-                            </button>
-                            <span class="text-sm font-medium text-gray-600 dark:text-gray-400" x-text="formData.units === 1 ? '1 Unit' : formData.units + ' Units'"></span>
+                        {{-- Number of Units --}}
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                                Number of Units <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex items-center gap-3">
+                                <button type="button"
+                                        @click="formData.units = Math.max(1, formData.units - 1)"
+                                        :disabled="formData.units <= 1"
+                                        :class="formData.units <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300 dark:hover:bg-gray-600'"
+                                        class="px-4 py-2.5 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg transition-colors flex-shrink-0">
+                                    <i class="fi fi-rr-minus text-sm"></i>
+                                </button>
+                                <input type="number"
+                                       x-model.number="formData.units"
+                                       @input="formData.units = Math.max(1, Math.min(20, parseInt(formData.units) || 1))"
+                                       min="1"
+                                       max="20"
+                                       required
+                                       class="flex-1 px-4 py-2.5 border border-gray-400 dark:border-gray-700 rounded-xl text-center
+                                              bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-sm
+                                              focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                                              focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
+                                              transition-all duration-200">
+                                <button type="button"
+                                        @click="formData.units = Math.min(20, formData.units + 1)"
+                                        :disabled="formData.units >= 20"
+                                        :class="formData.units >= 20 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300 dark:hover:bg-gray-600'"
+                                        class="px-4 py-2.5 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg transition-colors flex-shrink-0">
+                                    <i class="fi fi-rr-plus text-sm"></i>
+                                </button>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                <span x-text="formData.units === 1 ? '1 Unit' : formData.units + ' Units'"></span> — You can add up to 20 units
+                            </p>
                         </div>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">You can add up to 20 units</p>
                     </div>
 
-
-                    <!-- Dynamic Unit Fields -->
+                    <!-- Dynamic Unit Fields (Accordion) -->
                     <div class="mb-6">
                         <label class="block text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300">
                             Unit Details <span class="text-red-500">*</span>
                         </label>
-                        <div class="space-y-4">
-                            <template x-for="(unit, index) in unitData" :key="index">
-                                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                            Unit <span x-text="index + 1"></span>
-                                        </h4>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <!-- Cabin/Unit Name -->
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
-                                                Cabin/Unit Name <span class="text-red-500">*</span>
-                                            </label>
-                                            <input type="text" x-model="unit.name" required
-                                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm
-                                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                   placeholder="Ex: Kelo A, Cabin 5">
-                                        </div>
 
-                                        <!-- Unit Size -->
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
-                                                Unit Size <span class="text-red-500">*</span>
-                                            </label>
-                                            <select x-model="unit.size" required @change="calculateUnitPrice(index)"
-                                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                                                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm
-                                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                                <option value="">Select size</option>
-                                                <option value="20-50">20-50 m²</option>
-                                                <option value="51-70">51-70 m²</option>
-                                                <option value="71-90">71-90 m²</option>
-                                                <option value="91-120">91-120 m²</option>
-                                                <option value="121-140">121-140 m²</option>
-                                                <option value="141-160">141-160 m²</option>
-                                                <option value="161-180">161-180 m²</option>
-                                                <option value="181-220">181-220 m²</option>
-                                            </select>
-                                        </div>
+                        <x-material-ui.accordion type="multiple" :defaultOpen="['unit-0']">
+                            <template x-for="(unit, index) in unitData" :key="'unit-accordion-' + index">
+                                <div class="border-b border-gray-200 dark:border-gray-700/50">
+                                    {{-- Trigger --}}
+                                    <button type="button"
+                                        @click="toggle('unit-' + index)"
+                                        class="w-full flex items-center justify-between py-3.5 px-1 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg group">
+                                        <span class="flex items-center gap-3">
+                                            <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-50 dark:bg-blue-900/30">
+                                                <span class="text-xs font-bold text-blue-600 dark:text-blue-400" x-text="index + 1"></span>
+                                            </span>
+                                            <span class="min-w-0">
+                                                <span class="block text-sm font-semibold text-gray-900 dark:text-white"
+                                                      x-text="unit.name ? unit.name : 'Unit ' + (index + 1)"></span>
+                                                <span class="block text-xs text-gray-400 dark:text-gray-500 mt-0.5"
+                                                      x-text="unit.size ? unit.size + ' m²' + (unit.price ? ' — €' + unit.price.toFixed(2) : '') : 'Not configured'"></span>
+                                            </span>
+                                        </span>
+                                        {{-- Morphing +/- icon --}}
+                                        <span class="relative w-5 h-5 flex-shrink-0 ml-2">
+                                            <svg class="w-5 h-5 absolute accordion-icon-plus text-gray-400 dark:text-gray-500"
+                                                 :class="isOpen('unit-' + index) ? 'is-open' : 'is-closed'"
+                                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M5 12h14"/><path d="M12 5v14"/>
+                                            </svg>
+                                            <svg class="w-5 h-5 absolute accordion-icon-minus text-gray-400 dark:text-gray-500"
+                                                 :class="isOpen('unit-' + index) ? 'is-open' : 'is-closed'"
+                                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M5 12h14"/>
+                                            </svg>
+                                        </span>
+                                    </button>
 
-                                        <!-- Price Display -->
-                                        <div>
-                                            <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
-                                                <span x-show="formData.service_type === 'Final Cleaning'">Price</span>
-                                                <span x-show="formData.service_type === 'Deep Cleaning'">Calculation</span>
-                                            </label>
-                                            <div class="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                                                <!-- Final Cleaning Price -->
-                                                <div x-show="formData.service_type === 'Final Cleaning'">
-                                                    <div class="text-xl font-bold text-blue-600 dark:text-blue-400">
-                                                        €<span x-text="unit.price ? unit.price.toFixed(2) : '0.00'"></span>
+                                    {{-- Content --}}
+                                    <div x-show="isOpen('unit-' + index)" x-collapse>
+                                        <div class="pb-4 pt-1 px-1">
+                                            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <!-- Cabin/Unit Name -->
+                                                    <div>
+                                                        <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+                                                            Cabin/Unit Name <span class="text-red-500">*</span>
+                                                        </label>
+                                                        <input type="text" x-model="unit.name" required
+                                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg
+                                                                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm
+                                                                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                               placeholder="Ex: Kelo A, Cabin 5">
                                                     </div>
-                                                </div>
-                                                <!-- Deep Cleaning Calculation -->
-                                                <div x-show="formData.service_type === 'Deep Cleaning'">
-                                                    <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                        <span x-text="unit.hours || '0'"></span>h × €<span x-text="deepCleaningHourlyRate.toFixed(0)"></span>
-                                                        <span x-show="formData.is_sunday || formData.is_holiday" class="text-orange-600 dark:text-orange-400 font-semibold"> × 2</span>
+
+                                                    <!-- Unit Size -->
+                                                    <div>
+                                                        <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+                                                            Unit Size <span class="text-red-500">*</span>
+                                                        </label>
+                                                        <select x-model="unit.size" required @change="calculateUnitPrice(index)"
+                                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg
+                                                                       bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm
+                                                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                            <option value="">Select size</option>
+                                                            <option value="20-50">20-50 m²</option>
+                                                            <option value="51-70">51-70 m²</option>
+                                                            <option value="71-90">71-90 m²</option>
+                                                            <option value="91-120">91-120 m²</option>
+                                                            <option value="121-140">121-140 m²</option>
+                                                            <option value="141-160">141-160 m²</option>
+                                                            <option value="161-180">161-180 m²</option>
+                                                            <option value="181-220">181-220 m²</option>
+                                                        </select>
                                                     </div>
-                                                    <div class="text-xl font-bold text-blue-600 dark:text-blue-400">
-                                                        €<span x-text="unit.price ? unit.price.toFixed(2) : '0.00'"></span>
+
+                                                    <!-- Price Display -->
+                                                    <div>
+                                                        <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+                                                            <span x-show="formData.service_type === 'Final Cleaning'">Price</span>
+                                                            <span x-show="formData.service_type !== 'Final Cleaning'">Calculation</span>
+                                                        </label>
+                                                        <div class="flex flex=row justify-between px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                                            <!-- Final Cleaning Price (fixed) -->
+                                                            <div x-show="formData.service_type === 'Final Cleaning'">
+                                                                <div class="text-base font-bold text-blue-600 dark:text-blue-400">
+                                                                    €<span x-text="unit.price ? unit.price.toFixed(2) : '0.00'"></span>
+                                                                </div>
+                                                            </div>
+                                                            <!-- Hourly-based Calculation (single line) -->
+                                                            <div x-show="formData.service_type !== 'Final Cleaning'" class="flex items-center gap-1.5 flex-wrap">
+                                                                <span class="text-xs text-gray-500 dark:text-gray-400"><span x-text="unit.hours || '0'"></span>h × €<span x-text="(() => { const rates = {'Deep Cleaning': deepCleaningHourlyRate, 'Daily Cleaning': dailyCleaningHourlyRate, 'Snowout Cleaning': snowoutCleaningHourlyRate, 'General Cleaning': generalCleaningHourlyRate, 'Hotel Cleaning': hotelCleaningHourlyRate}; return (rates[formData.service_type] || 0).toFixed(0); })()"></span><span x-show="formData.is_sunday || formData.is_holiday" class="text-orange-500 font-semibold"> × 2</span> =</span>
+                                                                <span class="text-base font-bold text-blue-600 dark:text-blue-400">€<span x-text="unit.price ? unit.price.toFixed(2) : '0.00'"></span></span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -397,7 +493,7 @@
                                     </div>
                                 </div>
                             </template>
-                        </div>
+                        </x-material-ui.accordion>
                     </div>
 
                     <!-- Quotation Summary -->
@@ -431,8 +527,8 @@
                     <div class="mb-6">
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Special
                             Requests</label>
-                        <textarea x-model="formData.special_requests" rows="4" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                                   bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                        <textarea x-model="formData.special_requests" rows="4" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm
+                                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white
                                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Type in special requests (eg. &quot;Extra cleaning for kitchen&quot;, &quot;Pet-friendly cleaning supplies&quot;)"></textarea>
                     </div>
@@ -440,7 +536,7 @@
                     <!-- Navigation -->
                     <div
                         class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                    <button type="button" @click="prevStep()" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full
+                    <button type="button" @click="prevStep()" class="px-6 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full
                         hover:bg-gray-300 transition-colors">
                         <i class="fi fi-rr-angle-left mr-2"></i>Back
                     </button>
@@ -463,7 +559,7 @@
                     Review Your Appointment
                 </h2>
 
-                <div class="p-48 pt-3 mt-6 m-12">
+                <div class="px-48 pt-3 mt-6">
                     <!-- Appointment Summary -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
                         <!-- Client Details -->
@@ -492,9 +588,9 @@
                                         x-text="formData.street_address || '-'"></div>
                                 </div>
                                 <div>
-                                    <div class="text-gray-500 dark:text-gray-400 mb-3">City</div>
+                                    <div class="text-gray-500 dark:text-gray-400 mb-3">Region & City</div>
                                     <div class="font-medium text-gray-900 dark:text-white"
-                                        x-text="(formData.postal_code + ' ' + formData.city) || '-'"></div>
+                                        x-text="[formData.postal_code, formData.city, formData.state].filter(Boolean).join(', ') || '-'"></div>
                                 </div>
                                 <div>
                                     <div class="text-gray-500 dark:text-gray-400 mb-3">District</div>
@@ -536,26 +632,25 @@
                             <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Unit Details</h4>
                             <div class="space-y-3">
                                 <template x-for="(unit, index) in unitData" :key="index">
-                                    <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg">
                                         <div class="flex justify-between items-start mb-3">
-                                            <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                                                Unit <span x-text="index + 1"></span>
+                                            <div className = "flex flex-col gap-1">
+                                                <div class="text-sm font-semibold text-gray-900 dark:text-white"
+                                                     x-text="unit.name || ('Unit ' + (index + 1))"></div>
+                                                <div class="text-sm text-gray-400 dark:text-gray-500" x-text="unit.size ? unit.size + ' m²' : ''"></div>
                                             </div>
                                             <div class="text-right">
-                                                <!-- Deep Cleaning Calculation -->
-                                                <div x-show="formData.service_type === 'Deep Cleaning'">
-                                                    <div class="text-xs text-gray-600 dark:text-gray-400">
-                                                        <span x-text="unit.hours || '0'"></span>h × €<span x-text="deepCleaningHourlyRate.toFixed(0)"></span>
-                                                        <span x-show="formData.is_sunday || formData.is_holiday" class="text-orange-600 dark:text-orange-400 font-semibold"> × 2</span>
-                                                    </div>
+                                                <!-- Hourly Calculation (single line) -->
+                                                <div x-show="formData.service_type !== 'Final Cleaning'" class="text-xs text-gray-500 dark:text-gray-400">
+                                                    <span x-text="unit.hours || '0'"></span>h × €<span x-text="(() => { const rates = {'Deep Cleaning': deepCleaningHourlyRate, 'Daily Cleaning': dailyCleaningHourlyRate, 'Snowout Cleaning': snowoutCleaningHourlyRate, 'General Cleaning': generalCleaningHourlyRate, 'Hotel Cleaning': hotelCleaningHourlyRate}; return (rates[formData.service_type] || 0).toFixed(0); })()"></span><span x-show="formData.is_sunday || formData.is_holiday" class="text-orange-500 font-semibold"> × 2</span>
                                                 </div>
                                                 <!-- Price -->
-                                                <div class="text-xl font-bold text-blue-600 dark:text-blue-400">
+                                                <div class="text-base font-bold text-blue-600 dark:text-blue-400">
                                                     €<span x-text="unit.price ? unit.price.toFixed(2) : '0.00'"></span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-3 text-sm">
+                                        {{-- <div class="grid grid-cols-2 gap-3 text-sm">
                                             <div>
                                                 <span class="text-gray-600 dark:text-gray-400">Name:</span>
                                                 <span class="font-medium text-gray-900 dark:text-white ml-1" x-text="unit.name || '-'"></span>
@@ -564,7 +659,7 @@
                                                 <span class="text-gray-600 dark:text-gray-400">Size:</span>
                                                 <span class="font-medium text-gray-900 dark:text-white ml-1" x-text="unit.size ? unit.size + ' m²' : '-'"></span>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </template>
                             </div>
@@ -588,7 +683,7 @@
 
                         <!-- Total -->
                         <div
-                            class="flex justify-between items-center pt-4 border-t-2 border-gray-300 dark:border-gray-600 mb-2">
+                            class="flex justify-between items-center pt-4 border-t-2 border-gray-300 dark:border-gray-700 mb-2">
                             <div>
                                 <div class="text-lg font-bold text-gray-900 dark:text-white">Total Amount</div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400">VAT Inclusive</div>
@@ -602,11 +697,12 @@
                         </div>
 
                         <!-- Confirm Button -->
-                        <button type="button" @click="submitForm()"
+                        <button type="button"
+                            @click="window.showConfirmDialog('Confirm Appointment', 'Are you sure you want to submit this appointment? Please review all details before proceeding.', 'Submit', 'Review Again').then(() => submitForm()).catch(() => {})"
                             :disabled="submitting"
                             :class="{'opacity-50 cursor-not-allowed': submitting}"
                             class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors">
-                            <span x-show="!submitting">Confirm Appointment</span>
+                            <span x-show="!submitting" class="text-sm">Confirm Appointment</span>
                             <span x-show="submitting">Processing...</span>
                         </button>
                     </div>
@@ -614,7 +710,7 @@
                     <!-- Navigation -->
                     <div
                         class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button type="button" @click="prevStep()" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full
+                        <button type="button" @click="prevStep()" class="px-6 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full
                         hover:bg-gray-300 transition-colors">
                             <i class="fi fi-rr-angle-left mr-2"></i>Back
                         </button>
@@ -632,12 +728,47 @@
             submitting: false,
             showDistrictSuggestions: false,
             filteredDistricts: [],
+            districtLoading: false,
+            isCustomDistrict: false,
+            customDistrictValue: '',
+            districtOpen: false,
+            districtSearch: '',
             quotation: 0,
             dateNotice: '',        // 'blocked' = tomorrow (cannot book), 'priority' = 2 days (needs Priority Clean)
             dateNoticeMessage: '',
+            postalLoading: false,
+
+            // Time slot availability
+            bookedSlots: [],
+            loadingSlots: false,
+
+            // CSC API
+            cscApiKey: @json($cscApiKey ?? ''),
+            cscBaseUrl: 'https://api.countrystatecity.in/v1',
+            finlandIso2: 'FI',
+            cscStates: [],
+            cscCities: [],
 
             // Holidays data from backend
             holidays: @json($holidays ?? []),
+
+            // Finnish city postal code fallback (main postal code per city)
+            finnishPostalCodes: {
+                'helsinki': '00100', 'espoo': '02100', 'tampere': '33100', 'vantaa': '01300',
+                'oulu': '90100', 'turku': '20100', 'jyväskylä': '40100', 'lahti': '15100',
+                'kuopio': '70100', 'pori': '28100', 'kouvola': '45100', 'joensuu': '80100',
+                'lappeenranta': '53100', 'hämeenlinna': '13100', 'vaasa': '65100', 'rovaniemi': '96100',
+                'seinäjoki': '60100', 'mikkeli': '50100', 'kotka': '48100', 'salo': '24100',
+                'porvoo': '06100', 'kokkola': '67100', 'hyvinkää': '05800', 'lohja': '08100',
+                'järvenpää': '04400', 'rauma': '26100', 'kajaani': '87100', 'kerava': '04200',
+                'savonlinna': '57100', 'nokia': '37100', 'ylöjärvi': '33470', 'kangasala': '36200',
+                'riihimäki': '11100', 'imatra': '55100', 'raasepori': '10600', 'kaarina': '20780',
+                'hollola': '15870', 'kirkkonummi': '02400', 'siilinjärvi': '71800', 'tuusula': '04300',
+                'tornio': '95400', 'iisalmi': '74100', 'valkeakoski': '37600', 'raisio': '21200',
+                'muhos': '91500', 'inari': '99800', 'sodankylä': '99600', 'enontekiö': '99400',
+                'utsjoki': '99980', 'kittilä': '99100', 'kolari': '95900', 'muonio': '99300',
+                'pelkosenniemi': '98500', 'salla': '98900', 'savukoski': '98800',
+            },
 
             // Popular Helsinki districts (kaupunginosa)
             helsinkiDistricts: [
@@ -672,6 +803,22 @@
                 '181-220': 10
             },
             deepCleaningHourlyRate: 48.00, // €48/hour based on Finnish market research
+            dailyCleaningHourlyRate: 35.00, // €35/hour
+            snowoutCleaningHourlyRate: 55.00, // €55/hour (specialized)
+            generalCleaningHourlyRate: 40.00, // €40/hour
+            hotelCleaningHourlyRate: 42.00, // €42/hour
+
+            // Hour estimates per size range for other services
+            standardCleaningEstimates: {
+                '20-50': 1.5,
+                '51-70': 2,
+                '71-90': 2.5,
+                '91-120': 3,
+                '121-140': 3.5,
+                '141-160': 4,
+                '161-180': 4.5,
+                '181-220': 5.5
+            },
 
             // Store individual unit data
             unitData: [],
@@ -683,6 +830,7 @@
                 last_name: @json($client->last_name ?? ''),
                 email: @json($user->email ?? ''),
                 street_address: @json($client->street_address ?? ''),
+                state: @json($client->state ?? ''),
                 postal_code: @json($client->postal_code ?? ''),
                 city: @json($client->city ?? ''),
                 district: @json($client->district ?? ''),
@@ -704,8 +852,20 @@
                 // Initialize filtered districts
                 this.filteredDistricts = this.helsinkiDistricts;
 
+                // Load CSC states for Finland
+                this.loadStates();
+
+                // If state is pre-filled, load cities
+                if (this.formData.state) {
+                    this.$nextTick(() => this.onStateChange());
+                }
+
                 // Initialize unit data array based on default units
                 this.initializeUnitData();
+
+                // Watch for date/service changes to refresh booked time slots
+                this.$watch('formData.service_date', (val) => { console.log('[Watch] service_date changed:', val); if (val) this.fetchBookedSlots(); else this.bookedSlots = []; });
+                this.$watch('formData.service_type', () => { console.log('[Watch] service_type changed'); if (this.formData.service_date) this.fetchBookedSlots(); });
 
                 // Set up address autocomplete
                 this.setupAddressAutocomplete();
@@ -727,33 +887,6 @@
                     });
                     this.calculateQuotation();
                 });
-            },
-
-            showToast(message, type = 'error') {
-                // Get toast container
-                const toastContainer = Alpine.$data(document.querySelector('#toast-container'));
-
-                const toastId = Date.now();
-                const toast = {
-                    id: toastId,
-                    message: message,
-                    type: type,
-                    show: true
-                };
-
-                toastContainer.toasts.push(toast);
-
-                // Auto-dismiss after 5 seconds
-                setTimeout(() => {
-                    const index = toastContainer.toasts.findIndex(t => t.id === toastId);
-                    if (index !== -1) {
-                        toastContainer.toasts[index].show = false;
-                        // Remove from array after animation completes
-                        setTimeout(() => {
-                            toastContainer.toasts.splice(index, 1);
-                        }, 300);
-                    }
-                }, 5000);
             },
 
             initializeUnitData() {
@@ -801,19 +934,36 @@
 
                 const isSundayOrHoliday = this.formData.is_sunday || this.formData.is_holiday;
 
-                if (this.formData.service_type === 'Final Cleaning') {
-                    // Final Cleaning pricing
+                const serviceType = this.formData.service_type;
+
+                if (serviceType === 'Final Cleaning') {
+                    // Final Cleaning pricing (fixed per size)
                     const rates = this.finalCleaningRates[unit.size];
                     if (rates) {
                         unit.price = isSundayOrHoliday ? rates.sunday : rates.normal;
-                        unit.hours = 0; // Not applicable for Final Cleaning
+                        unit.hours = 0;
                     }
-                } else if (this.formData.service_type === 'Deep Cleaning') {
+                } else if (serviceType === 'Deep Cleaning') {
                     // Deep Cleaning pricing (hourly rate)
                     const estimatedHours = this.deepCleaningEstimates[unit.size];
                     if (estimatedHours) {
                         unit.hours = estimatedHours;
                         const basePrice = estimatedHours * this.deepCleaningHourlyRate;
+                        unit.price = isSundayOrHoliday ? (basePrice * 2) : basePrice;
+                    }
+                } else {
+                    // Daily, Snowout, General, Hotel — all hourly-based
+                    const hourlyRates = {
+                        'Daily Cleaning': this.dailyCleaningHourlyRate,
+                        'Snowout Cleaning': this.snowoutCleaningHourlyRate,
+                        'General Cleaning': this.generalCleaningHourlyRate,
+                        'Hotel Cleaning': this.hotelCleaningHourlyRate,
+                    };
+                    const rate = hourlyRates[serviceType];
+                    const estimatedHours = this.standardCleaningEstimates[unit.size];
+                    if (rate && estimatedHours) {
+                        unit.hours = estimatedHours;
+                        const basePrice = estimatedHours * rate;
                         unit.price = isSundayOrHoliday ? (basePrice * 2) : basePrice;
                     }
                 }
@@ -991,6 +1141,186 @@
                 this.showDistrictSuggestions = false;
             },
 
+            // ── CSC API Methods ──
+            async cscFetch(endpoint) {
+                const res = await fetch(`${this.cscBaseUrl}${endpoint}`, {
+                    headers: { 'X-CSCAPI-KEY': this.cscApiKey }
+                });
+                if (!res.ok) throw new Error('CSC API error: ' + res.status);
+                return res.json();
+            },
+
+            async loadStates() {
+                try {
+                    const states = await this.cscFetch(`/countries/${this.finlandIso2}/states`);
+                    this.cscStates = states.sort((a, b) => a.name.localeCompare(b.name));
+                } catch (e) {
+                    console.error('Failed to load states:', e);
+                }
+            },
+
+            async onStateChange() {
+                this.cscCities = [];
+                this.formData.city = '';
+                this.formData.postal_code = '';
+                this.formData.district = '';
+                this.filteredDistricts = [];
+                this.isCustomDistrict = false;
+                this.customDistrictValue = '';
+                if (!this.formData.state) return;
+
+                const stateObj = this.cscStates.find(s => s.name === this.formData.state);
+                if (!stateObj) return;
+
+                try {
+                    const cities = await this.cscFetch(`/countries/${this.finlandIso2}/states/${stateObj.iso2}/cities`);
+                    this.cscCities = cities.sort((a, b) => a.name.localeCompare(b.name));
+                } catch (e) {
+                    console.error('Failed to load cities:', e);
+                }
+            },
+
+            async onCityChange() {
+                this.formData.district = '';
+                this.filteredDistricts = [];
+                this.isCustomDistrict = false;
+                this.customDistrictValue = '';
+
+                if (!this.formData.city) {
+                    this.formData.postal_code = '';
+                    return;
+                }
+
+                // Auto-fill postal code & load districts via Nominatim
+                this.postalLoading = true;
+                this.districtLoading = true;
+                try {
+                    // First: get postal code — try city-level search
+                    const cityEnc = encodeURIComponent(this.formData.city);
+                    const stateEnc = encodeURIComponent(this.formData.state);
+                    let postalFound = false;
+
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${cityEnc}%2C+${stateEnc}%2C+Finland&addressdetails=1&limit=1`, {
+                        headers: { 'Accept-Language': 'en' }
+                    });
+                    const data = await res.json();
+                    if (data.length > 0 && data[0].address?.postcode) {
+                        this.formData.postal_code = data[0].address.postcode;
+                        postalFound = true;
+                    }
+
+                    // Fallback 1: structured street-level search (forces Nominatim to return postcode)
+                    if (!postalFound) {
+                        try {
+                            const structRes = await fetch(
+                                `https://nominatim.openstreetmap.org/search?format=json&street=1&city=${cityEnc}&state=${stateEnc}&country=Finland&addressdetails=1&limit=1`,
+                                { headers: { 'Accept-Language': 'en' } }
+                            );
+                            const structData = await structRes.json();
+                            if (structData.length > 0 && structData[0].address?.postcode) {
+                                this.formData.postal_code = structData[0].address.postcode;
+                                postalFound = true;
+                            }
+                        } catch (e) { /* silent */ }
+                    }
+
+                    // Fallback 2: static Finnish postal code map
+                    if (!postalFound) {
+                        const cityKey = this.formData.city.toLowerCase().trim();
+                        if (this.finnishPostalCodes[cityKey]) {
+                            this.formData.postal_code = this.finnishPostalCodes[cityKey];
+                        }
+                    }
+
+                    // Second: search for suburbs/districts within this city
+                    const cityName = encodeURIComponent(this.formData.city);
+                    const districtRes = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=suburb+in+${cityName}+Finland&addressdetails=1&limit=50`,
+                        { headers: { 'Accept-Language': 'en' } }
+                    );
+                    const districtData = await districtRes.json();
+
+                    // Extract unique district names
+                    const districts = new Set();
+                    districtData.forEach(d => {
+                        const addr = d.address || {};
+                        const name = addr.suburb || addr.neighbourhood || addr.city_district || addr.quarter || '';
+                        if (name) districts.add(name);
+                    });
+
+                    // Also add from the hardcoded Helsinki list if city is Helsinki
+                    if (this.formData.city.toLowerCase().includes('helsinki')) {
+                        this.helsinkiDistricts.forEach(d => districts.add(d));
+                    }
+
+                    this.filteredDistricts = [...districts].sort();
+
+                    // Auto-select first district if available
+                    if (this.filteredDistricts.length > 0) {
+                        this.formData.district = this.filteredDistricts[0];
+                    }
+                } catch (e) {
+                    console.warn('Lookup failed:', e);
+                    // Fallback to Helsinki districts if applicable
+                    if (this.formData.city.toLowerCase().includes('helsinki')) {
+                        this.filteredDistricts = [...this.helsinkiDistricts];
+                    }
+                } finally {
+                    this.postalLoading = false;
+                    this.districtLoading = false;
+                }
+            },
+
+            selectDistrictOption(district) {
+                if (district === '__other__') {
+                    this.isCustomDistrict = true;
+                    this.formData.district = '';
+                    this.customDistrictValue = '';
+                    this.$nextTick(() => {
+                        const input = this.$refs.customDistrictInput;
+                        if (input) input.focus();
+                    });
+                } else {
+                    this.isCustomDistrict = false;
+                    this.customDistrictValue = '';
+                    this.formData.district = district;
+                }
+            },
+
+            async fetchBookedSlots() {
+                if (!this.formData.service_date) { this.bookedSlots = []; return; }
+                this.loadingSlots = true;
+                try {
+                    let estHours = 0;
+                    if (this.unitData && this.unitData.length) {
+                        this.unitData.forEach(u => { estHours += (u.hours || 0); });
+                    }
+                    const params = new URLSearchParams({
+                        date: this.formData.service_date,
+                        service_type: this.formData.service_type || '',
+                        estimated_hours: estHours || 0,
+                    });
+                    const url = window.location.pathname.replace(/\/book-service.*$/, '/book-service/booked-slots') + '?' + params.toString();
+                    console.log('[BookedSlots] Fetching:', url);
+                    const res = await fetch(url, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    console.log('[BookedSlots] Response status:', res.status);
+                    if (!res.ok) { console.error('[BookedSlots] Error response:', res.status); this.bookedSlots = []; this.loadingSlots = false; return; }
+                    const data = await res.json();
+                    console.log('[BookedSlots] Booked slots:', data.booked);
+                    this.bookedSlots = data.booked || [];
+                    if (this.formData.service_time && this.bookedSlots.includes(this.formData.service_time)) {
+                        this.formData.service_time = '';
+                    }
+                } catch (e) {
+                    console.warn('Failed to fetch booked slots:', e);
+                    this.bookedSlots = [];
+                } finally {
+                    this.loadingSlots = false;
+                }
+            },
+
             checkDateAndCalculate() {
                 // Check if the selected date is a Sunday or Holiday
                 if (this.formData.service_date) {
@@ -1083,20 +1413,20 @@
 
                 if (missing.length > 0) {
                     const fields = missing.map(item => item.name).join(', ');
-                    this.showToast(`Please fill in the following required fields: ${fields}`);
+                    window.showErrorDialog('Validation Error',`Please fill in the following required fields: ${fields}`);
                     return false;
                 }
 
                 // Email validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(this.formData.email)) {
-                    this.showToast('Please enter a valid email address');
+                    window.showErrorDialog('Validation Error','Please enter a valid email address');
                     return false;
                 }
 
                 // Postal code validation (5 digits)
                 if (this.formData.postal_code.length !== 5 || !/^\d+$/.test(this.formData.postal_code)) {
-                    this.showToast('Please enter a valid 5-digit postal code');
+                    window.showErrorDialog('Validation Error','Please enter a valid 5-digit postal code');
                     return false;
                 }
 
@@ -1106,37 +1436,37 @@
             validateStep2() {
                 // Check service type
                 if (!this.formData.service_type) {
-                    this.showToast('Please select a service type');
+                    window.showErrorDialog('Validation Error','Please select a service type');
                     return false;
                 }
 
                 // Check service date
                 if (!this.formData.service_date) {
-                    this.showToast('Please select a service date');
+                    window.showErrorDialog('Validation Error','Please select a service date');
                     return false;
                 }
 
                 // Block if date is too soon (tomorrow or today)
                 if (this.dateNotice === 'blocked') {
-                    this.showToast('This date is too soon. Please select a date at least 2 days from today.');
+                    window.showErrorDialog('Validation Error','This date is too soon. Please select a date at least 2 days from today.');
                     return false;
                 }
 
                 // Require Priority Clean checkbox for 2-day advance booking
                 if (this.dateNotice === 'priority' && !this.formData.is_priority) {
-                    this.showToast('Please enable "Priority Clean" to book within the 3-day advance window.');
+                    window.showErrorDialog('Validation Error','Please enable "Priority Clean" to book within the 3-day advance window.');
                     return false;
                 }
 
                 // Check service time
                 if (!this.formData.service_time) {
-                    this.showToast('Please select a service time');
+                    window.showErrorDialog('Validation Error','Please select a service time');
                     return false;
                 }
 
                 // Check if at least one unit exists
                 if (this.formData.units < 1) {
-                    this.showToast('Please add at least one unit');
+                    window.showErrorDialog('Validation Error','Please add at least one unit');
                     return false;
                 }
 
@@ -1145,12 +1475,13 @@
                     const unit = this.unitData[i];
 
                     if (!unit.name || unit.name.trim() === '') {
-                        this.showToast(`Please enter a name for Unit ${i + 1}`);
+                        window.showErrorDialog('Missing Cabin Name',`Please enter a name for Unit ${i + 1}.`);
                         return false;
                     }
 
                     if (!unit.size) {
-                        this.showToast(`Please select a size for Unit ${i + 1}`);
+                        const label = unit.name || `Unit ${i + 1}`;
+                        window.showErrorDialog('Missing Unit Size',`Please select a size for "${label}".`);
                         return false;
                     }
                 }
@@ -1218,7 +1549,7 @@
                         postal_code: this.formData.postal_code,
                         city: this.formData.city,
                         district: this.formData.district,  // Required field
-                        billing_address: this.formData.street_address + ', ' + this.formData.postal_code + ' ' + this.formData.city,
+                        billing_address: this.formData.street_address + ', ' + this.formData.postal_code + ' ' + this.formData.city + ', ' + this.formData.state,
 
                         // Step 2 fields
                         service_type: this.formData.service_type,
@@ -1249,33 +1580,25 @@
                     const data = await response.json();
 
                     if (response.ok && data.success) {
-                        this.showToast(data.message, 'info');
                         console.log('Appointment created:', data);
-
-                        // Redirect to client dashboard after a brief delay
-                        setTimeout(() => {
-                            if (data.redirect_url) {
-                                window.location.href = data.redirect_url;
-                            } else {
-                                window.location.href = '{{ route("client.dashboard") }}';
-                            }
-                        }, 1500);
+                        const redirectUrl = data.redirect_url || '{{ route("client.dashboard") }}';
+                        window.showSuccessDialog('Appointment Booked!', data.message || 'Your appointment has been successfully submitted.', 'Go to Dashboard', redirectUrl);
                     } else {
                         // Handle validation errors
                         if (data.errors) {
                             const errorMessages = Object.entries(data.errors)
                                 .map(([field, messages]) => messages.join(', '))
                                 .join(', ');
-                            this.showToast('Validation errors: ' + errorMessages);
+                            window.showErrorDialog('Validation Error', errorMessages);
                         } else {
-                            this.showToast(data.message || 'Failed to book appointment. Please try again.');
+                            window.showErrorDialog('Booking Failed', data.message || 'Failed to book appointment. Please try again.');
                         }
                         this.submitting = false;
                     }
 
                 } catch (error) {
                     console.error('Error submitting appointment:', error);
-                    this.showToast('An error occurred while booking your appointment. Please try again.');
+                    window.showErrorDialog('Error', 'An error occurred while booking your appointment. Please try again.');
                     this.submitting = false;
                 }
             }
@@ -1287,4 +1610,9 @@
     [x-cloak] {
         display: none !important;
     }
+    .time-scroll::-webkit-scrollbar { width: 6px; }
+    .time-scroll::-webkit-scrollbar-track { background: transparent; }
+    .time-scroll::-webkit-scrollbar-thumb { background: rgba(156,163,175,0.3); border-radius: 3px; }
+    .time-scroll::-webkit-scrollbar-thumb:hover { background: rgba(156,163,175,0.5); }
+    .time-scroll { scrollbar-width: thin; scrollbar-color: rgba(156,163,175,0.3) transparent; }
 </style>

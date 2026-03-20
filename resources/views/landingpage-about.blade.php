@@ -6,6 +6,21 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
+        /* Aurora text effect */
+        @keyframes auroraShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .aurora-text {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6, #818cf8, #6366f1, #3b82f6, #60a5fa);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: auroraShift 6s ease-in-out infinite;
+        }
+
         /* Leaflet custom marker styles */
         .leaflet-marker-custom {
             width: 16px !important;
@@ -185,6 +200,7 @@
 @endpush
 
 @section('content')
+    <div class="overflow-x-hidden">
     <!-- Section 1: Original About Section -->
     <section id="container-1"
         class="scroll-zoom relative flex flex-col items-center justify-center text-center w-full mx-auto px-6 sm:px-8 md:px-12 lg:px-16 py-12 sm:py-24 min-h-[80vh]">
@@ -197,9 +213,9 @@
             </p>
 
             <!-- Main Heading -->
-            <h1 class="scroll-zoom-child text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
+            <h1 data-typing data-typing-duration="1.8" class="scroll-zoom-child text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
                 {{ __('about.section1.we_are') }}
-                <span class="text-blue-500 dark:text-blue-400 inline-flex items-center gap-2">
+                <span class="aurora-text inline-flex items-center gap-2">
                     <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="Sparkle" class="h-6 sm:h-8 md:h-10 lg:h-12 w-auto inline-block">
                     {{ __('about.section1.company_name') }}
                 </span>
@@ -275,7 +291,7 @@
                             {{ __('about.section2.team_intro') }}
                         </h2>
 
-                        <h1 class="scroll-zoom-child text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl font-[fam-bold] leading-tight text-gray-900 dark:text-white">
+                        <h1 data-typing data-typing-duration="1.5" class="scroll-zoom-child text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-5xl font-extrabold leading-tight text-gray-900 dark:text-white">
                             {{ __('about.section2.heading_before') }}
                             <span class="text-blue-500 dark:text-blue-400 font-[fam-bold]">
                                 {{ __('about.section2.heading_highlight') }}
@@ -397,7 +413,7 @@
                     
                     <!-- Header -->
                     <div class="scroll-zoom-child mb-6 text-center lg:text-left">
-                        <h3 class="text-3xl sm:text-4xl md:text-5xl font-[fam-bold] text-[#071957] dark:text-white mb-3 sm:mb-4">
+                        <h3 data-typing data-typing-duration="1.2" class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#071957] dark:text-white mb-3 sm:mb-4">
                             {{ __('about.contact.title') }}
                         </h3>
                         <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">
@@ -484,6 +500,7 @@
             </div>
         </div>
     </section>
+    </div>
 @endsection
 
 @push('scripts')

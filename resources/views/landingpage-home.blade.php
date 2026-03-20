@@ -76,8 +76,8 @@
                 {{ __('home.hero.tagline') }}
             </div>
         </div>
-        <h1 id="header-1" class="text-3xl sm:text-6xl tracking-normal text-blue-950 dark:text-white p-4 sm:p-10">
-            {{ __('home.hero.title_1') }}
+        <h1 id="header-1" data-typing data-typing-duration="1.8" class="text-4xl sm:text-5xl lg:text-6xl tracking-tight text-blue-950 dark:text-white p-4 sm:p-10">
+            <span class="font-extrabold">{{ __('home.hero.title_1') }}</span>
             <span id="cleanliness" class="relative inline-flex items-center">
                 <span id="spark" class="mr-1 sm:mr-2">
                     <img src="{{ asset('images/icons/sparkle.svg') }}" alt="Sparkle" class="h-6 sm:h-12 w-auto">
@@ -85,7 +85,7 @@
                 <span class="aurora-text font-extrabold">{{ __('home.hero.title_cleanliness') }}</span>
             </span>
             <br>
-            {{ __('home.hero.title_2') }}
+            <span class="font-extrabold">{{ __('home.hero.title_2') }}</span>
         </h1>
         <p class="mt-4 sm:mt-8 text-xs sm:text-base w-[90%] sm:w-[75%] mx-auto text-justify text-gray-700 dark:text-gray-300">
             {{ __('home.hero.description') }}
@@ -260,8 +260,8 @@
                     class="bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-300 text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-xl transition-colors">{{ __('home.services.badge_daily') }}</span>
             </div>
             <p id="subheader-1" class="text-blue-600 dark:text-blue-400 p-6 sm:p-12 font-bold text-sm sm:text-base">{{ __('home.services.subtitle') }}</p>
-            <h1 id="header-1" class="text-3xl sm:text-6xl tracking-normal text-blue-950 dark:text-white p-2 sm:p-3">
-                {{ __('home.services.title') }}
+            <h1 id="header-1" data-typing data-typing-duration="1.5" class="text-3xl sm:text-6xl tracking-normal text-blue-950 dark:text-white p-2 sm:p-3">
+                <span class="font-extrabold">{{ __('home.services.title') }}</span>
                 <span id="cleaning" class="text-blue-500 dark:text-blue-400 inline-flex items-center font-bold">
                     {{ __('home.services.title_cleaning') }}
                     <span id="spark" class="mr-1 sm:mr-2">

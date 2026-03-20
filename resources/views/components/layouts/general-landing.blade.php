@@ -197,6 +197,7 @@
 </head>
 
 <body class="h-full dark:bg-gray-900 font-sans antialiased">
+    <x-material-ui.page-loader />
     <div id="main-container">
         <!-- Navigation Header -->
         <header class="inset-x-0 top-0 z-50">
@@ -410,6 +411,9 @@
 
     <!-- Common Scripts -->
     <x-global-dialogs />
+
+    {{-- Typing text animation (globally available) --}}
+    <x-material-ui.typing-text />
 
     @stack('scripts')
 

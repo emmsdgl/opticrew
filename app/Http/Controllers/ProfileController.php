@@ -17,10 +17,15 @@ class ProfileController extends Controller
     /**
      * Show the profile page with task statistics
      */
-    public function show(Request $request): View
+    public function show(Request $request): View|RedirectResponse
     {
         $user = $request->user();
         $role = $user->role;
+
+        // Client profile is now a modal in the layout — redirect to dashboard
+        if ($role === 'client' || $role === 'external_client') {
+            return Redirect::route('client.dashboard');
+        }
 
         // Initialize task stats
         $totalTasksCompleted = 0;
@@ -80,10 +85,8 @@ class ProfileController extends Controller
         // Return appropriate view based on role
         if ($role === 'admin') {
             return view('admin.profile', compact('cards'));
-        } elseif ($role === 'employee') {
-            return view('employee.profile', compact('cards'));
         } else {
-            return view('client.profile', compact('cards'));
+            return view('employee.profile', compact('cards'));
         }
     }
 
@@ -202,6 +205,59 @@ class ProfileController extends Controller
             return Redirect::route('employee.profile')->with('success', 'Profile picture updated successfully!');
         } else {
             return Redirect::route('client.profile')->with('success', 'Profile picture updated successfully!');
+        }
+    }
+
+    /**
+     * Upload or update cover photo
+     */
+    public function uploadCoverPhoto(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'cover_photo' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
+        ]);
+
+        $user = $request->user();
+
+        // Delete old cover photo if exists
+        if ($user->cover_photo) {
+            $oldPath = public_path($user->cover_photo);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+
+        // Create uploads directory if it doesn't exist
+        $uploadDir = public_path('uploads/cover_photos');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        // Generate unique filename
+        $file = $request->file('cover_photo');
+        $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+        // Move file to public/uploads/cover_photos
+        $file->move($uploadDir, $filename);
+
+        // Store relative path in database
+        $path = 'uploads/cover_photos/' . $filename;
+
+        // Update user record
+        $user->cover_photo = $path;
+        $user->save();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Cover photo updated successfully!', 'path' => asset($path)]);
+        }
+
+        $role = $user->role;
+        if ($role === 'admin') {
+            return Redirect::route('admin.profile')->with('success', 'Cover photo updated successfully!');
+        } elseif ($role === 'employee') {
+            return Redirect::route('employee.profile')->with('success', 'Cover photo updated successfully!');
+        } else {
+            return Redirect::route('client.profile')->with('success', 'Cover photo updated successfully!');
         }
     }
 

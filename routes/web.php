@@ -158,6 +158,9 @@ Route::middleware(['auth', 'terms.accepted'])->group(function () {
     // Get unread count (for AJAX/header badge)
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
 
+    // Get latest unread notifications (for sonner toast polling)
+    Route::get('/notifications/latest-unread', [NotificationController::class, 'getLatestUnread'])->name('notifications.latest-unread');
+
     // Mark single notification as read
     Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
 
@@ -356,6 +359,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::get('/admin/profile/edit', [ProfileController::class, 'edit'])->name('admin.profile.edit');
     Route::post('/admin/profile/update', [ProfileController::class, 'update'])->name('admin.profile.update');
     Route::post('/admin/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('admin.profile.upload-picture');
+    Route::post('/admin/profile/upload-cover', [ProfileController::class, 'uploadCoverPhoto'])->name('admin.profile.upload-cover');
     Route::get('/admin/settings', [ProfileController::class, 'settings'])->name('admin.settings');
     Route::get('/admin/help-center', [ProfileController::class, 'helpcenter'])->name('admin.helpcenter');
     Route::post('/admin/settings/update-password', [ProfileController::class, 'updatePassword'])->name('admin.settings.update-password');
@@ -439,6 +443,7 @@ Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
     Route::get('/employee/profile/edit', [ProfileController::class, 'edit'])->name('employee.profile.edit');
     Route::post('/employee/profile/update', [ProfileController::class, 'update'])->name('employee.profile.update');
     Route::post('/employee/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('employee.profile.upload-picture');
+    Route::post('/employee/profile/upload-cover', [ProfileController::class, 'uploadCoverPhoto'])->name('employee.profile.upload-cover');
     Route::get('/employee/settings', [ProfileController::class, 'settings'])->name('employee.settings');
     Route::get('/employee/help-center', [ProfileController::class, 'helpcenter'])->name('employee.helpcenter');
     Route::post('/employee/settings/update-password', [ProfileController::class, 'updatePassword'])->name('employee.settings.update-password');
@@ -457,6 +462,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
 
     // Client Appointment/Booking Routes
     Route::get('/client/book-service', [ClientAppointmentController::class, 'create'])->name('client.appointment.create');
+    Route::get('/client/book-service/booked-slots', [ClientAppointmentController::class, 'bookedSlots'])->name('client.appointment.booked-slots');
     Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
     Route::get('/client/appointments', [ClientAppointmentController::class, 'index'])->name('client.appointments');
     Route::post('/client/appointments/{id}/cancel', [ClientAppointmentController::class, 'cancel'])->name('client.appointment.cancel');
@@ -480,6 +486,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     Route::get('/client/profile/edit', [ProfileController::class, 'edit'])->name('client.profile.edit');
     Route::post('/client/profile/update', [ProfileController::class, 'update'])->name('client.profile.update');
     Route::post('/client/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('client.profile.upload-picture');
+    Route::post('/client/profile/upload-cover', [ProfileController::class, 'uploadCoverPhoto'])->name('client.profile.upload-cover');
     Route::get('/client/settings', [ProfileController::class, 'settings'])->name('client.settings');
     Route::get('/client/help-center', [ProfileController::class, 'helpcenter'])->name('client.helpcenter');
     Route::post('/client/settings/update-password', [ProfileController::class, 'updatePassword'])->name('client.settings.update-password');
