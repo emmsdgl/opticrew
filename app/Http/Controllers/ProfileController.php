@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use App\Models\Task;
+use App\Models\QuotationSetting;
 
 class ProfileController extends Controller
 {
@@ -270,12 +271,52 @@ class ProfileController extends Controller
         $role = $user->role;
 
         if ($role === 'admin') {
-            return view('admin.settings', compact('user'));
+            $quotationSettings = [
+                'auto_send_enabled' => QuotationSetting::getValue('auto_send_enabled', '1') === '1',
+                'pdf_deep_cleaning' => QuotationSetting::getPdfPath('deep_cleaning'),
+                'pdf_final_cleaning' => QuotationSetting::getPdfPath('final_cleaning'),
+                'pdf_daily_cleaning' => QuotationSetting::getPdfPath('daily_cleaning'),
+                'pdf_snowout_cleaning' => QuotationSetting::getPdfPath('snowout_cleaning'),
+                'pdf_general_cleaning' => QuotationSetting::getPdfPath('general_cleaning'),
+                'pdf_hotel_cleaning' => QuotationSetting::getPdfPath('hotel_cleaning'),
+            ];
+            return view('admin.settings', compact('user', 'quotationSettings'));
         } elseif ($role === 'employee') {
             return view('employee.settings', compact('user'));
         } else {
             return view('client.settings', compact('user'));
         }
+    }
+
+    /**
+     * Update quotation automation settings
+     */
+    public function updateQuotationSettings(Request $request)
+    {
+        QuotationSetting::setValue('auto_send_enabled', $request->boolean('auto_send_enabled') ? '1' : '0');
+
+        $services = ['deep_cleaning', 'final_cleaning', 'daily_cleaning', 'snowout_cleaning', 'general_cleaning', 'hotel_cleaning'];
+
+        foreach ($services as $service) {
+            if ($request->hasFile("pdf_{$service}")) {
+                $file = $request->file("pdf_{$service}");
+                $path = $file->storeAs('quotation-pdfs', $service . '_' . time() . '.pdf', 'public');
+
+                // Delete old file
+                $oldPath = QuotationSetting::getPdfPath($service);
+                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+
+                QuotationSetting::setValue('pdf_' . $service, $path);
+            }
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Quotation settings updated successfully!']);
+        }
+
+        return Redirect::route('admin.settings')->with('success', 'Quotation settings updated successfully!');
     }
     /**
      * Show help center page based on user role
@@ -297,16 +338,33 @@ class ProfileController extends Controller
     /**
      * Update password
      */
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(Request $request)
     {
-        $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'confirmed', 'min:8'],
-        ]);
+        try {
+            $request->validate([
+                'current_password' => ['required', 'current_password'],
+                'password' => ['required', 'confirmed', 'min:8'],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => collect($e->errors())->flatten()->first(),
+                ], 422);
+            }
+            throw $e;
+        }
 
         $user = $request->user();
         $user->password = bcrypt($request->password);
         $user->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password updated successfully!',
+            ]);
+        }
 
         // Redirect back to settings page based on role
         $role = $user->role;

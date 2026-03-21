@@ -1,9 +1,16 @@
 <x-layouts.general-employer :title="'Quotation Requests'">
     <section class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]" x-data="quotationDrawer()">
         <!-- Header -->
-        <div class="flex flex-col gap-2">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Quotation Requests</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400">View and manage price quotation requests from clients</p>
+        <div class="flex items-start justify-between">
+            <div class="flex flex-col gap-2">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Quotation Requests</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400">View and manage price quotation requests from clients</p>
+            </div>
+            <a href="{{ route('admin.settings') }}#quotation-automation"
+               class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                <i class="fa-solid fa-gear text-blue-500"></i>
+                Set Quotations
+            </a>
         </div>
 
         <!-- Stats Cards -->

@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Client;
 use App\Models\Quotation;
+use App\Models\QuotationSetting;
 use App\Models\UserActivityLog;
+use App\Mail\QuotationConfirmation;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -284,9 +287,7 @@ class GoogleAuthController extends Controller
             ]),
         ]);
 
-        return Socialite::driver('google')
-            ->scopes(['https://www.googleapis.com/auth/user.phonenumbers.read'])
-            ->redirect();
+        return Socialite::driver('google')->redirect();
     }
 
     /**
@@ -345,9 +346,20 @@ class GoogleAuthController extends Controller
                 }
             }
 
+            // Map service type to its key for PDF lookup
+            $serviceType = $quotationData['serviceType'] ?? '';
+            $serviceKeyMap = [
+                'Deep Cleaning' => 'deep_cleaning',
+                'Final Cleaning' => 'final_cleaning',
+                'Daily Cleaning' => 'daily_cleaning',
+                'Snowout Cleaning' => 'snowout_cleaning',
+                'General Cleaning' => 'general_cleaning',
+                'Hotel Cleaning' => 'hotel_cleaning',
+            ];
+
             $quotation = Quotation::create([
                 'booking_type'       => $quotationData['bookingType'] ?? 'personal',
-                'cleaning_services'  => $quotationData['serviceType'] ? [$quotationData['serviceType']] : null,
+                'cleaning_services'  => $serviceType ? [$serviceType] : null,
                 'date_of_service'    => !empty($quotationData['serviceDate']) ? $quotationData['serviceDate'] : null,
                 'type_of_urgency'    => $quotationData['urgency'] ?? null,
 
@@ -368,6 +380,33 @@ class GoogleAuthController extends Controller
 
                 'status'             => 'pending_review',
             ]);
+
+            // Send confirmation email with PDF attachment if auto-send is enabled
+            $autoSendEnabled = QuotationSetting::isAutoSendEnabled();
+            \Log::info('Quotation email check', [
+                'auto_send_enabled' => $autoSendEnabled,
+                'service_type' => $serviceType,
+                'email' => $googleUser->getEmail(),
+            ]);
+
+            if ($autoSendEnabled) {
+                $serviceKey = $serviceKeyMap[$serviceType] ?? null;
+                $pdfPath = $serviceKey ? QuotationSetting::getPdfPath($serviceKey) : null;
+
+                \Log::info('Sending quotation email', [
+                    'service_key' => $serviceKey,
+                    'pdf_path' => $pdfPath,
+                    'to' => $googleUser->getEmail(),
+                ]);
+
+                try {
+                    Mail::to($googleUser->getEmail())
+                        ->send(new QuotationConfirmation($quotation, $pdfPath));
+                    \Log::info('Quotation email sent successfully to ' . $googleUser->getEmail());
+                } catch (\Exception $mailError) {
+                    \Log::error('Failed to send quotation confirmation email: ' . $mailError->getMessage());
+                }
+            }
 
             return redirect()->route('quotation')
                 ->with('success', 'Your quotation request has been submitted successfully! We will contact you at ' . $googleUser->getEmail() . '.');

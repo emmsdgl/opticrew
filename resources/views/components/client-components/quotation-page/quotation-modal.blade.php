@@ -336,12 +336,12 @@
                         </div>
 
                         {{-- District --}}
-                        <div x-data="{ distOpen: false, distSearch: '', positionDist() {
+                        <div x-data="{ distOpen: false, distSearch: '', customDistrictValue: '', isCustomDistrict: false, positionDist() {
                                 this.$nextTick(() => {
                                     const rect = this.$refs.distBtn.getBoundingClientRect();
                                     const panel = this.$refs.distPanel;
                                     if (!panel) return;
-                                    const panelH = panel.offsetHeight || 250;
+                                    const panelH = panel.offsetHeight || 300;
                                     panel.style.top = (rect.top - panelH - 4) + 'px';
                                     panel.style.left = rect.left + 'px';
                                     panel.style.width = rect.width + 'px';
@@ -355,8 +355,10 @@
                                     <span class="flex items-center gap-2">
                                         <i class="fa-solid fa-location-dot text-blue-500 text-xs"></i>
                                         <span x-show="districtLoading"><i class="fa-solid fa-spinner fa-spin text-blue-400 text-xs mr-1"></i>Loading...</span>
-                                        <span x-show="!districtLoading" x-text="form.district || 'Select District...'"
+                                        <span x-show="!districtLoading && !isCustomDistrict" x-text="form.district || 'Select District...'"
                                               :class="form.district ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"></span>
+                                        <span x-show="!districtLoading && isCustomDistrict" class="text-gray-900 dark:text-white"
+                                              x-text="customDistrictValue || 'Others (type below)'"></span>
                                     </span>
                                     <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="distOpen && 'rotate-180'"></i>
                                 </button>
@@ -368,21 +370,38 @@
                                     x-transition:leave-start="opacity-100 scale-100"
                                     x-transition:leave-end="opacity-0 scale-95"
                                     class="fixed z-[10000] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-2xl overflow-hidden" style="display:none;">
+                                    {{-- Search --}}
                                     <div class="p-2 border-b border-gray-200 dark:border-gray-700">
                                         <input type="text" x-model="distSearch" placeholder="Search district..."
                                             class="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                                     </div>
-                                    <div class="max-h-48 overflow-y-auto">
+                                    {{-- District options --}}
+                                    <div class="max-h-40 overflow-y-auto">
                                         <template x-for="d in filteredDistricts.filter(d => d.toLowerCase().includes(distSearch.toLowerCase()))" :key="d">
                                             <button type="button"
-                                                @click="form.district = d; distOpen = false; distSearch = '';"
+                                                @click="isCustomDistrict = false; customDistrictValue = ''; form.district = d; distOpen = false; distSearch = '';"
                                                 class="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
-                                                :class="form.district === d ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
+                                                :class="form.district === d && !isCustomDistrict ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
                                                 <span class="text-gray-900 dark:text-white" x-text="d"></span>
                                             </button>
                                         </template>
-                                        <div x-show="filteredDistricts.length === 0 && !districtLoading" class="px-4 py-3 text-xs text-gray-400 dark:text-gray-500 text-center">
-                                            No districts found for this city
+                                    </div>
+                                    {{-- Others: custom input --}}
+                                    <div class="p-2.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                        <label class="block text-[10px] font-semibold text-gray-400 dark:text-gray-500 mb-1 uppercase tracking-wider">Others</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="text" x-model="customDistrictValue"
+                                                   @input="isCustomDistrict = true; form.district = customDistrictValue"
+                                                   @focus="isCustomDistrict = true"
+                                                   @keydown.enter.prevent="if (customDistrictValue.trim()) { form.district = customDistrictValue.trim(); distOpen = false; }"
+                                                   class="flex-1 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                   placeholder="Type district name...">
+                                            <button type="button"
+                                                @click="if (customDistrictValue.trim()) { form.district = customDistrictValue.trim(); distOpen = false; }"
+                                                :disabled="!customDistrictValue.trim()"
+                                                class="px-3 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
+                                                <i class="fa-solid fa-check"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
