@@ -256,200 +256,7 @@
             </div>
         </div>
         {{-- Quotation Request Modal --}}
-        <div x-show="showModal" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display:none">
-            {{-- Backdrop --}}
-            <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 @click="showModal = false" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-
-            {{-- Modal Content --}}
-            <div x-show="showModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-75"
-                 class="relative z-10 w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
-
-                {{-- Header with Stepper --}}
-                <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Request Quotation</h2>
-                        <button @click="showModal = false" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                    {{-- Stepper --}}
-                    <div class="flex items-center gap-2">
-                        <template x-for="(label, i) in ['Service', 'Property', 'Contact']" :key="i">
-                            <div class="flex items-center gap-2 flex-1">
-                                <div class="flex items-center gap-2 flex-1">
-                                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 flex-shrink-0"
-                                         :class="step > i+1 ? 'bg-green-500 text-white' : step === i+1 ? 'bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-400/50' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
-                                         x-text="step > i+1 ? '✓' : i+1"></div>
-                                    <span class="text-xs font-medium hidden sm:inline" :class="step === i+1 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" x-text="label"></span>
-                                </div>
-                                <div x-show="i < 2" class="flex-1 h-0.5 rounded" :class="step > i+1 ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'"></div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                {{-- Body --}}
-                <div class="flex-1 overflow-y-auto px-6 py-5">
-
-                    {{-- Step 1: Service --}}
-                    <div x-show="step === 1" x-transition>
-                        <div class="space-y-4">
-                            {{-- Booking Type --}}
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Booking Type <span class="text-red-500">*</span></label>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <label class="relative flex cursor-pointer">
-                                        <input type="radio" value="personal" x-model="form.bookingType" class="peer sr-only">
-                                        <div class="w-full p-3 border-2 rounded-xl transition-all peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 border-gray-200 dark:border-gray-700 hover:border-blue-400">
-                                            <div class="flex items-center gap-2">
-                                                <i class="fa-solid fa-user text-blue-500"></i>
-                                                <span class="text-sm font-medium text-gray-900 dark:text-white">Personal</span>
-                                            </div>
-                                        </div>
-                                    </label>
-                                    <label class="relative flex cursor-pointer">
-                                        <input type="radio" value="company" x-model="form.bookingType" class="peer sr-only">
-                                        <div class="w-full p-3 border-2 rounded-xl transition-all peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 border-gray-200 dark:border-gray-700 hover:border-blue-400">
-                                            <div class="flex items-center gap-2">
-                                                <i class="fa-solid fa-building text-blue-500"></i>
-                                                <span class="text-sm font-medium text-gray-900 dark:text-white">Company</span>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            {{-- Service Type --}}
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Type of Cleaning Service <span class="text-red-500">*</span></label>
-                                <select x-model="form.serviceType" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                                    <option value="">Select a service...</option>
-                                    <option value="deep_cleaning">Deep Cleaning — €48/hr</option>
-                                    <option value="final_cleaning">Final Cleaning — Fixed Price</option>
-                                    <option value="daily_cleaning">Daily Cleaning — €35/hr</option>
-                                    <option value="snowout_cleaning">Snowout Cleaning — €55/hr</option>
-                                    <option value="general_cleaning">General Cleaning — €40/hr</option>
-                                    <option value="hotel_cleaning">Hotel Cleaning — €42/hr</option>
-                                </select>
-                            </div>
-
-                            {{-- Date & Duration --}}
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Preferred Date</label>
-                                    <input type="date" x-model="form.serviceDate" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Urgency</label>
-                                    <select x-model="form.urgency" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                        <option value="regular">Regular (5+ days)</option>
-                                        <option value="soon">Soon (3-4 days)</option>
-                                        <option value="urgent">Urgent (1-2 days)</option>
-                                        <option value="emergency">Emergency (Same day)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Step 2: Property --}}
-                    <div x-show="step === 2" x-transition>
-                        <div class="space-y-4">
-                            {{-- Property Type --}}
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Property Type <span class="text-red-500">*</span></label>
-                                <select x-model="form.propertyType" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="">Select property type...</option>
-                                    <option value="apartment">Apartment / Flat</option>
-                                    <option value="house">House</option>
-                                    <option value="cabin">Cabin / Cottage</option>
-                                    <option value="office">Office</option>
-                                    <option value="hotel">Hotel / Accommodation</option>
-                                    <option value="commercial">Commercial Space</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-
-                            {{-- Size & Rooms --}}
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Floors</label>
-                                    <input type="number" x-model="form.floors" min="1" max="10" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Rooms</label>
-                                    <input type="number" x-model="form.rooms" min="1" max="20" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Area (m²)</label>
-                                    <input type="number" x-model="form.floorArea" min="0" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                            </div>
-
-                            {{-- Location --}}
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Location / Address</label>
-                                <input type="text" x-model="form.location" placeholder="Enter your address or city" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-
-                            {{-- Special Requests --}}
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Special Requests</label>
-                                <textarea x-model="form.specialRequests" rows="3" placeholder="Any additional details or requirements..." class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Step 3: Contact --}}
-                    <div x-show="step === 3" x-transition>
-                        <div class="space-y-4">
-                            {{-- Company Name (if company) --}}
-                            <div x-show="form.bookingType === 'company'">
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Company Name <span class="text-red-500">*</span></label>
-                                <input type="text" x-model="form.companyName" placeholder="Enter company name" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-
-                            {{-- Name --}}
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2" x-text="form.bookingType === 'company' ? 'Contact Person *' : 'Full Name *'"></label>
-                                <input type="text" x-model="form.clientName" placeholder="Enter your name" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-
-                            {{-- Phone --}}
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Phone Number <span class="text-red-500">*</span></label>
-                                <input type="tel" x-model="form.phone" placeholder="+358 XX XXX XXXX" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-
-                            {{-- Email --}}
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Email Address <span class="text-red-500">*</span></label>
-                                <input type="email" x-model="form.email" placeholder="your@email.com" class="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Footer --}}
-                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-                    <button x-show="step > 1" @click="step--" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                        <i class="fa-solid fa-arrow-left mr-2"></i>Back
-                    </button>
-                    <div x-show="step === 1"></div>
-
-                    <button x-show="step < 3" @click="nextStep()" class="px-6 py-2.5 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md">
-                        Next <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </button>
-                    <button x-show="step === 3" @click="submitQuotation()" :disabled="submitting" class="px-6 py-2.5 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md disabled:opacity-50">
-                        <span x-show="!submitting">Submit Request</span>
-                        <span x-show="submitting"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Submitting...</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+        <x-client-components.quotation-page.quotation-modal />
     </div>
 @endsection
 
@@ -498,6 +305,16 @@
             showModal: false,
             step: 1,
             submitting: false,
+
+            // CSC API
+            cscApiKey: @json($cscApiKey ?? ''),
+            cscBaseUrl: 'https://api.countrystatecity.in/v1',
+            finlandIso2: 'FI',
+            cscStates: [],
+            cscCities: [],
+            filteredDistricts: [],
+            districtLoading: false,
+
             form: {
                 bookingType: 'personal',
                 serviceType: '',
@@ -507,102 +324,231 @@
                 floors: 1,
                 rooms: 1,
                 floorArea: 0,
-                location: '',
+                region: '',
+                city: '',
+                postalCode: '',
+                district: '',
                 specialRequests: '',
                 companyName: '',
-                clientName: '',
-                phone: '',
-                email: '',
+            },
+
+            init() {
+                this.loadStates();
             },
 
             openModal(serviceType) {
                 this.step = 1;
                 this.submitting = false;
-                // Pre-select service type if clicked from a specific card
                 if (serviceType === 'Final Cleaning') this.form.serviceType = 'final_cleaning';
                 else if (serviceType === 'Deep Cleaning') this.form.serviceType = 'deep_cleaning';
                 this.showModal = true;
                 document.body.style.overflow = 'hidden';
             },
 
+            // CSC API methods
+            async cscFetch(endpoint) {
+                const res = await fetch(`${this.cscBaseUrl}${endpoint}`, {
+                    headers: { 'X-CSCAPI-KEY': this.cscApiKey }
+                });
+                if (!res.ok) throw new Error('CSC API error: ' + res.status);
+                return res.json();
+            },
+
+            async loadStates() {
+                try {
+                    const states = await this.cscFetch(`/countries/${this.finlandIso2}/states`);
+                    this.cscStates = states.sort((a, b) => a.name.localeCompare(b.name));
+                } catch (e) {
+                    console.error('Failed to load states:', e);
+                }
+            },
+
+            async onRegionChange() {
+                this.cscCities = [];
+                this.form.city = '';
+                this.form.postalCode = '';
+                this.form.district = '';
+                this.filteredDistricts = [];
+                if (!this.form.region) return;
+
+                const stateObj = this.cscStates.find(s => s.name === this.form.region);
+                if (!stateObj) return;
+
+                try {
+                    const cities = await this.cscFetch(`/countries/${this.finlandIso2}/states/${stateObj.iso2}/cities`);
+                    this.cscCities = cities.sort((a, b) => a.name.localeCompare(b.name));
+                } catch (e) {
+                    console.error('Failed to load cities:', e);
+                }
+            },
+
+            // Static Finnish postal code fallback
+            finnishPostalCodes: {
+                'helsinki': '00100', 'espoo': '02100', 'tampere': '33100', 'vantaa': '01300',
+                'oulu': '90100', 'turku': '20100', 'jyväskylä': '40100', 'lahti': '15100',
+                'kuopio': '70100', 'pori': '28100', 'kouvola': '45100', 'joensuu': '80100',
+                'lappeenranta': '53100', 'hämeenlinna': '13100', 'vaasa': '65100', 'rovaniemi': '96100',
+                'seinäjoki': '60100', 'mikkeli': '50100', 'kotka': '48100', 'salo': '24100',
+                'porvoo': '06100', 'kokkola': '67100', 'hyvinkää': '05800', 'lohja': '08100',
+                'järvenpää': '04400', 'rauma': '26100', 'kajaani': '87100', 'kerava': '04200',
+                'savonlinna': '57100', 'nokia': '37100', 'ylöjärvi': '33470', 'kangasala': '36200',
+                'riihimäki': '11100', 'imatra': '55100', 'raasepori': '10600', 'kaarina': '20780',
+                'kirkkonummi': '02400', 'siilinjärvi': '71800', 'tuusula': '04300',
+                'tornio': '95400', 'iisalmi': '74100', 'valkeakoski': '37600', 'raisio': '21200',
+            },
+
+            helsinkiDistricts: [
+                'Kallio', 'Kamppi', 'Punavuori', 'Töölö', 'Kruununhaka',
+                'Ullanlinna', 'Eira', 'Sörnäinen', 'Vallila', 'Hermanni',
+                'Pasila', 'Munkkiniemi', 'Lauttasaari', 'Ruoholahti', 'Jätkäsaari',
+                'Herttoniemi', 'Kulosaari', 'Vuosaari', 'Kontula', 'Mellunmäki',
+            ],
+
+            async onCityChange() {
+                this.form.district = '';
+                this.filteredDistricts = [];
+
+                if (!this.form.city) {
+                    this.form.postalCode = '';
+                    return;
+                }
+
+                this.districtLoading = true;
+                try {
+                    const cityEnc = encodeURIComponent(this.form.city);
+                    const stateEnc = encodeURIComponent(this.form.region);
+                    let postalFound = false;
+
+                    // Attempt 1: city-level search
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${cityEnc}%2C+${stateEnc}%2C+Finland&addressdetails=1&limit=1`, {
+                        headers: { 'Accept-Language': 'en' }
+                    });
+                    const data = await res.json();
+                    if (data.length > 0 && data[0].address?.postcode) {
+                        this.form.postalCode = data[0].address.postcode;
+                        postalFound = true;
+                    }
+
+                    // Fallback 1: structured street-level search (forces Nominatim to return postcode)
+                    if (!postalFound) {
+                        try {
+                            const structRes = await fetch(
+                                `https://nominatim.openstreetmap.org/search?format=json&street=1&city=${cityEnc}&state=${stateEnc}&country=Finland&addressdetails=1&limit=1`,
+                                { headers: { 'Accept-Language': 'en' } }
+                            );
+                            const structData = await structRes.json();
+                            if (structData.length > 0 && structData[0].address?.postcode) {
+                                this.form.postalCode = structData[0].address.postcode;
+                                postalFound = true;
+                            }
+                        } catch (e) { /* silent */ }
+                    }
+
+                    // Fallback 2: static Finnish postal code map
+                    if (!postalFound) {
+                        const cityKey = this.form.city.toLowerCase().trim();
+                        if (this.finnishPostalCodes[cityKey]) {
+                            this.form.postalCode = this.finnishPostalCodes[cityKey];
+                        }
+                    }
+
+                    // Load districts via Nominatim
+                    const districtRes = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=suburb+in+${cityEnc}+Finland&addressdetails=1&limit=50`,
+                        { headers: { 'Accept-Language': 'en' } }
+                    );
+                    const districtData = await districtRes.json();
+                    const districts = new Set();
+                    districtData.forEach(d => {
+                        const addr = d.address || {};
+                        const name = addr.suburb || addr.neighbourhood || addr.city_district || addr.quarter || '';
+                        if (name) districts.add(name);
+                    });
+
+                    // Add Helsinki districts if applicable
+                    if (this.form.city.toLowerCase().includes('helsinki')) {
+                        this.helsinkiDistricts.forEach(d => districts.add(d));
+                    }
+
+                    this.filteredDistricts = [...districts].sort();
+
+                    if (this.filteredDistricts.length > 0) {
+                        this.form.district = this.filteredDistricts[0];
+                    }
+                } catch (e) {
+                    console.warn('Location lookup failed:', e);
+                } finally {
+                    this.districtLoading = false;
+                }
+            },
+
             nextStep() {
                 if (this.step === 1) {
-                    if (!this.form.bookingType) { alert('Please select a booking type.'); return; }
-                    if (!this.form.serviceType) { alert('Please select a service type.'); return; }
-                }
-                if (this.step === 2) {
-                    if (!this.form.propertyType) { alert('Please select a property type.'); return; }
+                    if (!this.form.bookingType) { window.showErrorDialog('Missing Information', 'Please select a booking type.'); return; }
+                    if (!this.form.serviceType) { window.showErrorDialog('Missing Information', 'Please select a service type.'); return; }
                 }
                 this.step++;
             },
 
+            // Show confirmation dialog with Google Auth button
             async submitQuotation() {
-                if (!this.form.clientName) { alert('Please enter your name.'); return; }
-                if (!this.form.phone) { alert('Please enter your phone number.'); return; }
-                if (!this.form.email) { alert('Please enter your email.'); return; }
-                if (this.form.bookingType === 'company' && !this.form.companyName) { alert('Please enter your company name.'); return; }
+                if (!this.form.propertyType) { window.showErrorDialog('Missing Information', 'Please select a property type.'); return; }
 
-                this.submitting = true;
                 try {
-                    const serviceLabels = {
-                        deep_cleaning: 'Deep Cleaning', final_cleaning: 'Final Cleaning',
-                        daily_cleaning: 'Daily Cleaning', snowout_cleaning: 'Snowout Cleaning',
-                        general_cleaning: 'General Cleaning', hotel_cleaning: 'Hotel Cleaning',
-                    };
-
-                    const fd = new FormData();
-                    fd.append('_token', '{{ csrf_token() }}');
-                    fd.append('booking_type', this.form.bookingType);
-                    fd.append('service_type', serviceLabels[this.form.serviceType] || this.form.serviceType);
-                    fd.append('service_date', this.form.serviceDate);
-                    fd.append('urgency', this.form.urgency);
-                    fd.append('property_type', this.form.propertyType);
-                    fd.append('floors', this.form.floors);
-                    fd.append('rooms', this.form.rooms);
-                    fd.append('floor_area', this.form.floorArea);
-                    fd.append('area_unit', 'sqm');
-                    fd.append('location', this.form.location);
-                    fd.append('special_requests', this.form.specialRequests);
-                    fd.append('company_name', this.form.companyName);
-                    fd.append('client_name', this.form.clientName);
-                    fd.append('phone', this.form.phone);
-                    fd.append('email', this.form.email);
-
-                    const res = await fetch('{{ route("quotation.submit") }}', {
-                        method: 'POST',
-                        body: fd,
-                        headers: { 'Accept': 'application/json' }
-                    });
-
-                    const data = await res.json();
-
-                    if (data.success) {
-                        this.showModal = false;
-                        document.body.style.overflow = '';
-                        if (window.showSuccessDialog) {
-                            window.showSuccessDialog('Quotation Submitted', data.message || 'Your quotation request has been submitted successfully. We will get back to you soon.');
-                        } else {
-                            alert(data.message || 'Quotation submitted successfully!');
-                        }
-                        // Reset form
-                        this.form = { bookingType: 'personal', serviceType: '', serviceDate: '', urgency: 'regular', propertyType: '', floors: 1, rooms: 1, floorArea: 0, location: '', specialRequests: '', companyName: '', clientName: '', phone: '', email: '' };
-                    } else {
-                        if (window.showErrorDialog) {
-                            window.showErrorDialog('Submission Failed', data.message || 'Failed to submit quotation. Please try again.');
-                        } else {
-                            alert(data.message || 'Submission failed.');
-                        }
-                    }
+                    await window.showConfirmDialog(
+                        'Submit Quotation Request?',
+                        'Sign in with Google to submit your quotation. Your name and email will be automatically filled from your Google account.',
+                        'Submit with Google',
+                        'Cancel'
+                    );
                 } catch (e) {
-                    console.error('Quotation submit error:', e);
-                    if (window.showErrorDialog) {
-                        window.showErrorDialog('Error', 'An error occurred. Please try again.');
-                    } else {
-                        alert('An error occurred. Please try again.');
-                    }
-                } finally {
-                    this.submitting = false;
+                    return; // User cancelled
                 }
+
+                // User confirmed — submit form data to server and redirect to Google OAuth
+                this.submitting = true;
+                this.showModal = false;
+                document.body.style.overflow = '';
+
+                const serviceLabels = {
+                    deep_cleaning: 'Deep Cleaning', final_cleaning: 'Final Cleaning',
+                    daily_cleaning: 'Daily Cleaning', snowout_cleaning: 'Snowout Cleaning',
+                    general_cleaning: 'General Cleaning', hotel_cleaning: 'Hotel Cleaning',
+                };
+
+                // Create a hidden form and POST to the Google auth route
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route("quotation.google.auth") }}';
+
+                const fields = {
+                    '_token': '{{ csrf_token() }}',
+                    'bookingType': this.form.bookingType,
+                    'serviceType': serviceLabels[this.form.serviceType] || this.form.serviceType,
+                    'serviceDate': this.form.serviceDate || '',
+                    'urgency': this.form.urgency,
+                    'propertyType': this.form.propertyType,
+                    'floors': this.form.floors,
+                    'rooms': this.form.rooms,
+                    'floorArea': this.form.floorArea,
+                    'region': this.form.region,
+                    'city': this.form.city,
+                    'postalCode': this.form.postalCode,
+                    'district': this.form.district,
+                    'specialRequests': this.form.specialRequests,
+                    'companyName': this.form.companyName,
+                };
+
+                Object.entries(fields).forEach(([key, value]) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value ?? '';
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
             }
         };
     }
@@ -618,6 +564,14 @@
         }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
         document.querySelectorAll('.pricing-card, .pricing-table, .info-card').forEach(el => observer.observe(el));
+
+        // Show flash dialogs from Google OAuth redirect
+        @if(session('success'))
+            window.showSuccessDialog('Quotation Submitted', @json(session('success')));
+        @endif
+        @if(session('error'))
+            window.showErrorDialog('Something Went Wrong', @json(session('error')));
+        @endif
 
         document.querySelectorAll('.table-row').forEach(row => {
             row.addEventListener('mouseenter', function() { this.style.transform = 'translateX(5px)'; });

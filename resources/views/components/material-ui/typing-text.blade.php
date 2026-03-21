@@ -9,11 +9,24 @@
 --}}
 
 <style>
-    [data-typing] .typing-char {
+    /* Hide text before JS wraps chars, preventing flash of unstyled text */
+    [data-typing]:not([data-typing-init]) {
+        visibility: hidden;
+    }
+    [data-typing][data-typing-init] {
+        visibility: visible;
+    }
+    [data-typing] .typing-char-wrap {
+        opacity: 0;
+        display: inline;
+        transition: opacity 0.3s ease-in-out;
+    }
+    [data-typing] .typing-char-el {
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
     }
-    [data-typing].typing-active .typing-char {
+    [data-typing].typing-active .typing-char-wrap,
+    [data-typing].typing-active .typing-char-el {
         opacity: 1;
     }
 </style>
@@ -40,7 +53,7 @@
                         const fragment = document.createDocumentFragment();
                         text.split('').forEach(char => {
                             const span = document.createElement('span');
-                            span.className = 'typing-char';
+                            span.className = 'typing-char-wrap';
                             span.textContent = char;
                             fragment.appendChild(span);
                         });
@@ -48,12 +61,11 @@
                     } else if (child.nodeType === Node.ELEMENT_NODE) {
                         const tag = child.tagName.toLowerCase();
                         if (tag === 'br' || tag === 'img') return;
-                        // Skip flex/inline-flex containers — wrapping their children
-                        // into individual spans breaks flex layout (gap, alignment)
+                        // Skip flex/inline-flex containers — treat as one animated unit
+                        // without overriding their display property
                         const display = getComputedStyle(child).display;
                         if (display.includes('flex') || display.includes('grid')) {
-                            // Treat the whole element as one animated unit
-                            child.classList.add('typing-char');
+                            child.classList.add('typing-char-el');
                             return;
                         }
                         wrapTextNodes(child);
@@ -64,23 +76,30 @@
             wrapTextNodes(el);
 
             // Get all chars and compute stagger delays
-            const chars = el.querySelectorAll('.typing-char');
+            const chars = el.querySelectorAll('.typing-char-wrap, .typing-char-el');
             const charDelay = chars.length > 0 ? duration / chars.length : 0;
             chars.forEach((char, i) => {
                 char.style.transitionDelay = (delay + i * charDelay) + 's';
             });
 
-            // Trigger on scroll into view
-            const observer = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        el.classList.add('typing-active');
-                        observer.unobserve(el);
-                    }
-                });
-            }, { threshold: 0.2 });
+            // Force the browser to paint the initial opacity:0 state
+            // before we start observing. Without this double-rAF, elements
+            // already in the viewport get typing-active in the same frame
+            // as the char wrapping, so no transition ever fires.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const observer = new IntersectionObserver(entries => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                el.classList.add('typing-active');
+                                observer.unobserve(el);
+                            }
+                        });
+                    }, { threshold: 0.2 });
 
-            observer.observe(el);
+                    observer.observe(el);
+                });
+            });
         });
     }
 

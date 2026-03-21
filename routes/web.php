@@ -81,11 +81,14 @@ Route::get('/services', function () {
 
 // Price Quotation Page
 Route::get('/quotation', function () {
-    return view('landingpage-quotation');
+    return view('landingpage-quotation', ['cscApiKey' => env('CSC_API_KEY', '')]);
 })->name('quotation');
 
 // Submit Quotation Form
 Route::post('/quotation/submit', [\App\Http\Controllers\Admin\QuotationController::class, 'store'])->name('quotation.submit');
+
+// Quotation Google Auth: store form data in session then redirect to Google OAuth
+Route::post('/quotation/google-auth', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'quotationAuth'])->name('quotation.google.auth');
 
 // Contact Page
 Route::get('/contact', function () {

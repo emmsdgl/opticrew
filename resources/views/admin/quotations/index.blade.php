@@ -265,13 +265,9 @@
                                     </h3>
                                     <div class="space-y-0">
                                         <template x-if="q.service.cleaning_services && q.service.cleaning_services.length > 0">
-                                            <div class="py-2.5 border-b border-gray-100 dark:border-gray-700">
-                                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Cleaning Services</p>
-                                                <div class="flex flex-wrap gap-1.5">
-                                                    <template x-for="svc in q.service.cleaning_services" :key="svc">
-                                                        <span class="px-2.5 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 rounded-full text-xs font-medium" x-text="svc"></span>
-                                                    </template>
-                                                </div>
+                                            <div class="flex justify-between items-center py-2.5 border-b border-gray-100 dark:border-gray-700">
+                                                <span class="text-sm text-gray-500 dark:text-gray-400">Cleaning Services</span>
+                                                <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="q.service.cleaning_services.join(', ')"></span>
                                             </div>
                                         </template>
                                         <template x-if="q.service.date_of_service">

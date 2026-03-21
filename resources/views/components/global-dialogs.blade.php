@@ -63,7 +63,7 @@
 
     {{-- ── Success Dialog ── --}}
     <div x-show="showSuccess" style="display:none"
-        class="fixed inset-0 z-[120] flex items-center justify-center p-4"
+        class="fixed inset-0 z-[99999] flex items-center justify-center p-4"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -83,7 +83,7 @@
 
     {{-- ── Error Dialog ── --}}
     <div x-show="showError" style="display:none"
-        class="fixed inset-0 z-[120] flex items-center justify-center p-4"
+        class="fixed inset-0 z-[99999] flex items-center justify-center p-4"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -103,7 +103,7 @@
 
     {{-- ── Confirm Dialog ── --}}
     <div x-show="showConfirm" style="display:none"
-        class="fixed inset-0 z-[120] flex items-center justify-center p-4"
+        class="fixed inset-0 z-[99999] flex items-center justify-center p-4"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
