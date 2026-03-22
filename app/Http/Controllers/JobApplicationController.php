@@ -105,7 +105,7 @@ class JobApplicationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = JobApplication::query();
+        $query = JobApplication::where('status', '!=', 'hired');
 
         // Filter by status
         if ($request->filled('status') && $request->status !== 'all') {
@@ -133,6 +133,7 @@ class JobApplicationController extends Controller
 
         // Get all applications with profiles for suitability scoring in job posting drawer
         $allApplications = JobApplication::select('id', 'job_title', 'email', 'status', 'applicant_profile', 'created_at')
+            ->where('status', '!=', 'hired')
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($app) {
