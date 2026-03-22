@@ -139,6 +139,7 @@ Route::get('/register', function () {
 // Google OAuth Routes
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+Route::get('/mobile/google-login', [GoogleAuthController::class, 'mobileRedirect'])->name('mobile.google.redirect');
 Route::post('/auth/google/recruitment-apply', [GoogleAuthController::class, 'recruitmentApply'])->name('recruitment.google.apply');
 
 /*

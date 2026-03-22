@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\NotificationController;
 
 // Login (No authentication required)
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+Route::post('/google-login', [AuthController::class, 'googleLogin'])->name('api.google-login');
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
