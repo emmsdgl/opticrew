@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\EmployeeStatsController;
 use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminAppointmentController;
+use App\Http\Controllers\Api\AdminFeedbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -241,6 +242,10 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
         Route::get('/{attendanceId}', [LeaveRequestController::class, 'getAttendanceDetails'])
             ->name('api.admin.attendance.details');
     });
+
+    // Feedback Management (Admin)
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])
+        ->name('api.admin.feedback.index');
 
     // Appointment Management (Admin)
     Route::get('/appointments', [AdminAppointmentController::class, 'index'])
