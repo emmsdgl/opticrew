@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\TrainingVideoController;
 use App\Http\Controllers\Api\EmployeeStatsController;
 use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\AdminAppointmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -240,6 +241,16 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
         Route::get('/{attendanceId}', [LeaveRequestController::class, 'getAttendanceDetails'])
             ->name('api.admin.attendance.details');
     });
+
+    // Appointment Management (Admin)
+    Route::get('/appointments', [AdminAppointmentController::class, 'index'])
+        ->name('api.admin.appointments.index');
+    Route::get('/appointments/{id}', [AdminAppointmentController::class, 'show'])
+        ->name('api.admin.appointments.show');
+    Route::post('/appointments/{id}/approve', [AdminAppointmentController::class, 'approve'])
+        ->name('api.admin.appointments.approve');
+    Route::post('/appointments/{id}/reject', [AdminAppointmentController::class, 'reject'])
+        ->name('api.admin.appointments.reject');
 });
 
 /*
