@@ -60,7 +60,8 @@
                 <!-- Search Bar -->
                 <div class="flex-1">
                     <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Search by name, username, or email..."
+                        <input type="search" id="searchInput" placeholder="Search by name, username, or email..."
+                            autocomplete="off"
                             class="w-full px-4 py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
