@@ -1,5 +1,6 @@
 
 <x-layouts.general-employee :title="'Tasks'">
+    <x-skeleton-page :preset="'calendar'">
 
     {{-- MOBILE LAYOUT (< 1024px) - Hidden on large screens --}}
     <div class="lg:hidden">
@@ -623,6 +624,7 @@
 
         --}}
     </section>
+    </x-skeleton-page>
 </x-layouts.general-employee>
 
 @push('scripts')

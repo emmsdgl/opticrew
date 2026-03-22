@@ -347,8 +347,11 @@
                                     <div
                                         class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                                         <div class="flex justify-between items-start mb-3">
-                                            <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                                                <span x-text="'Unit ' + (index + 1)"></span>
+                                            <div>
+                                                <div class="text-xs font-semibold text-gray-900 dark:text-white"
+                                                     x-text="unit.name || ('Unit ' + (index + 1))"></div>
+                                                <div class="text-xs text-gray-400 dark:text-gray-500" x-show="unit.size"
+                                                     x-text="unit.size + ' m²'"></div>
                                             </div>
                                             <div class="text-right" x-show="unit.price">
                                                 <div class="text-lg font-bold text-blue-600 dark:text-blue-400">
@@ -378,9 +381,11 @@
                             x-if="!selectedAppointment || !selectedAppointment.unit_details || !Array.isArray(selectedAppointment.unit_details) || selectedAppointment.unit_details.length === 0">
                             <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                                 <div class="flex justify-between items-start mb-3">
-                                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                                        <span
-                                            x-text="selectedAppointment && selectedAppointment.number_of_units > 1 ? selectedAppointment.number_of_units + ' Units' : 'Unit 1'"></span>
+                                    <div>
+                                        <div class="text-xs font-semibold text-gray-900 dark:text-white"
+                                             x-text="selectedAppointment?.cabin_name || 'Unit 1'"></div>
+                                        <div class="text-xs text-gray-400 dark:text-gray-500" x-show="selectedAppointment?.unit_size"
+                                             x-text="selectedAppointment?.unit_size + ' m²'"></div>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 text-sm">

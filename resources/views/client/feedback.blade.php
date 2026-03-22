@@ -1,4 +1,5 @@
 <x-layouts.general-client :title="'Feedback'">
+    <x-skeleton-page :preset="'default'">
     <div class="flex flex-col w-full gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]" x-data="feedbackForm()">
         <!-- Header Section -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 md:p-12 border border-gray-200 dark:border-gray-700">
@@ -279,4 +280,5 @@
         }
     </script>
     @endpush
+    </x-skeleton-page>
 </x-layouts.general-client>

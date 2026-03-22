@@ -24,6 +24,7 @@
             ],
             ['label' => 'Training', 'icon' => 'fa-video', 'href' => route('admin.training-videos.index')],
             ['label' => 'Attendance', 'icon' => 'fa-solid fa-calendar-check', 'href' => route('admin.attendance')],
+            ['label' => 'Courses', 'icon' => 'fa-solid fa-book-open', 'href' => route('admin.courses')],
             ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('admin.history')],
             ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => route('admin.analytics')],
         ];

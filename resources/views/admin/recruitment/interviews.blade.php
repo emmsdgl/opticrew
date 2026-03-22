@@ -36,15 +36,15 @@
                     <div class="flex-1 min-h-0 overflow-y-auto px-3 py-2 space-y-2">
                         <template x-for="(interview, idx) in dayInterviews" :key="interview.id">
                             <div class="flex items-start gap-3 p-3 rounded-xl border transition-all hover:shadow-sm"
-                                :class="colorClasses[idx % colorClasses.length].card">
+                                :class="getColor(interview).card">
 
                                 {{-- Time badge --}}
                                 <div class="flex-shrink-0 flex flex-col items-center">
                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center"
-                                        :class="colorClasses[idx % colorClasses.length].icon">
+                                        :class="getColor(interview).icon">
                                         <i class="fa-solid fa-calendar-check text-sm"></i>
                                     </div>
-                                    <span class="text-[9px] font-bold mt-1" :class="colorClasses[idx % colorClasses.length].time"
+                                    <span class="text-[9px] font-bold mt-1" :class="getColor(interview).time"
                                         x-text="interview.timeLabel"></span>
                                 </div>
 
@@ -67,6 +67,31 @@
                             <i class="fa-regular fa-calendar text-3xl text-gray-300 dark:text-gray-600 mb-3"></i>
                             <p class="text-xs font-medium text-gray-400 dark:text-gray-500">No interviews scheduled</p>
                             <p class="text-[10px] text-gray-300 dark:text-gray-600 mt-1">Select a date with interviews to view details</p>
+                        </div>
+                    </div>
+
+                    {{-- Legend --}}
+                    <span class="text-[9px] font-semibold text-gray-400 dark:text-gray-500 mr-1 border-t border-gray-100 dark:border-gray-700/50 pt-2.5">Categories</span>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2.5 flex-shrink-0">
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-sm bg-green-400"></span>
+                            <span class="text-[8px] text-gray-500 dark:text-gray-400">Cleaning</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-sm bg-purple-400"></span>
+                            <span class="text-[8px] text-gray-500 dark:text-gray-400">Management / QA</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-sm bg-orange-400"></span>
+                            <span class="text-[8px] text-gray-500 dark:text-gray-400">Logistics / Ops</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-sm bg-blue-400"></span>
+                            <span class="text-[8px] text-gray-500 dark:text-gray-400">Customer Service</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-sm bg-red-400"></span>
+                            <span class="text-[8px] text-gray-500 dark:text-gray-400">Maintenance</span>
                         </div>
                     </div>
                 </div>
@@ -98,6 +123,7 @@
                 hour: hh,
                 minute: mm,
                 timeLabel: String(display).padStart(2, '0') + ':' + String(mm).padStart(2, '0') + ' ' + ampm,
+                categoryColor: interview.category_color || 'blue',
             };
         });
 
@@ -114,14 +140,17 @@
             selectedDate: null,
             dayInterviews: [],
 
-            colorClasses: [
-                { card: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/40', icon: 'bg-blue-100 dark:bg-blue-900/30 text-blue-500', time: 'text-blue-600 dark:text-blue-400' },
-                { card: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/40', icon: 'bg-purple-100 dark:bg-purple-900/30 text-purple-500', time: 'text-purple-600 dark:text-purple-400' },
-                { card: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/40', icon: 'bg-green-100 dark:bg-green-900/30 text-green-500', time: 'text-green-600 dark:text-green-400' },
-                { card: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/40', icon: 'bg-amber-100 dark:bg-amber-900/30 text-amber-500', time: 'text-amber-600 dark:text-amber-400' },
-                { card: 'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-200 dark:border-cyan-800/40', icon: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-500', time: 'text-cyan-600 dark:text-cyan-400' },
-                { card: 'bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-800/40', icon: 'bg-pink-100 dark:bg-pink-900/30 text-pink-500', time: 'text-pink-600 dark:text-pink-400' },
-            ],
+            categoryColorMap: {
+                green:  { card: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/40', icon: 'bg-green-100 dark:bg-green-900/30 text-green-500', time: 'text-green-600 dark:text-green-400' },
+                purple: { card: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/40', icon: 'bg-purple-100 dark:bg-purple-900/30 text-purple-500', time: 'text-purple-600 dark:text-purple-400' },
+                orange: { card: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/40', icon: 'bg-orange-100 dark:bg-orange-900/30 text-orange-500', time: 'text-orange-600 dark:text-orange-400' },
+                blue:   { card: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/40', icon: 'bg-blue-100 dark:bg-blue-900/30 text-blue-500', time: 'text-blue-600 dark:text-blue-400' },
+                red:    { card: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/40', icon: 'bg-red-100 dark:bg-red-900/30 text-red-500', time: 'text-red-600 dark:text-red-400' },
+            },
+
+            getColor(interview) {
+                return this.categoryColorMap[interview.categoryColor] || this.categoryColorMap['blue'];
+            },
 
             get selectedDateLabel() {
                 if (!this.selectedDate) return 'Select a date';

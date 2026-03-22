@@ -1,4 +1,5 @@
 <x-layouts.general-client :title="'Appointments'">
+    <x-skeleton-page :preset="'stats-table'">
 
     <style>
         /* Prevent horizontal scroll on body/main */
@@ -671,4 +672,5 @@
             </div>
         </div>
     </section>
+    </x-skeleton-page>
 </x-layouts.general-client>

@@ -60,10 +60,10 @@ class ClientAppointmentController extends Controller
             ]);
         }
 
-        // Fetch ongoing appointments (pending and confirmed) for dashboard
+        // Fetch today's appointments (pending, approved, confirmed) for dashboard
         $appointments = ClientAppointment::where('client_id', $client->id)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->orderBy('service_date', 'asc')
+            ->whereDate('service_date', now()->toDateString())
+            ->whereIn('status', ['pending', 'approved', 'confirmed'])
             ->orderBy('service_time', 'asc')
             ->get()
             ->map(function ($appointment) {
@@ -94,9 +94,10 @@ class ClientAppointmentController extends Controller
 
         // Calculate statistics
         $allAppointments = ClientAppointment::where('client_id', $client->id)->get();
+        $todayAppointments = $allAppointments->filter(fn($a) => Carbon::parse($a->service_date)->isToday());
         $stats = [
             'total' => $allAppointments->count(),
-            'ongoing' => $allAppointments->whereIn('status', ['pending', 'confirmed'])->count(),
+            'ongoing' => $todayAppointments->whereIn('status', ['pending', 'approved', 'confirmed'])->count(),
             'completed' => $allAppointments->where('status', 'completed')->count(),
             'cancelled' => $allAppointments->where('status', 'cancelled')->count(),
         ];
@@ -260,8 +261,94 @@ class ClientAppointmentController extends Controller
             'currentStep' => 1,
             'client' => $client,
             'user' => $user,
-            'holidays' => $holidays
+            'holidays' => $holidays,
+            'cscApiKey' => env('CSC_API_KEY', ''),
         ]);
+    }
+
+    /**
+     * Get booked/unavailable time slots for a given date.
+     * Takes into account the duration of existing bookings and the
+     * estimated duration of the service being booked.
+     */
+    public function bookedSlots(Request $request)
+    {
+        $request->validate(['date' => 'required|date']);
+
+        $date = $request->date;
+        $newServiceType = $request->input('service_type', '');
+        $newEstimatedHours = (float) $request->input('estimated_hours', 0);
+
+        // Duration estimates per service type (in hours, default for medium-sized unit)
+        $defaultDurations = [
+            'Final Cleaning' => 3,
+            'Deep Cleaning' => 4,
+            'Daily Cleaning' => 2,
+            'Snowout Cleaning' => 3,
+            'General Cleaning' => 2,
+            'Hotel Cleaning' => 3,
+        ];
+
+        // Get all active appointments on this date
+        $appointments = ClientAppointment::whereDate('service_date', $date)
+            ->whereNotIn('status', ['cancelled', 'rejected', 'completed'])
+            ->get();
+
+        // Build occupied time ranges from existing appointments
+        $occupiedRanges = [];
+        foreach ($appointments as $apt) {
+            if (!$apt->service_time) continue;
+
+            try {
+                // Extract just the time (H:i:s) from service_time and combine with the correct date
+                $timeOnly = \Carbon\Carbon::parse($apt->service_time)->format('H:i:s');
+                $start = \Carbon\Carbon::parse($date . ' ' . $timeOnly);
+            } catch (\Exception $e) {
+                continue;
+            }
+
+            // Get actual duration from unit_details or fall back to service type default
+            $duration = $defaultDurations[$apt->service_type] ?? 2;
+            if ($apt->unit_details && is_array($apt->unit_details)) {
+                $totalHours = 0;
+                foreach ($apt->unit_details as $unit) {
+                    $totalHours += $unit['hours'] ?? 0;
+                }
+                if ($totalHours > 0) {
+                    $duration = $totalHours;
+                }
+            }
+
+            $end = $start->copy()->addMinutes((int) ceil($duration * 60));
+            $occupiedRanges[] = ['start' => $start, 'end' => $end];
+        }
+
+        // Determine duration of the new service being booked (in minutes)
+        $newDurationMinutes = 120; // default 2 hours
+        if ($newEstimatedHours > 0) {
+            $newDurationMinutes = (int) ceil($newEstimatedHours * 60);
+        } elseif (isset($defaultDurations[$newServiceType])) {
+            $newDurationMinutes = $defaultDurations[$newServiceType] * 60;
+        }
+
+        // Check each 15-min slot: would booking at this time overlap with any existing appointment?
+        $unavailable = [];
+        for ($h = 6; $h <= 21; $h++) {
+            for ($m = 0; $m < 60; $m += 15) {
+                $slotStart = \Carbon\Carbon::parse($date)->setTime($h, $m, 0);
+                $slotEnd = $slotStart->copy()->addMinutes($newDurationMinutes);
+
+                // Check overlap with each occupied range: start1 < end2 AND end1 > start2
+                foreach ($occupiedRanges as $range) {
+                    if ($slotStart->lt($range['end']) && $slotEnd->gt($range['start'])) {
+                        $unavailable[] = sprintf('%02d:%02d', $h, $m);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return response()->json(['booked' => array_values(array_unique($unavailable))]);
     }
 
     /**
@@ -285,7 +372,7 @@ class ClientAppointmentController extends Controller
             'billing_address' => 'nullable|string|max:500',
 
             // Step 2: Service Details
-            'service_type' => 'required|string|in:Final Cleaning,Deep Cleaning',
+            'service_type' => 'required|string|in:Final Cleaning,Deep Cleaning,Daily Cleaning,Snowout Cleaning,General Cleaning,Hotel Cleaning',
             'service_date' => 'required|date|after_or_equal:today',
             'service_time' => 'required',
             'is_sunday' => 'required|boolean',
@@ -329,20 +416,52 @@ class ClientAppointmentController extends Controller
 
         // SCENARIO #5: Calendar Conflict - Prevent double-booking on the same date
         // Check if this client already has a pending/approved appointment on the same date
+        // Check for time slot overlap (allows multiple bookings per day if no overlap)
         $client = $user ? $user->client : null;
-        if ($client) {
-            $existingAppointment = ClientAppointment::where('client_id', $client->id)
+        if ($client && $request->service_time) {
+            $defaultDurations = [
+                'Final Cleaning' => 3, 'Deep Cleaning' => 4, 'Daily Cleaning' => 2,
+                'Snowout Cleaning' => 3, 'General Cleaning' => 2, 'Hotel Cleaning' => 3,
+            ];
+
+            // Calculate new booking's time range
+            $newStart = \Carbon\Carbon::parse($request->service_date . ' ' . \Carbon\Carbon::parse($request->service_time)->format('H:i:s'));
+            $newDuration = $defaultDurations[$request->service_type] ?? 2;
+            if ($request->unit_details && is_array($request->unit_details)) {
+                $totalHours = 0;
+                foreach ($request->unit_details as $unit) {
+                    $totalHours += $unit['hours'] ?? 0;
+                }
+                if ($totalHours > 0) $newDuration = $totalHours;
+            }
+            $newEnd = $newStart->copy()->addMinutes((int) ceil($newDuration * 60));
+
+            // Check overlap with existing appointments
+            $existingAppointments = ClientAppointment::where('client_id', $client->id)
                 ->whereDate('service_date', $request->service_date)
                 ->whereIn('status', ['pending', 'approved', 'confirmed'])
-                ->first();
+                ->get();
 
-            if ($existingAppointment) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You already have a booking on this date. Please choose a different date or cancel the existing booking first.',
-                    'error_code' => 'CALENDAR_CONFLICT',
-                    'existing_appointment_id' => $existingAppointment->id,
-                ], 422);
+            foreach ($existingAppointments as $existing) {
+                if (!$existing->service_time) continue;
+                $existTimeOnly = \Carbon\Carbon::parse($existing->service_time)->format('H:i:s');
+                $existStart = \Carbon\Carbon::parse($request->service_date . ' ' . $existTimeOnly);
+                $existDuration = $defaultDurations[$existing->service_type] ?? 2;
+                if ($existing->unit_details && is_array($existing->unit_details)) {
+                    $th = 0;
+                    foreach ($existing->unit_details as $u) { $th += $u['hours'] ?? 0; }
+                    if ($th > 0) $existDuration = $th;
+                }
+                $existEnd = $existStart->copy()->addMinutes((int) ceil($existDuration * 60));
+
+                // Overlap check: start1 < end2 AND end1 > start2
+                if ($newStart->lt($existEnd) && $newEnd->gt($existStart)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'This time slot overlaps with an existing booking (' . $existStart->format('h:i A') . ' - ' . $existEnd->format('h:i A') . '). Please choose a different time.',
+                        'error_code' => 'TIME_CONFLICT',
+                    ], 422);
+                }
             }
         }
 

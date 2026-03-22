@@ -15,6 +15,7 @@ class UserCourseProgress extends Model
         'user_id',
         'course_id',
         'progress',
+        'last_position',
         'status',
     ];
 

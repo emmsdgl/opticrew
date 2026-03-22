@@ -1,4 +1,5 @@
 <x-layouts.general-client :title="'Settings'">
+    <x-skeleton-page :preset="'default'">
     <section class="flex w-full flex-col p-4 md:p-6 min-h-[calc(100vh-4rem)] overflow-y-auto scroll-smooth">
         <div class="max-w-6xl mx-auto w-full">
             <div class="w-full flex-col justify-start text-justify sm:justify-center pb-12 p-4">
@@ -128,166 +129,84 @@
             </div>
             <!--Section 2: Change Password-->
             <div class="w-full p-4 flex flex-col md:flex-row pb-12 md:pb-24">
-                
                 <!--Description Panel-->
                 <div class="section-description w-full md:flex-1 flex-col justify-start text-justify mb-6 md:mb-0">
                     <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Change Password</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 pr-24">Update your password associated with
-                        your
-                        account.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 pr-24">Update your password associated with your account.</p>
                 </div>
                 <!--Form Details-->
-                <div class="form-description w-full md:flex-1">
-                    <form class="space-y-6 mt-0 md:mt-6" action="{{ route('client.settings.update-password') }}"
-                        method="POST">
-                        @csrf
-
-                        <!-- Security Question Dropdown -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                Security Question
-                            </label>
-                            <div x-data="{ open: false, selected: 'Select a security question' }" class="relative w-full">
-                                <!-- Dropdown Button -->
-                                <button @click="open = !open" type="button"
-                                    class="w-full bg-white hover:bg-gray-50 focus:ring-2 focus:outline-none focus:ring-blue-500
-                               border border-gray-300 dark:border-gray-600 rounded-lg text-sm px-4 py-3 flex justify-between items-center
-                               dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-blue-800 transition-all duration-300">
-                                    <span class="text-sm font-normal flex-1 text-left"
-                                        :class="selected === 'Select a security question' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'"
-                                        x-text="selected"></span>
-                                    <svg class="w-3 h-3 ml-2 flex-shrink-0 transition-transform duration-300 text-gray-500 dark:text-gray-400"
-                                        :class="{ 'rotate-180': open }" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="m1 1 4 4 4-4" />
-                                    </svg>
-                                </button>
-
-                                <!-- Dropdown Menu -->
-                                <div x-show="open" @click.away="open = false"
-                                    x-transition:enter="transition ease-out duration-200"
-                                    x-transition:enter-start="opacity-0 scale-95"
-                                    x-transition:enter-end="opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-150"
-                                    x-transition:leave-start="opacity-100 scale-100"
-                                    x-transition:leave-end="opacity-0 scale-95" class="absolute left-0 right-0 top-full mt-2 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-lg max-h-60 overflow-y-auto
-                               dark:bg-gray-700 origin-top" style="display: none;">
-                                    <ul class="py-2 text-sm text-gray-700 dark:text-white">
-                                        <li>
-                                            <button
-                                                @click="selected = 'What is the name of your first pet?'; open = false"
-                                                type="button"
-                                                class="w-full text-left px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100
-                                                                   dark:hover:bg-gray-600 transition-colors"
-                                                :class="{ 'bg-gray-100 dark:bg-gray-600': selected === 'What is the name of your first pet?' }">
-                                                What is the name of your first pet?
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button @click="selected = 'In what city were you born?'; open = false"
-                                                type="button"
-                                                class="w-full text-left px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100
-                                                                   dark:hover:bg-gray-600 transition-colors"
-                                                :class="{ 'bg-gray-100 dark:bg-gray-600': selected === 'In what city were you born?' }">
-                                                In what city were you born?
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <input type="hidden" name="security_question" x-model="selected">
-                            </div>
-                        </div>
-
-                        <!-- Security Question Answer -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                Security Question Answer
-                            </label>
-                            <input type="text" name="security_answer_1" placeholder="Enter your answer"
-                                class="w-full text-sm px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                required>
-                        </div>
-
-                        <!-- Current Password -->
-                        <div>
-                            <label for="current_password"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                Current Password
-                            </label>
-                            <div class="relative">
-                                <input type="password" id="current-password" name="current_password"
-                                    placeholder="Provide your currently set password"
-                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    required>
-                                <button type="button" onclick="togglePassword('current-password', this)"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                        </path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- New Password -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                New Password
-                            </label>
-                            <div class="relative">
-                                <input type="password" id="password" name="password"
-                                    placeholder="Should be alphanumeric with atleast 8 characters"
-                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    required>
-                                <button type="button" onclick="togglePassword('password', this)"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                        </path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div>
-                            <label for="password_confirmation"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                Confirm Password
-                            </label>
-                            <div class="relative">
-                                <input type="password" name="password_confirmation" id="password_confirmation"
-                                    placeholder="Retype your new password"
-                                    class="w-full text-sm px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    required>
-                                <button type="button" onclick="togglePassword('password_confirmation', this)"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                        </path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Update Password Button -->
-                        <div class="flex justify-center md:justify-end pt-4">
-                            <button type="submit"
-                                class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
-                                Update Password
+                <div class="form-description w-full md:flex-1" x-data="{
+                    currentPassword: '', newPassword: '', confirmPassword: '',
+                    showCurrent: false, showNew: false, showConfirm: false,
+                    submittingPw: false,
+                    async submitPassword() {
+                        if (!this.currentPassword || !this.newPassword || !this.confirmPassword) {
+                            window.showErrorDialog('Missing Information', 'Please fill in all password fields.'); return;
+                        }
+                        if (this.newPassword !== this.confirmPassword) {
+                            window.showErrorDialog('Mismatch', 'New password and confirmation do not match.'); return;
+                        }
+                        if (this.newPassword.length < 8) {
+                            window.showErrorDialog('Too Short', 'Password must be at least 8 characters.'); return;
+                        }
+                        try { await window.showConfirmDialog('Update Password?', 'Are you sure you want to change your password?', 'Update', 'Cancel'); } catch (e) { return; }
+                        this.submittingPw = true;
+                        try {
+                            const res = await fetch('{{ route('client.settings.update-password') }}', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                body: JSON.stringify({ current_password: this.currentPassword, password: this.newPassword, password_confirmation: this.confirmPassword })
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                window.showSuccessDialog('Password Updated', data.message);
+                                this.currentPassword = ''; this.newPassword = ''; this.confirmPassword = '';
+                            } else {
+                                window.showErrorDialog('Update Failed', data.message || 'Failed to update password.');
+                            }
+                        } catch (e) { window.showErrorDialog('Error', 'An error occurred. Please try again.'); }
+                        finally { this.submittingPw = false; }
+                    }
+                }">
+                    <div class="space-y-6 mt-0 md:mt-6">
+                        {{-- Current Password --}}
+                        <div class="relative" x-ref="currentPwWrap">
+                            <x-material-ui.input-field label="Current Password" :type="'password'" model="currentPassword" icon="fi fi-rr-lock" placeholder="Enter current password" required />
+                            <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
+                                <i class="fa-solid fa-eye text-sm" x-show="!showCurrent"></i>
+                                <i class="fa-solid fa-eye-slash text-sm" x-show="showCurrent" style="display:none"></i>
                             </button>
                         </div>
-                    </form>
+
+                        {{-- New Password --}}
+                        <div class="relative" x-ref="newPwWrap">
+                            <x-material-ui.input-field label="New Password" :type="'password'" model="newPassword" icon="fi fi-rr-key" placeholder="Minimum 8 characters" required />
+                            <button type="button" @click="showNew = !showNew; $refs.newPwWrap.querySelector('input').type = showNew ? 'text' : 'password'"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
+                                <i class="fa-solid fa-eye text-sm" x-show="!showNew"></i>
+                                <i class="fa-solid fa-eye-slash text-sm" x-show="showNew" style="display:none"></i>
+                            </button>
+                        </div>
+
+                        {{-- Confirm Password --}}
+                        <div class="relative" x-ref="confirmPwWrap">
+                            <x-material-ui.input-field label="Confirm New Password" :type="'password'" model="confirmPassword" icon="fi fi-rr-shield-check" placeholder="Re-enter new password" required />
+                            <button type="button" @click="showConfirm = !showConfirm; $refs.confirmPwWrap.querySelector('input').type = showConfirm ? 'text' : 'password'"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
+                                <i class="fa-solid fa-eye text-sm" x-show="!showConfirm"></i>
+                                <i class="fa-solid fa-eye-slash text-sm" x-show="showConfirm" style="display:none"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-center md:justify-end pt-4">
+                            <button type="button" @click="submitPassword()" :disabled="submittingPw"
+                                class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 disabled:opacity-50">
+                                <span x-show="!submittingPw">Update Password</span>
+                                <span x-show="submittingPw"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Updating...</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!--Section 3: Notification Preferences-->
@@ -638,4 +557,5 @@
         // Load states when page loads
         document.addEventListener('DOMContentLoaded', loadToggleStates);
     </script>
+    </x-skeleton-page>
 </x-layouts.general-client>

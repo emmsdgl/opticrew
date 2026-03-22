@@ -1,6 +1,20 @@
 <x-layouts.general-employer :title="'Settings'">
+    <x-skeleton-page :preset="'default'">
     <section class="flex w-full flex-col p-4 md:p-6 min-h-[calc(100vh-4rem)]">
-        <div class="max-w-4xl mx-auto w-full">
+        <div class="max-w-4xl mx-auto w-full" x-data="{
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+            autoQuotation: true,
+            quotationFiles: {
+                deep_cleaning: null,
+                final_cleaning: null,
+                daily_cleaning: null,
+                snowout_cleaning: null,
+                general_cleaning: null,
+                hotel_cleaning: null,
+            }
+        }">
             <!-- Page Header -->
             <div class="mb-6">
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
@@ -26,57 +40,108 @@
             @endif
 
             <!-- Password Settings -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6"
+                 x-data="{
+                    showCurrent: false, showNew: false, showConfirm: false,
+                    submittingPw: false,
+                    async submitPassword() {
+                        if (!this.currentPassword || !this.newPassword || !this.confirmPassword) {
+                            window.showErrorDialog('Missing Information', 'Please fill in all password fields.');
+                            return;
+                        }
+                        if (this.newPassword !== this.confirmPassword) {
+                            window.showErrorDialog('Mismatch', 'New password and confirmation do not match.');
+                            return;
+                        }
+                        if (this.newPassword.length < 8) {
+                            window.showErrorDialog('Too Short', 'Password must be at least 8 characters.');
+                            return;
+                        }
+                        try {
+                            await window.showConfirmDialog('Update Password?', 'Are you sure you want to change your password?', 'Update', 'Cancel');
+                        } catch (e) { return; }
+                        this.submittingPw = true;
+                        try {
+                            const res = await fetch('{{ route('admin.settings.update-password') }}', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                body: JSON.stringify({ current_password: this.currentPassword, password: this.newPassword, password_confirmation: this.confirmPassword })
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                window.showSuccessDialog('Password Updated', data.message);
+                                this.currentPassword = ''; this.newPassword = ''; this.confirmPassword = '';
+                            } else {
+                                window.showErrorDialog('Update Failed', data.message || 'Failed to update password.');
+                            }
+                        } catch (e) {
+                            window.showErrorDialog('Error', 'An error occurred. Please try again.');
+                        } finally { this.submittingPw = false; }
+                    }
+                 }">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                     <i class="fa-solid fa-lock mr-2 text-blue-500"></i>
                     Change Password
                 </h2>
 
-                <form action="{{ route('admin.settings.update-password') }}" method="POST" class="space-y-4">
-                    @csrf
-
-                    <!-- Current Password -->
-                    <div>
-                        <label for="current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Current Password
-                        </label>
-                        <input type="password"
-                               name="current_password"
-                               id="current_password"
-                               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               required>
+                <div class="space-y-4">
+                    {{-- Current Password --}}
+                    <div class="relative" x-ref="currentPwWrap">
+                        <x-material-ui.input-field
+                            label="Current Password"
+                            :type="'password'"
+                            model="currentPassword"
+                            icon="fi fi-rr-lock"
+                            placeholder="Enter current password"
+                            required
+                        />
+                        <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
+                            <i class="fa-solid fa-eye text-sm" x-show="!showCurrent"></i>
+                            <i class="fa-solid fa-eye-slash text-sm" x-show="showCurrent" style="display:none"></i>
+                        </button>
                     </div>
 
-                    <!-- New Password -->
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            New Password
-                        </label>
-                        <input type="password"
-                               name="password"
-                               id="password"
-                               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               required>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Minimum 8 characters</p>
+                    {{-- New Password --}}
+                    <div class="relative" x-ref="newPwWrap">
+                        <x-material-ui.input-field
+                            label="New Password"
+                            :type="'password'"
+                            model="newPassword"
+                            icon="fi fi-rr-key"
+                            placeholder="Minimum 8 characters"
+                            required
+                        />
+                        <button type="button" @click="showNew = !showNew; $refs.newPwWrap.querySelector('input').type = showNew ? 'text' : 'password'"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
+                            <i class="fa-solid fa-eye text-sm" x-show="!showNew"></i>
+                            <i class="fa-solid fa-eye-slash text-sm" x-show="showNew" style="display:none"></i>
+                        </button>
                     </div>
 
-                    <!-- Confirm Password -->
-                    <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Confirm New Password
-                        </label>
-                        <input type="password"
-                               name="password_confirmation"
-                               id="password_confirmation"
-                               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               required>
+                    {{-- Confirm Password --}}
+                    <div class="relative" x-ref="confirmPwWrap">
+                        <x-material-ui.input-field
+                            label="Confirm New Password"
+                            :type="'password'"
+                            model="confirmPassword"
+                            icon="fi fi-rr-shield-check"
+                            placeholder="Re-enter new password"
+                            required
+                        />
+                        <button type="button" @click="showConfirm = !showConfirm; $refs.confirmPwWrap.querySelector('input').type = showConfirm ? 'text' : 'password'"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
+                            <i class="fa-solid fa-eye text-sm" x-show="!showConfirm"></i>
+                            <i class="fa-solid fa-eye-slash text-sm" x-show="showConfirm" style="display:none"></i>
+                        </button>
                     </div>
 
-                    <button type="submit"
-                            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-                        Update Password
+                    <button type="button" @click="submitPassword()" :disabled="submittingPw"
+                            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50">
+                        <span x-show="!submittingPw">Update Password</span>
+                        <span x-show="submittingPw"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Updating...</span>
                     </button>
-                </form>
+                </div>
             </div>
 
             <!-- Account Information -->
@@ -88,18 +153,118 @@
 
                 <div class="space-y-3">
                     <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                        <span class="text-gray-600 dark:text-gray-400">Email Address</span>
-                        <span class="font-medium text-gray-900 dark:text-white">{{ $user->email }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Email Address</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->email }}</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                        <span class="text-gray-600 dark:text-gray-400">Account Type</span>
-                        <span class="font-medium text-gray-900 dark:text-white">Administrator</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Account Type</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Administrator</span>
                     </div>
                     <div class="flex justify-between items-center py-2">
-                        <span class="text-gray-600 dark:text-gray-400">Member Since</span>
-                        <span class="font-medium text-gray-900 dark:text-white">{{ $user->created_at->format('F j, Y') }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Member Since</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->created_at->format('F j, Y') }}</span>
                     </div>
                 </div>
+            </div>
+
+            <!-- Quotation Automation Preferences -->
+            <div id="quotation-automation" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6"
+                 x-data="{
+                    savingQuotation: false,
+                    async saveQuotationSettings() {
+                        try {
+                            await window.showConfirmDialog('Save Quotation Settings?', 'Are you sure you want to update the quotation automation preferences?', 'Save', 'Cancel');
+                        } catch (e) { return; }
+                        this.savingQuotation = true;
+                        try {
+                            const form = this.$refs.quotationForm;
+                            const fd = new FormData(form);
+                            const res = await fetch('{{ route('admin.settings.update-quotation') }}', {
+                                method: 'POST',
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                body: fd
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                window.showSuccessDialog('Settings Saved', data.message);
+                            } else {
+                                window.showErrorDialog('Save Failed', data.message || 'Failed to save quotation settings.');
+                            }
+                        } catch (e) {
+                            window.showErrorDialog('Error', 'An error occurred. Please try again.');
+                        } finally { this.savingQuotation = false; }
+                    }
+                 }">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fa-solid fa-file-invoice mr-2 text-blue-500"></i>
+                    Quotation Automation Preferences
+                </h2>
+
+                <form x-ref="quotationForm" @submit.prevent>
+                <!-- Auto-send Toggle -->
+                <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">Automated Quotation Sending</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Automatically send quotation PDFs to clients upon submission</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="hidden" name="auto_send_enabled" value="0">
+                        <input type="checkbox" name="auto_send_enabled" value="1" {{ ($quotationSettings['auto_send_enabled'] ?? true) ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+
+                <!-- PDF Quotation Files per Service -->
+                <div class="mt-5">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">Quotation PDF Templates</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Upload PDF quotation templates for each cleaning service. These will be sent to clients automatically when enabled.</p>
+
+                    <div class="space-y-3">
+                        @php
+                            $services = [
+                                ['key' => 'deep_cleaning', 'label' => 'Deep Cleaning', 'icon' => 'fa-solid fa-broom'],
+                                ['key' => 'final_cleaning', 'label' => 'Final Cleaning', 'icon' => 'fa-solid fa-wand-magic-sparkles'],
+                                ['key' => 'daily_cleaning', 'label' => 'Daily Cleaning', 'icon' => 'fa-solid fa-house-chimney'],
+                                ['key' => 'snowout_cleaning', 'label' => 'Snowout Cleaning', 'icon' => 'fa-solid fa-snowflake'],
+                                ['key' => 'general_cleaning', 'label' => 'General Cleaning', 'icon' => 'fa-solid fa-spray-can-sparkles'],
+                                ['key' => 'hotel_cleaning', 'label' => 'Hotel Cleaning', 'icon' => 'fa-solid fa-hotel'],
+                            ];
+                        @endphp
+
+                        @foreach($services as $service)
+                            @php $currentPdf = $quotationSettings['pdf_' . $service['key']] ?? null; @endphp
+                            <div class="flex items-center justify-between py-3 border-b dark:border-gray-700/50 border-gray-500"
+                                 x-data="{ fileName: '{{ $currentPdf ? basename($currentPdf) : '' }}' }">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                        <i class="{{ $service['icon'] }} text-blue-500 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $service['label'] }}</p>
+                                        <p class="text-xs" :class="fileName ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'"
+                                           x-text="fileName || 'No file uploaded'"></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <label class="px-3 py-1.5 text-xs font-medium bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors cursor-pointer">
+                                        <i class="fa-solid fa-arrow-up-from-bracket mr-1"></i> Change
+                                        <input type="file" name="pdf_{{ $service['key'] }}" accept=".pdf" class="hidden"
+                                               @change="fileName = $event.target.files[0]?.name || fileName">
+                                    </label>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-5">
+                        <button type="button" @click="saveQuotationSettings()" :disabled="savingQuotation"
+                                class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50">
+                            <span x-show="!savingQuotation">Save Quotation Settings</span>
+                            <span x-show="savingQuotation"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving...</span>
+                        </button>
+                    </div>
+                </div>
+                </form>
             </div>
 
             <!-- Notification Preferences -->
@@ -112,7 +277,7 @@
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="font-medium text-gray-900 dark:text-white">Email Notifications</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Email Notifications</p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Receive email notifications for important updates</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
@@ -123,7 +288,7 @@
 
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="font-medium text-gray-900 dark:text-white">Task Reminders</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Task Reminders</p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Get reminded about upcoming tasks and deadlines</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
@@ -134,7 +299,7 @@
 
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="font-medium text-gray-900 dark:text-white">Weekly Reports</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Weekly Reports</p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Receive weekly summary of activities</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
@@ -157,7 +322,7 @@
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="font-medium text-gray-900 dark:text-white">Profile Visibility</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Profile Visibility</p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Make your profile visible to other users</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
@@ -168,7 +333,7 @@
 
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="font-medium text-gray-900 dark:text-white">Two-Factor Authentication</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Two-Factor Authentication</p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security to your account</p>
                         </div>
                         <button class="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors">
@@ -192,7 +357,7 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Language
                         </label>
-                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select class="w-full px-4 py-3 rounded-xl border border-gray-400 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)] transition-all duration-200">
                             <option>English</option>
                             <option>Spanish</option>
                             <option>French</option>
@@ -205,7 +370,7 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Timezone
                         </label>
-                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select class="w-full px-4 py-3 rounded-xl border border-gray-400 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)] transition-all duration-200">
                             <option>UTC+02:00 (Helsinki)</option>
                             <option>UTC+00:00 (London)</option>
                             <option>UTC-05:00 (New York)</option>
@@ -218,4 +383,5 @@
             </div>
         </div>
     </section>
+    </x-skeleton-page>
 </x-layouts.general-employer>

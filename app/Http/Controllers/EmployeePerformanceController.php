@@ -153,6 +153,11 @@ class EmployeePerformanceController extends Controller
             $courseStatuses = UserCourseProgress::where('user_id', $user->id)
                 ->pluck('status', 'course_id')
                 ->toArray();
+
+            $courseLastPositions = UserCourseProgress::where('user_id', $user->id)
+                ->pluck('last_position', 'course_id')
+                ->toArray();
+
             // Fetch training videos from database grouped by category
             $trainingVideos = TrainingVideo::where('is_active', true)
                 ->orderBy('category')
@@ -209,7 +214,67 @@ class EmployeePerformanceController extends Controller
         }
 
         if ($role === 'admin') {
-            return view('admin.development', compact('user'));
+            $allVideos = TrainingVideo::orderBy('category')
+                ->orderBy('sort_order')
+                ->get();
+
+            $publishedVideos = $allVideos->where('is_active', true);
+            $draftVideos = $allVideos->where('is_active', false);
+
+            $categoryInfo = [
+                'cleaning_techniques' => ['title' => 'Cleaning Techniques', 'color' => '#3b82f6'],
+                'body_safety' => ['title' => 'Body Safety', 'color' => '#10b981'],
+                'hazard_prevention' => ['title' => 'Hazard Prevention', 'color' => '#f59e0b'],
+                'chemical_safety' => ['title' => 'Chemical Safety', 'color' => '#8b5cf6'],
+            ];
+
+            // Get total employee count
+            $totalEmployees = DB::table('users')->where('role', 'employee')->count();
+
+            // Get watched counts per video
+            $watchedCounts = DB::table('employee_watched_videos')
+                ->select('training_video_id', DB::raw('COUNT(*) as count'))
+                ->groupBy('training_video_id')
+                ->pluck('count', 'training_video_id')
+                ->toArray();
+
+            // Format published courses for the list component
+            $publishedFormatted = $publishedVideos->map(function($video) use ($categoryInfo, $watchedCounts, $totalEmployees) {
+                $completedCount = $watchedCounts[$video->id] ?? 0;
+                $categoryTitle = $categoryInfo[$video->category]['title'] ?? ucfirst(str_replace('_', ' ', $video->category));
+                return [
+                    'service' => $video->title,
+                    'status' => $video->required ? 'Required' : 'Optional',
+                    'service_date' => $video->duration,
+                    'description' => $categoryTitle . ' · ' . $completedCount . '/' . $totalEmployees . ' completed',
+                    'action_url' => 'https://www.youtube.com/watch?v=' . $video->video_id,
+                    'action_label' => 'Preview',
+                    'menu_items' => []
+                ];
+            })->values()->toArray();
+
+            // Format draft courses for the list component
+            $draftsFormatted = $draftVideos->map(function($video) use ($categoryInfo) {
+                $categoryTitle = $categoryInfo[$video->category]['title'] ?? ucfirst(str_replace('_', ' ', $video->category));
+                return [
+                    'service' => $video->title,
+                    'status' => 'Draft',
+                    'service_date' => $video->duration,
+                    'description' => $categoryTitle . ($video->required ? ' · Required' : ''),
+                    'action_url' => 'https://www.youtube.com/watch?v=' . $video->video_id,
+                    'action_label' => 'Preview',
+                    'menu_items' => []
+                ];
+            })->values()->toArray();
+
+            return view('admin.development', [
+                'user' => $user,
+                'publishedVideos' => $publishedVideos,
+                'draftVideos' => $draftVideos,
+                'totalEmployees' => $totalEmployees,
+                'publishedFormatted' => $publishedFormatted,
+                'draftsFormatted' => $draftsFormatted,
+            ]);
         }
 
         return view('client.development', compact('user'));
@@ -415,8 +480,11 @@ class EmployeePerformanceController extends Controller
         $validated = $request->validate([
             'course_id' => 'required|integer|exists:training_videos,id',
             'progress' => 'required|integer|min:0|max:100',
-            'status' => 'required|in:pending,in_progress,completed',
+            'last_position' => 'required|integer|min:0',
         ]);
+
+        $progress = $validated['progress'];
+        $status = $progress >= 90 ? 'completed' : ($progress > 0 ? 'in_progress' : 'pending');
 
         UserCourseProgress::updateOrCreate(
             [
@@ -424,12 +492,13 @@ class EmployeePerformanceController extends Controller
                 'course_id' => $validated['course_id'],
             ],
             [
-                'progress' => $validated['progress'],
-                'status' => $validated['status'],
+                'progress' => $progress,
+                'last_position' => $validated['last_position'],
+                'status' => $status,
             ]
         );
 
-        // When completed, also mark in employee_watched_videos for the "Done" badge
+        // Mark as watched in employee_watched_videos when completed
         if ($validated['status'] === 'completed') {
             $exists = DB::table('employee_watched_videos')
                 ->where('user_id', Auth::id())

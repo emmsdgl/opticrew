@@ -131,12 +131,14 @@
 </head>
 
 <body class="font-normal font-sans">
-    <div class="flex flex-col md:flex-row min-h-screen max-h-screen w-full h-full">
+    <x-material-ui.page-loader />
+
+    <div class="flex flex-col md:flex-row min-h-screen w-full">
 
         <!-- INTERACTIVE PICTURE START -->
-        <div class="container-1 w-full md:w-1/2 flex flex-col justify-center m-12 mr-1">
+        <div class="container-1 hidden md:flex md:w-1/2 flex-col justify-center p-6 lg:p-10 xl:p-12">
             <div id="container-1-2"
-                class="p-6 h-full flex flex-col justify-center items-center rounded-3xl bg-cover bg-no-repeat bg-center relative overflow-hidden lg:block lg:flex md:block md:flex hidden"
+                class="p-6 lg:p-10 h-full flex flex-col justify-center items-center rounded-3xl bg-cover bg-no-repeat bg-center relative overflow-hidden"
                 style="background-image: url('{{ asset('images/backgrounds/login_bg2.svg') }}');">
 
                 {{-- Liquid Ether Overlay --}}
@@ -147,7 +149,7 @@
                     :auto-demo="true"
                 />
 
-                <h1 id="header1" class="text-5xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
+                <h1 id="header1" class="text-4xl lg:text-5xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
                     One-stop booking for
                     <span class="aurora-text font-sans italic font-extrabold" id="spotless_text">a spotless space</span>
                 </h1>
@@ -161,16 +163,16 @@
 
         <!-- LOG IN CONTENTS -->
         <div id="container-2"
-            class="w-full h-screen md:w-1/2 flex justify-center align-items-center items-center pt-12">
-            <form action="{{ route('login') }}" method="POST" class="space-y-4 w-1/2 h-fit">
+            class="w-full min-h-screen md:w-1/2 flex justify-center items-center px-6 py-12 md:px-12 lg:px-16 xl:px-24">
+            <form action="{{ route('login') }}" method="POST" class="space-y-4 w-full max-w-md h-fit">
                 @csrf
 
                 <div id="container-2-1" class="flex flex-col items-start my-12 w-full">
-                    <a href="{{ url('/') }}" class="absolute top-20 right-[29rem]">
-                        <img src="{{asset('/images/finnoys-text-logo-light.svg')}}" alt="Fin-noys"
-                            class="h-20 w-auto cursor-pointer">
+                    <a href="{{ url('/') }}" class="my-8">
+                        <img src="{{asset('/images/icons/finnoys-text-logo-light.svg')}}" alt="Fin-noys"
+                            class="h-3 md:h-6 w-auto cursor-pointer block">
                     </a>
-                    <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 mt-6 text-[#081032]">Log In</h1>
+                    <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 text-[#081032]">Log In</h1>
                     <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm mb-3">Welcome to
                         Fin-noys</p>
                 </div>

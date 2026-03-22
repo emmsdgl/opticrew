@@ -270,7 +270,7 @@
         </div>
 
         <!-- Acceptance Form -->
-        <form action="{{ route('terms.store') }}" method="POST">
+        <form action="{{ route('terms.store') }}" method="POST" id="accept-form">
             @csrf
 
             @if ($errors->any())
@@ -281,29 +281,36 @@
                 </div>
             @endif
 
-            <label class="flex items-start space-x-3 mb-6">
-                <input type="checkbox" name="terms" id="terms-checkbox" disabled>
-                <span class="text-sm text-gray-600 text-justify">
-                    I have read and understood the <strong>Terms & Conditions</strong> and <strong>Privacy Policy</strong>,
-                    and I agree to be bound by them.
-                </span>
-            </label>
-
-            <div class="flex items-center justify-between">
-                <button type="submit" id="btn-accept"
-                    class="px-8 py-3 bg-[#0077FF] text-white rounded-full font-semibold text-sm hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    disabled>
-                    Accept & Continue
-                </button>
+            <div class="relative mb-6 group/tip">
+                <label class="flex items-start space-x-3 cursor-pointer">
+                    <input type="checkbox" name="terms" id="terms-checkbox" disabled>
+                    <span class="text-sm text-gray-600 text-justify">
+                        I have read and understood the <strong>Terms & Conditions</strong> and <strong>Privacy Policy</strong>,
+                        and I agree to be bound by them.
+                    </span>
+                </label>
+                <div id="terms-tooltip" class="invisible group-hover/tip:visible opacity-0 group-hover/tip:opacity-100 transition-opacity duration-200 absolute left-1/2 -translate-x-1/2 -bottom-10 px-3 py-1.5 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap shadow-lg z-10">
+                    You have to read the Terms & Conditions and Privacy Policy to proceed
+                    <div class="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 bg-gray-800 rotate-45"></div>
+                </div>
             </div>
+
         </form>
 
-        <form action="{{ route('logout') }}" method="POST" class="mt-4 text-center">
-            @csrf
-            <button type="submit" class="text-sm text-gray-500 hover:text-gray-700 underline">
-                Log out
+        <div class="flex flex-row items-center justify-center gap-4 mt-6">
+            <button type="submit" form="accept-form" id="btn-accept"
+                class="px-8 py-3 bg-[#0077FF] text-white rounded-full font-semibold text-sm hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                disabled>
+                Accept & Continue
             </button>
-        </form>
+
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="px-8 py-3 border border-gray-300 text-gray-600 rounded-full font-semibold text-sm hover:bg-gray-100 transition-colors">
+                    Log out
+                </button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -314,6 +321,8 @@
             const checkbox = document.getElementById('terms-checkbox');
             if (termsRead && privacyRead) {
                 checkbox.disabled = false;
+                var tooltip = document.getElementById('terms-tooltip');
+                if (tooltip) tooltip.remove();
             }
         }
 

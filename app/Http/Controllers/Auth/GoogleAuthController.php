@@ -5,7 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Client;
+use App\Models\Quotation;
+use App\Models\QuotationSetting;
 use App\Models\UserActivityLog;
+use App\Mail\QuotationConfirmation;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -66,6 +70,10 @@ class GoogleAuthController extends Controller
 
         if ($purpose === 'recruitment') {
             return $this->handleRecruitmentCallback($googleUser);
+        }
+
+        if ($purpose === 'quotation') {
+            return $this->handleQuotationCallback($googleUser);
         }
 
         if ($purpose === 'link_account') {
@@ -262,6 +270,150 @@ class GoogleAuthController extends Controller
 
         return redirect($this->dashboardUrl($user->role))
             ->with('success', 'Your Google account has been linked successfully. You can now sign in with Google.');
+    }
+
+    /**
+     * Store quotation form data in session and redirect to Google OAuth.
+     */
+    public function quotationAuth(Request $request)
+    {
+        session([
+            'google_auth_purpose' => 'quotation',
+            'quotation_data' => $request->only([
+                'bookingType', 'serviceType', 'serviceDate', 'urgency',
+                'propertyType', 'floors', 'rooms', 'floorArea',
+                'region', 'city', 'postalCode', 'district',
+                'specialRequests', 'companyName',
+            ]),
+        ]);
+
+        return Socialite::driver('google')->redirect();
+    }
+
+    /**
+     * Fetch phone number from Google People API using the access token.
+     */
+    private function fetchGooglePhoneNumber($accessToken): ?string
+    {
+        try {
+            $response = \Illuminate\Support\Facades\Http::withToken($accessToken)
+                ->get('https://people.googleapis.com/v1/people/me', [
+                    'personFields' => 'phoneNumbers',
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $phones = $data['phoneNumbers'] ?? [];
+                if (!empty($phones)) {
+                    return $phones[0]['value'] ?? null;
+                }
+            }
+        } catch (\Exception $e) {
+            // Silent fail — phone is optional
+        }
+
+        return null;
+    }
+
+    /**
+     * Handle Google callback for Quotation submission.
+     */
+    private function handleQuotationCallback($googleUser)
+    {
+        $quotationData = session('quotation_data');
+        session()->forget(['google_auth_purpose', 'quotation_data']);
+
+        if (!$quotationData) {
+            return redirect()->route('quotation')
+                ->with('error', 'Quotation data was lost. Please try again.');
+        }
+
+        try {
+            // Fetch phone number from Google People API
+            $phoneNumber = $this->fetchGooglePhoneNumber($googleUser->token);
+
+            // Fallback: try existing user record in the system
+            if (!$phoneNumber) {
+                $existingUser = User::where('google_id', $googleUser->getId())
+                    ->orWhere('email', $googleUser->getEmail())
+                    ->first();
+
+                if ($existingUser) {
+                    $client = Client::where('user_id', $existingUser->id)->first();
+                    if ($client && $client->phone_number) {
+                        $phoneNumber = $client->phone_number;
+                    }
+                }
+            }
+
+            // Map service type to its key for PDF lookup
+            $serviceType = $quotationData['serviceType'] ?? '';
+            $serviceKeyMap = [
+                'Deep Cleaning' => 'deep_cleaning',
+                'Final Cleaning' => 'final_cleaning',
+                'Daily Cleaning' => 'daily_cleaning',
+                'Snowout Cleaning' => 'snowout_cleaning',
+                'General Cleaning' => 'general_cleaning',
+                'Hotel Cleaning' => 'hotel_cleaning',
+            ];
+
+            $quotation = Quotation::create([
+                'booking_type'       => $quotationData['bookingType'] ?? 'personal',
+                'cleaning_services'  => $serviceType ? [$serviceType] : null,
+                'date_of_service'    => !empty($quotationData['serviceDate']) ? $quotationData['serviceDate'] : null,
+                'type_of_urgency'    => $quotationData['urgency'] ?? null,
+
+                'property_type'      => $quotationData['propertyType'] ?? null,
+                'floors'             => $quotationData['floors'] ?? 1,
+                'rooms'              => $quotationData['rooms'] ?? 1,
+                'floor_area'         => !empty($quotationData['floorArea']) ? $quotationData['floorArea'] : null,
+                'area_unit'          => 'sqm',
+
+                'postal_code'        => $quotationData['postalCode'] ?? null,
+                'city'               => $quotationData['city'] ?? null,
+                'district'           => $quotationData['district'] ?? null,
+
+                'company_name'       => !empty($quotationData['companyName']) ? $quotationData['companyName'] : null,
+                'client_name'        => $googleUser->getName(),
+                'phone_number'       => $phoneNumber ?: '—',
+                'email'              => $googleUser->getEmail(),
+
+                'status'             => 'pending_review',
+            ]);
+
+            // Send confirmation email with PDF attachment if auto-send is enabled
+            $autoSendEnabled = QuotationSetting::isAutoSendEnabled();
+            \Log::info('Quotation email check', [
+                'auto_send_enabled' => $autoSendEnabled,
+                'service_type' => $serviceType,
+                'email' => $googleUser->getEmail(),
+            ]);
+
+            if ($autoSendEnabled) {
+                $serviceKey = $serviceKeyMap[$serviceType] ?? null;
+                $pdfPath = $serviceKey ? QuotationSetting::getPdfPath($serviceKey) : null;
+
+                \Log::info('Sending quotation email', [
+                    'service_key' => $serviceKey,
+                    'pdf_path' => $pdfPath,
+                    'to' => $googleUser->getEmail(),
+                ]);
+
+                try {
+                    Mail::to($googleUser->getEmail())
+                        ->send(new QuotationConfirmation($quotation, $pdfPath));
+                    \Log::info('Quotation email sent successfully to ' . $googleUser->getEmail());
+                } catch (\Exception $mailError) {
+                    \Log::error('Failed to send quotation confirmation email: ' . $mailError->getMessage());
+                }
+            }
+
+            return redirect()->route('quotation')
+                ->with('success', 'Your quotation request has been submitted successfully! We will contact you at ' . $googleUser->getEmail() . '.');
+        } catch (\Exception $e) {
+            return redirect()->route('quotation')
+                ->with('error', 'Failed to submit quotation. Please try again. ' . $e->getMessage());
+        }
     }
 
     /**

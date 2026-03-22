@@ -1,4 +1,5 @@
 <x-layouts.general-client :title="'Client Dashboard'">
+    <x-skeleton-page :preset="'client-dashboard'">
     <!-- Filter/Sort Script - Define before Alpine initializes -->
     <script>
     // Sort function for appointments on dashboard
@@ -307,7 +308,7 @@
                             'status_display' => ucfirst($appointment->status),
                             'service_date' => $appointment->service_date ? \Carbon\Carbon::parse($appointment->service_date)->format('F j, Y') : 'N/A',
                             'service_date_raw' => $appointment->service_date ? \Carbon\Carbon::parse($appointment->service_date)->format('Y-m-d') : '',
-                            'service_time' => $appointment->service_time ? \Carbon\Carbon::parse($appointment->service_time)->format('g:i A') : 'N/A',
+                            'service_time' => $appointment->formatted_service_time ?? 'N/A',
                             'action_label' => 'View Details',
                             'action_onclick' => 'viewDetails(' . $appointment->id . ')',
                             'menu_items' => []
@@ -547,4 +548,5 @@
             'align' => 'start',
         ],
     ])" />
+    </x-skeleton-page>
 </x-layouts.general-client>

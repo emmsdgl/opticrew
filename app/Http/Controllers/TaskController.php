@@ -137,9 +137,19 @@ class TaskController extends Controller
                 }
             }
 
+            // Determine color based on service type
+            $serviceColorMap = [
+                'Deep Cleaning'       => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                'Daily Room Cleaning' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                'Snowout Cleaning'    => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+                'General Cleaning'    => 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+                'Hotel Cleaning'      => 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+            ];
+            $eventColor = $serviceColorMap[$pureServiceType] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+
             $events[$dateKey][] = [
                 'title' => $clientName . ' - ' . $task->task_description,
-                'color' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                'color' => $eventColor,
                 'status' => $task->status,
                 'serviceType' => $task->task_description, // Full description for backward compatibility
                 'pureServiceType' => $pureServiceType, // ✅ Just the service type

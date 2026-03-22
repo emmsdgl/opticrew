@@ -30,8 +30,8 @@
 
     $statusConfig = [
         'pending'              => ['label' => 'Pending',             'color' => 'yellow', 'icon' => 'fa-clock'],
-        'reviewed'             => ['label' => 'Under Review',        'color' => 'blue',   'icon' => 'fa-eye'],
-        'interview_scheduled'  => ['label' => 'Interview Scheduled', 'color' => 'purple', 'icon' => 'fa-calendar-check'],
+        'reviewed'             => ['label' => 'Reviewing',           'color' => 'blue',   'icon' => 'fa-eye'],
+        'interview_scheduled'  => ['label' => 'Interview',           'color' => 'purple', 'icon' => 'fa-calendar-check'],
         'hired'                => ['label' => 'Hired',               'color' => 'green',  'icon' => 'fa-circle-check'],
         'rejected'             => ['label' => 'Not Selected',        'color' => 'red',    'icon' => 'fa-circle-xmark'],
         'withdrawn'            => ['label' => 'Withdrawn',            'color' => 'gray',   'icon' => 'fa-rotate-left'],
@@ -210,7 +210,7 @@
                                 ['LinkedIn Profile',  $pv('linkedin')],
                             ] as [$lbl, $val])
                             <div class="min-w-0">
-                                <p class="text-[9px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">{{ $lbl }}</p>
+                                <p class="text-[9px] font-semibold text-gray-400 dark:text-gray-500 truncate">{{ $lbl }}</p>
                                 <p class="text-[11px] text-gray-700 dark:text-gray-300 truncate {{ $val === '—' ? 'opacity-40' : '' }}">{{ $val }}</p>
                             </div>
                             @endforeach
@@ -228,7 +228,7 @@
                                 ['Languages Spoken', $pv('languages')],
                             ] as [$lbl, $val])
                             <div class="min-w-0">
-                                <p class="text-[9px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">{{ $lbl }}</p>
+                                <p class="text-[9px] font-semibold text-gray-400 dark:text-gray-500  truncate">{{ $lbl }}</p>
                                 <p class="text-[11px] text-gray-700 dark:text-gray-300 truncate {{ $val === '—' ? 'opacity-40' : '' }}">{{ $val }}</p>
                             </div>
                             @endforeach

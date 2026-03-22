@@ -56,7 +56,7 @@
                         @php
                             $isFirst = $loop->parent->first && $loop->first;
                             $isWatched = in_array($video->id, $watchedVideoIds);
-                            $status = $isWatched ? 'completed' : 'pending';
+                            $status = $courseStatuses[$video->id] ?? ($isWatched ? 'completed' : 'pending');
                         @endphp
                         <div class="course-item cursor-pointer group {{ $isFirst ? 'active' : '' }}"
                             data-course-id="{{ $video->id }}"
@@ -74,9 +74,13 @@
                                                 Required
                                             </span>
                                         @endif
-                                        @if($isWatched)
+                                        @if($status === 'completed')
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
                                                 <i class="fas fa-check mr-1"></i>Done
+                                            </span>
+                                        @elseif($status === 'in_progress')
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                                <i class="fas fa-play mr-1 text-[10px]"></i>In Progress
                                             </span>
                                         @endif
                                     </div>
@@ -260,6 +264,22 @@
         <script src="https://www.youtube.com/iframe_api"></script>
         <script>
             // Courses loaded from database
+<<<<<<< HEAD
+            const courses = {
+                @foreach($trainingVideos as $video)
+                {{ $video->id }}: {
+                    title: @json($video->title),
+                    description: @json($video->description),
+                    category: @json($video->category),
+                    duration: @json($video->duration),
+                    required: {{ $video->required ? 'true' : 'false' }},
+                    status: @json($courseStatuses[$video->id] ?? (in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending')),
+                    savedProgress: {{ $courseProgress[$video->id] ?? 0 }},
+                    lastPosition: {{ $courseLastPositions[$video->id] ?? 0 }},
+                    videoId: @json($video->video_id)
+                },
+                @endforeach
+=======
             const courses = {};
             @foreach($trainingVideos as $video)
             courses[{{ $video->id }}] = {
@@ -272,22 +292,9 @@
                 platform: @json($video->platform ?? 'youtube'),
                 videoId: @json($video->video_id ?? ''),
                 videoPath: @json($video->video_path ? asset('storage/' . $video->video_path) : ''),
+>>>>>>> 22e73c40d8ca7ff6d4ea2c0949804bdf13e0a151
             };
             @endforeach
-
-            // Load saved progress from server
-            const savedProgress = @json($courseProgress ?? new \stdClass);
-            const savedStatuses = @json($courseStatuses ?? new \stdClass);
-
-            // Apply saved progress to courses
-            Object.keys(courses).forEach(id => {
-                if (savedStatuses[id]) {
-                    courses[id].status = savedStatuses[id];
-                }
-                if (savedProgress[id] !== undefined) {
-                    courses[id].savedProgress = parseInt(savedProgress[id]);
-                }
-            });
 
             let currentFilter = 'all';
             let player = null;
@@ -301,9 +308,10 @@
             let saveTimeout = null;
 
             // Save progress to server
-            function saveProgressToServer(courseId, progress, status) {
+            function saveProgressToServer(courseId, progress) {
                 clearTimeout(saveTimeout);
                 saveTimeout = setTimeout(() => {
+                    const lastPosition = (player && player.getCurrentTime) ? Math.floor(player.getCurrentTime()) : 0;
                     fetch('{{ route("employee.development.save-progress") }}', {
                         method: 'POST',
                         headers: {
@@ -314,7 +322,7 @@
                         body: JSON.stringify({
                             course_id: courseId,
                             progress: Math.min(100, Math.max(0, progress)),
-                            status: status,
+                            last_position: lastPosition,
                         })
                     }).catch(e => console.error('Failed to save progress:', e));
                 }, 1000);
@@ -325,6 +333,7 @@
                 if (currentCourseId && courses[currentCourseId]) {
                     const progress = calculateWatchedPercentage();
                     const status = courses[currentCourseId].status;
+                    const lastPosition = (player && player.getCurrentTime) ? Math.floor(player.getCurrentTime()) : 0;
                     if (status !== 'pending') {
                         navigator.sendBeacon(
                             '{{ route("employee.development.save-progress") }}',
@@ -332,7 +341,7 @@
                                 _token: document.querySelector('meta[name="csrf-token"]').content,
                                 course_id: currentCourseId,
                                 progress: Math.min(100, Math.max(0, progress)),
-                                status: status,
+                                last_position: lastPosition,
                             })], { type: 'application/json' })
                         );
                     }
@@ -501,7 +510,17 @@
 
             function onPlayerReady(event) {
                 videoDuration = player.getDuration();
-                updateProgressUI(0, videoDuration, 0);
+                const course = courses[currentCourseId];
+
+                // Restore saved progress and position
+                if (course && course.lastPosition > 0 && course.status !== 'completed') {
+                    player.seekTo(course.lastPosition, true);
+                    updateProgressUI(course.lastPosition, videoDuration, course.savedProgress || 0);
+                } else if (course && course.status === 'completed') {
+                    updateProgressUI(0, videoDuration, 100);
+                } else {
+                    updateProgressUI(0, videoDuration, 0);
+                }
             }
 
             function onPlayerStateChange(event) {
@@ -514,7 +533,7 @@
                     if (courses[currentCourseId].status === 'pending') {
                         courses[currentCourseId].status = 'in_progress';
                         updateCourseStatusTag('in_progress');
-                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), 'in_progress');
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage());
 
                         // Update sidebar course item
                         const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
@@ -558,7 +577,7 @@
                         // Save to server every 10 seconds
                         saveCounter++;
                         if (saveCounter % 10 === 0) {
-                            saveProgressToServer(currentCourseId, watchedPercentage, courses[currentCourseId].status);
+                            saveProgressToServer(currentCourseId, watchedPercentage);
                         }
 
                         // Check for completion
@@ -576,7 +595,7 @@
 
                     // Save current progress when tracking stops
                     if (currentCourseId && courses[currentCourseId] && courses[currentCourseId].status !== 'pending') {
-                        saveProgressToServer(currentCourseId, calculateWatchedPercentage(), courses[currentCourseId].status);
+                        saveProgressToServer(currentCourseId, calculateWatchedPercentage());
                     }
                 }
             }
@@ -652,7 +671,7 @@
                     }
 
                     // Save completion to database
-                    saveProgressToServer(currentCourseId, 100, 'completed');
+                    saveProgressToServer(currentCourseId, 100);
                 }
             }
 

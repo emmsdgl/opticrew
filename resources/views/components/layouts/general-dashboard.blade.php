@@ -40,6 +40,32 @@
     @stack('styles')
 </head>
 <style>
+    /* Skeleton shimmer animation */
+    @keyframes skeleton-shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+    .skeleton-shimmer {
+        background: linear-gradient(
+            90deg,
+            rgba(0,0,0,0) 0%,
+            rgba(255,255,255,0.08) 50%,
+            rgba(0,0,0,0) 100%
+        );
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.8s ease-in-out infinite;
+    }
+    :is(.dark) .skeleton-shimmer {
+        background: linear-gradient(
+            90deg,
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0.06) 50%,
+            rgba(255,255,255,0) 100%
+        );
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.8s ease-in-out infinite;
+    }
+
     #page-loader {
         transition: opacity 0.4s ease;
     }
@@ -128,6 +154,7 @@
 </style>
 
 <body class="bg-white text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
+    <x-material-ui.page-loader />
     {{$sidebar}}
 
     <!-- MAIN CONTENT -->
@@ -367,6 +394,9 @@
     @livewireScripts
     <x-global-dialogs />
     <x-click-spark />
+    @auth
+        <x-material-ui.sonner />
+    @endauth
 </body>
 
 </html>

@@ -6,9 +6,29 @@
     'placeholdericon' => '',
     'required' => false,
     'xModel' => null,
+    'eventName' => 'service-selected',
+    'dropDirection' => 'up',
 ])
 
-<div class="space-y-3" x-data="{ open: false, selected: null }">
+<div class="space-y-3" x-data="{
+        open: false,
+        selected: null,
+        positionPanel() {
+            this.$nextTick(() => {
+                const rect = this.$refs.svcBtn.getBoundingClientRect();
+                const panel = this.$refs.svcPanel;
+                if (!panel) return;
+                const panelH = panel.offsetHeight || 300;
+                if (this.$refs.svcBtn.dataset.dropBelow === 'true') {
+                    panel.style.top = (rect.bottom + 4) + 'px';
+                } else {
+                    panel.style.top = (rect.top - panelH - 4) + 'px';
+                }
+                panel.style.left = rect.left + 'px';
+                panel.style.width = rect.width + 'px';
+            });
+        }
+    }" x-effect="open ? $dispatch('dropdown-opened') : $dispatch('dropdown-closed')">
     <label class="block text-sm text-gray-700 dark:text-gray-300">
         {{ $label }}
         @if($required)
@@ -19,8 +39,10 @@
     <div class="relative">
         <!-- Dropdown Button -->
         <button
+            x-ref="svcBtn"
+            data-drop-below="{{ $dropDirection === 'down' ? 'true' : 'false' }}"
             type="button"
-            @click="open = !open"
+            @click="open = !open; if (open) $nextTick(() => positionPanel())"
             class="w-full p-4 border  rounded-xl transition-all duration-300 bg-white dark:bg-gray-900
                    border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500
                    focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-600"
@@ -28,10 +50,10 @@
         >
             <div class="flex items-center justify-between gap-3">
                 <div class="flex items-start gap-3 flex-1 text-left">
-                    <i class="{{$placeholdericon}} text-[#081032] dark:text-blue-400 text-lg mt-1"
+                    <i class="{{$placeholdericon}} text-[#081032] dark:text-blue-400 text-lg mt-1 px-2"
                        x-show="!selected"></i>
                     <i :class="selected?.icon || 'fa-solid fa-triangle-exclamation'"
-                       class="text-[#081032] dark:text-blue-400 text-lg mt-1"
+                       class="text-[#081032] dark:text-blue-400 text-lg mt-1 px-2"
                        x-show="selected"></i>
                     <div class="flex-1">
                         <h3 class="text-sm text-gray-900 dark:text-white mb-1"
@@ -52,23 +74,24 @@
         <!-- Hidden Input -->
         <input type="hidden" name="{{ $name }}" :value="selected?.value" {{ $xModel ? "x-model=\"$xModel\"" : '' }}>
 
-        <!-- Dropdown Menu -->
+        <!-- Dropdown Menu (fixed, floats above modal) -->
         <div
             x-show="open"
+            x-ref="svcPanel"
             @click.away="open = false"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 transform scale-95"
-            x-transition:enter-end="opacity-100 transform scale-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="opacity-100 transform scale-100"
-            x-transition:leave-end="opacity-0 transform scale-95"
-            class="absolute z-10 w-full mt-2 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden"
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="fixed z-[10000] bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-2xl overflow-hidden"
             style="display: none;"
         >
             <div class="max-h-96 overflow-y-auto">
                 @foreach($options as $index => $option)
                     <div
-                        @click="selected = {{ json_encode($option) }}; open = false"
+                        @click="selected = {{ json_encode($option) }}; open = false; $dispatch('{{ $eventName }}', { value: selected.value })"
                         class="p-4 cursor-pointer transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20
                                border-b border-gray-100 dark:border-gray-600 last:border-b-0"
                         :class="{ 'bg-blue-50 dark:bg-blue-900/20': selected?.value === '{{ $option['value'] }}' }"
@@ -77,7 +100,7 @@
                             <div class="flex items-start gap-3 flex-1">
                                 <i class="{{ $option['icon'] ?? '' }} text-[#081032] dark:text-blue-400 text-base mt-1"></i>
                                 <div>
-                                    <h3 class="font-semibold text-gray-900 dark:text-white mb-1">
+                                    <h3 class="text-gray-900 dark:text-white mb-1 text-sm">
                                         {{ $option['title'] }}
                                     </h3>
                                     <p class="text-xs text-gray-600 dark:text-gray-400">

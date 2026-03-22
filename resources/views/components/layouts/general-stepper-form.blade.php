@@ -213,48 +213,11 @@ if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && w
                 </div>
             </div>
 
-            <!-- Enhanced Stepper Component -->
-            <div x-data="{ 
-                steps: @js($steps), 
-                current: @js($currentStep), 
-                progressWidth() {
-                    if (this.steps.length <= 1) return '0%';
-                    const completedSteps = this.current - 1;
-                    return (completedSteps / (this.steps.length - 1)) * 100 + '%';
-                },
-                getStepClass(index) {
-                    const stepNum = index + 1;
-                    if (stepNum < this.current) return 'completed';
-                    if (stepNum === this.current) return 'active';
-                    return 'inactive';
-                }
-            }"
-            x-init="window.addEventListener('update-stepper', (e) => { current = e.detail.step; })"
-            class="flex-1 max-w-4xl mx-auto px-12 hidden md:block">
-                
-                <div class="stepper-container py-4">
-                    <!-- Progress Line Container -->
-                    <div class="stepper-line-container">
-                        <div class="stepper-line"></div>
-                        <div class="stepper-progress" :style="{ width: progressWidth() }"></div>
-                    </div>
-
-                    @foreach ($steps as $index => $step)
-                        <div class="step-item">
-                            <!-- Circle -->
-                            <div class="step-circle"
-                                :class="getStepClass({{ $index }})">
-                                {{ $index + 1 }}
-                            </div>
-
-                            <!-- Label -->
-                            <span class="step-label"
-                                :class="getStepClass({{ $index }})">
-                                {{ $step }}
-                            </span>
-                        </div>
-                    @endforeach
-                </div>
+            <!-- Stepper Component -->
+            <div class="flex-1 max-w-2xl mx-auto px-8 hidden md:block py-4"
+                 x-data="{ current: @js($currentStep) }"
+                 x-init="window.addEventListener('update-stepper', (e) => { current = e.detail.step; })">
+                <x-material-ui.stepper :steps="$steps" model="current" />
             </div>
             
             <!-- Theme Toggle Button -->
@@ -373,6 +336,7 @@ if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && w
 @livewireScripts
 
 
+<x-global-dialogs />
 </body>
 
 </html>

@@ -1,5 +1,6 @@
 <x-layouts.general-employer :title="'Attendance'">
 
+    <x-skeleton-page :preset="'stats-table'">
     <section role="status" class="w-full flex flex-col lg:flex-col gap-4 p-4 md:p-6">
 
         <!-- Success/Error Messages -->
@@ -161,6 +162,18 @@
 
                 async approveRequest() {
                     if (this.isSubmitting || !this.selectedRequest) return;
+
+                    try {
+                        await window.showConfirmDialog(
+                            'Approve Request',
+                            `Are you sure you want to approve this ${this.selectedRequest.type || 'leave'} request from ${this.selectedRequest.employee_name || 'this employee'}?`,
+                            'Approve',
+                            'Cancel'
+                        );
+                    } catch (e) {
+                        return;
+                    }
+
                     this.isSubmitting = true;
 
                     try {
@@ -177,9 +190,10 @@
                         const data = await response.json();
                         if (data.success) {
                             this.closeRequestModal();
-                            window.location.reload();
+                            window.showSuccessDialog('Request Approved', data.message || 'The request has been approved successfully.', 'OK');
+                            setTimeout(() => window.location.reload(), 1500);
                         } else {
-                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve request');
+                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve request.');
                         }
                     } catch (error) {
                         window.showErrorDialog('Approval Failed', 'An error occurred. Please try again.');
@@ -199,13 +213,25 @@
                 async rejectRequest() {
                     if (this.isSubmitting || !this.selectedRequest) return;
                     if (!this.rejectionReason) {
-                        window.showErrorDialog('Validation Error', 'Please select a reason for rejection');
+                        window.showErrorDialog('Validation Error', 'Please select a reason for rejection.');
                         return;
                     }
-                    this.isSubmitting = true;
 
                     // Combine rejection reason with additional notes
                     const fullNotes = this.rejectionReason + (this.adminNotes ? ': ' + this.adminNotes : '');
+
+                    try {
+                        await window.showConfirmDialog(
+                            'Reject Request',
+                            `Are you sure you want to reject this request? Reason: "${this.rejectionReason}"`,
+                            'Reject',
+                            'Cancel'
+                        );
+                    } catch (e) {
+                        return;
+                    }
+
+                    this.isSubmitting = true;
 
                     try {
                         const response = await fetch(`/admin/employee-requests/${this.selectedRequest.id}/reject`, {
@@ -221,9 +247,10 @@
                         const data = await response.json();
                         if (data.success) {
                             this.closeRequestModal();
-                            window.location.reload();
+                            window.showSuccessDialog('Request Rejected', data.message || 'The request has been rejected.', 'OK');
+                            setTimeout(() => window.location.reload(), 1500);
                         } else {
-                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject request');
+                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject request.');
                         }
                     } catch (error) {
                         window.showErrorDialog('Rejection Failed', 'An error occurred. Please try again.');
@@ -408,8 +435,8 @@
                                             <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
                                                 <span class="text-sm text-gray-500 dark:text-gray-400">Proof Document</span>
                                                 <a :href="'/storage/' + selectedRequest.proofDocument" target="_blank"
-                                                    class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
-                                                    View Document
+                                                    class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium max-w-[180px] truncate inline-block"
+                                                    x-text="selectedRequest.proofDocument.split('/').pop()">
                                                 </a>
                                             </div>
                                         </template>
@@ -616,5 +643,6 @@
         </div>
 
     </section>
+    </x-skeleton-page>
 
 </x-layouts.general-employer>

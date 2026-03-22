@@ -40,6 +40,23 @@ return [
         'select' => 'Language',
     ],
 
+    // Footer
+    'footer' => [
+        'description' => 'The latest updates, discounts, and services, accessed in your own personalized account.',
+        'consent' => 'By creating an account, you agree to with our Privacy Policy and provide consent to receive updates from Fin-noys.',
+        'about' => 'About',
+        'finnoys' => 'Fin-noys',
+        'careers' => 'Careers in Fin-noys',
+        'castcrew' => 'CastCrew',
+        'support' => 'Support',
+        'contact' => 'Contact',
+        'documentation' => 'Documentation',
+        'legal' => 'Legal',
+        'terms' => 'Terms & Conditions',
+        'privacy' => 'Privacy Policy',
+        'copyright' => '© 2025 Fin-noys-CastCrew All rights reserved.',
+    ],
+
     // Common
     'close' => 'Close',
     'open' => 'Open',

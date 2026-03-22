@@ -1036,30 +1036,51 @@ class NotificationService
     }
 
     /**
-     * Scenario #5: Notify admins when a potential duplicate applicant is detected (same phone, different email).
+     * Notify all admins when an application status is changed by an admin.
      */
-    public function notifyAdminsDuplicateApplicant($newApplication, $existingApplication, string $phone): Collection
+    public function notifyAdminsApplicationStatusChanged($application, string $oldStatus, string $newStatus, string $changedBy): Collection
     {
         $admins = User::where('role', 'admin')->get();
 
-        $existingProfile = json_decode($existingApplication->applicant_profile, true) ?? [];
-        $existingName = trim(($existingProfile['first_name'] ?? '') . ' ' . ($existingProfile['last_name'] ?? '')) ?: $existingApplication->email;
+        $labels = [
+            'pending' => 'Pending',
+            'reviewed' => 'Reviewing',
+            'interview_scheduled' => 'Interview',
+            'hired' => 'Hired',
+            'rejected' => 'Rejected',
+        ];
+
+        $newLabel = $labels[$newStatus] ?? ucfirst($newStatus);
+        $oldLabel = $labels[$oldStatus] ?? ucfirst($oldStatus);
+
+        $colors = [
+            'reviewed' => 'blue',
+            'interview_scheduled' => 'purple',
+            'hired' => 'green',
+            'rejected' => 'red',
+        ];
 
         return $this->createMany(
             $admins,
-            Notification::TYPE_DUPLICATE_APPLICANT,
-            'Potential Duplicate Found',
-            "New applicant {$newApplication->email} has the same phone number ({$phone}) as existing applicant {$existingName} ({$existingApplication->email}). Please review and choose to Merge or Ignore.",
+            Notification::TYPE_APPLICATION_STATUS_CHANGED,
+            "Application Status: {$newLabel}",
+            "{$changedBy} updated {$application->email}'s application for {$application->job_title} from {$oldLabel} to {$newLabel}.",
             [
-                'new_application_id' => $newApplication->id,
-                'existing_application_id' => $existingApplication->id,
-                'phone' => $phone,
-                'new_email' => $newApplication->email,
-                'existing_email' => $existingApplication->email,
-                'icon' => 'users',
-                'color' => 'yellow',
+                'application_id' => $application->id,
+                'job_title' => $application->job_title,
+                'email' => $application->email,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'icon' => match($newStatus) {
+                    'reviewed' => 'eye',
+                    'interview_scheduled' => 'calendar-check',
+                    'hired' => 'circle-check',
+                    'rejected' => 'circle-xmark',
+                    default => 'bell',
+                },
+                'color' => $colors[$newStatus] ?? 'gray',
                 'action_url' => route('admin.recruitment.index'),
-                'action_text' => 'Review Duplicates'
+                'action_text' => 'View Applications'
             ]
         );
     }

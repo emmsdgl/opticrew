@@ -695,6 +695,14 @@
                 this.visibleCount = count;
                 const sidebarEl = document.getElementById('sidebar-visible-count');
                 if (sidebarEl) sidebarEl.textContent = count;
+
+                // Show/hide filtered empty state
+                const scrollEl = document.querySelector('.avp-scroll');
+                const emptyEl = document.getElementById('avp-filtered-empty');
+                if (scrollEl && emptyEl) {
+                    scrollEl.style.display = count === 0 ? 'none' : '';
+                    emptyEl.classList.toggle('hidden', count > 0);
+                }
             },
 
             resetFilters() {

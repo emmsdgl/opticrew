@@ -1,4 +1,5 @@
 <x-layouts.general-employer :title="'Analytics'">
+    <x-skeleton-page :preset="'two-panel'">
     <div class="flex flex-col lg:flex-row md:gap-4 w-full">
         <!-- Left Panel - Main Content -->
         <div class="flex flex-col gap-4 md:gap-6 w-full rounded-lg p-3 h-fit lg:w-2/3 md:p-3">
@@ -23,7 +24,7 @@
                          x-transition:leave="transition ease-in duration-75"
                          x-transition:leave-start="transform opacity-100 scale-100"
                          x-transition:leave-end="transform opacity-0 scale-95"
-                         class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                         class="absolute right-0 z-10 mt-2 w-72 origin-top-right rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                          style="display: none;">
                         <div class="py-1">
                             <!-- View Reports Dashboard -->
@@ -42,11 +43,11 @@
                                 <span>Client Revenue Report</span>
                             </a>
 
-                            <a href="{{ route('admin.reports.clients.export', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')]) }}"
-                               class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <button type="button" onclick="confirmExport('Export Client Report', 'Are you sure you want to export the Client Revenue Report as CSV?', '{{ route('admin.reports.clients.export', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')]) }}')"
+                               class="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <i class="fi fi-rr-download text-green-600 dark:text-green-400"></i>
                                 <span>Export Client Report (CSV)</span>
-                            </a>
+                            </button>
 
                             <div class="border-t border-gray-200 dark:border-gray-700"></div>
 
@@ -57,11 +58,11 @@
                                 <span>Employee Payroll Report</span>
                             </a>
 
-                            <a href="{{ route('admin.reports.payroll.export', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')]) }}"
-                               class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <button type="button" onclick="confirmExport('Export Payroll Report', 'Are you sure you want to export the Employee Payroll Report as CSV?', '{{ route('admin.reports.payroll.export', ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')]) }}')"
+                               class="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <i class="fi fi-rr-download text-green-600 dark:text-green-400"></i>
                                 <span>Export Payroll Report (CSV)</span>
-                            </a>
+                            </button>
 
                             <div class="border-t border-gray-200 dark:border-gray-700"></div>
 
@@ -229,10 +230,24 @@
             @endif
         </div>
     </div>
+    </x-skeleton-page>
 </x-layouts.general-employer>
 
 @push('scripts')
 <script>
+// Export confirmation
+async function confirmExport(title, message, url) {
+    try {
+        await window.showConfirmDialog(title, message, 'Export', 'Cancel');
+    } catch (e) {
+        return;
+    }
+    window.location.href = url;
+    setTimeout(() => {
+        window.showSuccessDialog('Export Started', 'Your report is being downloaded.');
+    }, 500);
+}
+
 // Analytics Filter Functionality
 (function() {
     // Store all data for dynamic updates

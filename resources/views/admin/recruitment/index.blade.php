@@ -1,12 +1,14 @@
 <x-layouts.general-employer :title="'Job Applications'">
+    <x-skeleton-page :preset="'recruitment'">
     <section role="status" class="w-full flex flex-col lg:flex-col gap-4 py-6">
         <!-- Header -->
-        <div class="flex flex-col gap-2 mb-2">
+        <div class="flex flex-col gap-2 mb-2 px-8">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Job Applications</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400">View and manage job applications from candidates</p>
         </div>
 
         <!-- Stats Cards -->
+        <div class="stat-cards py-10">
         <x-employer-components.stats-cards :stats="[
             ['label' => 'Pending', 'value' => $applications->where('status', 'pending')->count(), 'icon' => 'fi fi-rr-clock', 'iconColor' => '#eab308'],
             ['label' => 'Reviewed', 'value' => $applications->where('status', 'reviewed')->count(), 'icon' => 'fi fi-rr-eye', 'iconColor' => '#3b82f6'],
@@ -14,6 +16,7 @@
             ['label' => 'Hired', 'value' => $applications->where('status', 'hired')->count(), 'icon' => 'fi fi-rr-check-circle', 'iconColor' => '#22c55e'],
             ['label' => 'Total Applications', 'value' => $applications->total(), 'icon' => 'fi fi-rr-document', 'iconColor' => '#6b7280'],
         ]" />
+        </div>
 
         <!-- Applications Section Header with Filters -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 my-4 mx-4">
@@ -89,45 +92,26 @@
 
             <!-- Confirm Dialog for Applications -->
             <template x-teleport="body">
-                <div x-show="showConfirm"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 z-[70] flex items-center justify-center p-4"
-                     style="display: none;">
-                    <div class="absolute inset-0 bg-black/30 dark:bg-black/50" @click="cancelConfirm()"></div>
-                    <div x-show="showConfirm"
-                         x-transition:enter="transition ease-out duration-300 delay-100"
-                         x-transition:enter-start="opacity-0 scale-90 translate-y-4"
-                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-200"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-90"
-                         class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-600 shadow-2xl overflow-hidden p-3">
-                        <div class="px-8 pt-10 pb-8 flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-400 dark:border-amber-500 flex items-center justify-center mb-6">
-                                <svg class="w-7 h-7 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2" x-text="confirmTitle"></h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" x-text="confirmMessage"></p>
-                        </div>
-                        <div class="px-8 pb-8 flex gap-3">
-                            <button @click="cancelConfirm()" type="button"
-                                class="w-full px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 font-semibold text-sm rounded-xl transition-all duration-200">
-                                Cancel
-                            </button>
-                            <button @click="confirmAction()" type="button"
-                                class="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold text-sm rounded-xl transition-all duration-200">
-                                Delete
-                            </button>
-                        </div>
+            <div x-show="showConfirm" style="display:none"
+                class="fixed inset-0 z-[120] flex items-center justify-center p-4"
+                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cancelConfirm()"></div>
+                <div x-show="showConfirm" x-transition:enter="dialog-spring-in" x-transition:leave="dialog-spring-out" @click.stop
+                    class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center">
+                    <div class="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500 text-lg"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1" x-text="confirmTitle"></h3>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-5" x-text="confirmMessage"></p>
+                    <div class="flex gap-3">
+                        <button type="button" @click="cancelConfirm()"
+                            class="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancel</button>
+                        <button type="button" @click="confirmAction()"
+                            class="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition-colors">Confirm</button>
                     </div>
                 </div>
+            </div>
             </template>
 
             <!-- Bulk Actions Bar for Applications -->
@@ -568,7 +552,7 @@
                                                         </p>
                                                         <p x-show="entry.interview_date" class="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
                                                             <i class="fa-solid fa-calendar-day mr-1"></i>
-                                                            <span x-text="entry.interview_date ? new Date(entry.interview_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : ''"></span>
+                                                            <span x-text="entry.interview_date ? new Date(entry.interview_date.split(' ')[0] + 'T' + (entry.interview_date.split(' ')[1] || '00:00:00')).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : ''"></span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -615,202 +599,50 @@
 
                                 {{-- Reviewed: Schedule Interview + Reject --}}
                                 <template x-if="selectedApp?.status === 'reviewed'">
-                                    <div class="space-y-3">
-                                        <div x-show="showDatePicker" x-transition class="space-y-3">
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Select Interview Date</label>
-
-                                            {{-- Custom Calendar Picker --}}
-                                            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
-                                                {{-- Month navigation --}}
-                                                <div class="flex items-center justify-between mb-2">
-                                                    <button @click="calPrev()" type="button" class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                                                        <i class="fa-solid fa-chevron-left text-[10px] text-gray-500 dark:text-gray-400"></i>
-                                                    </button>
-                                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-200" x-text="calMonthLabel"></span>
-                                                    <button @click="calNext()" type="button" class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                                                        <i class="fa-solid fa-chevron-right text-[10px] text-gray-500 dark:text-gray-400"></i>
-                                                    </button>
-                                                </div>
-
-                                                {{-- Day-of-week headers --}}
-                                                <div class="grid grid-cols-7 gap-0.5 mb-1">
-                                                    <template x-for="d in ['Mo','Tu','We','Th','Fr','Sa','Su']" :key="d">
-                                                        <div class="text-center text-[9px] font-semibold text-gray-400 dark:text-gray-500 py-1" x-text="d"></div>
-                                                    </template>
-                                                </div>
-
-                                                {{-- Day grid --}}
-                                                <div class="grid grid-cols-7 gap-0.5">
-                                                    <template x-for="cell in calCells" :key="cell.key">
-                                                        <div class="relative group">
-                                                            <button type="button"
-                                                                @click="selectCalDate(cell)"
-                                                                :disabled="!cell.inMonth || cell.isPast || cell.isBooked || cell.isHoliday || cell.isSunday"
-                                                                :class="{
-                                                                    'text-gray-300 dark:text-gray-600 cursor-default': !cell.inMonth,
-                                                                    'text-gray-300 dark:text-gray-600 cursor-not-allowed line-through': cell.inMonth && cell.isPast && !cell.isHoliday && !cell.isSunday,
-                                                                    'bg-red-100 dark:bg-red-900/30 text-red-400 dark:text-red-500 cursor-not-allowed': cell.inMonth && cell.isBooked && !cell.isPast && !cell.isHoliday,
-                                                                    'bg-orange-100 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400 cursor-not-allowed': cell.inMonth && cell.isHoliday && !cell.isPast,
-                                                                    'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed': cell.inMonth && cell.isSunday && !cell.isHoliday && !cell.isPast && !cell.isBooked,
-                                                                    'bg-purple-600 text-white font-bold shadow-sm ring-2 ring-purple-300 dark:ring-purple-500': cell.isSelected && cell.inMonth && !cell.isBooked && !cell.isHoliday && !cell.isSunday,
-                                                                    'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold': cell.isToday && !cell.isSelected && cell.inMonth && !cell.isBooked && !cell.isPast && !cell.isHoliday && !cell.isSunday,
-                                                                    'hover:bg-purple-100 dark:hover:bg-purple-900/30 text-gray-700 dark:text-gray-300 cursor-pointer': cell.inMonth && !cell.isPast && !cell.isBooked && !cell.isHoliday && !cell.isSunday && !cell.isSelected && !cell.isToday,
-                                                                }"
-                                                                class="flex items-center justify-center w-8 h-8 mx-auto rounded-lg text-[10px] transition-all duration-150">
-                                                                <span x-text="cell.day"></span>
-                                                            </button>
-
-                                                            {{-- Tooltip for booked dates --}}
-                                                            <template x-if="cell.isBooked && cell.inMonth && !cell.isPast">
-                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-44 pointer-events-none">
-                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
-                                                                        <p class="font-bold text-red-300 mb-0.5"><i class="fa-solid fa-ban mr-1"></i>Unavailable</p>
-                                                                        <template x-for="b in cell.bookedBy" :key="b.id">
-                                                                            <p class="truncate"><span x-text="b.job_title"></span> — <span x-text="b.email"></span></p>
-                                                                        </template>
-                                                                    </div>
-                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
-                                                                </div>
-                                                            </template>
-
-                                                            {{-- Tooltip for holidays --}}
-                                                            <template x-if="cell.isHoliday && cell.inMonth && !cell.isPast">
-                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-40 pointer-events-none">
-                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
-                                                                        <p class="font-bold text-orange-300 mb-0.5"><i class="fa-solid fa-calendar-xmark mr-1"></i>Holiday</p>
-                                                                        <p x-text="cell.holidayName"></p>
-                                                                    </div>
-                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
-                                                                </div>
-                                                            </template>
-
-                                                            {{-- Tooltip for Sundays --}}
-                                                            <template x-if="cell.isSunday && !cell.isHoliday && cell.inMonth && !cell.isPast && !cell.isBooked">
-                                                                <div class="absolute z-50 hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-32 pointer-events-none">
-                                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg text-center">
-                                                                        <p class="font-bold text-gray-400"><i class="fa-solid fa-ban mr-1"></i>Sunday</p>
-                                                                    </div>
-                                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mt-1"></div>
-                                                                </div>
-                                                            </template>
-                                                        </div>
-                                                    </template>
-                                                </div>
-
-                                                {{-- Legend --}}
-                                                <div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                    <div class="flex items-center gap-1">
-                                                        <span class="w-2.5 h-2.5 rounded-sm bg-purple-600"></span>
-                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Selected</span>
-                                                    </div>
-                                                    <div class="flex items-center gap-1">
-                                                        <span class="w-2.5 h-2.5 rounded-sm bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800"></span>
-                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Booked</span>
-                                                    </div>
-                                                    <div class="flex items-center gap-1">
-                                                        <span class="w-2.5 h-2.5 rounded-sm bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800"></span>
-                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Holiday</span>
-                                                    </div>
-                                                    <div class="flex items-center gap-1">
-                                                        <span class="w-2.5 h-2.5 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"></span>
-                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Sunday</span>
-                                                    </div>
-                                                    <div class="flex items-center gap-1">
-                                                        <span class="w-2.5 h-2.5 rounded-sm bg-gray-900 dark:bg-white"></span>
-                                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Today</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {{-- Selected date & time display --}}
-                                            <div x-show="interviewDate" class="space-y-2">
-                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
-                                                    <i class="fa-solid fa-calendar-check text-purple-500 text-xs"></i>
-                                                    <span class="text-xs font-semibold text-purple-700 dark:text-purple-300" x-text="interviewDate ? new Date(interviewDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : ''"></span>
-                                                </div>
-
-                                                {{-- Time picker --}}
-                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
-                                                    <i class="fa-solid fa-clock text-purple-500 text-xs"></i>
-                                                    <label class="text-xs font-medium text-purple-700 dark:text-purple-300">Time:</label>
-                                                    <input type="time" x-model="interviewTime"
-                                                        class="flex-1 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-transparent border-none outline-none focus:ring-0 p-0"
-                                                    />
-                                                </div>
-
-                                                {{-- Duration picker --}}
-                                                <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded-lg">
-                                                    <i class="fa-solid fa-hourglass-half text-purple-500 text-xs"></i>
-                                                    <label class="text-xs font-medium text-purple-700 dark:text-purple-300">Duration:</label>
-                                                    <select x-model="interviewDuration"
-                                                        class="flex-1 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-transparent border-none outline-none focus:ring-0 p-0 cursor-pointer">
-                                                        <option value="15">15 minutes</option>
-                                                        <option value="30">30 minutes</option>
-                                                        <option value="45">45 minutes</option>
-                                                        <option value="60">1 hour</option>
-                                                        <option value="90">1 hour 30 minutes</option>
-                                                        <option value="120">2 hours</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            {{-- Action buttons --}}
-                                            <div class="flex gap-2">
-                                                <button @click="
-                                                    if (interviewDate && interviewTime) {
-                                                        const conflicts = checkTimeOverlap(interviewDate, interviewTime, interviewDuration);
-                                                        if (conflicts) {
-                                                            const details = conflicts.map(c => {
-                                                                const [ch, cm] = (c.time || '09:00').split(':').map(Number);
-                                                                const cEnd = ch * 60 + cm + (c.duration || 60);
-                                                                const fmtT = (mins) => {
-                                                                    const hh = Math.floor(mins / 60);
-                                                                    const mm = mins % 60;
-                                                                    const ampm = hh < 12 ? 'AM' : 'PM';
-                                                                    const disp = hh === 0 ? 12 : (hh > 12 ? hh - 12 : hh);
-                                                                    return String(disp).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ' ' + ampm;
-                                                                };
-                                                                return c.job_title + ' (' + c.email + ') — ' + fmtT(ch * 60 + cm) + ' to ' + fmtT(cEnd);
-                                                            }).join('\n');
-                                                            window.showErrorDialog('Schedule Conflict', 'The selected time slot overlaps with an existing interview:\n\n' + details);
-                                                        } else {
-                                                            setStatus('interview_scheduled', { interview_date: interviewDate + ' ' + interviewTime + ':00', interview_duration: parseInt(interviewDuration) });
-                                                        }
-                                                    }"
-                                                    :disabled="!interviewDate || !interviewTime || isUpdating"
-                                                    class="flex-1 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50">
-                                                    <i class="fa-solid fa-calendar-check mr-1.5"></i>Confirm Schedule
-                                                </button>
-                                                <button @click="showDatePicker = false; interviewDate = ''; interviewTime = '09:00'; interviewDuration = '60'"
-                                                    class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div x-show="!showDatePicker" class="flex gap-2">
-                                            <button @click="showDatePicker = true; buildCalCells()"
-                                                :disabled="isUpdating"
-                                                class="flex-1 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50">
-                                                <i class="fa-solid fa-calendar-plus mr-1.5"></i>Schedule Interview
-                                            </button>
-                                            <button @click="setStatus('rejected')"
-                                                :disabled="isUpdating"
-                                                class="flex-1 px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
-                                                <i class="fa-solid fa-xmark mr-1.5"></i>Reject
-                                            </button>
-                                        </div>
+                                    <div class="flex gap-2">
+                                        <button @click="showScheduleModal = true; interviewDate = ''; interviewTime = '09:00'; interviewDuration = '60'; suggestedTime = null; buildCalCells()"
+                                            :disabled="isUpdating"
+                                            class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+                                            <i class="fa-solid fa-calendar-plus mr-1.5"></i>Schedule Interview
+                                        </button>
+                                        <button @click="
+                                            window.showConfirmDialog(
+                                                'Reject Application',
+                                                'Are you sure you want to reject ' + (selectedApp?.job_title || '') + ' application from ' + (selectedApp?.email || '') + '? This action cannot be undone.',
+                                                'Reject',
+                                                'Cancel'
+                                            ).then(() => setStatus('rejected')).catch(() => {})
+                                        "
+                                            :disabled="isUpdating"
+                                            class="flex-1 px-4 py-2.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
+                                            <i class="fa-solid fa-xmark mr-1.5"></i>Reject
+                                        </button>
                                     </div>
                                 </template>
 
                                 {{-- Interview Scheduled: Hire + Reject --}}
                                 <template x-if="selectedApp?.status === 'interview_scheduled'">
                                     <div class="flex gap-2">
-                                        <button @click="setStatus('hired')"
+                                        <button @click="
+                                            window.showConfirmDialog(
+                                                'Hire Applicant',
+                                                'Are you sure you want to hire ' + (selectedApp?.email || '') + ' for the ' + (selectedApp?.job_title || '') + ' position?',
+                                                'Hire',
+                                                'Cancel'
+                                            ).then(() => setStatus('hired')).catch(() => {})
+                                        "
                                             :disabled="isUpdating"
                                             class="flex-1 px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
                                             <i class="fa-solid fa-circle-check mr-1.5"></i>Hire
                                         </button>
-                                        <button @click="setStatus('rejected')"
+                                        <button @click="
+                                            window.showConfirmDialog(
+                                                'Reject Application',
+                                                'Are you sure you want to reject ' + (selectedApp?.job_title || '') + ' application from ' + (selectedApp?.email || '') + '? This action cannot be undone.',
+                                                'Reject',
+                                                'Cancel'
+                                            ).then(() => setStatus('rejected')).catch(() => {})
+                                        "
                                             :disabled="isUpdating"
                                             class="flex-1 px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
                                             <i class="fa-solid fa-xmark mr-1.5"></i>Reject
@@ -830,6 +662,438 @@
                     </div>
                 </div>
             </div>
+
+            {{-- ── Schedule Interview Modal ── --}}
+            <template x-teleport="body">
+            <div x-show="showScheduleModal" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-4" style="display: none;">
+                {{-- Backdrop --}}
+                <div x-show="showScheduleModal"
+                    x-transition:enter="transition-opacity ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                    @click="showScheduleModal = false"
+                    class="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm"></div>
+
+                {{-- Modal Content --}}
+                <div x-show="showScheduleModal"
+                    x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                    class="relative z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+
+                    {{-- Header --}}
+                    <div class="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-t-2xl">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Schedule Interview</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="selectedApp?.job_title + ' — ' + selectedApp?.email"></p>
+                        </div>
+                        <button @click="showScheduleModal = false" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <i class="fa-solid fa-xmark text-gray-400 dark:text-gray-500"></i>
+                        </button>
+                    </div>
+
+                    {{-- Body --}}
+                    <div class="px-6 py-4 space-y-4">
+
+                        {{-- ── Breadcrumb Navigation ── --}}
+                        <nav class="flex items-center gap-1 text-xs">
+                            <button type="button" @click="interviewDate = ''; interviewTime = '09:00'; suggestedTime = null; buildCalCells()"
+                                class="flex items-center gap-1 font-medium transition-colors"
+                                :class="interviewDate ? 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer' : 'text-gray-900 dark:text-white font-semibold cursor-default'">
+                                <i class="fa-solid fa-calendar text-[10px]"></i>
+                                <span>Calendar</span>
+                            </button>
+                            <template x-if="interviewDate">
+                                <div class="flex items-center gap-1">
+                                    <i class="fa-solid fa-chevron-right text-[8px] text-gray-300 dark:text-gray-600"></i>
+                                    <span class="font-semibold text-gray-900 dark:text-white"
+                                        x-text="new Date(interviewDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })"></span>
+                                </div>
+                            </template>
+                        </nav>
+
+                        {{-- ═══════ VIEW 1: Calendar Picker ═══════ --}}
+                        <div x-show="!interviewDate" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 overflow-visible">
+                                {{-- Month navigation --}}
+                                <div class="flex items-center justify-between mb-2">
+                                    <button @click="calPrev()" type="button" class="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                        <i class="fa-solid fa-chevron-left text-xs text-gray-500 dark:text-gray-400"></i>
+                                    </button>
+                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-200" x-text="calMonthLabel"></span>
+                                    <button @click="calNext()" type="button" class="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                        <i class="fa-solid fa-chevron-right text-xs text-gray-500 dark:text-gray-400"></i>
+                                    </button>
+                                </div>
+
+                                {{-- Day-of-week headers --}}
+                                <div class="grid grid-cols-7 gap-0.5 mb-1">
+                                    <template x-for="d in ['Mo','Tu','We','Th','Fr','Sa','Su']" :key="d">
+                                        <div class="text-center text-[10px] font-semibold text-gray-400 dark:text-gray-500 py-1" x-text="d"></div>
+                                    </template>
+                                </div>
+
+                                {{-- Day grid --}}
+                                <div class="grid grid-cols-7 gap-0.5 overflow-visible">
+                                    <template x-for="cell in calCells" :key="cell.key">
+                                        <div class="relative group">
+                                            <button type="button"
+                                                @click="selectCalDate(cell)"
+                                                :disabled="!cell.inMonth || cell.isPast || cell.isBooked || cell.isHoliday || cell.isSunday"
+                                                :class="{
+                                                    'text-gray-300 dark:text-gray-600 cursor-default': !cell.inMonth,
+                                                    'text-gray-300 dark:text-gray-600 cursor-not-allowed line-through': cell.inMonth && cell.isPast && !cell.isHoliday && !cell.isSunday,
+                                                    'bg-red-100 dark:bg-red-900/30 text-red-400 dark:text-red-500 cursor-not-allowed': cell.inMonth && cell.isBooked && !cell.isPast && !cell.isHoliday,
+                                                    'bg-orange-100 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400 cursor-not-allowed': cell.inMonth && cell.isHoliday && !cell.isPast,
+                                                    'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed': cell.inMonth && cell.isSunday && !cell.isHoliday && !cell.isPast && !cell.isBooked,
+                                                    'bg-blue-600 text-white font-bold shadow-sm ring-2 ring-blue-300 dark:ring-blue-500': cell.isSelected && cell.inMonth && !cell.isBooked && !cell.isHoliday && !cell.isSunday,
+                                                    'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold': cell.isToday && !cell.isSelected && cell.inMonth && !cell.isBooked && !cell.isPast && !cell.isHoliday && !cell.isSunday,
+                                                    'hover:bg-blue-100 dark:hover:bg-blue-900/30 text-gray-700 dark:text-gray-300 cursor-pointer': cell.inMonth && !cell.isPast && !cell.isBooked && !cell.isHoliday && !cell.isSunday && !cell.isSelected && !cell.isToday,
+                                                }"
+                                                class="flex flex-col items-center justify-center w-9 h-9 mx-auto rounded-lg text-xs transition-all duration-150">
+                                                <span x-text="cell.day"></span>
+                                                <span x-show="cell.hasInterviews && !cell.isBooked && cell.inMonth && !cell.isPast && !cell.isHoliday && !cell.isSunday"
+                                                    class="w-1 h-1 rounded-full bg-blue-500 -mt-0.5"></span>
+                                            </button>
+
+                                            {{-- Tooltip for fully booked --}}
+                                            <template x-if="cell.isBooked && cell.inMonth && !cell.isPast">
+                                                <div class="absolute z-[9999] hidden group-hover:block top-full left-1/2 -translate-x-1/2 mt-1 w-44 pointer-events-none">
+                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mb-1"></div>
+                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
+                                                        <p class="font-bold text-red-300 mb-0.5"><i class="fa-solid fa-ban mr-1"></i>Fully Booked</p>
+                                                        <template x-for="b in cell.bookedBy" :key="b.id">
+                                                            <p class="truncate"><span x-text="b.job_title"></span> — <span x-text="b.email"></span></p>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            {{-- Tooltip for partially booked --}}
+                                            <template x-if="cell.hasInterviews && !cell.isBooked && cell.inMonth && !cell.isPast && !cell.isHoliday && !cell.isSunday">
+                                                <div class="absolute z-[9999] hidden group-hover:block top-full left-1/2 -translate-x-1/2 mt-1 w-44 pointer-events-none">
+                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mb-1"></div>
+                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
+                                                        <p class="font-bold text-blue-300 mb-0.5"><i class="fa-solid fa-clock mr-1"></i>Has interviews</p>
+                                                        <template x-for="b in cell.bookedBy" :key="b.id">
+                                                            <p class="truncate"><span x-text="b.job_title"></span> — <span x-text="b.time"></span></p>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            {{-- Tooltip for holidays --}}
+                                            <template x-if="cell.isHoliday && cell.inMonth">
+                                                <div class="absolute z-[9999] hidden group-hover:block top-full left-1/2 -translate-x-1/2 mt-1 w-40 pointer-events-none">
+                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mb-1"></div>
+                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg">
+                                                        <p class="font-bold text-orange-300 mb-0.5"><i class="fa-solid fa-calendar-xmark mr-1"></i>Holiday</p>
+                                                        <p x-text="cell.holidayName"></p>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            {{-- Tooltip for Sundays --}}
+                                            <template x-if="cell.isSunday && !cell.isHoliday && cell.inMonth && !cell.isPast && !cell.isBooked">
+                                                <div class="absolute z-[9999] hidden group-hover:block top-full left-1/2 -translate-x-1/2 mt-1 w-32 pointer-events-none">
+                                                    <div class="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45 mx-auto -mb-1"></div>
+                                                    <div class="bg-gray-900 dark:bg-gray-700 text-white text-[9px] rounded-lg px-2.5 py-1.5 shadow-lg text-center">
+                                                        <p class="font-bold text-gray-400"><i class="fa-solid fa-ban mr-1"></i>Sunday</p>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                {{-- Legend --}}
+                                <div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
+                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Selected</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2.5 h-2.5 rounded-sm bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800"></span>
+                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Booked</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2.5 h-2.5 rounded-sm bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800"></span>
+                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Holiday</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2.5 h-2.5 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"></span>
+                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Sunday</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2.5 h-2.5 rounded-sm bg-gray-900 dark:bg-white"></span>
+                                        <span class="text-[8px] text-gray-500 dark:text-gray-400">Today</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- ═══════ VIEW 2: Day Timeline ═══════ --}}
+                        <div x-show="interviewDate" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-3">
+
+                            {{-- Hidden time input --}}
+                            <input type="hidden" x-model="interviewTime" />
+
+                            {{-- Timeline header --}}
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-timeline text-gray-400 dark:text-gray-500 text-[9px]"></i>
+                                    <span class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 ">Select Time Slot</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-sm bg-red-400/80"></span>
+                                        <span class="text-[8px] text-gray-400 dark:text-gray-500">Booked</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-sm bg-blue-500"></span>
+                                        <span class="text-[8px] text-gray-400 dark:text-gray-500">Selected</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Timeline: 08:00–18:00, 72px/hour --}}
+                            <div class="relative bg-gray-50 dark:bg-gray-800/60 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                <div class="max-h-[300px] overflow-y-auto scroll-smooth" id="schedule-timeline">
+                                    <div class="relative" style="height: 720px;">
+                                        {{-- Hour lines + labels --}}
+                                        <template x-for="h in [8,9,10,11,12,13,14,15,16,17]" :key="'tl-h-'+h">
+                                            <div class="absolute left-0 right-0 border-t border-gray-200 dark:border-gray-700/60"
+                                                :style="'top: ' + ((h - 8) * 72) + 'px'">
+                                                <span class="absolute left-2 top-0.5 text-[10px] font-semibold text-gray-400 dark:text-gray-500 leading-none"
+                                                    x-text="minsToDisplay(h * 60)"></span>
+                                            </div>
+                                        </template>
+                                        {{-- Half-hour dashed lines --}}
+                                        <template x-for="h in [8,9,10,11,12,13,14,15,16,17]" :key="'tl-hh-'+h">
+                                            <div class="absolute left-16 right-0 border-t border-dashed border-gray-200/60 dark:border-gray-700/30"
+                                                :style="'top: ' + ((h - 8) * 72 + 36) + 'px'">
+                                            </div>
+                                        </template>
+                                        {{-- End line (18:00) --}}
+                                        <div class="absolute left-0 right-0 border-t border-gray-200 dark:border-gray-700/60" style="top: 720px;">
+                                            <span class="absolute left-2 -top-4 text-[10px] font-semibold text-gray-400 dark:text-gray-500 leading-none"
+                                                x-text="minsToDisplay(18 * 60)"></span>
+                                        </div>
+
+                                        {{-- Booked slots (red) --}}
+                                        <template x-for="b in getBookedIntervals(interviewDate)" :key="'bk-'+b.id">
+                                            <div class="absolute left-16 right-2 rounded-lg bg-red-100 dark:bg-red-900/30 border border-red-300/70 dark:border-red-700/50 px-2.5 py-1.5 overflow-hidden transition-all"
+                                                :style="'top: ' + ((b.start - 480) * 1.2) + 'px; height: ' + Math.max((b.end - b.start) * 1.2, 24) + 'px;'">
+                                                <div class="flex items-center gap-1.5 h-full min-w-0">
+                                                    <i class="fa-solid fa-lock text-red-400 dark:text-red-500 text-[8px] flex-shrink-0"></i>
+                                                    <span class="text-[10px] font-semibold text-red-600 dark:text-red-400 truncate" x-text="b.job_title"></span>
+                                                    <span class="text-[9px] text-red-400 dark:text-red-500 whitespace-nowrap ml-auto flex-shrink-0"
+                                                        x-text="minsToDisplay(b.start) + ' – ' + minsToDisplay(b.end)"></span>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        {{-- Selected slot (blue) --}}
+                                        <template x-if="interviewTime">
+                                            <div class="absolute left-16 right-2 rounded-lg border-2 px-2.5 py-1.5 transition-all"
+                                                :style="'top: ' + ((parseInt(interviewTime.split(':')[0]) * 60 + parseInt(interviewTime.split(':')[1]) - 480) * 1.2) + 'px; height: ' + Math.max(parseInt(interviewDuration) * 1.2, 24) + 'px;'"
+                                                :class="checkTimeOverlap(interviewDate, interviewTime, interviewDuration)
+                                                    ? 'border-red-500 dark:border-red-400 bg-red-500/10 dark:bg-red-500/15'
+                                                    : 'border-blue-500 dark:border-blue-400 bg-blue-500/15 dark:bg-blue-500/20'">
+                                                <div class="flex items-center gap-1.5 h-full min-w-0">
+                                                    <i class="fa-solid fa-user-clock text-[8px] flex-shrink-0"
+                                                        :class="checkTimeOverlap(interviewDate, interviewTime, interviewDuration) ? 'text-red-500 dark:text-red-400' : 'text-blue-600 dark:text-blue-300'"></i>
+                                                    <span class="text-[10px] font-bold truncate"
+                                                        :class="checkTimeOverlap(interviewDate, interviewTime, interviewDuration) ? 'text-red-600 dark:text-red-300' : 'text-blue-700 dark:text-blue-200'"
+                                                        x-text="selectedApp?.job_title || 'Interview'"></span>
+                                                    <span class="text-[9px] whitespace-nowrap ml-auto flex-shrink-0"
+                                                        :class="checkTimeOverlap(interviewDate, interviewTime, interviewDuration) ? 'text-red-400 dark:text-red-500' : 'text-blue-500 dark:text-blue-400'"
+                                                        x-text="minsToDisplay(parseInt(interviewTime.split(':')[0]) * 60 + parseInt(interviewTime.split(':')[1])) + ' – ' + minsToDisplay(parseInt(interviewTime.split(':')[0]) * 60 + parseInt(interviewTime.split(':')[1]) + parseInt(interviewDuration))"></span>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        {{-- Clickable half-hour areas --}}
+                                        <template x-for="h in [8,9,10,11,12,13,14,15,16,17]" :key="'cl-'+h">
+                                            <div>
+                                                <button type="button"
+                                                    @click="let t = String(h).padStart(2,'0') + ':00'; if (!checkTimeOverlap(interviewDate, t, interviewDuration)) interviewTime = t;"
+                                                    class="absolute left-16 right-2 h-[36px] z-10 rounded hover:bg-blue-500/5 dark:hover:bg-blue-400/5 transition-colors cursor-pointer"
+                                                    :class="{'pointer-events-none opacity-30': (h * 60 + parseInt(interviewDuration)) > 1080}"
+                                                    :style="'top: ' + ((h - 8) * 72) + 'px'">
+                                                </button>
+                                                <button type="button"
+                                                    @click="let t = String(h).padStart(2,'0') + ':30'; if (!checkTimeOverlap(interviewDate, t, interviewDuration)) interviewTime = t;"
+                                                    class="absolute left-16 right-2 h-[36px] z-10 rounded hover:bg-blue-500/5 dark:hover:bg-blue-400/5 transition-colors cursor-pointer"
+                                                    :class="{'pointer-events-none opacity-30': (h * 60 + 30 + parseInt(interviewDuration)) > 1080}"
+                                                    :style="'top: ' + ((h - 8) * 72 + 36) + 'px'">
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- ── Controls below timeline ── --}}
+                            <div class="grid grid-cols-2 gap-3">
+                                {{-- Duration dropdown --}}
+                                <div x-data="{ durationOpen: false }" class="relative">
+                                    <label class="block text-[10px] font-semibold text-gray-500 dark:text-gray-400  mb-1">Duration</label>
+                                    <button type="button" @click="durationOpen = !durationOpen" @click.outside="durationOpen = false"
+                                        class="inline-flex w-full items-center justify-between gap-1.5 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors
+                                            bg-white dark:bg-white/10 text-gray-700 dark:text-white
+                                            ring-1 ring-gray-200 dark:ring-white/10
+                                            hover:bg-gray-50 dark:hover:bg-white/20">
+                                        <div class="flex items-center gap-1.5">
+                                            <i class="fa-solid fa-hourglass-half text-blue-500 text-[10px]"></i>
+                                            <span x-text="
+                                                interviewDuration == 15 ? '15 min' :
+                                                interviewDuration == 30 ? '30 min' :
+                                                interviewDuration == 45 ? '45 min' :
+                                                interviewDuration == 60 ? '1 hour' :
+                                                interviewDuration == 90 ? '1h 30m' :
+                                                interviewDuration == 120 ? '2 hours' : interviewDuration + ' min'
+                                            "></span>
+                                        </div>
+                                        <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform" :class="durationOpen ? 'rotate-180' : ''">
+                                            <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <div x-show="durationOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute z-[9999] bottom-full mb-1 w-full origin-bottom rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-200 dark:ring-white/10 overflow-hidden">
+                                        <div class="py-1">
+                                            <template x-for="opt in [{v:'15',l:'15 minutes'},{v:'30',l:'30 minutes'},{v:'45',l:'45 minutes'},{v:'60',l:'1 hour'},{v:'90',l:'1 hour 30 min'},{v:'120',l:'2 hours'}]" :key="opt.v">
+                                                <button type="button"
+                                                    @click="interviewDuration = opt.v; durationOpen = false; autoSuggestTime()"
+                                                    class="flex w-full items-center justify-between px-3 py-2 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                                    :class="interviewDuration == opt.v ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold' : ''">
+                                                    <span x-text="opt.l"></span>
+                                                    <i x-show="interviewDuration == opt.v" class="fa-solid fa-check text-blue-500 text-[9px]"></i>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Time slot dropdown --}}
+                                <div x-data="{ suggestOpen: false }" class="relative">
+                                    <label class="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">Time Slot</label>
+                                    <button type="button" @click="if (interviewTime) { suggestOpen = !suggestOpen }" @click.outside="suggestOpen = false"
+                                        class="inline-flex w-full items-center justify-between gap-1.5 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors"
+                                        :class="interviewTime
+                                            ? 'bg-white dark:bg-white/10 text-gray-700 dark:text-white ring-1 ring-gray-200 dark:ring-white/10 hover:bg-gray-50 dark:hover:bg-white/20 cursor-pointer'
+                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 ring-1 ring-gray-200 dark:ring-gray-700 cursor-not-allowed'">
+                                        <div class="flex items-center gap-1.5 min-w-0">
+                                            <i class="text-[10px]"
+                                                :class="interviewTime && interviewTime === suggestedTime
+                                                    ? 'fa-solid fa-wand-magic-sparkles text-green-500'
+                                                    : (interviewTime ? 'fa-solid fa-hand-pointer text-blue-500' : 'fa-solid fa-clock text-gray-400 dark:text-gray-600')"></i>
+                                            <span class="truncate"
+                                                x-text="interviewTime
+                                                    ? minsToDisplay(parseInt(interviewTime.split(':')[0]) * 60 + parseInt(interviewTime.split(':')[1])) + ' – ' + minsToDisplay(parseInt(interviewTime.split(':')[0]) * 60 + parseInt(interviewTime.split(':')[1]) + parseInt(interviewDuration))
+                                                    : 'Select a time slot'"></span>
+                                        </div>
+                                        <svg x-show="interviewTime" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform flex-shrink-0" :class="suggestOpen ? 'rotate-180' : ''">
+                                            <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <div x-show="suggestOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute z-[9999] bottom-full mb-1 w-full origin-bottom rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-200 dark:ring-white/10 overflow-hidden">
+                                        <div class="py-1">
+                                            <button type="button"
+                                                @click="interviewTime = suggestedTime; suggestOpen = false"
+                                                class="flex w-full items-center justify-between px-3 py-2 text-xs transition-colors"
+                                                :class="interviewTime === suggestedTime
+                                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 font-semibold'
+                                                    : 'text-gray-600 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-300'">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fa-solid fa-wand-magic-sparkles text-green-500 text-[9px]"></i>
+                                                    <span>Use suggested time</span>
+                                                </div>
+                                                <i x-show="interviewTime === suggestedTime" class="fa-solid fa-check text-green-500 text-[9px]"></i>
+                                            </button>
+                                            <button type="button"
+                                                @click="suggestOpen = false"
+                                                class="flex w-full items-center justify-between px-3 py-2 text-xs transition-colors"
+                                                :class="interviewTime && interviewTime !== suggestedTime
+                                                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold'
+                                                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fa-solid fa-hand-pointer text-blue-400 text-[9px]"></i>
+                                                    <span>Pick manually from timeline</span>
+                                                </div>
+                                                <i x-show="interviewTime && interviewTime !== suggestedTime" class="fa-solid fa-check text-blue-500 text-[9px]"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Note --}}
+                            <p class="text-[10px] text-gray-400 dark:text-gray-500 italic">
+                                <i class="fa-solid fa-circle-info mr-1 text-[8px]"></i>The suggested time slot is selected by default. However, you may change it according to your preference.
+                            </p>
+
+                            {{-- Conflict warning --}}
+                            <div x-show="interviewTime && checkTimeOverlap(interviewDate, interviewTime, interviewDuration)" x-transition
+                                class="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 rounded-lg">
+                                <i class="fa-solid fa-triangle-exclamation text-red-500 text-xs"></i>
+                                <span class="text-[10px] font-medium text-red-600 dark:text-red-400">This time slot conflicts with an existing interview</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Footer --}}
+                    <div class="sticky bottom-0 flex gap-2 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-b-2xl">
+                        <button @click="
+                            if (interviewDate && interviewTime) {
+                                const conflicts = checkTimeOverlap(interviewDate, interviewTime, interviewDuration);
+                                if (conflicts) {
+                                    const details = conflicts.map(c => {
+                                        const [ch, cm] = (c.time || '09:00').split(':').map(Number);
+                                        const cEnd = ch * 60 + cm + (c.duration || 60);
+                                        const fmtT = (mins) => {
+                                            const hh = Math.floor(mins / 60);
+                                            const mm = mins % 60;
+                                            const ampm = hh < 12 ? 'AM' : 'PM';
+                                            const disp = hh === 0 ? 12 : (hh > 12 ? hh - 12 : hh);
+                                            return String(disp).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ' ' + ampm;
+                                        };
+                                        return c.job_title + ' (' + c.email + ') — ' + fmtT(ch * 60 + cm) + ' to ' + fmtT(cEnd);
+                                    }).join('\n');
+                                    window.showErrorDialog('Schedule Conflict', 'The selected time slot overlaps with an existing interview:\n\n' + details);
+                                } else {
+                                    const timeStart = minsToDisplay(parseInt(interviewTime.split(':')[0]) * 60 + parseInt(interviewTime.split(':')[1]));
+                                    const timeEnd = minsToDisplay(parseInt(interviewTime.split(':')[0]) * 60 + parseInt(interviewTime.split(':')[1]) + parseInt(interviewDuration));
+                                    const dateLabel = new Date(interviewDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                                    showScheduleModal = false;
+                                    setTimeout(async () => {
+                                        try {
+                                            await window.showConfirmDialog(
+                                                'Schedule Interview',
+                                                'Schedule interview for ' + (selectedApp?.job_title || '') + ' on ' + dateLabel + ' from ' + timeStart + ' to ' + timeEnd + '?',
+                                                'Confirm',
+                                                'Cancel'
+                                            );
+                                            setStatus('interview_scheduled', { interview_date: interviewDate + ' ' + interviewTime + ':00', interview_duration: parseInt(interviewDuration) });
+                                        } catch(e) {
+                                            showScheduleModal = true;
+                                        }
+                                    }, 300);
+                                }
+                            }"
+                            :disabled="!interviewDate || !interviewTime || isUpdating"
+                            class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+                            <i class="fa-solid fa-calendar-check mr-1.5"></i>Confirm Schedule
+                        </button>
+                        <button @click="showScheduleModal = false"
+                            class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </template>
 
             {{-- ── Resume Viewer Modal ── --}}
             <template x-teleport="body">
@@ -929,45 +1193,26 @@
 
             <!-- Confirm Dialog for Job Postings -->
             <template x-teleport="body">
-                <div x-show="showConfirm"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 z-[70] flex items-center justify-center p-4"
-                     style="display: none;">
-                    <div class="absolute inset-0 bg-black/30 dark:bg-black/50" @click="cancelConfirm()"></div>
-                    <div x-show="showConfirm"
-                         x-transition:enter="transition ease-out duration-300 delay-100"
-                         x-transition:enter-start="opacity-0 scale-90 translate-y-4"
-                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-200"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-90"
-                         class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-600 shadow-2xl overflow-hidden p-3">
-                        <div class="px-8 pt-10 pb-8 flex flex-col items-center text-center">
-                            <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-400 dark:border-amber-500 flex items-center justify-center mb-6">
-                                <svg class="w-7 h-7 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2" x-text="confirmTitle"></h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" x-text="confirmMessage"></p>
-                        </div>
-                        <div class="px-8 pb-8 flex gap-3">
-                            <button @click="cancelConfirm()" type="button"
-                                class="w-full px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 font-semibold text-sm rounded-xl transition-all duration-200">
-                                Cancel
-                            </button>
-                            <button @click="confirmAction()" type="button"
-                                class="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold text-sm rounded-xl transition-all duration-200">
-                                Delete
-                            </button>
-                        </div>
+            <div x-show="showConfirm" style="display:none"
+                class="fixed inset-0 z-[120] flex items-center justify-center p-4"
+                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cancelConfirm()"></div>
+                <div x-show="showConfirm" x-transition:enter="dialog-spring-in" x-transition:leave="dialog-spring-out" @click.stop
+                    class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center">
+                    <div class="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500 text-lg"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1" x-text="confirmTitle"></h3>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-5" x-text="confirmMessage"></p>
+                    <div class="flex gap-3">
+                        <button type="button" @click="cancelConfirm()"
+                            class="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancel</button>
+                        <button type="button" @click="confirmAction()"
+                            class="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition-colors">Confirm</button>
                     </div>
                 </div>
+            </div>
             </template>
 
             <div class="flex items-center justify-between">
@@ -1290,6 +1535,7 @@
         </div>
 
     </section>
+    </x-skeleton-page>
 
     @php
         $applicationsData = $applications->getCollection()->map(function ($app) use ($duplicateAlerts) {
@@ -1421,7 +1667,8 @@
                 interviewDate: '',
                 interviewTime: '09:00',
                 interviewDuration: '60',
-                showDatePicker: false,
+                suggestedTime: null,
+                showScheduleModal: false,
                 // Calendar picker state
                 calMonth: new Date().getMonth(),
                 calYear: new Date().getFullYear(),
@@ -1540,11 +1787,15 @@
                 },
 
                 confirmAction() {
+                    const action = this.pendingConfirmAction;
                     this.showConfirm = false;
-                    if (this.pendingConfirmAction === 'bulkDeleteApps') {
-                        this.doBulkDeleteApps();
-                    }
                     this.pendingConfirmAction = null;
+
+                    setTimeout(() => {
+                        if (action === 'bulkDeleteApps') {
+                            this.doBulkDeleteApps();
+                        }
+                    }, 300);
                 },
 
                 cancelConfirm() {
@@ -1560,7 +1811,7 @@
                         this.interviewDate = this.selectedApp.interview_date ? this.selectedApp.interview_date.split('T')[0].split(' ')[0] : '';
                         this.interviewTime = this.selectedApp.interview_time || '09:00';
                         this.interviewDuration = this.selectedApp.interview_duration || '60';
-                        this.showDatePicker = false;
+                        this.showScheduleModal = false;
                         this.calMonth = new Date().getMonth();
                         this.calYear = new Date().getFullYear();
                         this.buildCalCells();
@@ -1582,8 +1833,11 @@
                 },
 
                 isDateBooked(dateStr) {
-                    // Check if any OTHER application (not the current one) has an interview on this date
-                    return bookedInterviews.some(b => b.date === dateStr && b.id !== this.selectedApp?.id);
+                    // A date is fully booked only when no time slots are available for the default duration
+                    const intervals = this.getBookedIntervals(dateStr);
+                    if (intervals.length === 0) return false;
+                    const slot = this.findNextAvailableSlot(dateStr, this.interviewDuration);
+                    return slot === null;
                 },
 
                 getBookedInfo(dateStr) {
@@ -1613,11 +1867,137 @@
                         const [bh, bm] = (b.time || '09:00').split(':').map(Number);
                         const bStart = bh * 60 + bm;
                         const bEnd = bStart + (b.duration || 60);
-                        // Overlap check: start1 < end2 AND end1 > start2
                         return newStart < bEnd && newEnd > bStart;
                     });
 
                     return conflicts.length > 0 ? conflicts : null;
+                },
+
+                /**
+                 * Get sorted booked intervals for a date (excluding current app).
+                 */
+                getBookedIntervals(date) {
+                    return bookedInterviews
+                        .filter(b => b.date === date && b.id !== this.selectedApp?.id)
+                        .map(b => {
+                            const [bh, bm] = (b.time || '09:00').split(':').map(Number);
+                            const start = bh * 60 + bm;
+                            return { start, end: start + (b.duration || 60), ...b };
+                        })
+                        .sort((a, b) => a.start - b.start);
+                },
+
+                /**
+                 * Greedy algorithm: find earliest available slot for a given duration on a date.
+                 * Working hours: 08:00 (480) to 18:00 (1080).
+                 * Scans gaps between booked intervals and returns the first fit.
+                 */
+                findNextAvailableSlot(date, duration) {
+                    const DAY_START = 480; // 08:00
+                    const DAY_END = 1080;  // 18:00
+                    const dur = parseInt(duration);
+                    const intervals = this.getBookedIntervals(date);
+
+                    // Try from day start, scan each gap
+                    let candidate = DAY_START;
+
+                    for (const iv of intervals) {
+                        // If there's enough room before this interval
+                        if (candidate + dur <= iv.start) {
+                            return candidate;
+                        }
+                        // Move candidate past this interval if it overlaps
+                        if (candidate < iv.end) {
+                            candidate = iv.end;
+                        }
+                    }
+
+                    // Check if there's room after the last interval
+                    if (candidate + dur <= DAY_END) {
+                        return candidate;
+                    }
+
+                    return null; // No slot available
+                },
+
+                /**
+                 * Format minutes to HH:MM string
+                 */
+                minsToTime(mins) {
+                    const h = Math.floor(mins / 60);
+                    const m = mins % 60;
+                    return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+                },
+
+                /**
+                 * Format minutes to display string (e.g., "09:30 AM")
+                 */
+                minsToDisplay(mins) {
+                    const h = Math.floor(mins / 60);
+                    const m = mins % 60;
+                    const ampm = h < 12 ? 'AM' : 'PM';
+                    const disp = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+                    return String(disp).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+                },
+
+                /**
+                 * Auto-suggest time when date changes. Uses greedy to find first available.
+                 */
+                autoSuggestTime() {
+                    if (!this.interviewDate) return;
+                    const slot = this.findNextAvailableSlot(this.interviewDate, this.interviewDuration);
+                    if (slot !== null) {
+                        this.interviewTime = this.minsToTime(slot);
+                        this.suggestedTime = this.minsToTime(slot);
+                        // Auto-scroll timeline to the suggested slot
+                        this.$nextTick(() => {
+                            const timeline = document.getElementById('schedule-timeline');
+                            if (timeline) {
+                                const scrollTo = Math.max(0, (slot - 480) * 1.2 - 50);
+                                timeline.scrollTo({ top: scrollTo, behavior: 'smooth' });
+                            }
+                        });
+                    } else {
+                        this.suggestedTime = null;
+                    }
+                },
+
+                /**
+                 * Get all available time slots for the selected date and duration.
+                 * Returns array of { start, end, startTime, label }
+                 */
+                getAvailableSlots(date, duration) {
+                    const DAY_START = 480;
+                    const DAY_END = 1080;
+                    const dur = parseInt(duration);
+                    const intervals = this.getBookedIntervals(date);
+                    const slots = [];
+                    let candidate = DAY_START;
+
+                    for (const iv of intervals) {
+                        while (candidate + dur <= iv.start) {
+                            slots.push({
+                                start: candidate,
+                                end: candidate + dur,
+                                startTime: this.minsToTime(candidate),
+                                label: this.minsToDisplay(candidate) + ' – ' + this.minsToDisplay(candidate + dur)
+                            });
+                            candidate += 30; // 30-min increments
+                        }
+                        if (candidate < iv.end) candidate = iv.end;
+                    }
+
+                    while (candidate + dur <= DAY_END) {
+                        slots.push({
+                            start: candidate,
+                            end: candidate + dur,
+                            startTime: this.minsToTime(candidate),
+                            label: this.minsToDisplay(candidate) + ' – ' + this.minsToDisplay(candidate + dur)
+                        });
+                        candidate += 30;
+                    }
+
+                    return slots;
                 },
 
                 buildCalCells() {
@@ -1641,6 +2021,7 @@
                         const dateStr = this.fmtDate(d);
                         const isPast = dateStr < today;
                         const isSunday = d.getDay() === 0;
+                        const bookedInfo = this.getBookedInfo(dateStr);
                         cells.push({
                             key: 'c'+day,
                             day,
@@ -1649,11 +2030,12 @@
                             isPast,
                             isToday: dateStr === today,
                             isBooked: this.isDateBooked(dateStr),
+                            hasInterviews: bookedInfo.length > 0,
                             isHoliday: this.isHoliday(dateStr),
                             holidayName: this.getHolidayName(dateStr),
                             isSunday,
                             isSelected: dateStr === this.interviewDate,
-                            bookedBy: this.getBookedInfo(dateStr),
+                            bookedBy: bookedInfo,
                         });
                     }
 
@@ -1683,6 +2065,7 @@
                     if (!cell.inMonth || cell.isPast || cell.isBooked || cell.isHoliday || cell.isSunday) return;
                     this.interviewDate = cell.date;
                     this.buildCalCells();
+                    this.autoSuggestTime();
                 },
 
                 get calMonthLabel() {
@@ -1762,11 +2145,28 @@
 
                 formatTimelineDate(timestamp) {
                     if (!timestamp) return '';
-                    const d = new Date(timestamp);
-                    return d.toLocaleDateString('en-US', {
-                        month: 'short', day: '2-digit', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit', hour12: true
-                    });
+                    try {
+                        // Try parsing directly first
+                        let d = new Date(timestamp);
+                        // If that fails, try removing timezone colon (+02:00 -> +0200)
+                        if (isNaN(d.getTime()) && typeof timestamp === 'string') {
+                            d = new Date(timestamp.replace(/([+-]\d{2}):(\d{2})$/, '$1$2'));
+                        }
+                        // If still fails, try extracting date parts manually
+                        if (isNaN(d.getTime()) && typeof timestamp === 'string') {
+                            const match = timestamp.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+                            if (match) {
+                                d = new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
+                            }
+                        }
+                        if (isNaN(d.getTime())) return String(timestamp);
+                        return d.toLocaleDateString('en-US', {
+                            month: 'short', day: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', hour12: true
+                        });
+                    } catch (e) {
+                        return String(timestamp);
+                    }
                 },
 
                 getStatusClass(status) {
@@ -1857,7 +2257,22 @@
                                 month: 'short', day: '2-digit', year: 'numeric',
                                 hour: '2-digit', minute: '2-digit', hour12: true
                             });
-                            window.location.reload();
+
+                            const statusLabels = {
+                                'reviewed': 'Application Reviewed',
+                                'interview_scheduled': 'Interview Scheduled',
+                                'hired': 'Applicant Hired',
+                                'rejected': 'Application Rejected',
+                            };
+                            const label = statusLabels[newStatus] || 'Status Updated';
+                            const messages = {
+                                'reviewed': 'The application has been marked as reviewed.',
+                                'interview_scheduled': 'The interview has been scheduled successfully.',
+                                'hired': 'The applicant has been hired successfully.',
+                                'rejected': 'The application has been rejected.',
+                            };
+                            const msg = messages[newStatus] || 'The application status has been updated.';
+                            setTimeout(() => window.showSuccessDialog(label, msg, 'Done', window.location.href), 350);
                         } else {
                             window.showErrorDialog('Update Failed', 'Failed to update status. Please try again.');
                         }
@@ -2064,10 +2479,7 @@
                         const data = await response.json();
                         if (data.success) {
                             this.jobPostings = this.jobPostings.filter(j => !this.selectedJobIds.includes(j.id));
-                            this.successTitle = 'Job Postings Archived';
-                            this.successMessage = data.message;
-                            this.successRedirectUrl = window.location.href;
-                            this.showSuccess = true;
+                            window.showSuccessDialog('Job Postings Archived', data.message, 'Done', window.location.href);
                             this.selectedJobIds = [];
                         } else {
                             window.showErrorDialog('Archive Failed', data.message || 'Failed to archive job postings.');
@@ -2190,10 +2602,7 @@
                         const data = await response.json();
                         if (data.success) {
                             this.jobPostings.splice(index, 1);
-                            this.successTitle = 'Job Posting Archived';
-                            this.successMessage = 'The job posting has been archived successfully.';
-                            this.successRedirectUrl = window.location.href;
-                            this.showSuccess = true;
+                            window.showSuccessDialog('Job Posting Archived', 'The job posting has been archived successfully.', 'Done', window.location.href);
                         } else {
                             window.showErrorDialog('Archive Failed', data.message || 'Failed to archive job posting.');
                         }
@@ -2231,10 +2640,7 @@
                         const data = await response.json();
                         if (data.success) {
                             this.jobPostings.splice(index, 1);
-                            this.successTitle = 'Job Posting Archived';
-                            this.successMessage = 'The job posting has been moved to archived.';
-                            this.successRedirectUrl = window.location.href;
-                            this.showSuccess = true;
+                            window.showSuccessDialog('Job Posting Archived', 'The job posting has been moved to archived.', 'Done', window.location.href);
                         } else {
                             window.showErrorDialog('Archive Failed', data.message || 'Failed to archive job posting.');
                         }
@@ -2245,18 +2651,24 @@
                 },
 
                 confirmAction() {
+                    const action = this.pendingConfirmAction;
+                    const index = this.pendingDeleteIndex;
                     this.showConfirm = false;
-                    if (this.pendingConfirmAction === 'bulkDeleteJobs') {
-                        this.doBulkDeleteJobs();
-                    } else if (this.pendingConfirmAction === 'deleteJob') {
-                        this.doDeleteJob(this.pendingDeleteIndex);
-                    } else if (this.pendingConfirmAction === 'archiveJob') {
-                        this.doArchiveJob(this.pendingDeleteIndex);
-                    } else if (this.pendingConfirmAction === 'publishDraft') {
-                        this.doPublishDraft();
-                    }
                     this.pendingConfirmAction = null;
                     this.pendingDeleteIndex = null;
+
+                    // Delay action to let confirm dialog animate out first
+                    setTimeout(() => {
+                        if (action === 'bulkDeleteJobs') {
+                            this.doBulkDeleteJobs();
+                        } else if (action === 'deleteJob') {
+                            this.doDeleteJob(index);
+                        } else if (action === 'archiveJob') {
+                            this.doArchiveJob(index);
+                        } else if (action === 'publishDraft') {
+                            this.doPublishDraft();
+                        }
+                    }, 300);
                 },
 
                 cancelConfirm() {
@@ -2302,12 +2714,62 @@
                     this.loadStates();
                 },
 
+                getUniqueJobTitle(baseName, excludeId = null) {
+                    const existing = this.jobPostings
+                        .filter(j => excludeId ? j.id !== excludeId : true)
+                        .map(j => j.title.toLowerCase());
+
+                    if (!existing.includes(baseName.toLowerCase())) {
+                        return baseName;
+                    }
+
+                    let counter = 1;
+                    let candidate;
+                    do {
+                        candidate = `${baseName} (${counter})`;
+                        counter++;
+                    } while (existing.includes(candidate.toLowerCase()));
+
+                    return candidate;
+                },
+
                 async saveJob() {
                     if (!this.formData.title || !this.formData.description || !this.formData.state || !this.formData.city || !this.formData
                         .salary) {
                         window.showErrorDialog('Validation Error', 'Please fill in all required fields.');
                         return;
                     }
+
+                    const wasEditing = this.editingIndex !== null;
+                    const originalTitle = this.formData.title.trim();
+                    const finalTitle = wasEditing
+                        ? this.getUniqueJobTitle(originalTitle, this.formData.id)
+                        : this.getUniqueJobTitle(originalTitle);
+                    const wasRenamed = finalTitle !== originalTitle;
+
+                    let confirmMessage;
+                    if (wasEditing) {
+                        confirmMessage = wasRenamed
+                            ? `A job posting named "${originalTitle}" already exists. It will be saved as "${finalTitle}" instead.\n\nDo you want to proceed?`
+                            : `Are you sure you want to update "${finalTitle}"?`;
+                    } else {
+                        confirmMessage = wasRenamed
+                            ? `A job posting named "${originalTitle}" already exists. It will be created as "${finalTitle}" instead and published.\n\nDo you want to proceed?`
+                            : `Are you sure you want to create and publish "${finalTitle}"? It will be visible to applicants.`;
+                    }
+
+                    try {
+                        await window.showConfirmDialog(
+                            wasEditing ? 'Update Job Posting' : 'Create Job Posting',
+                            confirmMessage,
+                            wasEditing ? 'Update' : 'Create',
+                            'Cancel'
+                        );
+                    } catch (e) {
+                        return;
+                    }
+
+                    this.formData.title = finalTitle;
 
                     this.isSubmitting = true;
 
@@ -2386,18 +2848,16 @@
                                 benefits: data.data.benefits || []
                             };
 
-                            const wasEditing = this.editingIndex !== null;
                             if (wasEditing) {
                                 this.jobPostings[this.editingIndex] = savedJob;
                             } else {
                                 this.jobPostings.unshift(savedJob);
                             }
                             this.closeModal();
-                            this.successTitle = wasEditing ? 'Job Posting Updated' : 'Job Posting Created';
-                            this.successMessage = wasEditing ?
-                                'The job posting has been updated successfully.' :
-                                'The job posting has been created and is now visible to applicants.';
-                            this.showSuccess = true;
+                            setTimeout(() => window.showSuccessDialog(
+                                wasEditing ? 'Job Posting Updated' : 'Job Posting Created',
+                                wasEditing ? 'The job posting has been updated successfully.' : 'The job posting has been created and is now visible to applicants.'
+                            ), 350);
                         } else {
                             window.showErrorDialog('Save Failed', data.message || 'Failed to save job posting.');
                         }
@@ -2474,10 +2934,7 @@
 
                             this.jobPostings[this.editingIndex] = savedJob;
                             this.closeModal();
-                            this.successTitle = 'Job Posting Published';
-                            this.successMessage = 'The draft has been published and is now visible to applicants.';
-                            this.successRedirectUrl = window.location.href;
-                            this.showSuccess = true;
+                            window.showSuccessDialog('Job Posting Published', 'The draft has been published and is now visible to applicants.', 'Done', window.location.href);
                         } else {
                             window.showErrorDialog('Publish Failed', data.message || 'Failed to publish the job posting.');
                         }
@@ -2561,17 +3018,26 @@
                         return;
                     }
 
-                    // Show confirmation dialog
+                    const originalTitle = this.formData.title.trim();
+                    const finalTitle = this.getUniqueJobTitle(originalTitle);
+                    const wasRenamed = finalTitle !== originalTitle;
+
+                    const confirmMessage = wasRenamed
+                        ? `A job posting named "${originalTitle}" already exists. It will be saved as "${finalTitle}" instead.\n\nDo you want to proceed?`
+                        : `Are you sure you want to save "${finalTitle}" as a draft?`;
+
                     try {
                         await window.showConfirmDialog(
                             'Save as Draft',
-                            'Are you sure you want to save this job posting as a draft?',
+                            confirmMessage,
                             'Save as Draft',
                             'Cancel'
                         );
                     } catch (e) {
-                        return; // User cancelled
+                        return;
                     }
+
+                    this.formData.title = finalTitle;
 
                     this.isSubmitting = true;
 
@@ -2626,9 +3092,7 @@
                             };
                             this.jobPostings.unshift(savedJob);
                             this.closeModal();
-                            this.successTitle = 'Saved as Draft';
-                            this.successMessage = 'Job posting successfully saved as draft.';
-                            this.showSuccess = true;
+                            window.showSuccessDialog('Saved as Draft', 'Job posting successfully saved as draft.');
                         } else {
                             window.showErrorDialog('Save Failed', data.message || 'Failed to save job posting as draft.');
                         }

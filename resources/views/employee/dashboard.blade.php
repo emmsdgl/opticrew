@@ -1,4 +1,5 @@
 <x-layouts.general-employee :title="'Employee Dashboard'">
+    <x-skeleton-page :preset="'employee-dashboard'">
 
     {{-- MOBILE LAYOUT (< 1024px) - Hidden on large screens --}} <div class="lg:hidden">
         @include('employee.mobile.dashboard')
@@ -589,8 +590,8 @@
                                             <span class="text-sm text-gray-500 dark:text-gray-400">Proof
                                                 Document</span>
                                             <a :href="'/storage/' + selectedRequest.proof_document" target="_blank"
-                                                class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
-                                                View Document
+                                                class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium max-w-[180px] truncate inline-block"
+                                                x-text="selectedRequest.proof_document.split('/').pop()">
                                             </a>
                                         </div>
                                     </template>
@@ -805,4 +806,5 @@
             'align' => 'start',
         ],
     ])" />
+    </x-skeleton-page>
 </x-layouts.general-employee>
