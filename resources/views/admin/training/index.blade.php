@@ -100,6 +100,34 @@
             </div>
 
 
+            <!-- Status Filter Tabs -->
+            <div class="flex items-center gap-1 border-b border-gray-200 dark:border-gray-700">
+                <button @click="filterStatus = 'all'; currentPage = 1"
+                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                    :class="filterStatus === 'all' ? 'border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'">
+                    All
+                    <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full"
+                        :class="filterStatus === 'all' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'"
+                        x-text="trainingVideos.length"></span>
+                </button>
+                <button @click="filterStatus = 'active'; currentPage = 1"
+                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                    :class="filterStatus === 'active' ? 'border-green-600 text-green-600 dark:text-green-400 dark:border-green-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'">
+                    Active
+                    <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full"
+                        :class="filterStatus === 'active' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'"
+                        x-text="trainingVideos.filter(v => v.is_active).length"></span>
+                </button>
+                <button @click="filterStatus = 'draft'; currentPage = 1"
+                    class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                    :class="filterStatus === 'draft' ? 'border-gray-600 text-gray-600 dark:text-gray-400 dark:border-gray-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'">
+                    Drafts
+                    <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full"
+                        :class="filterStatus === 'draft' ? 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'"
+                        x-text="trainingVideos.filter(v => !v.is_active).length"></span>
+                </button>
+            </div>
+
             <!-- Bulk Actions Bar -->
             <div x-show="selectedIds.length > 0" x-transition
                 class="flex flex-row justify-between items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -222,7 +250,7 @@
                                         :class="video.is_active ?
                                             'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' :
                                             'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'"
-                                        x-text="video.is_active ? 'Active' : 'Inactive'"></span>
+                                        x-text="video.is_active ? 'Active' : 'Draft'"></span>
                                 </td>
 
                                 <!-- Actions -->
@@ -445,7 +473,7 @@
                                 <select x-model="formData.is_active"
                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
                                     <option :value="true">Active</option>
-                                    <option :value="false">Inactive</option>
+                                    <option :value="false">Draft</option>
                                 </select>
                             </div>
                         </div>
@@ -467,7 +495,13 @@
                             class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
                             Cancel
                         </button>
-                        <button @click="saveVideo()" :disabled="isSubmitting"
+                        <template x-if="editingId === null">
+                            <button @click="formData.is_active = false; saveVideo()" :disabled="isSubmitting"
+                                class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium disabled:opacity-50">
+                                <i class="fa-solid fa-file-pen mr-2"></i>Save as Draft
+                            </button>
+                        </template>
+                        <button @click="formData.is_active = (editingId !== null ? formData.is_active : true); saveVideo()" :disabled="isSubmitting"
                             class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50">
                             <i class="fa-solid fa-save mr-2"></i>
                             <span x-text="editingId !== null ? 'Update' : 'Create'"></span>
@@ -495,6 +529,7 @@
                     editingId: null,
                     isSubmitting: false,
                     filterCategory: 'all',
+                    filterStatus: 'all',
                     selectedIds: [],
                     currentPage: 1,
                     perPage: 5,
@@ -529,8 +564,16 @@
                     },
 
                     filteredVideos() {
-                        if (this.filterCategory === 'all') return this.trainingVideos;
-                        return this.trainingVideos.filter(v => v.category === this.filterCategory);
+                        let videos = this.trainingVideos;
+                        if (this.filterCategory !== 'all') {
+                            videos = videos.filter(v => v.category === this.filterCategory);
+                        }
+                        if (this.filterStatus === 'active') {
+                            videos = videos.filter(v => v.is_active);
+                        } else if (this.filterStatus === 'draft') {
+                            videos = videos.filter(v => !v.is_active);
+                        }
+                        return videos;
                     },
 
                     paginatedVideos() {
@@ -821,19 +864,27 @@
                     },
 
                     async saveVideo() {
-                        if (!this.formData.title || !this.formData.description || !this.formData.category) {
-                            window.showErrorDialog('Validation Error', 'Please fill in all required fields.');
+                        const isDraft = this.formData.is_active === false || this.formData.is_active === 'false';
+
+                        if (!this.formData.title) {
+                            window.showErrorDialog('Validation Error', 'Please enter a title.');
                             return;
                         }
-                        if (this.formData.description.length < 180) {
-                            window.showErrorDialog('Validation Error', 'Description must be at least 180 characters.');
-                            return;
+                        if (!isDraft) {
+                            if (!this.formData.description || !this.formData.category) {
+                                window.showErrorDialog('Validation Error', 'Please fill in all required fields.');
+                                return;
+                            }
+                            if (this.formData.description.length < 180) {
+                                window.showErrorDialog('Validation Error', 'Description must be at least 180 characters.');
+                                return;
+                            }
+                            if (this.formData.platform === 'youtube' && !this.formData.video_id) {
+                                window.showErrorDialog('Validation Error', 'Please enter a YouTube Video ID.');
+                                return;
+                            }
                         }
-                        if (this.formData.platform === 'youtube' && !this.formData.video_id) {
-                            window.showErrorDialog('Validation Error', 'Please enter a YouTube Video ID.');
-                            return;
-                        }
-                        if (this.formData.platform === 'upload' && !this.formData.video_file && !this.formData.video_path) {
+                        if (!isDraft && this.formData.platform === 'upload' && !this.formData.video_file && !this.formData.video_path) {
                             window.showErrorDialog('Validation Error', 'Please select a video file to upload.');
                             return;
                         }

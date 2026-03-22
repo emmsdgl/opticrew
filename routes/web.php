@@ -358,7 +358,8 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
 
     Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
 
-    Route::get('/admin/courses', [\App\Http\Controllers\EmployeePerformanceController::class, 'development'])->name('admin.courses');
+    // Redirect old courses URL to training page
+    Route::redirect('/admin/courses', '/admin/training-videos')->name('admin.courses');
 
     Route::get('/admin/profile', [ProfileController::class, 'show'])->name('admin.profile');
 
