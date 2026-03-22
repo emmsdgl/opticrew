@@ -896,6 +896,9 @@ loadingTask.promise.then(pdf=>{
                 . "[Employee Created] Converted to employee account (User #{$user->id}, {$finnoyEmail}) on " . now()->format('M d, Y h:i A') . " by " . (auth()->user()->name ?? 'Admin') . ".",
         ]);
 
+        // Archive the application (soft-delete) now that the employee account is created
+        $application->delete();
+
         // Send hire notifications now that account is successfully created
         if ($oldStatus !== 'hired') {
             try {
