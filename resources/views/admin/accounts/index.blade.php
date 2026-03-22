@@ -60,8 +60,10 @@
                 <!-- Search Bar -->
                 <div class="flex-1">
                     <div class="relative">
-                        <input type="search" id="searchInput" placeholder="Search by name, username, or email..."
-                            autocomplete="off"
+                        {{-- Hidden decoy to prevent Chrome password autofill --}}
+                        <input type="text" name="prevent_autofill" id="prevent_autofill" value="" style="display:none" aria-hidden="true">
+                        <input type="search" id="searchInput" name="account_search_filter" placeholder="Search by name, username, or email..."
+                            autocomplete="new-password"
                             class="w-full px-4 py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
