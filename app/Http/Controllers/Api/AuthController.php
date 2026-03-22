@@ -21,16 +21,43 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'login' => 'required|string',
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $loginInput = $request->input('login');
+        $password = $request->input('password');
+        $user = null;
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
+            // Try primary email
+            $user = User::where('email', $loginInput)->first();
+
+            // Try alternative_email (employees may have Gmail stored here)
+            if (!$user) {
+                $user = User::where('alternative_email', $loginInput)->first();
+            }
+        } else {
+            // Try username
+            $user = User::where('username', $loginInput)->first();
+
+            // Try name as fallback
+            if (!$user) {
+                $user = User::where('name', $loginInput)->first();
+            }
+        }
+
+        if (!$user || !Hash::check($password, $user->password)) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
+        }
+
+        // Block applicants and external clients — mobile is only for admin, employee, company
+        if (in_array($user->role, ['applicant', 'external_client'])) {
+            return response()->json([
+                'message' => 'This account type can only access the website. Please log in at finnoys.com.'
+            ], 403);
         }
 
         // Check if account is active

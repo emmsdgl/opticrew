@@ -505,6 +505,11 @@ class GoogleAuthController extends Controller
             }
         }
 
+        // Block applicants and external clients — mobile is only for admin, employee, company
+        if (in_array($user->role, ['applicant', 'external_client'])) {
+            return redirect($callback . '?error=' . urlencode('This account type can only access the website. Please log in at finnoys.com.'));
+        }
+
         if (!$user->is_active) {
             return redirect($callback . '?error=' . urlencode('Account is deactivated'));
         }
