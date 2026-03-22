@@ -358,6 +358,9 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
 
         // Change user role
         Route::patch('/{id}/change-role', [\App\Http\Controllers\Admin\AccountController::class, 'changeRole'])->name('change-role');
+
+        // Ban/unban user
+        Route::patch('/{id}/toggle-ban', [\App\Http\Controllers\Admin\AccountController::class, 'toggleBan'])->name('toggle-ban');
     });
 
     Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');

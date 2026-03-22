@@ -551,6 +551,47 @@
             });
         }
 
+        // Ban/Unban flow
+        async function toggleBanUser(userId, userName, isCurrentlyActive) {
+            const action = isCurrentlyActive ? 'ban' : 'unban';
+
+            try {
+                await window.showPasswordConfirmDialog(
+                    `${isCurrentlyActive ? 'Ban' : 'Unban'} User`,
+                    `Are you sure you want to ${action} ${userName}? Enter your admin password to confirm.`,
+                    `${isCurrentlyActive ? 'Ban' : 'Unban'} User`,
+                    'Cancel'
+                );
+            } catch (e) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/admin/accounts/${userId}/toggle-ban`, {
+                    method: 'PATCH',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    window.showSuccessDialog(
+                        `User ${isCurrentlyActive ? 'Banned' : 'Unbanned'}`,
+                        data.message,
+                        'OK',
+                        '{{ route("admin.accounts.index") }}'
+                    );
+                } else {
+                    window.showErrorDialog('Error', data.message || `Failed to ${action} user.`);
+                }
+            } catch (error) {
+                window.showErrorDialog('Error', 'Something went wrong. Please try again.');
+            }
+        }
+
         // Delete flow using components/dialog
         async function confirmDelete(userId) {
             let password;

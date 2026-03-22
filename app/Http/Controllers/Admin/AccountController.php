@@ -840,4 +840,24 @@ class AccountController extends Controller
 
         return response()->json(['message' => 'Role changed successfully.']);
     }
+
+    /**
+     * Toggle ban/unban a user account.
+     */
+    public function toggleBan($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Don't allow banning admin accounts
+        if ($user->role === 'admin') {
+            return response()->json(['message' => 'Cannot ban an admin account.'], 422);
+        }
+
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        $status = $user->is_active ? 'unbanned' : 'banned';
+
+        return response()->json(['message' => "User has been {$status} successfully."]);
+    }
 }
