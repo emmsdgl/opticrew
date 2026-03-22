@@ -369,9 +369,9 @@
                         <!-- YouTube Video ID (shown when platform is youtube) -->
                         <div x-show="formData.platform === 'youtube'" x-transition>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">YouTube Video ID *</label>
-                            <input type="text" x-model="formData.video_id" @input.debounce.500ms="fetchDuration()"
+                            <input type="text" x-model="formData.video_id" @input.debounce.500ms="parseAndFetchDuration()"
                                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                placeholder="e.g., dQw4w9WgXcQ">
+                                placeholder="e.g., dQw4w9WgXcQ or paste YouTube URL">
                             <div x-show="formData.video_id && formData.duration" class="mt-1.5 flex items-center gap-1.5">
                                 <i class="fa-solid fa-clock text-xs text-gray-400"></i>
                                 <span class="text-xs text-gray-500 dark:text-gray-400" x-text="'Duration: ' + formData.duration"></span>
@@ -681,6 +681,17 @@
                             this.formData.video_file = file;
                             this.formData.video_file_name = file.name;
                         }
+                    },
+
+                    parseAndFetchDuration() {
+                        const input = this.formData.video_id?.trim();
+                        if (input) {
+                            const match = input.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+                            if (match) {
+                                this.formData.video_id = match[1];
+                            }
+                        }
+                        this.fetchDuration();
                     },
 
                     async fetchDuration() {

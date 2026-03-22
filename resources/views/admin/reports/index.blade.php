@@ -75,22 +75,27 @@
                 </p>
             </div>
 
-            <!-- Future: Revenue Trends (Placeholder) -->
-            <div class="bg-gray-100 dark:bg-gray-700/50 rounded-lg shadow p-6 border-2 border-dashed border-gray-300 dark:border-gray-600">
+            <!-- Course Progress Report -->
+            <a href="{{ route('admin.reports.course-progress') }}" class="group bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all p-6 border-2 border-transparent hover:border-purple-500">
                 <div class="flex items-start justify-between mb-4">
-                    <div class="p-3 bg-gray-200 dark:bg-gray-600 rounded-lg opacity-50">
-                        <i class="fi fi-rr-chart-line-up text-gray-500 text-2xl"></i>
+                    <div class="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                        <i class="fi fi-rr-graduation-cap text-purple-600 dark:text-purple-400 text-2xl"></i>
                     </div>
-                    <span class="text-xs bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">Coming Soon</span>
+                    <i class="fi fi-rr-arrow-right text-gray-400 group-hover:text-purple-600 transition-colors"></i>
                 </div>
 
-                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Revenue Trends
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Course Progress
                 </h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Analyze revenue trends and forecast future income
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Track employee training video completion and progress
                 </p>
-            </div>
+
+                <div class="mt-4 flex items-center gap-2 text-purple-600 dark:text-purple-400 font-medium text-sm">
+                    View Report
+                    <i class="fi fi-rr-angle-right text-xs"></i>
+                </div>
+            </a>
 
             <!-- Service Performance Report -->
             <a href="{{ route('admin.reports.service') }}" class="group bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all p-6 border-2 border-transparent hover:border-orange-500">

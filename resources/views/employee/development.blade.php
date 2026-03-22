@@ -264,22 +264,6 @@
         <script src="https://www.youtube.com/iframe_api"></script>
         <script>
             // Courses loaded from database
-<<<<<<< HEAD
-            const courses = {
-                @foreach($trainingVideos as $video)
-                {{ $video->id }}: {
-                    title: @json($video->title),
-                    description: @json($video->description),
-                    category: @json($video->category),
-                    duration: @json($video->duration),
-                    required: {{ $video->required ? 'true' : 'false' }},
-                    status: @json($courseStatuses[$video->id] ?? (in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending')),
-                    savedProgress: {{ $courseProgress[$video->id] ?? 0 }},
-                    lastPosition: {{ $courseLastPositions[$video->id] ?? 0 }},
-                    videoId: @json($video->video_id)
-                },
-                @endforeach
-=======
             const courses = {};
             @foreach($trainingVideos as $video)
             courses[{{ $video->id }}] = {
@@ -288,11 +272,12 @@
                 category: @json($video->category),
                 duration: @json($video->duration ?? ''),
                 required: {{ $video->required ? 'true' : 'false' }},
-                status: "{{ in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending' }}",
+                status: @json($courseStatuses[$video->id] ?? (in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending')),
+                savedProgress: {{ $courseProgress[$video->id] ?? 0 }},
+                lastPosition: {{ $courseLastPositions[$video->id] ?? 0 }},
                 platform: @json($video->platform ?? 'youtube'),
                 videoId: @json($video->video_id ?? ''),
                 videoPath: @json($video->video_path ? asset('storage/' . $video->video_path) : ''),
->>>>>>> 22e73c40d8ca7ff6d4ea2c0949804bdf13e0a151
             };
             @endforeach
 

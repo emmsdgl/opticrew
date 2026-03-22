@@ -324,6 +324,9 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
 
         // Service Performance Reports
         Route::get('/service', [ReportController::class, 'servicePerformance'])->name('service');
+
+        // Course Progress Reports
+        Route::get('/course-progress', [ReportController::class, 'courseProgress'])->name('course-progress');
     });
 
     // --- ADMIN ACCOUNT ROUTES ---

@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\Attendance;
 use App\Models\Feedback;
 use App\Models\UserCourseProgress;
+use App\Models\TrainingVideo;
 use App\Models\User;
 use App\Models\Task;
 use App\Models\Location;
@@ -448,37 +449,13 @@ class ReportController extends Controller
             ];
         });
 
-        // Course progress data
-        $courseInfo = [
-            1 => ['title' => 'Deep Cleaning Fundamentals', 'duration' => '8 lectures • 1.5 hours'],
-            2 => ['title' => 'Professional Window Cleaning', 'duration' => '12 lectures • 2 hours'],
-            3 => ['title' => 'Eco-Friendly Cleaning Solutions', 'duration' => '10 lectures • 1.5 hours'],
-            4 => ['title' => 'Industrial Floor Care & Maintenance', 'duration' => '15 lectures • 3 hours'],
-            5 => ['title' => 'Sanitization & Disinfection Protocols', 'duration' => '14 lectures • 2.5 hours'],
-        ];
-
-        $courseProgressRecords = UserCourseProgress::where('user_id', $employee->user->id)->get()->keyBy('course_id');
-
-        $courses = collect($courseInfo)->map(function ($info, $courseId) use ($courseProgressRecords) {
-            $progress = $courseProgressRecords->get($courseId);
-            return [
-                'id' => $courseId,
-                'title' => $info['title'],
-                'duration' => $info['duration'],
-                'progress' => $progress ? $progress->progress : 0,
-                'status' => $progress ? $progress->status : 'pending',
-                'updated_at' => $progress ? $progress->updated_at : null,
-            ];
-        });
-
         return view('admin.reports.employee-detail', compact(
             'employee',
             'attendances',
             'stats',
             'dailyBreakdown',
             'startDate',
-            'endDate',
-            'courses'
+            'endDate'
         ));
     }
 
@@ -895,6 +872,75 @@ class ReportController extends Controller
             'employeeAvgRating',
             'overallAvgRating',
             'recommendRate'
+        ));
+    }
+
+    /**
+     * Course Progress Report - All employees' training video progress
+     */
+    public function courseProgress()
+    {
+        $trainingVideos = TrainingVideo::where('is_active', true)
+            ->orderBy('category')
+            ->orderBy('sort_order')
+            ->get();
+
+        $employees = Employee::with('user')->get();
+
+        $allProgress = UserCourseProgress::all()->groupBy('user_id');
+
+        $employeeProgress = $employees->map(function ($employee) use ($trainingVideos, $allProgress) {
+            $userProgress = $allProgress->get($employee->user_id, collect())->keyBy('course_id');
+
+            $completed = 0;
+            $inProgress = 0;
+            $totalProgress = 0;
+
+            $courses = $trainingVideos->map(function ($video) use ($userProgress, &$completed, &$inProgress, &$totalProgress) {
+                $progress = $userProgress->get($video->id);
+                $status = $progress ? $progress->status : 'pending';
+                $progressPercent = $progress ? $progress->progress : 0;
+
+                if ($status === 'completed') $completed++;
+                elseif ($status === 'in_progress') $inProgress++;
+
+                $totalProgress += $progressPercent;
+
+                return [
+                    'title' => $video->title,
+                    'progress' => $progressPercent,
+                    'status' => $status,
+                    'updated_at' => $progress ? $progress->updated_at : null,
+                ];
+            });
+
+            $totalVideos = $trainingVideos->count();
+            $overallProgress = $totalVideos > 0 ? round($totalProgress / $totalVideos) : 0;
+
+            return [
+                'employee' => $employee,
+                'courses' => $courses,
+                'completed' => $completed,
+                'in_progress' => $inProgress,
+                'pending' => $totalVideos - $completed - $inProgress,
+                'overall_progress' => $overallProgress,
+                'total_videos' => $totalVideos,
+            ];
+        })->sortByDesc('overall_progress')->values();
+
+        $totalEmployees = $employees->count();
+        $totalVideos = $trainingVideos->count();
+        $totalCompleted = $employeeProgress->sum('completed');
+        $totalPossible = $totalEmployees * $totalVideos;
+        $overallCompletionRate = $totalPossible > 0 ? round(($totalCompleted / $totalPossible) * 100) : 0;
+
+        return view('admin.reports.course-progress', compact(
+            'employeeProgress',
+            'trainingVideos',
+            'totalEmployees',
+            'totalVideos',
+            'totalCompleted',
+            'overallCompletionRate'
         ));
     }
 }

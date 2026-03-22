@@ -102,173 +102,179 @@
         </div>
 
         <!-- Request Records Table -->
+        <script>
+            window.__requestRecords = @json($requestRecords);
+
+            function attendanceRequestData() {
+                return {
+                    showRequestModal: false,
+                    selectedRequest: null,
+                    adminNotes: '',
+                    rejectionReason: '',
+                    isSubmitting: false,
+                    showRejectionForm: false,
+                    requestRecords: window.__requestRecords,
+                    rejectionReasons: [
+                        'Insufficient leave balance',
+                        'Overlapping with other approved leaves',
+                        'Critical project deadline',
+                        'Short notice - requires more advance notice',
+                        'Documentation incomplete',
+                        'Department understaffed during requested period',
+                        'Request conflicts with company policy',
+                        'Other'
+                    ],
+
+                    openRequestModal(index) {
+                        const record = this.requestRecords[index];
+                        if (!record) return;
+
+                        this.selectedRequest = {
+                            id: record.requestId,
+                            employeeName: record.requestEmployeeName,
+                            type: record.requestType,
+                            status: record.requestStatus,
+                            date: record.requestDate,
+                            endDate: record.requestEndDate,
+                            timeRange: record.requestTimeRange,
+                            fromTime: record.requestFromTime,
+                            toTime: record.requestToTime,
+                            reason: record.requestReason,
+                            description: record.requestDescription,
+                            proofDocument: record.requestProofDocument,
+                            adminNotes: record.requestAdminNotes,
+                            durationDays: record.requestDurationDays,
+                            createdAt: record.requestCreatedAt,
+                            tasks: record.employeeTasks || [],
+                        };
+                        this.adminNotes = record.requestAdminNotes || '';
+                        this.rejectionReason = '';
+                        this.showRejectionForm = false;
+                        this.showRequestModal = true;
+                        document.body.style.overflow = 'hidden';
+                    },
+
+                    closeRequestModal() {
+                        this.showRequestModal = false;
+                        this.selectedRequest = null;
+                        this.adminNotes = '';
+                        this.rejectionReason = '';
+                        this.showRejectionForm = false;
+                        document.body.style.overflow = 'auto';
+                    },
+
+                    async approveRequest() {
+                        if (this.isSubmitting || !this.selectedRequest) return;
+
+                        try {
+                            await window.showConfirmDialog(
+                                'Approve Request',
+                                `Are you sure you want to approve this ${this.selectedRequest.type || 'leave'} request from ${this.selectedRequest.employee_name || 'this employee'}?`,
+                                'Approve',
+                                'Cancel'
+                            );
+                        } catch (e) {
+                            return;
+                        }
+
+                        this.isSubmitting = true;
+
+                        try {
+                            const response = await fetch(`/admin/employee-requests/${this.selectedRequest.id}/approve`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ admin_notes: '' })
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                this.closeRequestModal();
+                                window.showSuccessDialog('Request Approved', data.message || 'The request has been approved successfully.', 'OK');
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                window.showErrorDialog('Approval Failed', data.message || 'Failed to approve request.');
+                            }
+                        } catch (error) {
+                            window.showErrorDialog('Approval Failed', 'An error occurred. Please try again.');
+                        } finally {
+                            this.isSubmitting = false;
+                        }
+                    },
+
+                    handleDeclineClick() {
+                        if (!this.showRejectionForm) {
+                            this.showRejectionForm = true;
+                            return;
+                        }
+                        this.rejectRequest();
+                    },
+
+                    async rejectRequest() {
+                        if (this.isSubmitting || !this.selectedRequest) return;
+                        if (!this.rejectionReason) {
+                            window.showErrorDialog('Validation Error', 'Please select a reason for rejection.');
+                            return;
+                        }
+
+                        const fullNotes = this.rejectionReason + (this.adminNotes ? ': ' + this.adminNotes : '');
+
+                        try {
+                            await window.showConfirmDialog(
+                                'Reject Request',
+                                'Are you sure you want to reject this request? Reason: "' + this.rejectionReason + '"',
+                                'Reject',
+                                'Cancel'
+                            );
+                        } catch (e) {
+                            return;
+                        }
+
+                        this.isSubmitting = true;
+
+                        try {
+                            const response = await fetch(`/admin/employee-requests/${this.selectedRequest.id}/reject`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ admin_notes: fullNotes })
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                this.closeRequestModal();
+                                window.showSuccessDialog('Request Rejected', data.message || 'The request has been rejected.', 'OK');
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject request.');
+                            }
+                        } catch (error) {
+                            window.showErrorDialog('Rejection Failed', 'An error occurred. Please try again.');
+                        } finally {
+                            this.isSubmitting = false;
+                        }
+                    },
+
+                    getStatusBadge(status) {
+                        const badges = {
+                            'pending': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                            'approved': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                            'rejected': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                            'cancelled': 'bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400'
+                        };
+                        return badges[status] || 'bg-gray-100 text-gray-700';
+                    }
+                };
+            }
+        </script>
         <div class="flex flex-col gap-4 w-full"
-            x-data="{
-                showRequestModal: false,
-                selectedRequest: null,
-                adminNotes: '',
-                rejectionReason: '',
-                isSubmitting: false,
-                showRejectionForm: false,
-                requestRecords: @js($requestRecords),
-                rejectionReasons: [
-                    'Insufficient leave balance',
-                    'Overlapping with other approved leaves',
-                    'Critical project deadline',
-                    'Short notice - requires more advance notice',
-                    'Documentation incomplete',
-                    'Department understaffed during requested period',
-                    'Request conflicts with company policy',
-                    'Other'
-                ],
-
-                openRequestModal(index) {
-                    const record = this.requestRecords[index];
-                    if (!record) return;
-
-                    this.selectedRequest = {
-                        id: record.requestId,
-                        employeeName: record.requestEmployeeName,
-                        type: record.requestType,
-                        status: record.requestStatus,
-                        date: record.requestDate,
-                        endDate: record.requestEndDate,
-                        timeRange: record.requestTimeRange,
-                        fromTime: record.requestFromTime,
-                        toTime: record.requestToTime,
-                        reason: record.requestReason,
-                        description: record.requestDescription,
-                        proofDocument: record.requestProofDocument,
-                        adminNotes: record.requestAdminNotes,
-                        durationDays: record.requestDurationDays,
-                        createdAt: record.requestCreatedAt,
-                        tasks: record.employeeTasks || [],
-                    };
-                    this.adminNotes = record.requestAdminNotes || '';
-                    this.rejectionReason = '';
-                    this.showRejectionForm = false;
-                    this.showRequestModal = true;
-                    document.body.style.overflow = 'hidden';
-                },
-
-                closeRequestModal() {
-                    this.showRequestModal = false;
-                    this.selectedRequest = null;
-                    this.adminNotes = '';
-                    this.rejectionReason = '';
-                    this.showRejectionForm = false;
-                    document.body.style.overflow = 'auto';
-                },
-
-                async approveRequest() {
-                    if (this.isSubmitting || !this.selectedRequest) return;
-
-                    try {
-                        await window.showConfirmDialog(
-                            'Approve Request',
-                            `Are you sure you want to approve this ${this.selectedRequest.type || 'leave'} request from ${this.selectedRequest.employee_name || 'this employee'}?`,
-                            'Approve',
-                            'Cancel'
-                        );
-                    } catch (e) {
-                        return;
-                    }
-
-                    this.isSubmitting = true;
-
-                    try {
-                        const response = await fetch(`/admin/employee-requests/${this.selectedRequest.id}/approve`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({ admin_notes: '' })
-                        });
-
-                        const data = await response.json();
-                        if (data.success) {
-                            this.closeRequestModal();
-                            window.showSuccessDialog('Request Approved', data.message || 'The request has been approved successfully.', 'OK');
-                            setTimeout(() => window.location.reload(), 1500);
-                        } else {
-                            window.showErrorDialog('Approval Failed', data.message || 'Failed to approve request.');
-                        }
-                    } catch (error) {
-                        window.showErrorDialog('Approval Failed', 'An error occurred. Please try again.');
-                    } finally {
-                        this.isSubmitting = false;
-                    }
-                },
-
-                handleDeclineClick() {
-                    if (!this.showRejectionForm) {
-                        this.showRejectionForm = true;
-                        return;
-                    }
-                    this.rejectRequest();
-                },
-
-                async rejectRequest() {
-                    if (this.isSubmitting || !this.selectedRequest) return;
-                    if (!this.rejectionReason) {
-                        window.showErrorDialog('Validation Error', 'Please select a reason for rejection.');
-                        return;
-                    }
-
-                    // Combine rejection reason with additional notes
-                    const fullNotes = this.rejectionReason + (this.adminNotes ? ': ' + this.adminNotes : '');
-
-                    try {
-                        await window.showConfirmDialog(
-                            'Reject Request',
-                            `Are you sure you want to reject this request? Reason: "${this.rejectionReason}"`,
-                            'Reject',
-                            'Cancel'
-                        );
-                    } catch (e) {
-                        return;
-                    }
-
-                    this.isSubmitting = true;
-
-                    try {
-                        const response = await fetch(`/admin/employee-requests/${this.selectedRequest.id}/reject`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({ admin_notes: fullNotes })
-                        });
-
-                        const data = await response.json();
-                        if (data.success) {
-                            this.closeRequestModal();
-                            window.showSuccessDialog('Request Rejected', data.message || 'The request has been rejected.', 'OK');
-                            setTimeout(() => window.location.reload(), 1500);
-                        } else {
-                            window.showErrorDialog('Rejection Failed', data.message || 'Failed to reject request.');
-                        }
-                    } catch (error) {
-                        window.showErrorDialog('Rejection Failed', 'An error occurred. Please try again.');
-                    } finally {
-                        this.isSubmitting = false;
-                    }
-                },
-
-                getStatusBadge(status) {
-                    const badges = {
-                        'pending': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-                        'approved': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                        'rejected': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                        'cancelled': 'bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400'
-                    };
-                    return badges[status] || 'bg-gray-100 text-gray-700';
-                }
-            }"
+            x-data="attendanceRequestData()"
             @open-request-modal.window="openRequestModal($event.detail.index)">
 
             <x-labelwithvalue label="Request Logs" count="({{ isset($requestRecords) ? count($requestRecords) : 0 }})" />
