@@ -354,6 +354,9 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::delete('/{userId}/cabin-types/{locationType}', [\App\Http\Controllers\Admin\AccountController::class, 'deleteCabinType'])->name('cabin-types.delete');
 
         Route::post('/{userId}/update-details', [\App\Http\Controllers\Admin\AccountController::class, 'updateContractedClient'])->name('update-details');
+
+        // Change user role
+        Route::patch('/{id}/change-role', [\App\Http\Controllers\Admin\AccountController::class, 'changeRole'])->name('change-role');
     });
 
     Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');

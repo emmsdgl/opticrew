@@ -760,4 +760,84 @@ class AccountController extends Controller
 
         return redirect()->back()->with('success', 'Company details updated successfully');
     }
+
+    /**
+     * Change a user's role.
+     * Allowed transitions:
+     *   employee → external_client (Personal Client)
+     *   external_client → employee
+     *   applicant → employee
+     */
+    public function changeRole(Request $request, $id)
+    {
+        $request->validate([
+            'new_role' => ['required', 'string', 'in:employee,external_client'],
+        ]);
+
+        $user = User::with(['employee', 'client'])->findOrFail($id);
+        $newRole = $request->new_role;
+
+        // Define allowed transitions
+        $allowed = [
+            'employee' => ['external_client'],
+            'external_client' => ['employee'],
+            'applicant' => ['employee'],
+        ];
+
+        if (!isset($allowed[$user->role]) || !in_array($newRole, $allowed[$user->role])) {
+            return response()->json(['message' => 'This role change is not allowed.'], 422);
+        }
+
+        // Handle transition: Employee → Personal Client
+        if ($user->role === 'employee' && $newRole === 'external_client') {
+            $user->role = 'external_client';
+            $user->save();
+
+            // Create client record if it doesn't exist
+            if (!$user->client) {
+                Client::create([
+                    'user_id' => $user->id,
+                    'client_type' => 'personal',
+                ]);
+            }
+
+            // Soft-delete the employee record
+            if ($user->employee) {
+                $user->employee->delete();
+            }
+        }
+
+        // Handle transition: Personal Client → Employee
+        if ($user->role === 'external_client' && $newRole === 'employee') {
+            $user->role = 'employee';
+            $user->save();
+
+            // Create employee record if it doesn't exist
+            if (!$user->employee) {
+                Employee::create([
+                    'user_id' => $user->id,
+                ]);
+            }
+
+            // Soft-delete the client record
+            if ($user->client) {
+                $user->client->delete();
+            }
+        }
+
+        // Handle transition: Applicant → Employee
+        if ($user->role === 'applicant' && $newRole === 'employee') {
+            $user->role = 'employee';
+            $user->save();
+
+            // Create employee record if it doesn't exist
+            if (!$user->employee) {
+                Employee::create([
+                    'user_id' => $user->id,
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Role changed successfully.']);
+    }
 }
