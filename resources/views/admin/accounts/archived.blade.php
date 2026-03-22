@@ -116,13 +116,17 @@
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                                 Employee
                                             </span>
-                                        @elseif($user->client && $user->client->client_type === 'company')
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Company
+                                        @elseif($user->role === 'applicant')
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                Applicant
+                                            </span>
+                                        @elseif($user->role === 'company')
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
+                                                Company Client
                                             </span>
                                         @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                                Personal
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                Personal Client
                                             </span>
                                         @endif
                                     </td>
@@ -175,13 +179,17 @@
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                                     Employee
                                 </span>
-                            @elseif($user->client && $user->client->client_type === 'company')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                    Company
+                            @elseif($user->role === 'applicant')
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    Applicant
+                                </span>
+                            @elseif($user->role === 'company')
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                                    Company Client
                                 </span>
                             @else
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                    Personal
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    Personal Client
                                 </span>
                             @endif
                         </div>

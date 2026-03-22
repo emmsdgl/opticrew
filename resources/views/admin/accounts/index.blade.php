@@ -129,11 +129,11 @@
                                 } elseif ($user->role === 'applicant') {
                                     $role = 'Applicant';
                                     $roleBadge = 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400';
-                                } elseif ($user->client && $user->client->client_type === 'company') {
-                                    $role = 'External Client';
+                                } elseif ($user->role === 'company') {
+                                    $role = 'Company Client';
                                     $roleBadge = 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
                                 } else {
-                                    $role = 'Employer';
+                                    $role = 'Personal Client';
                                     $roleBadge = 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400';
                                 }
                             @endphp
