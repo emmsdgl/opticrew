@@ -1,5 +1,5 @@
 <x-layouts.general-employee :title="'Development'">
-    <section class="flex flex-col lg:flex-row gap-0">
+    <section class="flex flex-col lg:flex-row gap-0 p-8">
 
         {{-- Left Sidebar - Course List --}}
         <div id="courseSidebar"

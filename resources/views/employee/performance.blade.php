@@ -7,7 +7,7 @@
     </div>
 
     {{-- DESKTOP LAYOUT (≥ 1024px) - Hidden on small screens --}}
-    <div class="hidden lg:block space-y-6 p-4">
+    <div class="hidden lg:block space-y-6 p-16">
 
         @php
             $totalTasks = $totalTasksCompleted + $incompleteTasks + $pendingTasks;

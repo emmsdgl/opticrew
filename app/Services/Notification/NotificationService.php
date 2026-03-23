@@ -400,14 +400,23 @@ class NotificationService
 
         $date = $date ?? now()->format('M d, Y');
 
+        // Get the employee's shift times
+        $employee = $employeeUser->employee;
+        $shiftStart = $employee->shift_start ?? '11:00';
+        $shiftEnd = $employee->shift_end ?? '19:00';
+        $formattedStart = \Carbon\Carbon::parse($shiftStart)->format('g:i A');
+        $formattedEnd = \Carbon\Carbon::parse($shiftEnd)->format('g:i A');
+
         return $this->create(
             $employeeUser,
             Notification::TYPE_EMPLOYEE_CLOCK_IN_REMINDER,
             'Clock In Reminder',
-            "Don't forget to clock in for your shift today ({$date}).",
+            "Don't forget to clock in for your shift today ({$date}). Your shift is from {$formattedStart} to {$formattedEnd}.",
             [
                 'date' => $date,
-                'icon' => 'clock',
+                'shift_start' => $formattedStart,
+                'shift_end' => $formattedEnd,
+                'icon' => 'user-clock',
                 'color' => 'yellow',
                 'action_url' => '/employee/attendance',
                 'action_text' => 'Clock In'
@@ -450,6 +459,35 @@ class NotificationService
         }
 
         return $notifications;
+    }
+
+    /**
+     * Notify employee with a clock out reminder.
+     */
+    public function notifyEmployeeClockOutReminder(User $employeeUser, string $date = null): ?Notification
+    {
+        if (!$employeeUser) return null;
+
+        $date = $date ?? now()->format('M d, Y');
+
+        $employee = $employeeUser->employee;
+        $shiftEnd = $employee->shift_end ?? '19:00';
+        $formattedEnd = \Carbon\Carbon::parse($shiftEnd)->format('g:i A');
+
+        return $this->create(
+            $employeeUser,
+            Notification::TYPE_EMPLOYEE_CLOCK_OUT_REMINDER,
+            'Clock Out Reminder',
+            "Your shift ends at {$formattedEnd}. Don't forget to clock out before leaving ({$date}).",
+            [
+                'date' => $date,
+                'shift_end' => $formattedEnd,
+                'icon' => 'user-clock',
+                'color' => 'blue',
+                'action_url' => '/employee/attendance',
+                'action_text' => 'Clock Out'
+            ]
+        );
     }
 
     /**

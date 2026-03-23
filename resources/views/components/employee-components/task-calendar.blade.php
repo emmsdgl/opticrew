@@ -3,16 +3,16 @@
     'initialView' => 'month'
 ])
 
-<div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-blue-300/20 dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+<div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-white/30 dark:bg-transparent rounded-2xl px-6">
     <!-- Calendar Header -->
-    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 gap-4">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between px-3 py-4 border-b border-gray-200 dark:border-gray-700 gap-4">
         <!-- Month/Year Display with Picker -->
         <div class="flex items-center gap-4">
             <div class="relative" x-data="{ showTooltip: false }">
                 <button @click="showMonthPicker = !showMonthPicker"
                         @mouseenter="showTooltip = true"
                         @mouseleave="showTooltip = false"
-                        class="text-base lg:text-base font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        class="text-base lg:text-base font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 py-2.5 rounded-lg transition-colors flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <span x-text="currentMonthYear"></span>
                 </button>
 
@@ -104,20 +104,32 @@
         <!-- View Options and Actions -->
         <div class="flex items-center gap-4">
             <!-- View Switcher -->
-            <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <div class="inline-flex items-center gap-1 rounded-lg bg-gray-100 dark:bg-gray-800 p-1 border border-gray-200 dark:border-gray-700" role="radiogroup">
                 <button @click="view = 'day'; updateView()"
-                        :class="view === 'day' ? 'bg-white dark:bg-gray-600' : ''"
-                        class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 rounded-md transition-all">
+                        :class="view === 'day'
+                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-gray-200 dark:ring-gray-600'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'"
+                        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        role="radio"
+                        :aria-checked="view === 'day'">
                     Day
                 </button>
                 <button @click="view = 'week'; updateView()"
-                        :class="view === 'week' ? 'bg-white dark:bg-gray-600' : ''"
-                        class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 rounded-md transition-all">
+                        :class="view === 'week'
+                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-gray-200 dark:ring-gray-600'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'"
+                        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        role="radio"
+                        :aria-checked="view === 'week'">
                     Week
                 </button>
                 <button @click="view = 'month'; updateView()"
-                        :class="view === 'month' ? 'bg-white dark:bg-gray-600' : ''"
-                        class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 rounded-md transition-all">
+                        :class="view === 'month'
+                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-gray-200 dark:ring-gray-600'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'"
+                        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        role="radio"
+                        :aria-checked="view === 'month'">
                     Month
                 </button>
             </div>

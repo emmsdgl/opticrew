@@ -10,7 +10,7 @@
 <div class="w-full" x-data="{ openMenuId: null }">
     @if(empty($items))
         <!-- Empty State - Auto Height -->
-        <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto {{ $bgClass }} dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+        <div class="flex flex-col items-center justify-center py-16 px-8 text-center h-auto {{ $bgClass }} {{ $bgClass === 'bg-transparent' ? '' : 'dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800' }}">
             <div class="w-48 h-48 mb-6 flex items-center justify-center">
                 <img src="{{ asset('images/icons/no-items-found.svg') }}"
                      alt="No appointments"
@@ -25,7 +25,7 @@
         </div>
     @else
         <!-- Scrollable container (only when items exist) -->
-        <div class="overflow-y-auto {{ $bgClass }} bg-white dark:bg-transparent rounded-2xl p-6 py-2 shadow-sm border border-gray-200 dark:border-none"
+        <div class="overflow-y-auto {{ $bgClass }} {{ $bgClass === 'bg-transparent' ? 'dark:bg-transparent' : 'bg-white dark:bg-transparent rounded-2xl py-2 shadow-sm border border-gray-200 dark:border-none' }}"
              style="{{ $fixedHeight !== 'auto' ? 'height: ' . $fixedHeight . ';' : '' }} max-height: {{ $maxHeight }};"
              @scroll.window="openMenuId = null"
              @scroll="openMenuId = null">

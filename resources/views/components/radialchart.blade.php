@@ -13,10 +13,12 @@
         'toDo' => 'To do'
     ],
     'colors' => [
-        'done' => '#2A6DFA',     
-        'inProgress' => '#2AC9FA', 
-        'toDo' => '#0028B3'       
-    ]
+        'done' => '#2A6DFA',
+        'inProgress' => '#2AC9FA',
+        'toDo' => '#0028B3'
+    ],
+    'actionUrl' => null,
+    'actionLabel' => 'View All Tasks',
 ])
 
 <div class="relative w-full h-full flex flex-col">
@@ -58,7 +60,7 @@
 
     <!-- Legend -->
     <div class="flex flex-row justify-center gap-3 sm:gap-4 items-center border-gray-200
-                dark:border-gray-700 mb-4 w-full flex-shrink-0 flex-wrap">
+                dark:border-gray-700 mb-1 w-full flex-shrink-0 flex-wrap">
         <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full flex-shrink-0" style="background: {{ $colors['done'] }}"></span>
             <span class="text-xs text-gray-700 dark:text-gray-300">{{ $labels['done'] }}</span>
@@ -72,6 +74,13 @@
             <span class="text-xs text-gray-700 dark:text-gray-300">{{ $labels['toDo'] }}</span>
         </div>
     </div>
+
+    @if($actionUrl)
+        <a href="{{ $actionUrl }}"
+            class="w-full text-center text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors py-1 block">
+            {{ $actionLabel }}
+        </a>
+    @endif
 </div>
 
 @push('scripts')

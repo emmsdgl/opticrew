@@ -146,6 +146,8 @@ document.addEventListener('alpine:init', () => {
         'application_received': 'info',
         'application_hired': 'success',
         'application_rejected': 'error',
+        'employee_clock_in_reminder': 'warning',
+        'employee_clock_out_reminder': 'info',
     };
 
     Alpine.data('sonnerToast', () => ({

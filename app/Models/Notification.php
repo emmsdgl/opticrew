@@ -34,6 +34,7 @@ class Notification extends Model
     const TYPE_EMPLOYEE_REQUEST_APPROVED = 'employee_request_approved';
     const TYPE_EMPLOYEE_REQUEST_REJECTED = 'employee_request_rejected';
     const TYPE_EMPLOYEE_CLOCK_IN_REMINDER = 'employee_clock_in_reminder';
+    const TYPE_EMPLOYEE_CLOCK_OUT_REMINDER = 'employee_clock_out_reminder';
     const TYPE_EMPLOYEE_FEEDBACK_SUBMITTED = 'employee_feedback_submitted';
 
     // Admin notification types

@@ -20,8 +20,11 @@
         @endif
 
         <!-- Tasks Calendar Section -->
-        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
-            <x-labelwithvalue label="Task Calendar" count="" />
+        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg px-3">
+            <div class="flex flex-col gap-1 w-full px-8 py-3">
+                <p class="text-base font-bold text-blue-950 dark:text-white">Task Calendar</p>
+                <p class="text-sm text-gray-700 dark:text-gray-500">Track and manage tasks assigned to you in this page.</p>
+            </div>
 
             @php
                 // Transform tasks to calendar events format
@@ -203,8 +206,8 @@
         </script>
 
         <!-- Today's Tasks Section -->
-        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
-            <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg">
+            <div class="flex items-center justify-between px-8 py-2">
                 <x-labelwithvalue label="My Tasks for Today" :count="'(' . $todayTasks->count() . ')'" />
                 <div class="flex items-center gap-2">
                     <!-- Sort by Service Dropdown -->
@@ -296,7 +299,7 @@
                 })->toArray();
             @endphp
 
-            {{-- <div id="today-tasks-list" class="{{ $todayTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800"> --}}
+            <div id="today-tasks-list" class="px-8">
                 <x-employee-components.task-overview-list
                     :items="$todayTasksFormatted"
                     fixedHeight="24rem"
@@ -304,15 +307,15 @@
                     bgClass="bg-white"
                     emptyTitle="No tasks assigned for today"
                     emptyMessage="Check back later or contact your supervisor for task assignments." />
-            {{-- </div> --}}
+            </div>
         </div>
 
         <!-- Divider -->
         <hr class="my-6 border-gray-300 dark:border-gray-700">
 
         <!-- To Be Approved Section -->
-        <div class="flex flex-col gap-6 w-full rounded-lg p-4">
-            <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-6 w-full rounded-lg">
+            <div class="flex items-center justify-between px-8 py-2">
                 <x-labelwithvalue label="To Be Approved" :count="'(' . $pendingApprovalTasks->count() . ')'" />
                 <div class="flex items-center gap-2">
                     <!-- Sort by Service Dropdown -->
@@ -404,15 +407,15 @@
                 })->toArray();
             @endphp
 
-            {{-- <div id="pending-tasks-list" class="{{ $pendingApprovalTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} dark:bg-gray-800/30 rounded-2xl py-3 shadow-sm border border-gray-200 dark:border-gray-800"> --}}
+            <div id="pending-tasks-list" class="px-8">
                 <x-employee-components.task-overview-list
                     :items="$pendingApprovalTasksFormatted"
-                    fixedHeight="24rem"
+                    fixedHeight="25rem"
                     maxHeight="30rem"
                     bgClass="bg-white"
                     emptyTitle="No tasks pending approval"
                     emptyMessage="All assigned tasks have been reviewed." />
-            {{-- </div> --}}
+            </div>
 
             <!-- Hidden forms for approve/decline actions -->
             @foreach($pendingApprovalTasks as $task)
@@ -429,8 +432,8 @@
         <hr class="my-6 border-gray-300 dark:border-gray-700">
 
         <!-- Tasks History Section -->
-        <div class="flex flex-col gap-6 w-full rounded-lg p-4">
-            <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-6 w-full rounded-lg">
+            <div class="flex items-center justify-between px-8">
                 <x-labelwithvalue label="Tasks History" :count="'(' . $completedTasks->count() . ')'" />
                 <div class="flex items-center gap-2">
                     <!-- Sort by Service Dropdown -->
@@ -538,7 +541,7 @@
                 })->toArray();
             @endphp
 
-            {{-- <div id="history-tasks-list" class="{{ $completedTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800"> --}}
+            <div id="history-tasks-list" class="px-8">
                 <x-employee-components.task-overview-list
                     :items="$allTasksFormatted"
                     fixedHeight="24rem"
@@ -546,7 +549,7 @@
                     bgClass="bg-white"
                     emptyTitle="No tasks in history"
                     emptyMessage="Your completed and upcoming tasks will appear here once assigned." />
-            {{-- </div> --}}
+            </div>
         </div>
 
         <!-- OLD GANTT CHART SECTION - REMOVED, replaced with functional task cards above -->

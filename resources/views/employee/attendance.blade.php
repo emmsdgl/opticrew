@@ -7,7 +7,7 @@
     </div>
 
     {{-- DESKTOP LAYOUT (≥ 1024px) - Hidden on small screens --}}
-    <section role="status" class="w-full hidden lg:flex flex-col lg:flex-col gap-1 p-4 md:p-6"
+    <section role="status" class="w-full hidden lg:flex flex-col lg:flex-col gap-1 p-16 md:p-6"
         x-data="{
             showRequestModal: false,
             selectedRequest: null,
@@ -68,15 +68,6 @@
                 }
             }
         }">
-
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-            <x-alert type="success">{{ session('success') }}</x-alert>
-        @endif
-
-        @if(session('error'))
-            <x-alert type="error">{{ session('error') }}</x-alert>
-        @endif
 
         <!-- Clock In Status Banner -->
         @if($isClockedIn)

@@ -81,9 +81,12 @@
             @blur="focused = false; filled = !!$el.value"
             @input="filled = !!$el.value"
             placeholder="{{ $placeholder }}"
+            @if(in_array($type, ['date', 'time']))
+                :class="(!focused && !filled && !{{ $model ? $model : 'false' }}) ? 'text-transparent' : 'text-gray-900 dark:text-white'"
+            @endif
             class="mui-input peer w-full {{ $hasIcon ? 'pl-10' : 'pl-4' }} pr-4 {{ $label ? 'pt-5 pb-2' : 'py-2.5' }} text-sm
                    border border-gray-400 dark:border-gray-700 rounded-xl
-                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                   bg-white dark:bg-gray-800 {{ in_array($type, ['date', 'time']) ? '' : 'text-gray-900 dark:text-white' }}
                    placeholder-transparent
                    transition-all duration-200
                    focus:outline-none focus:border-blue-500 dark:focus:border-blue-400

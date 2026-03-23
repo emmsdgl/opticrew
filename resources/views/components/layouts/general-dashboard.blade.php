@@ -154,7 +154,7 @@
     }
 </style>
 
-<body class="bg-white text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
+<body class="bg-[#ECF1FF] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
     <x-material-ui.page-loader />
     {{$sidebar}}
 
@@ -398,6 +398,7 @@
     @auth
         <x-material-ui.sonner />
     @endauth
+    @stack('modals')
 </body>
 
 </html>

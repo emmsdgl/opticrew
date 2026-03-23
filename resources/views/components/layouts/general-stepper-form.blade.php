@@ -191,7 +191,7 @@ if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && w
 
 </head>
 
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-100 font-sans transition-colors duration-300 min-h-screen flex flex-col">
+<body class="bg-[#ECF1FF] dark:bg-gray-900 text-gray-700 dark:text-gray-100 font-sans transition-colors duration-300 min-h-screen flex flex-col">
 
 <header class="bg-white dark:bg-[#1E293B] shadow transition-colors duration-300 sticky top-0 z-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

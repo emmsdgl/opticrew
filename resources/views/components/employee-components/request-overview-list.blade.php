@@ -22,11 +22,6 @@
 <div class="w-full">
     @if(empty($items))
         <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto bg-white dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-            <div class="w-32 h-32 mb-4 flex items-center justify-center">
-                <img src="{{ asset('images/icons/no-items-found.svg') }}"
-                     alt="No requests"
-                     class="w-full h-full object-contain opacity-80 dark:opacity-60">
-            </div>
             <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
                 {{ $emptyTitle }}
             </h3>

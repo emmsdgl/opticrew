@@ -166,6 +166,10 @@ class EmployeeDashboardController extends Controller
             ];
         })->values()->toArray();
 
+        // Shift times for reminders
+        $shiftStart = $employee->shift_start ?? '11:00';
+        $shiftEnd = $employee->shift_end ?? '19:00';
+
         return view('employee.dashboard', [
             'employee' => $employee,
             'dailySchedule' => $dailySchedule,
@@ -177,6 +181,8 @@ class EmployeeDashboardController extends Controller
             'hasAttendanceToday' => $hasAttendanceToday,
             'employeeRequests' => $employeeRequests,
             'watchedLessons' => $watchedLessons,
+            'shiftStart' => $shiftStart,
+            'shiftEnd' => $shiftEnd,
         ]);
     }
 }

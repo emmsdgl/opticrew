@@ -213,7 +213,7 @@
                             <span x-show="selectedRating === {{ $rating }}"
                                   x-transition
                                   class="absolute -bottom-8 text-xs font-semibold text-white bg-blue-600 dark:bg-blue-500 px-3 py-1 rounded-full whitespace-nowrap shadow-lg">
-                                {{ $rating }}.0 Medium
+                                {{ $rating }}.0 {{ [1 => 'Very Dissatisfied', 2 => 'Dissatisfied', 3 => 'Neutral', 4 => 'Satisfied', 5 => 'Very Satisfied'][$rating] }}
                             </span>
                         </button>
                         @endforeach

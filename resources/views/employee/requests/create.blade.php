@@ -61,9 +61,10 @@
                                     @focus="focused = true"
                                     @blur="focused = false; filled = !!$el.value"
                                     @change="filled = !!$el.value"
+                                    :class="(!focused && !filled && !formData.absence_type) ? 'text-transparent' : 'text-gray-900 dark:text-white'"
                                     class="mui-input peer w-full pl-10 pr-4 pt-5 pb-2 text-sm
                                            border border-gray-400 dark:border-gray-700 rounded-xl
-                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                           bg-white dark:bg-gray-800
                                            transition-all duration-200
                                            focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
                                            focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
@@ -105,9 +106,10 @@
                                     @focus="focused = true"
                                     @blur="focused = false; filled = !!$el.value"
                                     @change="filled = !!$el.value"
+                                    :class="(!focused && !filled && !formData.time_range) ? 'text-transparent' : 'text-gray-900 dark:text-white'"
                                     class="mui-input peer w-full pl-10 pr-4 pt-5 pb-2 text-sm
                                            border border-gray-400 dark:border-gray-700 rounded-xl
-                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                           bg-white dark:bg-gray-800
                                            transition-all duration-200
                                            focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
                                            focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
@@ -156,9 +158,10 @@
                                     @focus="focused = true"
                                     @blur="focused = false; filled = !!$el.value"
                                     @change="filled = !!$el.value"
+                                    :class="(!focused && !filled && !formData.reason) ? 'text-transparent' : 'text-gray-900 dark:text-white'"
                                     class="mui-input peer w-full pl-10 pr-4 pt-5 pb-2 text-sm
                                            border border-gray-400 dark:border-gray-700 rounded-xl
-                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                           bg-white dark:bg-gray-800
                                            transition-all duration-200
                                            focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
                                            focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]

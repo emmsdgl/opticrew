@@ -78,11 +78,13 @@
                         <x-herocard :headerName="$employee->user->name ?? 'Employee'" :headerDesc="'Welcome to the employee dashboard. Track tasks and manage them'" :headerIcon="'hero-employee'" />
                     </div>
                 <!-- Inner Middle - Calendar -->
-                <x-labelwithvalue label="My Calendar" count="" />
-                <div id="tour-emp-calendar"
-                    class="w-full rounded-lg bg-white/30 backdrop-blur-md border border-white/40 shadow-sm dark:bg-gray-800/40 dark:border-transparent dark:backdrop-blur-none">
-                    <x-calendar :holidays="$holidays" calendar-id="desktop" />
+                <div class="mt-3">
+                    <x-labelwithvalue label="My Calendar" count="" />
                 </div>
+                    <div id="tour-emp-calendar"
+                        class="w-full rounded-lg bg-white/30 backdrop-blur-md border border-white/40 shadow-sm dark:bg-gray-800/40 dark:border-transparent dark:backdrop-blur-none">
+                        <x-calendar :holidays="$holidays" calendar-id="desktop" />
+                    </div>
 
                 <!-- Inner Down - Tasks Particulars -->
                 <div id="tour-emp-tasks" class="w-full flex-1 flex flex-col">
@@ -112,7 +114,8 @@
                         @endphp
 
                         <x-employee-components.task-overview-list :items="$tasks" fixedHeight="auto"
-                            maxHeight="100%" emptyTitle="No tasks assigned yet"
+                            maxHeight="100%" bgClass="bg-transparent"
+                            emptyTitle="No tasks assigned yet"
                             emptyMessage="You don't have any tasks at the moment. New tasks will appear here once assigned." />
                     </div>
                 </div>
@@ -120,26 +123,64 @@
 
             <!-- Right Panel - Tasks Details -->
             <div id="tour-emp-right-panel"
-                class="flex flex-col gap-6 w-full lg:w-1/3 mt-12 px-4">
+                class="flex flex-col gap-3 w-full lg:w-1/3 mt-8 px-4">
 
-                <!-- Tasks Summary - Radial Chart (hidden on small screens) -->
-                <div class="hidden md:block w-full rounded-lg overflow-hidden flex-shrink-0">
-                    <div class="w-full aspect-square max-h-[300px] md:max-h-[340px] lg:max-h-[385px] p-4">
-                        <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
-                            'done' => 'Done',
-                            'inProgress' => 'In Progress',
-                            'toDo' => 'To Do',
-                        ]"
-                            :colors="[
-                                'done' => '#2A6DFA',
-                                'inProgress' => '#2AC9FA',
-                                'toDo' => '#0028B3',
-                            ]" />
+                <!-- Log Your Attendance Card -->
+                <div id="attendance-card"
+                    class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl py-4 bg-white shadow-sm dark:bg-gray-800/40">
+                    <!-- Background Image for Light Mode -->
+                    <div class="absolute inset-0 bg-cover bg-center block dark:hidden"
+                        style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg.svg') }}');">
+                    </div>
+
+                    <!-- Background Image for Dark Mode -->
+                    <div class="absolute inset-0 bg-cover bg-center hidden dark:block"
+                        style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg-dark.svg') }}');">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="relative px-6 py-2 h-full">
+                        <div class="flex flex-col items-start my-3">
+                            <!-- Text Content -->
+                            <div class="flex flex-row w-full">
+                                <h3 class="text-lg md:text-xl font-black text-gray-900 dark:text-white">
+                                    Already Logged<br>Your Attendance?
+                                </h3>
+                            </div>
+
+                            <div class="mb-2">
+                                @if ($hasAttendanceToday)
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 my-4">
+                                        <span class="font-bold text-gray-900 dark:text-white text-sm">
+                                            Today's attendance</span><br>
+                                        successfully recorded
+                                    </p>
+                                    <!-- View Details Button -->
+                                    <button @click="openAttendanceDrawer()"
+                                        class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 mt-6 mb-3">
+                                        <i class="fi fi-rr-eye text-sm"></i>
+                                        View Details
+                                    </button>
+                                @else
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 my-6">
+                                        <span class="font-bold text-gray-900 dark:text-white text-sm">
+                                            No attendance</span><br>
+                                        recorded yet
+                                    </p>
+                                    <!-- Log Attendance Button -->
+                                    <button @click="openAttendanceDrawer()"
+                                        class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 shadow-sm">
+                                        <i class="fi fi-rr-clock text-sm"></i>
+                                        Log Attendance
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Course Progress List -->
-                <div class="flex flex-col gap-6 mt-4">
+                <div id="course-progress-section" class="flex flex-col gap-6">
                     <div class="flex flex-row justify-between items-center w-full">
                         <x-labelwithvalue label="Course Progress" count="({{ count($watchedLessons) }})" />
                     </div>
@@ -216,46 +257,24 @@
                     @endif
                 </div>
 
-                <!-- Recent Requests -->
-                <div class="flex flex-col gap-6">
-                    <div class="flex flex-row items-center w-full justify-between">
-                        <x-labelwithvalue label="Recent Requests" count="" />
-                        <a href="{{ route('employee.requests.create') }}"
-                            class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
-                            New Request
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
-                        </a>
+                <!-- Tasks Summary - Radial Chart (hidden on small screens) -->
+                <div class="hidden md:block w-full rounded-lg overflow-hidden flex-shrink-0 mt-3">
+                    <div class="w-full aspect-square max-h-[300px] md:max-h-[340px] lg:max-h-[385px] p-2">
+                        <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
+                            'done' => 'Done',
+                            'inProgress' => 'In Progress',
+                            'toDo' => 'To Do',
+                        ]"
+                            :colors="[
+                                'done' => '#2A6DFA',
+                                'inProgress' => '#2AC9FA',
+                                'toDo' => '#0028B3',
+                            ]" />
                     </div>
-
-                    @php
-                        $requestItems = collect($employeeRequests)->map(function ($request, $index) {
-                            $timeRange = '';
-                            if (($request['type'] === 'Change Shift' || $request['type'] === 'Shift Change') && !empty($request['from_time'])) {
-                                $timeRange = $request['from_time'] . (!empty($request['to_time']) ? ' - ' . $request['to_time'] : '');
-                            } elseif (!empty($request['time_range'])) {
-                                $timeRange = $request['time_range'];
-                            }
-
-                            return [
-                                'type' => $request['type'],
-                                'date' => $request['date'],
-                                'status' => $request['status'],
-                                'time_range' => $timeRange,
-                                'reason' => $request['reason'] ?? '',
-                                'onclick' => "openRequestModal({$index})",
-                            ];
-                        })->toArray();
-                    @endphp
-
-                    <x-employee-components.request-overview-list
-                        :items="$requestItems"
-                        fixedHeight="19.5rem"
-                        maxHeight="19.5rem"
-                        emptyTitle="No requests yet"
-                        emptyMessage="You don't have any requests at the moment. New requests will appear here once submitted." />
+                    <a href="{{ route('employee.tasks') }}"
+                        class="w-full text-center text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors py-1 block">
+                        View All Tasks
+                    </a>
                 </div>
             </div>
 
@@ -721,49 +740,63 @@
                         }, 2000);
                     });
                 @endif
+
+                // Clock-In Reminder (persistent sonner when not yet clocked in)
+                @if (!$hasAttendanceToday)
+                    document.addEventListener('DOMContentLoaded', function() {
+                        setTimeout(function() {
+                            const sonnerEl = document.querySelector('[x-data="sonnerToast()"]');
+                            if (sonnerEl && sonnerEl._x_dataStack) {
+                                Alpine.$data(sonnerEl).show(
+                                    'Clock In Required',
+                                    'You haven\'t clocked in yet today. Your shift starts at {{ \Carbon\Carbon::parse($shiftStart)->format("g:i A") }} and ends at {{ \Carbon\Carbon::parse($shiftEnd)->format("g:i A") }}. Use the attendance drawer to clock in.',
+                                    'warning', {
+                                        persistent: true,
+                                    }
+                                );
+                            }
+                        }, 3000);
+                    });
+                @endif
             </script>
             <script>
-                // Align todo list bottom with recent requests bottom
-                function alignTodoToRequests() {
-                    if (window.innerWidth < 1024) return; // Only on lg+ (side-by-side layout)
+                // Align Course Progress label with My Calendar label
+                function alignCourseProgressWithCalendar() {
+                    if (window.innerWidth < 1024) {
+                        // Reset on small screens
+                        const card = document.getElementById('attendance-card');
+                        if (card) card.style.minHeight = '';
+                        return;
+                    }
 
-                    const requestsList = document.getElementById('recent-requests-list');
-                    const todoContainer = document.querySelector('.todo-list-container');
-                    if (!requestsList || !todoContainer) return;
+                    const calendarLabel = document.querySelector('#tour-emp-calendar')?.previousElementSibling;
+                    const courseProgressLabel = document.querySelector('#course-progress-section');
+                    const attendanceCard = document.getElementById('attendance-card');
 
-                    const requestsBottom = requestsList.getBoundingClientRect().bottom;
-                    const todoTop = todoContainer.getBoundingClientRect().top;
-                    const neededHeight = requestsBottom - todoTop;
+                    if (!calendarLabel || !courseProgressLabel || !attendanceCard) return;
 
-                    if (neededHeight > 0) {
-                        todoContainer.style.height = neededHeight + 'px';
-                        todoContainer.style.overflow = 'hidden';
-                        // Also adjust the inner scrollable area
-                        const scrollArea = todoContainer.querySelector('[style*="max-height"]');
-                        if (scrollArea) {
-                            scrollArea.style.maxHeight = '100%';
-                            scrollArea.style.height = '100%';
-                        }
+                    // Reset first
+                    attendanceCard.style.minHeight = '';
+
+                    // Get positions
+                    const calendarLabelTop = calendarLabel.getBoundingClientRect().top;
+                    const courseLabelTop = courseProgressLabel.getBoundingClientRect().top;
+                    const diff = calendarLabelTop - courseLabelTop;
+
+                    if (Math.abs(diff) > 2) {
+                        const currentHeight = attendanceCard.getBoundingClientRect().height;
+                        attendanceCard.style.minHeight = (currentHeight + diff) + 'px';
                     }
                 }
 
                 document.addEventListener('DOMContentLoaded', function() {
-                    // Run after a brief delay to let the layout settle
-                    setTimeout(alignTodoToRequests, 100);
+                    setTimeout(alignCourseProgressWithCalendar, 100);
                 });
                 window.addEventListener('resize', function() {
-                    // Reset on resize then realign
-                    const todoContainer = document.querySelector('.todo-list-container');
-                    if (todoContainer) {
-                        todoContainer.style.height = '';
-                        todoContainer.style.overflow = '';
-                        const scrollArea = todoContainer.querySelector('[style*="max-height"], [style*="height"]');
-                        if (scrollArea) {
-                            scrollArea.style.maxHeight = '';
-                            scrollArea.style.height = '';
-                        }
+                    const card = document.getElementById('attendance-card');
+                    if (card) card.style.minHeight = '';
                     }
-                    setTimeout(alignTodoToRequests, 100);
+                    setTimeout(alignCourseProgressWithCalendar, 100);
                 });
             </script>
             <script>
