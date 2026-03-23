@@ -24,7 +24,7 @@
     <div class="relative flex-1 min-h-0">
         <!-- Subtle gradient background circle -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-full bg-gradient-to-br from-indigo-50 via-pink-50 to-orange-50 
+            <div class="w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full bg-gradient-to-br from-indigo-50 via-pink-50 to-orange-50
                         dark:from-indigo-950/20 dark:via-pink-950/20 dark:to-orange-950/20 opacity-40"></div>
         </div>
 
@@ -32,9 +32,9 @@
         <div class="relative w-full h-full flex items-center justify-center" id="{{ $chartId }}"></div>
 
         <!-- Custom Center Label (overlays the chart) -->
-        <div class="absolute top-1/3 right-1/3 flex items-center justify-center pointer-events-none">
-            <div class="text-center justify-center w-full px-4">
-                <div class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100" 
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="text-center px-4">
+                <div class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100"
                      id="{{ $chartId }}-total">0</div>
                 <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Total Tasks</div>
             </div>
@@ -170,25 +170,36 @@
                 legend: { show: false },
                 stroke: { lineCap: 'round' },
                 responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: { height: 220 },
+                        plotOptions: {
+                            radialBar: {
+                                hollow: { size: '35%' },
+                                track: { margin: 3 }
+                            }
+                        }
+                    }
+                }, {
                     breakpoint: 640,
                     options: {
-                        chart: {
-                            height: 280
+                        chart: { height: 260 },
+                        plotOptions: {
+                            radialBar: {
+                                hollow: { size: '38%' },
+                                track: { margin: 4 }
+                            }
                         }
                     }
                 }, {
                     breakpoint: 768,
                     options: {
-                        chart: {
-                            height: 320
-                        }
+                        chart: { height: 300 }
                     }
                 }, {
                     breakpoint: 1024,
                     options: {
-                        chart: {
-                            height: 360
-                        }
+                        chart: { height: 340 }
                     }
                 }]
             };

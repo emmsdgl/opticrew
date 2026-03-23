@@ -131,7 +131,7 @@
 
     <section role="status" class="flex flex-col lg:flex-row gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <!-- Left Panel - Dashboard Content -->
-        <div class="flex flex-col gap-6 flex-1 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4"
+        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4"
             x-data="{
                 showDrawer: false,
                 selectedAppointment: null,
@@ -214,13 +214,13 @@
 
             <!-- Inner Up - Dashboard Header -->
             <div id="tour-client-welcome"
-                class="w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg h-40 sm:h-44 md:h-48 flex items-center">
+                class="w-full rounded-lg h-40 sm:h-44 md:h-48 flex items-center">
                     <x-herocard :headerName="$client->first_name ?? 'Client'" :headerDesc="'Welcome to the dashboard. What needs cleaning today?'" :headerIcon="'hero-client'" />
             </div>
 
             <!-- Inner Middle - Calendar -->
             <x-labelwithvalue label="My Calendar" count="" />
-            <div id="tour-client-calendar" class="w-full pb-6 rounded-lg h-auto sm:h-72 md:h-80 lg:h-auto">
+            <div id="tour-client-calendar" class="w-full pb-6 rounded-lg h-auto sm:h-72 md:h-80 lg:h-auto bg-white shadow-sm dark:bg-gray-800/40">
                 <x-calendar :holidays="$holidays" />
             </div>
 
@@ -299,7 +299,7 @@
                     </div>
                 </div>
                 <!-- Fixed height when items exist, auto height for empty state -->
-                <div id="dashboard-appointments-list" class="{{ $appointments->count() > 0 ? 'h-48 overflow-y-auto' : '' }}">
+                <div id="dashboard-appointments-list" class="rounded-lg my-6 bg-white shadow-sm dark:bg-gray-800/40 {{ $appointments->count() > 0 ? 'h-48 overflow-y-auto' : '' }}">
                     <x-client-components.appointment-page.appointment-overview-list :items="$appointments->map(function ($appointment) {
                         return [
                             'id' => $appointment->id,
@@ -327,7 +327,7 @@
                     <div class="flex gap-3">
                         <button
                             x-show="selectedAppointment && selectedAppointment.status === 'pending'"
-                            @click="cancelAppointment(selectedAppointment.id); closeDrawer()"
+                            @click="cancelAppointment(selectedAppointment.id)"
                             class="flex-1 text-sm px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium">
                             Cancel Appointment
                         </button>
@@ -385,23 +385,39 @@
                     class="flex flex-col gap-6 snap-x snap-mandatory scroll-smooth scrollbar-custom w-full">
 
                     @php
-                        $finalCleaningRating = \App\Models\Feedback::averageRatingForService('Final Cleaning');
-                        $deepCleaningRating = \App\Models\Feedback::averageRatingForService('Deep Cleaning');
-
-                        $services = [
-                            [
-                                'title' => 'Final Cleaning',
-                                'badge' => 'Most Popular',
-                                'rating' => $finalCleaningRating > 0 ? number_format($finalCleaningRating, 1) : 'New',
-                                'description' => 'Complete cleaning service covering kitchen, living room, bedrooms, bathroom and sauna.',
-                            ],
-                            [
-                                'title' => 'Deep Cleaning',
-                                'badge' => 'Thorough',
-                                'rating' => $deepCleaningRating > 0 ? number_format($deepCleaningRating, 1) : 'New',
-                                'description' => 'Intensive cleaning service for a deeper clean. Includes all Final Cleaning tasks plus extra attention to hard-to-reach areas, detailed scrubbing, and sanitization of all surfaces for a spotless finish.',
-                            ],
+                        $serviceMeta = [
+                            'Final Cleaning' => ['badge' => 'Most Popular', 'price' => 'Fixed Price', 'description' => 'Complete cleaning service covering kitchen, living room, bedrooms, bathroom and sauna.'],
+                            'Deep Cleaning' => ['badge' => 'Thorough', 'price' => 'From €48/hr', 'description' => 'Intensive deep clean with extra attention to hard-to-reach areas, detailed scrubbing, and full sanitization.'],
+                            'Daily Cleaning' => ['badge' => 'Everyday', 'price' => 'From €35/hr', 'description' => 'Regular daily maintenance cleaning to keep your space fresh, tidy, and comfortable every day.'],
+                            'Daily Room Cleaning' => ['badge' => 'Room Care', 'price' => 'From €35/hr', 'description' => 'Focused daily room upkeep including dusting, vacuuming, and surface cleaning for a consistently clean space.'],
+                            'Snowout Cleaning' => ['badge' => 'Seasonal', 'price' => 'From €55/hr', 'description' => 'Specialized post-winter cleaning to remove salt, dirt, and debris brought in during snowy conditions.'],
+                            'General Cleaning' => ['badge' => 'Essential', 'price' => 'From €40/hr', 'description' => 'Standard all-around cleaning covering floors, surfaces, kitchen, and bathrooms for a fresh environment.'],
+                            'Hotel Cleaning' => ['badge' => 'Hospitality', 'price' => 'From €42/hr', 'description' => 'Professional hotel-standard cleaning for guest rooms, lobbies, and common areas with turnover-ready results.'],
                         ];
+
+                        $topRated = $topRatedServices ?? collect([]);
+                        $services = $topRated->take(3)->map(function ($svc) use ($serviceMeta) {
+                            $baseType = $svc->service_type;
+                            // Match base service type (e.g. "Final Cleaning - Demo Room" → "Final Cleaning")
+                            $matchedMeta = $serviceMeta[$baseType] ?? null;
+                            if (!$matchedMeta) {
+                                foreach ($serviceMeta as $key => $meta) {
+                                    if (str_starts_with($baseType, $key)) {
+                                        $matchedMeta = $meta;
+                                        break;
+                                    }
+                                }
+                            }
+                            $matchedMeta = $matchedMeta ?? ['badge' => 'Service', 'price' => 'Contact Us', 'description' => 'Professional cleaning service tailored to your needs.'];
+
+                            return [
+                                'title' => $svc->service_type,
+                                'badge' => $matchedMeta['badge'],
+                                'rating' => number_format($svc->avg_rating, 1),
+                                'price' => $matchedMeta['price'],
+                                'description' => $matchedMeta['description'],
+                            ];
+                        })->toArray();
                     @endphp
 
                     @foreach($services as $service)
@@ -412,101 +428,44 @@
                 </div>
             </div>
 
-            <!-- Services Availed Card -->
-            @php
-                $breakdown = $serviceBreakdown ?? ['completed_total' => 0, 'final_cleaning' => 0, 'deep_cleaning' => 0, 'other' => 0, 'month_change' => 0];
-                $completedTotal = $breakdown['completed_total'];
-                $allTotal = $stats['total'] ?? 0;
-                $completionRate = $allTotal > 0 ? round(($completedTotal / $allTotal) * 100) : 0;
-                $finalPct = $completedTotal > 0 ? round(($breakdown['final_cleaning'] / $completedTotal) * 100) : 0;
-                $deepPct = $completedTotal > 0 ? round(($breakdown['deep_cleaning'] / $completedTotal) * 100) : 0;
-                $otherPct = $completedTotal > 0 ? (100 - $finalPct - $deepPct) : 0;
-                $monthChange = $breakdown['month_change'];
-            @endphp
-            <div class="mt-3 w-full relative overflow-hidden rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Services Availed</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Represents completion rate of your booked services.</p>
-
-                    <!-- Percentage + Change -->
-                    <div class="flex items-end gap-3 mt-4">
-                        <span class="text-xl font-bold text-gray-900 dark:text-white">{{ $completionRate }}%</span>
-                        <div class="flex items-center gap-1 mb-1.5">
-                            @if($monthChange > 0)
-                                <span class="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
-                                    <i class="fa-solid fa-arrow-up text-[10px]"></i> {{ $monthChange }}%
-                                </span>
-                            @elseif($monthChange < 0)
-                                <span class="text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded">
-                                    <i class="fa-solid fa-arrow-down text-[10px]"></i> {{ abs($monthChange) }}%
-                                </span>
-                            @else
-                                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
-                                    0%
-                                </span>
-                            @endif
-                            <span class="text-sm text-gray-500 dark:text-gray-400">since last month</span>
-                        </div>
-                    </div>
-
-                    <!-- Multi-segment Progress Bar -->
-                    <div class="flex w-full h-2.5 rounded-full overflow-hidden mt-4 bg-gray-200 dark:bg-gray-700">
-                        @if($completedTotal > 0)
-                            <div class="bg-blue-500 h-full" style="width: {{ $finalPct }}%"></div>
-                            <div class="bg-emerald-500 h-full" style="width: {{ $deepPct }}%"></div>
-                            @if($otherPct > 0)
-                                <div class="bg-amber-400 h-full" style="width: {{ $otherPct }}%"></div>
-                            @endif
-                        @endif
-                    </div>
-
-                    <!-- Legend -->
-                    <div class="flex flex-wrap justify-between items-center gap-x-4 gap-y-1 mt-3">
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block"></span>
-                            <span class="text-xs text-gray-600 dark:text-gray-400">Final Cleaning</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span>
-                            <span class="text-xs text-gray-600 dark:text-gray-400">Deep Cleaning</span>
-                        </div>
-                        @if($breakdown['other'] > 0)
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span>
-                            <span class="text-xs text-gray-600 dark:text-gray-400">Other</span>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
     @push('scripts')
     <script>
     async function cancelAppointment(appointmentId) {
-        if (confirm('Are you sure you want to cancel this appointment?')) {
-            try {
-                const response = await fetch(`/client/appointments/${appointmentId}/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
+        try {
+            await window.showConfirmDialog(
+                'Cancel Appointment?',
+                'Are you sure you want to cancel this appointment? This action cannot be undone.',
+                'Yes, Cancel',
+                'No, Keep It'
+            );
+        } catch (e) {
+            return;
+        }
 
-                const data = await response.json();
-
-                if (data.success) {
-                    window.showSuccessDialog('Appointment Cancelled', 'Your appointment has been cancelled successfully.');
-                    window.location.reload();
-                } else {
-                    window.showErrorDialog('Cancellation Failed', data.message || 'Failed to cancel the appointment. Please try again.');
+        try {
+            const response = await fetch(`/client/appointments/${appointmentId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
                 }
-            } catch (error) {
-                console.error('Error cancelling appointment:', error);
-                window.showErrorDialog('Error', 'An error occurred while cancelling the appointment.');
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                window.showSuccessDialog('Appointment Cancelled', data.message || 'Your appointment has been cancelled successfully.');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                window.showErrorDialog('Cancellation Failed', data.message || 'Failed to cancel the appointment. Please try again.');
             }
+        } catch (error) {
+            console.error('Error cancelling appointment:', error);
+            window.showErrorDialog('Error', 'An unexpected error occurred. Please try again.');
         }
     }
     </script>

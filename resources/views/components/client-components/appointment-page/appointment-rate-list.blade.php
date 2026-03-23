@@ -21,13 +21,13 @@
 <div class="w-full" x-data="appointmentRateList({{ Js::from($items) }})">
     @if(empty($items))
         <!-- Empty State -->
-        <div class="flex flex-col items-center justify-center py-16 px-6 text-center">
-            <div class="w-64 h-64 mb-6 flex items-center justify-center">
+        <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+            <div class="w-48 h-48 mb-6 flex items-center justify-center">
                 <img src="{{ asset('images/icons/no-items-found.svg') }}"
                      alt="No appointments"
                      class="w-full h-full object-contain opacity-80 dark:opacity-60">
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 {{ $emptyTitle }}
             </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
@@ -314,6 +314,18 @@ function appointmentRateList(items) {
                 return;
             }
 
+            // Confirmation dialog first
+            try {
+                await window.showConfirmDialog(
+                    'Submit Feedback?',
+                    'You are about to submit your feedback for this service. This action cannot be undone.',
+                    'Submit',
+                    'Cancel'
+                );
+            } catch (e) {
+                return; // User cancelled
+            }
+
             try {
                 const response = await fetch('/client/appointments/' + this.selectedItem.id + '/feedback', {
                     method: 'POST',
@@ -332,9 +344,9 @@ function appointmentRateList(items) {
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!');
                     this.closeFeedbackModal();
-                    window.location.reload();
+                    window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!');
+                    setTimeout(() => window.location.reload(), 1500);
                 } else {
                     window.showErrorDialog('Submission Failed', data.message || 'Failed to submit feedback. Please try again.');
                 }

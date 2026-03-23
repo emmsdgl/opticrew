@@ -1,12 +1,12 @@
 <x-layouts.general-employee :title="'Employee Dashboard'">
     <x-skeleton-page :preset="'employee-dashboard'">
 
-    {{-- MOBILE LAYOUT (< 1024px) - Hidden on large screens --}} <div class="lg:hidden">
+    {{-- MOBILE LAYOUT (< 768px) - Hidden on medium+ screens --}} <div class="md:hidden">
         @include('employee.mobile.dashboard')
     </div>
 
-    {{-- DESKTOP LAYOUT (≥ 1024px) - Hidden on small screens --}}
-    <section role="status" class="hidden lg:flex flex-col lg:flex-row gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]"
+    {{-- DESKTOP LAYOUT (≥ 768px) - Hidden on small screens --}}
+    <section role="status" class="hidden md:flex flex-col md:flex-row md:flex-wrap gap-6 p-4 md:p-6 min-h-[calc(100vh-4rem)]"
         x-data="{
             showAttendanceDrawer: false,
             showRequestModal: false,
@@ -69,50 +69,26 @@
         }">
         <!-- Left Panel - Dashboard Content -->
         <div
-            class="flex flex-col gap-6 flex-1 w-full rounded-lg p-4">
+            class="flex flex-col gap-6 w-full lg:flex-1 rounded-lg p-4">
 
-            {{-- Gmail Account Linking Prompt --}}
-            @if(!auth()->user()->google_id)
-            <div class="w-full mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex items-center justify-between relative z-10"
-                 x-data="{ dismissed: false }" x-show="!dismissed" x-transition>
-                <div class="flex items-center gap-3">
-                    <i class="fa-brands fa-google text-amber-600 text-lg"></i>
-                    <div>
-                        <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Link Your Gmail Account</p>
-                        <p class="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                            For account verification and security, please link your personal Gmail account. This allows you to sign in with Google.
-                        </p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2 flex-shrink-0 ml-4">
-                    <a href="{{ route('employee.link-google') }}"
-                       class="px-3 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 transition-colors">
-                        <i class="fa-brands fa-google mr-1"></i> Link Gmail
-                    </a>
-                    <button @click="dismissed = true" class="p-1.5 text-amber-400 hover:text-amber-600 transition-colors">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            </div>
-            @endif
+            {{-- Gmail Account Linking Prompt (via Sonner toast) --}}
 
             <!-- Inner Up - Dashboard Header -->
             <div id="tour-emp-welcome"
-                class="w-full mt-6 rounded-lg h-48 sm:h-56 md:h-64 lg:h-1/3">
+                class="w-full mt-6 rounded-lg h-48 sm:h-56 md:h-56 lg:h-1/3">
                 <x-herocard :headerName="$employee->user->name ?? 'Employee'" :headerDesc="'Welcome to the employee dashboard. Track tasks and manage them'" :headerIcon="'hero-employee'" />
             </div>
             <!-- Inner Middle - Calendar -->
             <x-labelwithvalue label="My Calendar" count="" />
             <div id="tour-emp-calendar"
-                class="w-full rounded-lg h-60 sm:h-72 md:h-80 lg:h-1/3">
+                class="w-full mt-3 mb-5 rounded-lg h-60 sm:h-72 md:h-72 lg:h-1/3 bg-white shadow-sm dark:bg-gray-800/40">
                 <x-calendar :holidays="$holidays" calendar-id="desktop" />
             </div>
 
             <!-- Inner Down - Tasks Particulars -->
-            <div id="tour-emp-tasks" class="w-full rounded-lg h-56 sm:h-56 md:h-auto">
+            <div id="tour-emp-tasks" class="w-full rounded-lg h-56 sm:h-56 md:h-auto mt-3">
                 <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
-                <div class="rounded-lg my-6">
-
+                <div class="todo-list-container rounded-lg my-6 bg-white shadow-sm dark:bg-gray-800/40">
                     @php
                         // Transform tasks to the format expected by task-overview-list component
                         $tasks = $todoList
@@ -141,57 +117,16 @@
                         emptyMessage="You don't have any tasks at the moment. New tasks will appear here once assigned." />
                 </div>
             </div>
-            <!-- Inner Down - Lessons -->
-            <div id="tour-emp-lessons" class="w-full rounded-lg h-48 sm:h-56 md:h-auto flex flex-col gap-6">
-                <div class="flex flex-row justify-between items-center w-full">
-                    <x-labelwithvalue label="Current Lessons" count="" />
-                    @php
-                        $timeOptions = ['All', 'Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
-                    @endphp
-
-                    <x-dropdown :options="$timeOptions" :default="$period" id="dropdown-time" />
-                </div>
-
-                <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 rounded-lg">
-                    @forelse($watchedLessons as $lesson)
-                        <x-employee-components.lesson-card :duration="$lesson['duration']" :title="$lesson['title']" :description="$lesson['description']"
-                            :progress="$lesson['progress']" :buttonText="$lesson['progress'] >= 100
-                                ? 'Review'
-                                : ($lesson['progress'] > 0
-                                    ? 'Continue'
-                                    : 'Check now')"
-                            buttonUrl="{{ route('employee.development') }}?course={{ $lesson['course_id'] }}" />
-                    @empty
-                        <div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
-                            <i class="fa-regular fa-circle-play text-4xl mb-3"></i>
-                            <p class="text-sm">No lessons watched yet. Start learning in the
-                                <a href="{{ route('employee.development') }}"
-                                    class="text-blue-600 dark:text-blue-400 hover:underline font-medium">Development</a>
-                                section.
-                            </p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
         </div>
 
         <!-- Right Panel - Tasks Details -->
         <div id="tour-emp-right-panel"
-            class="flex flex-col gap-6 w-full lg:w-1/3 rounded-lg p-4">
+            class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-6 w-full lg:w-1/3 rounded-lg p-4 mt-6">
 
-            <!-- Inner Up - Tasks Summary (OPTIMIZED) -->
-            <div class="flex flex-row justify-between items-center w-full">
-                <x-labelwithvalue label="Tasks Summary" count="" />
-                @php
-                    $timeOptions = ['All', 'Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
-                @endphp
-
-                <x-dropdown :options="$timeOptions" :default="$period" id="dropdown-time" />
-            </div>
+            <!-- Tasks Summary - Radial Chart -->
             <div
-                class="w-full rounded-lg border border-dashed border-gray-400 dark:border-gray-700 overflow-hidden flex-shrink-0">
-                <div class="w-full aspect-square max-h-[450px] p-4">
+                class="w-full rounded-lg bg-white shadow-sm dark:bg-gray-800/40 overflow-hidden flex-shrink-0">
+                <div class="w-full aspect-square max-h-[300px] md:max-h-[350px] lg:max-h-[385px] p-4">
                     <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
                         'done' => 'Done',
                         'inProgress' => 'In Progress',
@@ -207,7 +142,7 @@
 
             <!-- Log Your Attendance Card -->
             <div id="attendance-card"
-                class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 py-6 flex-shrink-0">
+                class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl py-4 flex-shrink-0">
                 <!-- Background Image for Light Mode -->
                 <div class="absolute inset-0 bg-cover bg-center block dark:hidden"
                     style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg.svg') }}');">
@@ -219,11 +154,11 @@
                 </div>
 
                 <!-- Content -->
-                <div class="relative p-6 h-full">
-                    <div class="flex flex-col lg:flex-col items-center lg:items-start">
+                <div class="relative px-6 py-2 h-full">
+                    <div class="flex flex-col items-start my-3">
                         <!-- Text Content -->
                         <div class="flex flex-row w-full">
-                            <h3 class="text-xl lg:text-xl font-black text-gray-900 dark:text-white mb-2 mt-3">
+                            <h3 class="text-lg md:text-xl font-black text-gray-900 dark:text-white">
                                 Already Logged<br>Your Attendance?
                             </h3>
                         </div>
@@ -258,35 +193,76 @@
                     </div>
                 </div>
             </div>
+
             <!-- Inner Up - Recent Requests (OPTIMIZED) -->
-            <div class="flex flex-row justify-between items-center w-full">
-                <div class="flex flex-row items-center w-full justify-between ">
-                    <x-labelwithvalue label="Recent Requests" count="" />
-                    <a href="{{ route('employee.requests.create') }}"
-                        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
-                        New Request
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                    </a>
+            <div class="flex flex-col gap-6">
+                <div class="flex flex-row justify-between items-center w-full">
+                    <div class="flex flex-row items-center w-full justify-between ">
+                        <x-labelwithvalue label="Recent Requests" count="" />
+                        <a href="{{ route('employee.requests.create') }}"
+                            class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                            New Request
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div id="recent-requests-list" class="w-full rounded-lg overflow-hidden bg-white shadow-sm dark:bg-gray-800/40 flex flex-col h-[16.5rem]">
+                    <div class="space-y-4 flex-1 flex flex-col overflow-y-auto">
+                        @if (count($employeeRequests) > 0)
+                            @foreach ($employeeRequests as $index => $request)
+                                <div @click="openRequestModal({{ $index }})">
+                                    <x-employee-components.request-list-item :type="$request['type']" :date="$request['date']"
+                                        :fromTime="$request['from_time'] ?? $request['time_range']" :toTime="$request['to_time'] ?? ''" :status="$request['status']" :reason="$request['reason']" />
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="flex flex-col items-center justify-center px-6 text-center flex-1">
+                                <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
+                                    No requests yet
+                                </h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 max-w-md">
+                                    You don't have any requests at the moment. New requests will appear here once submitted.
+                                </p>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
-            <div class="w-full rounded-lg overflow-hidden flex-1 border border-dashed border-gray-400 dark:border-gray-700 flex flex-col">
-                <div class="space-y-4 flex-1 flex flex-col">
-                    @if (count($employeeRequests) > 0)
-                        @foreach ($employeeRequests as $index => $request)
-                            <div @click="openRequestModal({{ $index }})">
-                                <x-employee-components.request-list-item :type="$request['type']" :date="$request['date']"
-                                    :fromTime="$request['from_time'] ?? $request['time_range']" :toTime="$request['to_time'] ?? ''" :status="$request['status']" :reason="$request['reason']" />
-                            </div>
-                        @endforeach
-                    @else
-                        <div class="text-center py-8 text-gray-500 dark:text-gray-400 flex-1 flex flex-col items-center justify-center">
-                            <i class="fa-solid fa-clipboard-list text-3xl mb-3 opacity-50"></i>
-                            <p class="text-sm">No requests yet</p>
-                        </div>
-                    @endif
-                </div>
+        </div>
+
+        <!-- Full Width - Current Lessons -->
+        <div id="tour-emp-lessons" class="w-full rounded-lg md:h-auto flex flex-col gap-4 px-4">
+            <div class="flex flex-row justify-between items-center w-full">
+                <x-labelwithvalue label="Current Lessons" count="" />
+                @php
+                    $timeOptions = ['All', 'Today', 'Yesterday', 'Last 7 days', 'Last 30 days'];
+                @endphp
+
+                <x-dropdown :options="$timeOptions" :default="$period" id="dropdown-time" />
+            </div>
+
+            <div
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 rounded-lg">
+                @forelse($watchedLessons as $lesson)
+                    <x-employee-components.lesson-card :duration="$lesson['duration']" :title="$lesson['title']" :description="$lesson['description']"
+                        :progress="$lesson['progress']" :buttonText="$lesson['progress'] >= 100
+                            ? 'Review'
+                            : ($lesson['progress'] > 0
+                                ? 'Continue'
+                                : 'Check now')"
+                        buttonUrl="{{ route('employee.development') }}?course={{ $lesson['course_id'] }}" />
+                @empty
+                    <div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
+                        <i class="fa-regular fa-circle-play text-4xl mb-3"></i>
+                        <p class="text-sm">No lessons watched yet. Start learning in the
+                            <a href="{{ route('employee.development') }}"
+                                class="text-blue-600 dark:text-blue-400 hover:underline font-medium">Development</a>
+                            section.
+                        </p>
+                    </div>
+                @endforelse
             </div>
         </div>
 
@@ -680,6 +656,72 @@
     @once
     <script src="{{ asset('js/geofencing.js') }}"></script>
     @endonce
+    <script>
+        // Gmail Account Linking Reminder (via Sonner toast)
+        @if(!auth()->user()->google_id)
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const sonnerEl = document.querySelector('[x-data="sonnerToast()"]');
+                if (sonnerEl && sonnerEl.__x) {
+                    sonnerEl.__x.$data.show(
+                        'Link Your Gmail Account',
+                        'For account verification and security, please link your personal Gmail account. This allows you to sign in with Google.',
+                        'warning',
+                        {
+                            actionUrl: '{{ route("employee.link-google") }}',
+                            actionLabel: 'Link Gmail',
+                            persistent: true,
+                        }
+                    );
+                }
+            }, 2000);
+        });
+        @endif
+    </script>
+    <script>
+        // Align todo list bottom with recent requests bottom
+        function alignTodoToRequests() {
+            if (window.innerWidth < 1024) return; // Only on lg+ (side-by-side layout)
+
+            const requestsList = document.getElementById('recent-requests-list');
+            const todoContainer = document.querySelector('.todo-list-container');
+            if (!requestsList || !todoContainer) return;
+
+            const requestsBottom = requestsList.getBoundingClientRect().bottom;
+            const todoTop = todoContainer.getBoundingClientRect().top;
+            const neededHeight = requestsBottom - todoTop;
+
+            if (neededHeight > 0) {
+                todoContainer.style.height = neededHeight + 'px';
+                todoContainer.style.overflow = 'hidden';
+                // Also adjust the inner scrollable area
+                const scrollArea = todoContainer.querySelector('[style*="max-height"]');
+                if (scrollArea) {
+                    scrollArea.style.maxHeight = '100%';
+                    scrollArea.style.height = '100%';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Run after a brief delay to let the layout settle
+            setTimeout(alignTodoToRequests, 100);
+        });
+        window.addEventListener('resize', function() {
+            // Reset on resize then realign
+            const todoContainer = document.querySelector('.todo-list-container');
+            if (todoContainer) {
+                todoContainer.style.height = '';
+                todoContainer.style.overflow = '';
+                const scrollArea = todoContainer.querySelector('[style*="max-height"], [style*="height"]');
+                if (scrollArea) {
+                    scrollArea.style.maxHeight = '';
+                    scrollArea.style.height = '';
+                }
+            }
+            setTimeout(alignTodoToRequests, 100);
+        });
+    </script>
     <script>
         // Eagerly track user position as soon as page loads
         if (!window._cachedPosition) {
