@@ -453,6 +453,39 @@ class LeaveRequestController extends Controller
     // ========================
 
     /**
+     * Get all employees (Admin)
+     */
+    public function getAllEmployees(Request $request)
+    {
+        try {
+            $employees = Employee::with('user:id,name,email,phone,profile_picture')
+                ->where('is_active', true)
+                ->get()
+                ->map(function ($employee) {
+                    return [
+                        'id' => $employee->id,
+                        'name' => $employee->fullName,
+                        'email' => $employee->user?->email,
+                        'phone' => $employee->user?->phone,
+                        'profile_picture' => $employee->user?->profile_picture,
+                        'is_active' => $employee->is_active,
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $employees,
+                'total' => $employees->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch employees',
+            ], 500);
+        }
+    }
+
+    /**
      * Get all employee attendance records (Admin)
      */
     public function getAllAttendance(Request $request)

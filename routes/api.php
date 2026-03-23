@@ -246,6 +246,10 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
             ->name('api.admin.attendance.details');
     });
 
+    // Employee Management (Admin)
+    Route::get('/employees', [LeaveRequestController::class, 'getAllEmployees'])
+        ->name('api.admin.employees.index');
+
     // Feedback Management (Admin)
     Route::get('/feedback', [AdminFeedbackController::class, 'index'])
         ->name('api.admin.feedback.index');
