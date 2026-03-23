@@ -52,125 +52,130 @@
                 <div class="mt-8 space-y-6">
                     <!-- Absence Type -->
                     <div>
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                            Absence Type <span class="text-red-500">*</span>
-                        </label>
-                        <select x-model="formData.absence_type" 
-                                required 
-                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select absence type</option>
-                            <option value="Sick Leave">Sick Leave</option>
-                            <option value="Vacation Leave">Vacation Leave</option>
-                            <option value="Emergency Leave">Emergency Leave</option>
-                            <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
-                            <option value="Unpaid Leave">Unpaid Leave</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Select what type of absence event or sick day to book/leave
-                        </p>
+                        <div class="mui-input-group relative" x-data="{ focused: false, filled: false }" x-init="filled = !!formData.absence_type">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 z-[1] text-blue-600 dark:text-blue-600">
+                                <i class="fi fi-rr-briefcase text-sm"></i>
+                            </span>
+                            <select x-model="formData.absence_type"
+                                    required
+                                    @focus="focused = true"
+                                    @blur="focused = false; filled = !!$el.value"
+                                    @change="filled = !!$el.value"
+                                    class="mui-input peer w-full pl-10 pr-4 pt-5 pb-2 text-sm
+                                           border border-gray-400 dark:border-gray-700 rounded-xl
+                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                           transition-all duration-200
+                                           focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                                           focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
+                                           appearance-none">
+                                <option value="">Select absence type</option>
+                                <option value="Sick Leave">Sick Leave</option>
+                                <option value="Vacation Leave">Vacation Leave</option>
+                                <option value="Emergency Leave">Emergency Leave</option>
+                                <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
+                                <option value="Unpaid Leave">Unpaid Leave</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <label class="absolute left-10 pointer-events-none transition-all duration-200 origin-left text-gray-400 dark:text-gray-500"
+                                :class="(focused || filled || formData.absence_type) ? 'top-1.5 translate-y-0 text-[11px] ' + (focused ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500') : 'top-1/2 -translate-y-1/2 text-sm'">
+                                Absence Type <span class="text-red-500">*</span>
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Absence Date -->
-                    <div>
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                            Absence Date <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fi fi-rr-calendar"></i>
-                            </span>
-                            <input type="date" 
-                                   x-model="formData.absence_date" 
-                                   required
-                                   :min="new Date().toISOString().split('T')[0]"
-                                   placeholder="Opening Date"
-                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
-                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                    </div>
+                    <x-material-ui.input-field
+                        label="Absence Date"
+                        type="date"
+                        model="formData.absence_date"
+                        icon="fi fi-rr-calendar"
+                        required
+                        :min="''"
+                        x-bind:min="new Date().toISOString().split('T')[0]"
+                    />
 
                     <!-- Time Range -->
                     <div>
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                            Time Range <span class="text-red-500">*</span>
-                        </label>
-                        <select x-model="formData.time_range" 
-                                required 
-                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select time range</option>
-                            <option value="Full Shift">Full Shift</option>
-                            <option value="Morning (First Half)">Morning (First Half)</option>
-                            <option value="Afternoon (Second Half)">Afternoon (Second Half)</option>
-                            <option value="Custom Hours">Custom Hours</option>
-                        </select>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Select when the entire scheduled work shift
-                        </p>
+                        <div class="mui-input-group relative" x-data="{ focused: false, filled: false }" x-init="filled = !!formData.time_range">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 z-[1] text-blue-600 dark:text-blue-600">
+                                <i class="fi fi-rr-clock text-sm"></i>
+                            </span>
+                            <select x-model="formData.time_range"
+                                    required
+                                    @focus="focused = true"
+                                    @blur="focused = false; filled = !!$el.value"
+                                    @change="filled = !!$el.value"
+                                    class="mui-input peer w-full pl-10 pr-4 pt-5 pb-2 text-sm
+                                           border border-gray-400 dark:border-gray-700 rounded-xl
+                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                           transition-all duration-200
+                                           focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                                           focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
+                                           appearance-none">
+                                <option value="">Select time range</option>
+                                <option value="Full Shift">Full Shift</option>
+                                <option value="Morning (First Half)">Morning (First Half)</option>
+                                <option value="Afternoon (Second Half)">Afternoon (Second Half)</option>
+                                <option value="Custom Hours">Custom Hours</option>
+                            </select>
+                            <label class="absolute left-10 pointer-events-none transition-all duration-200 origin-left text-gray-400 dark:text-gray-500"
+                                :class="(focused || filled || formData.time_range) ? 'top-1.5 translate-y-0 text-[11px] ' + (focused ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500') : 'top-1/2 -translate-y-1/2 text-sm'">
+                                Time Range <span class="text-red-500">*</span>
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Custom Time Range (shown only if Custom Hours is selected) -->
-                    <div x-show="formData.time_range === 'Custom Hours'" 
+                    <div x-show="formData.time_range === 'Custom Hours'"
                          x-transition
                          class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                                From Time <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                    <i class="fi fi-rr-clock"></i>
-                                </span>
-                                <input type="time" 
-                                       x-model="formData.from_time"
-                                       class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
-                                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                              focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                                To Time <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                    <i class="fi fi-rr-clock"></i>
-                                </span>
-                                <input type="time" 
-                                       x-model="formData.to_time"
-                                       class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
-                                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                              focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
+                        <x-material-ui.input-field
+                            label="From Time"
+                            type="time"
+                            model="formData.from_time"
+                            icon="fi fi-rr-clock"
+                            required
+                        />
+                        <x-material-ui.input-field
+                            label="To Time"
+                            type="time"
+                            model="formData.to_time"
+                            icon="fi fi-rr-clock"
+                            required
+                        />
                     </div>
 
                     <!-- Reason for Absence -->
                     <div>
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                            Reason for Absence <span class="text-red-500">*</span>
-                        </label>
-                        <select x-model="formData.reason" 
-                                required 
-                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
-                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select reason</option>
-                            <option value="Illness">Illness</option>
-                            <option value="Family Emergency">Family Emergency</option>
-                            <option value="Personal Matters">Personal Matters</option>
-                            <option value="Medical Appointment">Medical Appointment</option>
-                            <option value="Bereavement">Bereavement</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Choose what fits in or is a health-related disease
-                        </p>
+                        <div class="mui-input-group relative" x-data="{ focused: false, filled: false }" x-init="filled = !!formData.reason">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 z-[1] text-blue-600 dark:text-blue-600">
+                                <i class="fi fi-rr-comment-alt text-sm"></i>
+                            </span>
+                            <select x-model="formData.reason"
+                                    required
+                                    @focus="focused = true"
+                                    @blur="focused = false; filled = !!$el.value"
+                                    @change="filled = !!$el.value"
+                                    class="mui-input peer w-full pl-10 pr-4 pt-5 pb-2 text-sm
+                                           border border-gray-400 dark:border-gray-700 rounded-xl
+                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                           transition-all duration-200
+                                           focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                                           focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
+                                           appearance-none">
+                                <option value="">Select reason</option>
+                                <option value="Illness">Illness</option>
+                                <option value="Family Emergency">Family Emergency</option>
+                                <option value="Personal Matters">Personal Matters</option>
+                                <option value="Medical Appointment">Medical Appointment</option>
+                                <option value="Bereavement">Bereavement</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <label class="absolute left-10 pointer-events-none transition-all duration-200 origin-left text-gray-400 dark:text-gray-500"
+                                :class="(focused || filled || formData.reason) ? 'top-1.5 translate-y-0 text-[11px] ' + (focused ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500') : 'top-1/2 -translate-y-1/2 text-sm'">
+                                Reason for Absence <span class="text-red-500">*</span>
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Proof / Documentation -->
@@ -178,18 +183,18 @@
                         <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                             Proof / Documentation
                         </label>
-                        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center bg-gray-50 dark:bg-gray-800/50">
-                            <input type="file" 
+                        <div class="border-2 border-dashed border-gray-400 dark:border-gray-700 rounded-xl p-8 text-center bg-white dark:bg-gray-800">
+                            <input type="file"
                                    x-ref="fileInput"
                                    @change="handleFileUpload($event)"
                                    accept="image/*,.pdf"
                                    class="hidden">
-                            
+
                             <div x-show="!formData.proof_file">
                                 <div class="mx-auto w-16 h-16 mb-4 flex items-center justify-center">
                                     <i class="fi fi-rr-picture text-4xl text-blue-500"></i>
                                 </div>
-                                <button type="button" 
+                                <button type="button"
                                         @click="$refs.fileInput.click()"
                                         class="text-blue-600 dark:text-blue-400 font-medium hover:underline">
                                     Upload images or videos or
@@ -202,7 +207,7 @@
                                 </p>
                             </div>
 
-                            <div x-show="formData.proof_file" class="flex items-center justify-between bg-white dark:bg-gray-700 rounded-lg p-3">
+                            <div x-show="formData.proof_file" class="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                                 <div class="flex items-center gap-3">
                                     <i class="fi fi-rr-file text-blue-500 text-2xl"></i>
                                     <div class="text-left">
@@ -210,7 +215,7 @@
                                         <p class="text-xs text-gray-500 dark:text-gray-400" x-text="formData.proof_file_size"></p>
                                     </div>
                                 </div>
-                                <button type="button" 
+                                <button type="button"
                                         @click="removeFile()"
                                         class="text-red-500 hover:text-red-700">
                                     <i class="fi fi-rr-trash"></i>
@@ -221,16 +226,15 @@
 
                     <!-- Reason Description -->
                     <div>
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                            Reason Description
-                        </label>
-                        <textarea x-model="formData.description" 
-                                  rows="4" 
-                                  maxlength="350"
-                                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
-                                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                  placeholder="Limit to ~350 characters"></textarea>
+                        <x-material-ui.input-field
+                            label="Reason Description"
+                            type="textarea"
+                            model="formData.description"
+                            icon="fi fi-rr-document"
+                            placeholder="Describe the reason for your absence"
+                            maxlength="350"
+                            rows="4"
+                        />
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
                             <span x-text="formData.description.length"></span>/350
                         </p>
@@ -520,11 +524,22 @@
             },
 
             async submitForm() {
+                try {
+                    await window.showConfirmDialog(
+                        'Submit Request',
+                        'Are you sure you want to submit this absence request?',
+                        'Submit',
+                        'Cancel'
+                    );
+                } catch {
+                    return;
+                }
+
                 this.submitting = true;
 
                 try {
                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                    
+
                     // Create FormData to handle file upload
                     const formData = new FormData();
                     formData.append('absence_type', this.formData.absence_type);
@@ -534,7 +549,7 @@
                     formData.append('to_time', this.formData.to_time || '');
                     formData.append('reason', this.formData.reason);
                     formData.append('description', this.formData.description);
-                    
+
                     if (this.formData.proof_file) {
                         formData.append('proof_document', this.formData.proof_file);
                     }
@@ -551,26 +566,27 @@
                     const data = await response.json();
 
                     if (response.ok && data.success) {
-                        this.showToast(data.message || 'Request submitted successfully!', 'success');
-                        
-                        setTimeout(() => {
-                            window.location.href = data.redirect_url || '{{ route("employee.dashboard") }}';
-                        }, 1500);
+                        window.showSuccessDialog(
+                            'Request Submitted',
+                            data.message || 'Your absence request has been submitted successfully!',
+                            'Done',
+                            data.redirect_url || '{{ route("employee.dashboard") }}'
+                        );
                     } else {
                         if (data.errors) {
                             const errorMessages = Object.entries(data.errors)
                                 .map(([field, messages]) => messages.join(', '))
                                 .join(', ');
-                            this.showToast('Validation errors: ' + errorMessages);
+                            window.showErrorDialog('Validation Error', errorMessages);
                         } else {
-                            this.showToast(data.message || 'Failed to submit request. Please try again.');
+                            window.showErrorDialog('Submission Failed', data.message || 'Failed to submit request. Please try again.');
                         }
                         this.submitting = false;
                     }
 
                 } catch (error) {
                     console.error('Error submitting request:', error);
-                    this.showToast('An error occurred while submitting your request. Please try again.');
+                    window.showErrorDialog('Error', 'An unexpected error occurred while submitting your request. Please try again.');
                     this.submitting = false;
                 }
             }

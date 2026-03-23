@@ -3,7 +3,7 @@
     'initialView' => 'month'
 ])
 
-<div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+<div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-blue-300/20 dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
     <!-- Calendar Header -->
     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 gap-4">
         <!-- Month/Year Display with Picker -->

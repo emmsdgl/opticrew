@@ -3,7 +3,7 @@
 
         {{-- Left Sidebar - Course List --}}
         <div id="courseSidebar"
-            class="w-full lg:w-96 rounded-2xl transition-all duration-300 flex flex-col lg:h-full">
+            class="w-full lg:w-[30rem] rounded-2xl transition-all duration-300 flex flex-col lg:h-full">
             <div class="p-4 md:p-6 flex-shrink-0">
                 {{-- Header --}}
                 <div class="mb-6">
@@ -63,7 +63,7 @@
                             data-status="{{ $status }}"
                             data-category="{{ $category }}"
                             onclick="selectCourse({{ $video->id }})">
-                            <div class="flex gap-4 p-4 rounded-xl {{ $isFirst ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-500' : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 border-transparent hover:border-blue-200 dark:hover:border-blue-800' }} transition-all border-2">
+                            <div class="flex gap-4 p-4 rounded-xl {{ $isFirst ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-500' : 'bg-white dark:bg-gray-800/30 hover:bg-blue-50 dark:hover:bg-gray-700 border-transparent hover:border-blue-200 dark:hover:border-blue-800' }} transition-all border-2">
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2 mb-1">
                                         <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
@@ -756,7 +756,7 @@
                     item.classList.remove('active');
                     const card = item.querySelector('div');
                     card.classList.remove('bg-blue-50', 'dark:bg-blue-900/20', 'border-blue-500', 'dark:border-blue-500');
-                    card.classList.add('bg-gray-50', 'dark:bg-gray-700/50', 'hover:bg-blue-50', 'dark:hover:bg-gray-700', 'border-transparent', 'hover:border-blue-200', 'dark:hover:border-blue-800');
+                    card.classList.add('bg-white', 'dark:bg-gray-800/30', 'hover:bg-blue-50', 'dark:hover:bg-gray-700', 'border-transparent', 'hover:border-blue-200', 'dark:hover:border-blue-800');
                 });
 
                 // Add active class to selected course
@@ -764,7 +764,7 @@
                 if (selectedCourse) {
                     selectedCourse.classList.add('active');
                     const card = selectedCourse.querySelector('div');
-                    card.classList.remove('bg-gray-50', 'dark:bg-gray-700/50', 'hover:bg-blue-50', 'dark:hover:bg-gray-700', 'border-transparent', 'hover:border-blue-200', 'dark:hover:border-blue-800');
+                    card.classList.remove('bg-white', 'dark:bg-gray-800/30', 'hover:bg-blue-50', 'dark:hover:bg-gray-700', 'border-transparent', 'hover:border-blue-200', 'dark:hover:border-blue-800');
                     card.classList.add('bg-blue-50', 'dark:bg-blue-900/20', 'border-blue-500', 'dark:border-blue-500');
                 }
 

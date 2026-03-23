@@ -1,15 +1,16 @@
 @props([
     'items' => [],
     'maxHeight' => '20rem',
-    'fixedHeight' => '12rem', 
+    'fixedHeight' => '12rem',
     'emptyTitle' => 'No appointments yet',
     'emptyMessage' => 'You don\'t have any appointments at the moment.',
+    'bgClass' => 'bg-blue-300/20',
 ])
 
 <div class="w-full" x-data="{ openMenuId: null }">
     @if(empty($items))
         <!-- Empty State - Auto Height -->
-        <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
+        <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto {{ $bgClass }} dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
             <div class="w-48 h-48 mb-6 flex items-center justify-center">
                 <img src="{{ asset('images/icons/no-items-found.svg') }}"
                      alt="No appointments"
@@ -24,7 +25,7 @@
         </div>
     @else
         <!-- Scrollable container (only when items exist) -->
-        <div class="overflow-y-auto"
+        <div class="overflow-y-auto {{ $bgClass }} bg-white dark:bg-transparent rounded-2xl p-6 py-2 shadow-sm border border-gray-200 dark:border-none"
              style="{{ $fixedHeight !== 'auto' ? 'height: ' . $fixedHeight . ';' : '' }} max-height: {{ $maxHeight }};"
              @scroll.window="openMenuId = null"
              @scroll="openMenuId = null">
@@ -34,8 +35,8 @@
              data-date="{{ $item['service_date'] ?? '' }}"
              data-time="{{ $item['service_time'] ?? '' }}"
              data-client="{{ $item['client'] ?? '' }}"
-             class="group border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
-            <div class="py-6 px-6">
+             class="group border-b border-gray-200 dark:border-gray-800 hover:bg-blue-400/10 dark:hover:bg-blue-400/10 transition-colors duration-200">
+            <div class="py-4 px-6">
                 <!-- Header Section -->
                 <div class="flex items-center justify-between">
                     <div class="flex-1">

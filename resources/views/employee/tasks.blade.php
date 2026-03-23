@@ -266,7 +266,7 @@
 
             @php
                 // Transform today's tasks to the format expected by task-overview-list component
-                $todayTasksFormatted = $todayTasks->map(function($task) use ($isClockedIn) {
+                $todayTasksFormatted = $todayTasks->map(function($task) {
                     $scheduledTime = $task->scheduled_time
                         ? \Carbon\Carbon::parse($task->scheduled_time)
                         : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
@@ -296,14 +296,15 @@
                 })->toArray();
             @endphp
 
-            <div id="today-tasks-list" class="{{ $todayTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+            {{-- <div id="today-tasks-list" class="{{ $todayTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800"> --}}
                 <x-employee-components.task-overview-list
                     :items="$todayTasksFormatted"
                     fixedHeight="24rem"
                     maxHeight="30rem"
+                    bgClass="bg-white"
                     emptyTitle="No tasks assigned for today"
                     emptyMessage="Check back later or contact your supervisor for task assignments." />
-            </div>
+            {{-- </div> --}}
         </div>
 
         <!-- Divider -->
@@ -403,14 +404,15 @@
                 })->toArray();
             @endphp
 
-            <div id="pending-tasks-list" class="{{ $pendingApprovalTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+            {{-- <div id="pending-tasks-list" class="{{ $pendingApprovalTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} dark:bg-gray-800/30 rounded-2xl py-3 shadow-sm border border-gray-200 dark:border-gray-800"> --}}
                 <x-employee-components.task-overview-list
                     :items="$pendingApprovalTasksFormatted"
                     fixedHeight="24rem"
                     maxHeight="30rem"
+                    bgClass="bg-white"
                     emptyTitle="No tasks pending approval"
                     emptyMessage="All assigned tasks have been reviewed." />
-            </div>
+            {{-- </div> --}}
 
             <!-- Hidden forms for approve/decline actions -->
             @foreach($pendingApprovalTasks as $task)
@@ -490,7 +492,7 @@
 
             @php
                 // Transform completed tasks to the format expected by task-overview-list component
-                $allTasksFormatted = $completedTasks->map(function($task) use ($isClockedIn) {
+                $allTasksFormatted = $completedTasks->map(function($task) {
                     $scheduledTime = $task->scheduled_time
                         ? \Carbon\Carbon::parse($task->scheduled_time)
                         : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
@@ -536,14 +538,15 @@
                 })->toArray();
             @endphp
 
-            <div id="history-tasks-list" class="{{ $completedTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+            {{-- <div id="history-tasks-list" class="{{ $completedTasks->count() > 0 ? 'h-96 overflow-y-auto' : '' }} dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800"> --}}
                 <x-employee-components.task-overview-list
                     :items="$allTasksFormatted"
                     fixedHeight="24rem"
                     maxHeight="30rem"
+                    bgClass="bg-white"
                     emptyTitle="No tasks in history"
                     emptyMessage="Your completed and upcoming tasks will appear here once assigned." />
-            </div>
+            {{-- </div> --}}
         </div>
 
         <!-- OLD GANTT CHART SECTION - REMOVED, replaced with functional task cards above -->

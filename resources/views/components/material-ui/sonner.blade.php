@@ -157,8 +157,15 @@ document.addEventListener('alpine:init', () => {
         seenIds: new Set(),
 
         startPolling() {
+            // Restore seen IDs from sessionStorage so toasts don't repeat across page loads
+            try {
+                const stored = JSON.parse(sessionStorage.getItem('sonner_seen_ids') || '[]');
+                stored.forEach(id => this.seenIds.add(id));
+            } catch (e) {}
+
             // Set initial timestamp to now to only show NEW notifications
-            this.lastCheck = new Date().toISOString();
+            this.lastCheck = sessionStorage.getItem('sonner_last_check') || new Date().toISOString();
+            sessionStorage.setItem('sonner_last_check', this.lastCheck);
 
             // Poll every 15 seconds
             this.pollInterval = setInterval(() => this.checkNewNotifications(), 15000);
@@ -185,6 +192,7 @@ document.addEventListener('alpine:init', () => {
                 if (newNotifs.length > 0) {
                     // Update last check to the newest notification's timestamp
                     this.lastCheck = newNotifs[0].created_at;
+                    sessionStorage.setItem('sonner_last_check', this.lastCheck);
 
                     // Show toasts for each new notification
                     newNotifs.reverse().forEach((notif, i) => {
@@ -200,6 +208,9 @@ document.addEventListener('alpine:init', () => {
 
         addToast(notif) {
             this.seenIds.add(notif.id);
+            try {
+                sessionStorage.setItem('sonner_seen_ids', JSON.stringify([...this.seenIds]));
+            } catch (e) {}
 
             const toastType = typeMap[notif.type] || notif.type || 'default';
             const duration = notif.duration || this.toastDuration;

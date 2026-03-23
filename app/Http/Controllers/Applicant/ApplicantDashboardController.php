@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Mail\ApplicationReceivedAfterHours;
 use App\Mail\ApplicationWithdrawnFarewell;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -37,19 +38,60 @@ class ApplicantDashboardController extends Controller
         // Check if redirected from landing page recruitment (Google OAuth flow)
         $pendingApply = session()->pull('recruitment_data');
 
-        return view('applicant.dashboard', compact('user', 'jobPostings', 'myApplications', 'savedJobIds', 'pendingApply', 'withdrawnCount'));
+        $hasPassword = !empty($user->password);
+
+        return view('applicant.dashboard', compact('user', 'jobPostings', 'myApplications', 'savedJobIds', 'pendingApply', 'withdrawnCount', 'hasPassword'));
     }
 
     public function updateProfile(Request $request)
     {
-        $request->validate([
+        $user = Auth::user();
+        $hasPassword = !empty($user->password);
+
+        $rules = [
             'alternative_email' => 'nullable|email|max:255',
             'phone'             => 'nullable|string|max:50',
             'location'          => 'nullable|string|max:255',
-        ]);
+            'new_password'      => 'nullable|string|min:8|confirmed',
+        ];
 
-        $user = Auth::user();
-        $user->update($request->only(['alternative_email', 'phone', 'location']));
+        // Only require current password if user already has one set
+        if ($request->filled('new_password') && $hasPassword) {
+            $rules['current_password'] = 'required|string';
+        }
+
+        $request->validate($rules);
+
+        // Handle password change
+        $passwordChanged = false;
+        if ($request->filled('new_password')) {
+            if ($hasPassword) {
+                if (!Hash::check($request->current_password, $user->password)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Current password is incorrect.',
+                    ], 422);
+                }
+            }
+
+            $user->password = Hash::make($request->new_password);
+            $passwordChanged = true;
+        }
+
+        $user->fill($request->only(['alternative_email', 'phone', 'location']));
+        $user->save();
+
+        if ($passwordChanged) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->json([
+                'success' => true,
+                'password_changed' => true,
+                'message' => 'Password changed successfully. Please log in again.',
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Profile updated successfully.']);
     }

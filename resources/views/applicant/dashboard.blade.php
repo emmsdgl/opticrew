@@ -242,10 +242,10 @@
                         <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-gray-700">
                             <i class="fa-solid fa-paper-plane text-sm text-gray-600 dark:text-gray-400"></i>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-gray-900 dark:text-white">My Applications</div>
+                        <div class="flex-1 min-w-0 ">
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white ">My Applications</div>
                         </div>
-                        <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full flex-shrink-0">{{ $myApplications->count() }}</span>
+                        <span class="text-xs mb-3 text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full flex-shrink-0">{{ $myApplications->count() }}</span>
                     </div>
                     {{-- Withdrawn --}}
                     <div class="flex items-center gap-3 p-2.5 rounded-xl shadow-sm">
@@ -273,11 +273,12 @@
 
     {{-- Applied Positions --}}
     <div id="tour-app-my-applications">
-    <x-labelwithvalue
-        label="My Applications"
-        count="{{ $myApplications->count() }}"
-        class="mt-6 mb-2 text-blue-700 dark:text-gray-700"
-    />
+    <div class="mt-6 mb-6">
+        <x-labelwithvalue
+            label="My Applications"
+            count="{{ $myApplications->count() }}"
+        />
+    </div>
     <x-applicant-components.applied-positions :applications="$myApplications" :jobPostings="$jobPostings" />
     </div>
 
@@ -287,11 +288,12 @@
         $availableCount = $jobPostings->filter(fn($job) => !in_array(strtolower(trim($job->title)), $appliedTitles))->count();
     @endphp
     <div id="tour-app-available-jobs">
-    <x-labelwithvalue
-        label="Available Job Positions"
-        count="{{ $availableCount }}"
-        class="mt-6 mb-2 text-blue-700 dark:text-gray-700"
-    />
+    <div class="mt-6 mb-6">
+        <x-labelwithvalue
+            label="Available Job Positions"
+            count="{{ $availableCount }}"
+        />
+    </div>
     <x-applicant-components.available-positions :jobPostings="$jobPostings" :applications="$myApplications" :savedJobIds="$savedJobIds ?? []" />
     </div>
 
@@ -313,7 +315,7 @@
                 <div x-show="profileOpen"
                      x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                      x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                     class="relative w-full max-w-sm bg-white dark:bg-[#1E293B] rounded-2xl shadow-2xl overflow-hidden">
+                     class="relative w-full max-w-sm max-h-[85vh] bg-white dark:bg-[#1E293B] rounded-2xl shadow-2xl overflow-y-auto">
 
                     {{-- Edit / Save button (top-right) --}}
                     <button x-show="!editing" @click="startEditing()"
@@ -416,6 +418,51 @@
                                     </template>
                                 </div>
                             </div>
+
+                            {{-- Change Password (edit mode only) --}}
+                            <template x-if="editing">
+                                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-4">
+                                    <p class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Change Password</p>
+
+                                    {{-- Current Password --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa-solid fa-lock text-xs text-blue-500 dark:text-blue-400"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Current Password</p>
+                                            <input type="password" x-model="form.current_password"
+                                                :placeholder="hasPassword ? 'Enter current password' : 'No password set'"
+                                                :disabled="!hasPassword"
+                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                        </div>
+                                    </div>
+
+                                    {{-- New Password --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa-solid fa-key text-xs text-blue-500 dark:text-blue-400"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">New Password</p>
+                                            <input type="password" x-model="form.new_password" placeholder="Enter new password"
+                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                        </div>
+                                    </div>
+
+                                    {{-- Confirm Password --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa-solid fa-check-double text-xs text-blue-500 dark:text-blue-400"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Confirm Password</p>
+                                            <input type="password" x-model="form.new_password_confirmation" placeholder="Confirm new password"
+                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
                         {{-- Save Button (edit mode) --}}
@@ -459,10 +506,14 @@
             profileOpen: false,
             editing: false,
             saving: false,
+            hasPassword: @json($hasPassword),
             form: {
                 phone: @json($profileUser->phone ?? ''),
                 alternative_email: @json($profileUser->alternative_email ?? ''),
                 location: @json($profileUser->location ?? ''),
+                current_password: '',
+                new_password: '',
+                new_password_confirmation: '',
             },
             original: {},
 
@@ -486,6 +537,9 @@
 
             cancelEditing() {
                 this.form = { ...this.original };
+                this.form.current_password = '';
+                this.form.new_password = '';
+                this.form.new_password_confirmation = '';
                 this.editing = false;
             },
 
@@ -519,6 +573,12 @@
                     if (res.ok && data.success) {
                         this.editing = false;
                         this.original = { ...this.form };
+                        if (this.form.new_password) {
+                            this.hasPassword = true;
+                        }
+                        this.form.current_password = '';
+                        this.form.new_password = '';
+                        this.form.new_password_confirmation = '';
                         window.showSuccessDialog('Profile Updated', 'Your profile has been updated successfully.', 'OK');
                     } else {
                         const msg = data.message || Object.values(data.errors || {}).flat().join(', ') || 'Something went wrong.';

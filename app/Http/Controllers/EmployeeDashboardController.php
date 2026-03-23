@@ -149,25 +149,22 @@ class EmployeeDashboardController extends Controller
             5 => ['title' => 'Sanitization & Disinfection Protocols', 'description' => 'Learn industry-standard sanitization practices', 'duration' => '14 lectures • 2.5 hours'],
         ];
 
-        $watchedLessons = UserCourseProgress::where('user_id', $user->id)
-            ->where('status', '!=', 'pending')
+        $userProgress = UserCourseProgress::where('user_id', $user->id)
             ->get()
-            ->map(function ($record) use ($courseInfo) {
-                $info = $courseInfo[$record->course_id] ?? null;
-                if (!$info) return null;
+            ->keyBy('course_id');
 
-                return [
-                    'course_id' => $record->course_id,
-                    'title' => $info['title'],
-                    'description' => $info['description'],
-                    'duration' => $info['duration'],
-                    'progress' => $record->progress,
-                    'status' => $record->status,
-                ];
-            })
-            ->filter()
-            ->values()
-            ->toArray();
+        $watchedLessons = collect($courseInfo)->map(function ($info, $courseId) use ($userProgress) {
+            $record = $userProgress->get($courseId);
+
+            return [
+                'course_id' => $courseId,
+                'title' => $info['title'],
+                'description' => $info['description'],
+                'duration' => $info['duration'],
+                'progress' => $record ? $record->progress : 0,
+                'status' => $record ? $record->status : 'pending',
+            ];
+        })->values()->toArray();
 
         return view('employee.dashboard', [
             'employee' => $employee,

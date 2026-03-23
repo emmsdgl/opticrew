@@ -7,6 +7,7 @@ use App\Models\UserActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -111,10 +112,62 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information
      */
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request)
     {
         $user = $request->user();
 
+        // JSON request from profile modal (employee/client)
+        if ($request->expectsJson()) {
+            $hasPassword = !empty($user->password);
+
+            $rules = [
+                'phone'        => ['nullable', 'string', 'max:50'],
+                'username'     => ['nullable', 'string', 'max:255', 'unique:users,username,' . $user->id],
+                'location'     => ['nullable', 'string', 'max:255'],
+                'new_password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            ];
+
+            if ($request->filled('new_password') && $hasPassword) {
+                $rules['current_password'] = ['required', 'string'];
+            }
+
+            $request->validate($rules);
+
+            // Handle password change
+            $passwordChanged = false;
+            if ($request->filled('new_password')) {
+                if ($hasPassword) {
+                    if (!Hash::check($request->current_password, $user->password)) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Current password is incorrect.',
+                        ], 422);
+                    }
+                }
+
+                $user->password = Hash::make($request->new_password);
+                $passwordChanged = true;
+            }
+
+            $user->fill($request->only(['phone', 'username', 'location']));
+            $user->save();
+
+            if ($passwordChanged) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return response()->json([
+                    'success' => true,
+                    'password_changed' => true,
+                    'message' => 'Password changed successfully. Please log in again.',
+                ]);
+            }
+
+            return response()->json(['success' => true, 'message' => 'Profile updated successfully.']);
+        }
+
+        // Standard form request (admin profile page)
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['nullable', 'string', 'max:255', 'unique:users,username,' . $user->id],
@@ -139,10 +192,6 @@ class ProfileController extends Controller
             ['changed_fields' => array_keys($changedFields)],
             $request->ip()
         );
-
-        if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Profile updated successfully!']);
-        }
 
         // Redirect back to profile page based on role
         $role = $user->role;

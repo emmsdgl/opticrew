@@ -42,8 +42,8 @@
     </div>
 
     <!-- Floating Info Card with a unique ID -->
-    <div class="absolute top-2 left-1 sm:top-4 bg-gray-900 dark:bg-gray-800 text-white rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 
-                shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-95 z-10 flex items-center gap-2"
+    <div class="absolute top-2 left-1 sm:top-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-2 py-1.5 sm:px-3 sm:py-2
+                shadow-lg border border-gray-200 dark:border-gray-700 z-10 flex items-center gap-2"
          id="{{ $chartId }}-info-card">
         <div class="flex items-center gap-1.5">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
