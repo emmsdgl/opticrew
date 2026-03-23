@@ -63,10 +63,10 @@ class ManagerActivityController extends Controller
                     'icon' => 'clipboard-list',
                     'title' => 'Checklist Updated',
                     'description' => "{$checklist->name} was last updated",
-                    'time' => $checklist->updated_at->diffForHumans(),
+                    'time' => $checklist->updated_at ? $checklist->updated_at->diffForHumans() : 'N/A',
                     'status' => null,
                     'category' => 'checklist',
-                    'sort_time' => $checklist->updated_at,
+                    'sort_time' => $checklist->updated_at ?? $checklist->created_at,
                 ]);
 
                 foreach ($checklist->categories as $category) {
@@ -75,10 +75,10 @@ class ManagerActivityController extends Controller
                         'icon' => 'folder',
                         'title' => 'Category: ' . $category->name,
                         'description' => $category->items->count() . ' items in this category',
-                        'time' => $category->updated_at->diffForHumans(),
+                        'time' => $category->updated_at ? $category->updated_at->diffForHumans() : 'N/A',
                         'status' => null,
                         'category' => 'checklist',
-                        'sort_time' => $category->updated_at,
+                        'sort_time' => $category->updated_at ?? $category->created_at,
                     ]);
                 }
             }
@@ -93,7 +93,7 @@ class ManagerActivityController extends Controller
                 ->get();
 
             foreach ($reviews as $review) {
-                $locationName = $review->task->location->name ?? 'Service';
+                $locationName = $review->task?->location?->name ?? 'Service';
                 $activities->push([
                     'type' => 'report',
                     'icon' => 'star',
