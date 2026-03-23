@@ -14,6 +14,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/icons/castcrew_logo.svg') }}">
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>[x-cloak] { display: none !important; }</style>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/datepicker.min.js"></script>
     <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
@@ -154,7 +155,7 @@
     }
 </style>
 
-<body class="bg-white text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
+<body class="bg-[#ECF1FF] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
     <x-material-ui.page-loader />
     {{$sidebar}}
 
@@ -398,6 +399,7 @@
     @auth
         <x-material-ui.sonner />
     @endauth
+    @stack('modals')
 </body>
 
 </html>

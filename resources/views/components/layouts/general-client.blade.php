@@ -5,7 +5,6 @@
         $navOptions = [
             ['label' => 'Dashboard', 'icon' => 'fa-house', 'href' => route('client.dashboard')],
             ['label' => 'Appointments', 'icon' => 'fa-calendar', 'href' => route('client.appointments')],
-            ['label' => 'Pricing', 'icon' => 'fa-file-lines', 'href' => route('client.pricing')],
                 //Change routing in Feedback to History page
             ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('client.history')]
         ];

@@ -231,7 +231,7 @@
             <div class="flex gap-3">
                 <button
                     x-show="selectedAppointment && selectedAppointment.status === 'pending'"
-                    @click="cancelAppointment(selectedAppointment.id); closeDrawer()"
+                    @click="cancelAppointment(selectedAppointment.id)"
                     class="flex-1 text-sm px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium">
                     Cancel Appointment
                 </button>
@@ -248,28 +248,38 @@
 @push('scripts')
 <script>
 async function cancelAppointment(appointmentId) {
-    if (confirm('Are you sure you want to cancel this appointment?')) {
-        try {
-            const response = await fetch(`/client/appointments/${appointmentId}/cancel`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            });
+    try {
+        await window.showConfirmDialog(
+            'Cancel Appointment?',
+            'Are you sure you want to cancel this appointment? This action cannot be undone.',
+            'Yes, Cancel',
+            'No, Keep It'
+        );
+    } catch (e) {
+        return;
+    }
 
-            const data = await response.json();
-
-            if (data.success) {
-                window.showSuccessDialog('Appointment Cancelled', 'Your appointment has been cancelled successfully.');
-                window.location.reload();
-            } else {
-                window.showErrorDialog('Cancellation Failed', data.message || 'Failed to cancel the appointment. Please try again.');
+    try {
+        const response = await fetch(`/client/appointments/${appointmentId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
             }
-        } catch (error) {
-            console.error('Error cancelling appointment:', error);
-            window.showErrorDialog('Error', 'An error occurred while cancelling the appointment.');
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            window.showSuccessDialog('Appointment Cancelled', data.message || 'Your appointment has been cancelled successfully.');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            window.showErrorDialog('Cancellation Failed', data.message || 'Failed to cancel the appointment. Please try again.');
         }
+    } catch (error) {
+        console.error('Error cancelling appointment:', error);
+        window.showErrorDialog('Error', 'An unexpected error occurred. Please try again.');
     }
 }
 </script>

@@ -39,6 +39,8 @@
                 selectedKeywords: [],
                 feedbackText: '',
 
+
+
                 closeFeedbackModal() {
                     this.showFeedbackModal = false;
                     this.selectedRating = 0;
@@ -65,6 +67,17 @@
                     }
 
                     try {
+                        await window.showConfirmDialog(
+                            'Submit Feedback',
+                            'Are you sure you want to submit your rating and feedback?',
+                            'Submit',
+                            'Cancel'
+                        );
+                    } catch {
+                        return;
+                    }
+
+                    try {
                         const response = await fetch(__feedbackStoreUrl, {
                             method: 'POST',
                             headers: {
@@ -83,7 +96,7 @@
 
                         if (response.ok) {
                             this.closeFeedbackModal();
-                            window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!');
+                            window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!', 'Done', window.location.href);
                         } else {
                             window.showErrorDialog('Submission Failed', 'Error submitting feedback. Please try again.');
                         }
@@ -94,9 +107,47 @@
                 }
             }
         }
+
+        async function handleTaskAction(title, message, action, formId) {
+            // Block if the complete button is not yet enabled
+            if (formId === 'complete-task-form') {
+                const btn = document.getElementById('mark-complete-btn-desktop') || document.getElementById('mark-complete-btn-mobile');
+                if (btn && btn.dataset.enabled !== 'true') return;
+            }
+
+            try {
+                await window.showConfirmDialog(title, message, action, 'Cancel');
+            } catch {
+                return;
+            }
+
+            const form = document.getElementById(formId);
+            if (!form) return;
+
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: new FormData(form)
+                });
+
+                if (res.ok || res.redirected) {
+                    const successMsg = message.replace('Are you sure you want to ', 'You have successfully ').replace('?', '.');
+                    window.showSuccessDialog(title, successMsg, 'Done', window.location.href);
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    window.showErrorDialog('Error', data.message || 'Something went wrong.', 'Close');
+                }
+            } catch (e) {
+                window.showErrorDialog('Error', 'An unexpected error occurred. Please try again.', 'Close');
+            }
+        }
     </script>
 
-    <div x-data="feedbackModal()">
+    <div x-data="feedbackModal()" @open-feedback-modal.window="showFeedbackModal = true" class="p-4 md:p-8">
 
         {{-- MOBILE LAYOUT (< 1024px) --}} <section role="status"
             class="w-full lg:hidden flex flex-col min-h-screen bg-white dark:bg-gray-900">
@@ -104,13 +155,10 @@
             {{-- Header with Back Button --}}
             <div
                 class="sticky top-0 bg-white dark:bg-gray-900 z-10 px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                <a href="{{ $backUrl }}"
-                    class="inline-flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    <span class="text-sm font-medium">Back to {{ $backLabel }}</span>
-                </a>
+                <x-employer-components.breadcrumb :items="[
+                    ['label' => $backLabel, 'url' => $backUrl],
+                    ['label' => 'Task #' . $task->id, 'url' => '#'],
+                ]" />
 
                 {{-- Completed Task Badge --}}
                 @if($task->employee_approved === true && $task->status === 'Completed')
@@ -164,7 +212,7 @@
 
             {{-- Task Details Summary Card --}}
             <div class="px-6 pb-6">
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm">
+                <div class="bg-white dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
                     <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-base font-semibold text-gray-900 dark:text-white">
                             Tasks Details Summary
@@ -279,41 +327,56 @@
             {{-- Action Buttons --}}
             <div class="px-6 pb-8 mt-auto">
                 @if(is_null($task->employee_approved))
-                    {{-- Approval Buttons - Show when task needs approval --}}
-                    <div class="flex gap-3">
-                        <button type="button" onclick="document.getElementById('approve-task-form').submit()"
-                            class="flex-1 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20">
-                            <i class="fas fa-check mr-2"></i>Accept
-                        </button>
-                        <button type="button" onclick="if(confirm('Are you sure you want to decline this task?')) document.getElementById('decline-task-form').submit()"
-                            class="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-red-600/30 dark:shadow-red-600/20">
-                            <i class="fas fa-times mr-2"></i>Decline
-                        </button>
-                    </div>
-                    <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Please accept or decline this task
-                    </p>
+                    @if(\Carbon\Carbon::parse($task->scheduled_date)->lt(\Carbon\Carbon::today()))
+                        {{-- Task date has passed --}}
+                        <div class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 text-center">
+                            <i class="fas fa-calendar-times text-gray-400 dark:text-gray-500 text-2xl mb-2"></i>
+                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Task Expired</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">The scheduled date has passed. This task can no longer be accepted or declined.</p>
+                        </div>
+                    @else
+                        {{-- Approval Buttons - Show when task needs approval --}}
+                        <div class="flex gap-3">
+                            <button type="button" onclick="handleTaskAction('Accept Task', 'Are you sure you want to accept this task?', 'Accept', 'approve-task-form')"
+                                class="flex-1 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20">
+                                <i class="fas fa-check mr-2"></i>Accept
+                            </button>
+                            <button type="button" onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
+                                class="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-red-600/30 dark:shadow-red-600/20">
+                                <i class="fas fa-times mr-2"></i>Decline
+                            </button>
+                        </div>
+                        <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Please accept or decline this task
+                        </p>
+                    @endif
                 @elseif($task->employee_approved === true)
                     {{-- Task Action Buttons - Show when task is approved --}}
                     <div class="space-y-3">
                         @if($task->status === 'Pending' || $task->status === 'Scheduled')
                             {{-- Show Start Task button --}}
-                            <button type="button" onclick="document.getElementById('start-task-form').submit()"
+                            <button type="button" onclick="handleTaskAction('Start Task', 'Are you sure you want to start this task?', 'Start', 'start-task-form')"
                                 class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-blue-600/30 dark:shadow-blue-600/20">
                                 <i class="fas fa-play mr-2"></i>Start Task
                             </button>
                         @elseif($task->status === 'In Progress')
                             {{-- Show Mark Complete button - disabled until all checklist items are completed --}}
                             <button type="button" id="mark-complete-btn-mobile"
-                                onclick="if(confirm('Are you sure you want to mark this task as complete?')) document.getElementById('complete-task-form').submit()"
-                                class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
-                                disabled>
+                                onclick="handleTaskAction('Complete Task', 'Are you sure you want to mark this task as complete?', 'Complete', 'complete-task-form')"
+                                class="w-full bg-gray-400 cursor-not-allowed text-white font-semibold py-4 rounded-full transition-colors shadow-none"
+                                data-enabled="false">
                                 <i class="fas fa-check mr-2"></i>Mark Complete
                             </button>
                             <p id="checklist-warning-mobile" class="text-xs text-amber-600 dark:text-amber-400 text-center mt-2">
                                 <i class="fas fa-info-circle mr-1"></i>Complete all checklist items to enable
                             </p>
+                        @elseif($task->status === 'Completed')
+                            {{-- Rate Task button --}}
+                            <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-feedback-modal'))"
+                                class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-blue-600/30 dark:shadow-blue-600/20">
+                                <i class="fas fa-star mr-2"></i>Rate Task
+                            </button>
                         @endif
                     </div>
                 @else
@@ -325,14 +388,6 @@
                     </div>
                 @endif
 
-                {{-- Rate this task (mobile) --}}
-                <div class="my-6 text-center">
-                    <button @click="showFeedbackModal = true" type="button"
-                        class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                        <i class="fas fa-star"></i>
-                        <span class="font-medium text-sm">Rate this task</span>
-                    </button>
-                </div>
             </div>
             </div>
             </section>
@@ -342,14 +397,12 @@
 
                 <!-- Main Content Area (Left Side - 70%) -->
                 <div class="flex-1 px-12 overflow-y-auto">
-                    <!-- Back Button -->
+                    <!-- Breadcrumb -->
                     <div class="mb-6">
-                        <a href="{{ $backUrl }}"
-                            class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                            <i class="fas fa-arrow-left"></i>
-                            <span class="font-medium text-sm">Back to {{ $backLabel }}</span>
-                        </a>
-
+                        <x-employer-components.breadcrumb :items="[
+                            ['label' => $backLabel, 'url' => $backUrl],
+                            ['label' => 'Task #' . $task->id, 'url' => '#'],
+                        ]" />
                     </div>
                     
                     <!-- Task Title and Meta -->
@@ -396,16 +449,37 @@
                                     <i class="fas fa-align-left text-gray-400"></i>
                                     Description
                                 </h3>
+                                @php
+                                    $clientName = $task->location?->contractedClient?->name
+                                        ?? ($task->client ? trim(($task->client->first_name ?? '') . ' ' . ($task->client->last_name ?? '')) : 'Unknown Client');
+
+                                    // Build address from contracted client or external client
+                                    $addressParts = [];
+                                    if ($task->location && $task->location->contractedClient) {
+                                        $cc = $task->location->contractedClient;
+                                        if ($cc->address) $addressParts[] = $cc->address;
+                                    } elseif ($task->client) {
+                                        $c = $task->client;
+                                        if ($c->street_address) $addressParts[] = $c->street_address;
+                                        if ($c->city) $addressParts[] = $c->city;
+                                        if ($c->state) $addressParts[] = $c->state;
+                                        if ($c->address && !$c->street_address) $addressParts[] = $c->address;
+                                    }
+                                    $fullAddress = implode(', ', array_filter($addressParts));
+                                @endphp
                                 <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                     The service is availed by
                                     <span class="font-bold text-blue-600 dark:text-blue-400">
-                                        <!-- CHNAGE, SHOULD BE FROM THE DATABASE -->
-                                        Kakslauttanen
+                                        {{ $clientName }}
                                     </span>.
                                     This task has been assigned to you and should be started in
                                     <span class="font-bold text-green-600 dark:text-green-400">
                                         {{ $timeRemaining ?? '2 hrs and 12 mins' }}
-                                    </span>
+                                    </span>.
+                                    @if($fullAddress)
+                                        The task will take place at
+                                        <span class="font-bold text-gray-900 dark:text-white">{{ $fullAddress }}</span>.
+                                    @endif
                                 </p>
                             </div>
 
@@ -414,7 +488,7 @@
 
                                 <!-- Client Card -->
                                 <div
-                                    class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                                    class="bg-white dark:bg-gray-800/30 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                     <div class="flex items-start gap-3">
                                         <div
                                             class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -437,7 +511,7 @@
                                 </div>
                                 <!-- Location Card -->
                                 <div
-                                    class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                                    class="bg-white dark:bg-gray-800/30 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                     <div class="flex items-start gap-3">
                                         <div
                                             class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -448,8 +522,7 @@
                                                 Location
                                             </p>
                                             <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                                                <!-- CHANGE, SHOULD BE FORM THE DATABASE -->
-                                                Inari, Finland
+                                                {{ $task->location->location_name ?? 'External Client' }}
                                             </p>
                                             @if($task->location && $task->location->address)
                                                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -463,7 +536,7 @@
                                 <!-- Duration Card -->
                                 @if($task->estimated_duration_minutes)
                                     <div
-                                        class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                                        class="bg-white dark:bg-gray-800/30 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                         <div class="flex items-start gap-3">
                                             <div
                                                 class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -486,7 +559,7 @@
 
                                 <!-- Schedule Card -->
                                 <div
-                                    class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                                    class="bg-white dark:bg-gray-800/30 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                     <div class="flex items-start gap-3">
                                         <div
                                             class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -511,7 +584,7 @@
                                 <!-- Vehicle Card -->
                                 @if($task->optimizationTeam && $task->optimizationTeam->car)
                                     <div
-                                        class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                                        class="bg-white dark:bg-gray-800/30 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                         <div class="flex items-start gap-3">
                                             <div
                                                 class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -922,7 +995,7 @@
 
                 <!-- Sidebar (Right Side - 30%) -->
                 <div
-                    class="w-96 rounded-xl bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-6 overflow-y-auto">
+                    class="w-96 bg-white dark:bg-gray-800/30 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 overflow-y-auto">
                     <!-- Status Section -->
                     <div class="mb-6">
                         <label
@@ -1076,31 +1149,42 @@
                     @endif
 
                     @if(is_null($task->employee_approved))
-                        <!-- Approval Action Buttons - Show when task needs approval -->
-                        <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                            <button type="button" onclick="document.getElementById('approve-task-form').submit()"
-                                class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
-                                <i class="fas fa-check"></i>
-                                Accept Task
-                            </button>
-                            <button type="button" onclick="if(confirm('Are you sure you want to decline this task?')) document.getElementById('decline-task-form').submit()"
-                                class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2">
-                                <i class="fas fa-times"></i>
-                                Decline Task
-                            </button>
-                        </div>
+                        @if(\Carbon\Carbon::parse($task->scheduled_date)->lt(\Carbon\Carbon::today()))
+                            <!-- Task date has passed -->
+                            <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
+                                <div class="p-4 text-center">
+                                    <i class="fas fa-calendar-times text-gray-400 dark:text-gray-500 text-xl mb-2"></i>
+                                    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400">Task Expired</p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">The scheduled date has passed. This task can no longer be accepted or declined.</p>
+                                </div>
+                            </div>
+                        @else
+                            <!-- Approval Action Buttons - Show when task needs approval -->
+                            <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                <button type="button" onclick="handleTaskAction('Accept Task', 'Are you sure you want to accept this task?', 'Accept', 'approve-task-form')"
+                                    class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                                    <i class="fas fa-check"></i>
+                                    Accept Task
+                                </button>
+                                <button type="button" onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
+                                    class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2">
+                                    <i class="fas fa-times"></i>
+                                    Decline Task
+                                </button>
+                            </div>
 
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Please accept or decline this task
-                        </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Please accept or decline this task
+                            </p>
+                        @endif
 
                     @elseif($task->employee_approved === true)
                         <!-- Task Action Buttons - Show when task is approved -->
                         <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                             @if($task->status === 'Pending' || $task->status === 'Scheduled')
                                 {{-- Show Start Task button --}}
-                                <button type="button" onclick="document.getElementById('start-task-form').submit()"
+                                <button type="button" onclick="handleTaskAction('Start Task', 'Are you sure you want to start this task?', 'Start', 'start-task-form')"
                                     class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
                                     <i class="fas fa-play"></i>
                                     Start Task
@@ -1108,15 +1192,22 @@
                             @elseif($task->status === 'In Progress')
                                 {{-- Show Mark Complete button - disabled until all checklist items are completed --}}
                                 <button type="button" id="mark-complete-btn-desktop"
-                                    onclick="if(confirm('Are you sure you want to mark this task as complete?')) document.getElementById('complete-task-form').submit()"
-                                    class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                    disabled>
+                                    onclick="handleTaskAction('Complete Task', 'Are you sure you want to mark this task as complete?', 'Complete', 'complete-task-form')"
+                                    class="w-full px-4 py-2.5 bg-gray-400 cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                                    data-enabled="false">
                                     <i class="fas fa-check"></i>
                                     Mark Complete
                                 </button>
                                 <p id="checklist-warning-desktop" class="text-xs text-amber-600 dark:text-amber-400 text-center mt-2">
                                     <i class="fas fa-info-circle mr-1"></i>Complete all checklist items to enable
                                 </p>
+                            @elseif($task->status === 'Completed')
+                                {{-- Rate Task button --}}
+                                <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-feedback-modal'))"
+                                    class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                                    <i class="fas fa-star"></i>
+                                    Rate Task
+                                </button>
                             @endif
                         </div>
 
@@ -1131,136 +1222,10 @@
                         </div>
                     @endif
                     
-                    <!-- Rate this task -->
-                    <div class="my-6 text-center">
-                        <button @click="showFeedbackModal = true" type="button"
-                            class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                            <i class="fas fa-star"></i>
-                            <span class="font-medium text-sm">Rate this task</span>
-                        </button>
-                    </div>
                 </div>
             </section>
 
-            <!-- Feedback Modal (teleported to body to avoid CSS containment issues) -->
-            <template x-teleport="body">
-            <div x-show="showFeedbackModal" x-cloak @click="closeFeedbackModal()"
-                class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 dark:bg-black/70 p-4"
-                style="display: none;">
-                <div @click.stop
-                    class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-100 dark:border-gray-800 overflow-hidden"
-                    x-show="showFeedbackModal" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100 scale-100"
-                    x-transition:leave-end="opacity-0 scale-95">
-
-                    <!-- Close button -->
-                    <button type="button" @click="closeFeedbackModal()"
-                        class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-900 dark:bg-gray-800 text-white rounded-full hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 dark:focus:ring-gray-700 z-10">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-
-                    <!-- Modal Body -->
-                    <div class="p-8 sm:p-10">
-                        <!-- Header -->
-                        <div class="text-center flex flex-col gap-2 my-6">
-                            <p class="text-xs text-gray-500 dark:text-gray-400 tracking-wide">
-                                Your feedback matters
-                            </p>
-                            <h3
-                                class="text-3xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight my-3">
-                                How would you rate<br class="hidden sm:block">this task?
-                            </h3>
-                            <p
-                                class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-md mx-auto">
-                                Your input is valuable in helping us better understand your needs.
-                            </p>
-                        </div>
-
-                        <!-- Emoji Rating -->
-                        <div class="flex justify-center items-end gap-2 sm:gap-3 mb-10">
-                            @php
-                                $emojis = [
-                                    1 => asset('images/icons/emojis/Very-Dissatisfied.svg'),
-                                    2 => asset('images/icons/emojis/Dissatisfied.svg'),
-                                    3 => asset('images/icons/emojis/Neutral.svg'),
-                                    4 => asset('images/icons/emojis/Satisfied.svg'),
-                                    5 => asset('images/icons/emojis/Very-Satisfied.svg')
-                                ];
-                            @endphp
-                            @foreach($emojis as $rating => $emojiSrc)
-                                <button @click="selectedRating = {{ $rating }}"
-                                    :class="selectedRating === {{ $rating }} ? 'scale-100 sm:scale-100' : 'scale-100'"
-                                    class="relative flex flex-col items-center transition-all duration-200 focus:outline-none group"
-                                    type="button">
-                                    <div class="rounded-full flex items-center justify-center transition-all duration-200"
-                                        :class="selectedRating === {{ $rating }} 
-                                            ? 'bg-blue-600 dark:bg-blue-500 ring-4 ring-blue-200 dark:ring-blue-900 w-14 h-14 sm:w-16 sm:h-16' 
-                                            : 'bg-gray-200 dark:bg-gray-800 w-12 h-12 sm:w-14 sm:h-14 group-hover:bg-gray-300 dark:group-hover:bg-gray-700'">
-                                        <img src="{{ $emojiSrc }}" alt="Rating {{ $rating }}"
-                                            :class="selectedRating === {{ $rating }} ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8 grayscale opacity-60'"
-                                            class="transition-all duration-200">
-                                    </div>
-                                    <span x-show="selectedRating === {{ $rating }}" x-transition
-                                        class="absolute -bottom-8 text-xs font-semibold text-white bg-blue-600 dark:bg-blue-500 px-3 py-1 rounded-full whitespace-nowrap shadow-lg">
-                                        {{ $rating }}.0 Medium
-                                    </span>
-                                </button>
-                            @endforeach
-                        </div>
-
-                        <!-- Keyword Tags -->
-                        <div class="mt-12 mb-4">
-                            <div class="flex flex-wrap justify-center gap-2">
-                                @php
-                                    $keywords = [
-                                        'Well-Scheduled',
-                                        'Clear Instructions',
-                                        'Professional Standards',
-                                        'Hygiene-Compliant',
-                                        'Time-Efficient',
-                                        'Rushed Timeline',
-                                        'Well-Defined Steps',
-                                        'Skill-Appropriate'
-                                    ];
-                                @endphp
-                                @foreach($keywords as $keyword)
-                                    <button @click="toggleKeyword('{{ $keyword }}')"
-                                        :class="isKeywordSelected('{{ $keyword }}') 
-                                                ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-900 dark:border-gray-100' 
-                                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600'"
-                                        type="button"
-                                        class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-medium border rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 dark:focus:ring-gray-700">
-                                        {{ $keyword }}
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Detailed Review -->
-                        <div class="mb-6">
-                            <label class="block text-sm text-gray-900 dark:text-white mb-2">
-                                Detailed Review
-                            </label>
-                            <textarea x-model="feedbackText" rows="3" placeholder="Add a comment"
-                                class="w-full px-4 py-3 text-sm text-gray-900 dark:text-white border-0 bg-gray-50 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none placeholder-gray-400 dark:placeholder-gray-500 resize-none transition-all"></textarea>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button @click="submitFeedback()" :disabled="selectedRating === 0" :class="selectedRating === 0 
-                    ? 'opacity-50 cursor-not-allowed bg-blue-600 dark:bg-blue-800' 
-                    : 'bg-blue-900 dark:bg-blue-700 hover:bg-blue-800 dark:hover:bg-blue-600'" type="button"
-                            class="w-full px-6 py-3.5 sm:py-4 text-sm font-bold text-white rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 dark:focus:ring-blue-700 disabled:hover:bg-blue-900 dark:disabled:hover:bg-blue-800">
-                            Submit Feedback
-                        </button>
-                    </div>
-                </div>
-            </div>
-            </template>
+            {{-- Feedback modal rendered via @push('modals') at end of file --}}
 
             @push('scripts')
                 <script>
@@ -1367,7 +1332,7 @@
                             progressBar.style.width = percentage + '%';
 
                             // Update color based on completion
-                            if (checkedItems === totalItems && totalItems > 0) {
+                            if (totalItems === 0 || checkedItems === totalItems) {
                                 progressBar.classList.remove('bg-blue-600');
                                 progressBar.classList.add('bg-green-600');
                             } else {
@@ -1383,15 +1348,20 @@
                         }
 
                         // Enable/disable Mark Complete buttons based on checklist completion
-                        const allCompleted = checkedItems === totalItems && totalItems > 0;
+                        // If no checklist items exist, allow completion
+                        const allCompleted = totalItems === 0 || checkedItems === totalItems;
 
                         // Mobile button
                         const mobileBtn = document.getElementById('mark-complete-btn-mobile');
                         const mobileWarning = document.getElementById('checklist-warning-mobile');
                         if (mobileBtn) {
-                            mobileBtn.disabled = !allCompleted;
+                            mobileBtn.dataset.enabled = allCompleted ? 'true' : 'false';
                             if (allCompleted) {
-                                mobileBtn.classList.remove('disabled:bg-gray-400', 'disabled:cursor-not-allowed', 'disabled:shadow-none');
+                                mobileBtn.classList.remove('bg-gray-400', 'cursor-not-allowed', 'shadow-none');
+                                mobileBtn.classList.add('bg-green-600', 'hover:bg-green-700', 'active:bg-green-800', 'shadow-lg', 'shadow-green-600/30');
+                            } else {
+                                mobileBtn.classList.add('bg-gray-400', 'cursor-not-allowed', 'shadow-none');
+                                mobileBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'active:bg-green-800', 'shadow-lg', 'shadow-green-600/30');
                             }
                         }
                         if (mobileWarning) {
@@ -1402,9 +1372,13 @@
                         const desktopBtn = document.getElementById('mark-complete-btn-desktop');
                         const desktopWarning = document.getElementById('checklist-warning-desktop');
                         if (desktopBtn) {
-                            desktopBtn.disabled = !allCompleted;
+                            desktopBtn.dataset.enabled = allCompleted ? 'true' : 'false';
                             if (allCompleted) {
-                                desktopBtn.classList.remove('disabled:bg-gray-400', 'disabled:cursor-not-allowed');
+                                desktopBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                                desktopBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                            } else {
+                                desktopBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                                desktopBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
                             }
                         }
                         if (desktopWarning) {
@@ -1436,4 +1410,114 @@
         </form>
 
     </div>
+
+    @push('modals')
+    <div x-data="{
+        showModal: false,
+        selectedRating: 0,
+        selectedKeywords: [],
+        feedbackText: '',
+        close() { this.showModal = false; this.selectedRating = 0; this.selectedKeywords = []; this.feedbackText = ''; },
+        toggleKeyword(k) { const i = this.selectedKeywords.indexOf(k); i > -1 ? this.selectedKeywords.splice(i, 1) : this.selectedKeywords.push(k); },
+        isSelected(k) { return this.selectedKeywords.includes(k); },
+        async submit() {
+            if (!this.selectedRating) return;
+            try { await window.showConfirmDialog('Submit Feedback', 'Are you sure you want to submit your rating and feedback?', 'Submit', 'Cancel'); } catch { return; }
+            try {
+                const res = await fetch('{{ route('employee.tasks.feedback.store', $task->id) }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
+                    body: JSON.stringify({ rating: this.selectedRating, keywords: this.selectedKeywords, comment: this.feedbackText })
+                });
+                if (res.ok) { this.close(); window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!', 'Done', window.location.href); }
+                else { window.showErrorDialog('Submission Failed', 'Error submitting feedback. Please try again.'); }
+            } catch { window.showErrorDialog('Submission Failed', 'Error submitting feedback. Please try again.'); }
+        }
+    }" @open-feedback-modal.window="showModal = true">
+        <div x-show="showModal" x-cloak @click="close()"
+            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 dark:bg-black/70 p-4">
+            <div @click.stop
+                class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-100 dark:border-gray-800 overflow-hidden"
+                x-show="showModal" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95">
+
+                <button type="button" @click="close()"
+                    class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-900 dark:bg-gray-800 text-white rounded-full hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200 z-10">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div class="p-8 sm:p-10">
+                    <div class="text-center flex flex-col gap-2 my-6">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 tracking-wide">Your feedback matters</p>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white leading-tight my-3">How would you rate<br class="hidden sm:block">this task?</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-md mx-auto">Your input is valuable in helping us better understand your needs.</p>
+                    </div>
+
+                    <div class="flex justify-center items-end gap-2 sm:gap-3 mb-10">
+                        @php
+                            $emojis = [
+                                1 => asset('images/icons/emojis/Very-Dissatisfied.svg'),
+                                2 => asset('images/icons/emojis/Dissatisfied.svg'),
+                                3 => asset('images/icons/emojis/Neutral.svg'),
+                                4 => asset('images/icons/emojis/Satisfied.svg'),
+                                5 => asset('images/icons/emojis/Very-Satisfied.svg')
+                            ];
+                        @endphp
+                        @foreach($emojis as $rating => $emojiSrc)
+                            <button @click="selectedRating = {{ $rating }}" type="button"
+                                class="relative flex flex-col items-center transition-all duration-200 focus:outline-none group">
+                                <div class="rounded-full flex items-center justify-center transition-all duration-200"
+                                    :class="selectedRating === {{ $rating }}
+                                        ? 'bg-blue-600 dark:bg-blue-500 ring-4 ring-blue-200 dark:ring-blue-900 w-14 h-14 sm:w-16 sm:h-16'
+                                        : 'bg-gray-200 dark:bg-gray-800 w-12 h-12 sm:w-14 sm:h-14 group-hover:bg-gray-300 dark:group-hover:bg-gray-700'">
+                                    <img src="{{ $emojiSrc }}" alt="Rating {{ $rating }}"
+                                        :class="selectedRating === {{ $rating }} ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8 grayscale opacity-60'"
+                                        class="transition-all duration-200">
+                                </div>
+                                <span x-show="selectedRating === {{ $rating }}" x-transition
+                                    class="absolute -bottom-8 text-xs font-semibold text-white bg-blue-600 dark:bg-blue-500 px-3 py-1 rounded-full whitespace-nowrap shadow-lg">
+                                    {{ $rating }}.0 {{ [1 => 'Very Dissatisfied', 2 => 'Dissatisfied', 3 => 'Neutral', 4 => 'Satisfied', 5 => 'Very Satisfied'][$rating] }}
+                                </span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-12 mb-4">
+                        <div class="flex flex-wrap justify-center gap-2">
+                            @php $keywords = ['Well-Scheduled','Clear Instructions','Professional Standards','Hygiene-Compliant','Time-Efficient','Rushed Timeline','Well-Defined Steps','Skill-Appropriate']; @endphp
+                            @foreach($keywords as $keyword)
+                                <button @click="toggleKeyword('{{ $keyword }}')" type="button"
+                                    :class="isSelected('{{ $keyword }}')
+                                        ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-900 dark:border-gray-100'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600'"
+                                    class="px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-medium border rounded-full transition-all duration-200">
+                                    {{ $keyword }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm text-gray-900 dark:text-white mb-2">Detailed Review</label>
+                        <textarea x-model="feedbackText" rows="3" placeholder="Add a comment"
+                            class="w-full px-4 py-3 text-sm text-gray-900 dark:text-white border-0 bg-gray-50 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none placeholder-gray-400 dark:placeholder-gray-500 resize-none transition-all"></textarea>
+                    </div>
+
+                    <button @click="submit()" :disabled="selectedRating === 0" type="button"
+                        :class="selectedRating === 0
+                            ? 'opacity-50 cursor-not-allowed bg-blue-600 dark:bg-blue-800'
+                            : 'bg-blue-900 dark:bg-blue-700 hover:bg-blue-800 dark:hover:bg-blue-600'"
+                        class="w-full px-6 py-3.5 sm:py-4 text-sm font-bold text-white rounded-full transition-all duration-200">
+                        Submit Feedback
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endpush
 </x-layouts.general-employee>

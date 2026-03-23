@@ -4,7 +4,7 @@
 ])
 
   <!-- Calendar Container -->
-<div class="w-full max-w-parent px-8 pt-1 pb-9 rounded-lg bg-white dark:bg-transparent">
+<div class="w-full max-w-parent px-8 pt-1 pb-9 rounded-lg bg-white/30 backdrop-blur-md border border-white/40 dark:bg-transparent dark:border-transparent dark:backdrop-blur-none">
 
     <!-- Header -->
     <div class="flex justify-between items-center my-3 pb-6">

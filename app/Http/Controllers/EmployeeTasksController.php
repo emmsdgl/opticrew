@@ -170,13 +170,25 @@ class EmployeeTasksController extends Controller
         'comment' => 'nullable|string|max:1000'
     ]);
 
-    // Store the feedback (adjust based on your database structure)
-    // You'll need to create a TaskFeedback model and migration
-    $feedback = $task->feedback()->create([
+    // Check if feedback already exists
+    $existingFeedback = \App\Models\Feedback::where('task_id', $task->id)
+        ->where('employee_id', $employee->id)
+        ->where('user_type', 'employee')
+        ->first();
+
+    if ($existingFeedback) {
+        return response()->json(['success' => false, 'message' => 'Feedback already submitted for this task'], 400);
+    }
+
+    // Create new feedback
+    $feedback = \App\Models\Feedback::create([
+        'task_id' => $task->id,
         'employee_id' => $employee->id,
+        'user_type' => 'employee',
         'rating' => $validated['rating'],
-        'keywords' => json_encode($validated['keywords'] ?? []),
-        'comment' => $validated['comment'] ?? null,
+        'keywords' => $validated['keywords'] ?? [],
+        'feedback_text' => $validated['comment'] ?? null,
+        'service_type' => $task->task_description,
     ]);
 
     return response()->json([
@@ -201,6 +213,11 @@ class EmployeeTasksController extends Controller
 
         if (!$hasAccess) {
             return redirect()->back()->with('error', 'You do not have access to this task.');
+        }
+
+        // Cannot accept after scheduled date has passed
+        if ($task->scheduled_date && Carbon::parse($task->scheduled_date)->lt(Carbon::today())) {
+            return redirect()->back()->with('error', 'Cannot accept a task whose scheduled date has already passed.');
         }
 
         // Update task approval status
@@ -233,6 +250,11 @@ class EmployeeTasksController extends Controller
 
         if (!$hasAccess) {
             return redirect()->back()->with('error', 'You do not have access to this task.');
+        }
+
+        // Cannot decline after scheduled date has passed
+        if ($task->scheduled_date && Carbon::parse($task->scheduled_date)->lt(Carbon::today())) {
+            return redirect()->back()->with('error', 'Cannot decline a task whose scheduled date has already passed.');
         }
 
         // SCENARIO #20: Cannot cancel/decline after task has started

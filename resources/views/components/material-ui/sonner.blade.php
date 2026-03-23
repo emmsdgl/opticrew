@@ -67,6 +67,11 @@
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-gray-900 dark:text-white truncate" x-text="toast.title"></p>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2" x-text="toast.message"></p>
+                        <template x-if="toast.actionUrl">
+                            <a :href="toast.actionUrl"
+                               class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mt-1.5 transition-colors"
+                               x-text="toast.actionLabel || 'View'"></a>
+                        </template>
                         <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1" x-text="toast.time"></p>
                     </div>
 
@@ -141,6 +146,8 @@ document.addEventListener('alpine:init', () => {
         'application_received': 'info',
         'application_hired': 'success',
         'application_rejected': 'error',
+        'employee_clock_in_reminder': 'warning',
+        'employee_clock_out_reminder': 'info',
     };
 
     Alpine.data('sonnerToast', () => ({
@@ -152,8 +159,15 @@ document.addEventListener('alpine:init', () => {
         seenIds: new Set(),
 
         startPolling() {
+            // Restore seen IDs from sessionStorage so toasts don't repeat across page loads
+            try {
+                const stored = JSON.parse(sessionStorage.getItem('sonner_seen_ids') || '[]');
+                stored.forEach(id => this.seenIds.add(id));
+            } catch (e) {}
+
             // Set initial timestamp to now to only show NEW notifications
-            this.lastCheck = new Date().toISOString();
+            this.lastCheck = sessionStorage.getItem('sonner_last_check') || new Date().toISOString();
+            sessionStorage.setItem('sonner_last_check', this.lastCheck);
 
             // Poll every 15 seconds
             this.pollInterval = setInterval(() => this.checkNewNotifications(), 15000);
@@ -180,6 +194,7 @@ document.addEventListener('alpine:init', () => {
                 if (newNotifs.length > 0) {
                     // Update last check to the newest notification's timestamp
                     this.lastCheck = newNotifs[0].created_at;
+                    sessionStorage.setItem('sonner_last_check', this.lastCheck);
 
                     // Show toasts for each new notification
                     newNotifs.reverse().forEach((notif, i) => {
@@ -195,8 +210,12 @@ document.addEventListener('alpine:init', () => {
 
         addToast(notif) {
             this.seenIds.add(notif.id);
+            try {
+                sessionStorage.setItem('sonner_seen_ids', JSON.stringify([...this.seenIds]));
+            } catch (e) {}
 
-            const toastType = typeMap[notif.type] || 'default';
+            const toastType = typeMap[notif.type] || notif.type || 'default';
+            const duration = notif.duration || this.toastDuration;
             const toast = {
                 id: notif.id,
                 title: notif.title,
@@ -205,6 +224,8 @@ document.addEventListener('alpine:init', () => {
                 time: this.timeAgo(notif.created_at),
                 visible: true,
                 progress: 100,
+                actionUrl: notif.actionUrl || null,
+                actionLabel: notif.actionLabel || null,
             };
 
             // Remove oldest if at max
@@ -217,11 +238,17 @@ document.addEventListener('alpine:init', () => {
             // Play bell chime
             if (window.playBellChime) window.playBellChime();
 
+            // Skip auto-dismiss and progress bar for persistent toasts
+            if (notif.persistent) {
+                toast.progress = 0;
+                return;
+            }
+
             // Animate progress bar
             const startTime = Date.now();
             const progressInterval = setInterval(() => {
                 const elapsed = Date.now() - startTime;
-                const remaining = Math.max(0, 100 - (elapsed / this.toastDuration) * 100);
+                const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
                 const found = this.toasts.find(t => t.id === toast.id);
                 if (found) {
                     found.progress = remaining;
@@ -234,7 +261,7 @@ document.addEventListener('alpine:init', () => {
             setTimeout(() => {
                 this.dismissToast(toast.id);
                 clearInterval(progressInterval);
-            }, this.toastDuration);
+            }, duration);
         },
 
         dismissToast(id) {
@@ -260,13 +287,17 @@ document.addEventListener('alpine:init', () => {
         },
 
         // Public method to manually trigger a toast (for flash messages, etc.)
-        show(title, message, type = 'default') {
+        show(title, message, type = 'default', options = {}) {
             this.addToast({
                 id: 'manual-' + Date.now(),
                 title: title,
                 message: message,
                 type: type,
                 created_at: new Date().toISOString(),
+                actionUrl: options.actionUrl || null,
+                actionLabel: options.actionLabel || null,
+                duration: options.duration || null,
+                persistent: options.persistent || false,
             });
         },
     }));

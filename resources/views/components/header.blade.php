@@ -135,7 +135,7 @@
                 @auth
                     <!-- Menu Items -->
                     <div class="py-2">
-                        @if(in_array(auth()->user()->role, ['applicant', 'client', 'external_client']))
+                        @if(in_array(auth()->user()->role, ['applicant', 'client', 'external_client', 'employee']))
                             <button type="button"
                                 onclick="window.dispatchEvent(new CustomEvent('open-profile-modal')); document.getElementById('profile-dropdown').classList.add('invisible','opacity-0','scale-95'); document.getElementById('profile-dropdown').classList.remove('opacity-100','scale-100');"
                                 class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -143,16 +143,14 @@
                                 <span class="ml-3">Profile</span>
                             </button>
                         @else
-                            <a href="{{
-                                auth()->user()->role === 'admin' ? route('admin.profile') :
-                                route('employee.profile')
-                            }}"
+                            <a href="{{ route('admin.profile') }}"
                                 class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                 <i class="fa-regular fa-user w-5 text-gray-500 dark:text-gray-400"></i>
                                 <span class="ml-3">Profile</span>
                             </a>
                         @endif
                                                 
+                        @if(auth()->user()->role !== 'applicant')
                         <a href="{{
                             auth()->user()->role === 'admin' ? route('admin.settings') :
                             (auth()->user()->role === 'employee' ? route('employee.settings') :
@@ -162,6 +160,7 @@
                             <i class="fa-solid fa-gear w-5 text-gray-500 dark:text-gray-400"></i>
                             <span class="ml-3">Settings</span>
                         </a>
+                        @endif
 
                         <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
 

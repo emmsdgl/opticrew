@@ -7,7 +7,7 @@
     </div>
 
     {{-- DESKTOP LAYOUT (≥ 1024px) - Hidden on small screens --}}
-    <section role="status" class="w-full hidden lg:flex flex-col lg:flex-col gap-1 p-4 md:p-6"
+    <section role="status" class="w-full hidden lg:flex flex-col lg:flex-col gap-1 p-16 md:p-6"
         x-data="{
             showRequestModal: false,
             selectedRequest: null,
@@ -69,15 +69,6 @@
             }
         }">
 
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-            <x-alert type="success">{{ session('success') }}</x-alert>
-        @endif
-
-        @if(session('error'))
-            <x-alert type="error">{{ session('error') }}</x-alert>
-        @endif
-
         <!-- Clock In Status Banner -->
         @if($isClockedIn)
             @php
@@ -105,7 +96,7 @@
         @endif
 
         <!-- Inner Panel - Summary Cards Container -->
-        <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+        <div class="flex flex-col gap-6 w-full rounded-lg p-4">
             <x-labelwithvalue label="Summary" count="" />
 
             @php
@@ -143,46 +134,38 @@
                 $shiftEndValue = \Carbon\Carbon::createFromFormat('H:i', $shiftEnd)->format('g:i A');
             @endphp
 
-            <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 p-6">
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
                 @foreach($stats as $stat)
-                    <x-statisticscard
-                        :title="$stat['title']"
+                    <x-employee-components.kpi-stat-card
+                        :label="$stat['title']"
                         :value="$stat['value']"
-                        :subtitle="$stat['subtitle'] ?? ''"
-                        :trend="$stat['trend'] ?? null"
-                        :trend-value="$stat['trendValue'] ?? null"
-                        :trend-label="$stat['trendLabel'] ?? 'vs last month'"
-                        :icon="$stat['icon'] ?? null"
-                        :icon-bg="$stat['iconBg'] ?? 'bg-gray-100'"
-                        :icon-color="$stat['iconColor'] ?? 'text-gray-600'"
-                        :value-suffix="$stat['valueSuffix'] ?? ''"
-                        :value-prefix="$stat['valuePrefix'] ?? ''"
+                        :icon="$stat['icon'] ?? 'fas fa-chart-bar'"
+                        :trend="$stat['trendValue'] ?? $stat['subtitle'] ?? ''"
+                        :trendUp="($stat['trend'] ?? '') === 'up'"
                     />
                 @endforeach
 
                 <!-- Shift Start Card -->
-                <x-statisticscard
-                    title="Shift Start"
+                <x-employee-components.kpi-stat-card
+                    label="Shift Start"
                     :value="$shiftStartValue"
-                    :subtitle="$shiftStartSubtitle"
                     icon="fa-solid fa-play"
-                    icon-bg="bg-blue-100 dark:bg-blue-900/30"
-                    icon-color="text-blue-600 dark:text-blue-400"
+                    :trend="$shiftStartSubtitle"
+                    :trendUp="true"
                 />
 
                 <!-- Shift End Card -->
-                <x-statisticscard
-                    title="Shift End"
+                <x-employee-components.kpi-stat-card
+                    label="Shift End"
                     :value="$shiftEndValue"
-                    :subtitle="$shiftEndSubtitle"
                     icon="fa-solid fa-stop"
-                    icon-bg="bg-blue-100 dark:bg-blue-900/30"
-                    icon-color="text-blue-600 dark:text-blue-400"
+                    :trend="$shiftEndSubtitle"
+                    :trendUp="false"
                 />
             </div>
         </div>
         <!-- Inner Panel - Attendance Records List -->
-        <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+        <div class="flex flex-col gap-6 w-full rounded-lg p-4">
             <x-labelwithvalue label="Attendance Logs" count="({{ count($attendanceRecords) }})" />
 
             @if(count($attendanceRecords) > 0)
@@ -196,7 +179,7 @@
         </div>
 
         <!-- Inner Panel - Requests Records List -->
-        <div class="flex flex-col gap-6 w-full border border-dashed border-gray-400 dark:border-gray-700 rounded-lg p-4">
+        <div class="flex flex-col gap-6 w-full rounded-lg p-4">
             <div class="flex flex-row w-full justify-between">
                 <x-labelwithvalue label="Request Logs" count="({{ count($requestRecords ?? []) }})" />
                 <a href="{{ route('employee.requests.create') }}"
@@ -207,10 +190,10 @@
 
             @if(count($requestRecords ?? []) > 0)
                 <!-- Request Records Grid -->
-                <div class="w-full overflow-x-auto">
+                <div class="w-full overflow-x-auto bg-white dark:bg-gray-800/30 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
                     <!-- Table Header -->
-                    <div class="hidden md:grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-800
-                                border-b border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="hidden md:grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-800/50
+                                border-b border-gray-200 dark:border-gray-700 rounded-t-2xl">
                         <div class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
                             Status
                         </div>
@@ -228,8 +211,8 @@
                     <!-- Table Body -->
                     <div class="divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach($requestRecords as $index => $request)
-                        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 px-6 py-4 bg-white dark:bg-gray-900
-                                    hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 px-6 py-4
+                                    hover:bg-blue-400/10 dark:hover:bg-blue-400/10 transition-colors">
 
                             <!-- Status Badge -->
                             <div class="flex items-center gap-2">
@@ -290,9 +273,18 @@
                     </div>
                 </div>
             @else
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fa-solid fa-clipboard-list text-4xl mb-4"></i>
-                    <p>No request records found.</p>
+                <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto bg-white dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+                    <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                        <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                             alt="No requests"
+                             class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                    </div>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
+                        No request records yet
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 max-w-md">
+                        You don't have any request records at the moment. New requests will appear here once submitted.
+                    </p>
                 </div>
             @endif
         </div>
@@ -586,27 +578,27 @@
                         <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
                             <div class="flex gap-3">
                                 @if(!$hasAttendanceToday)
-                                    <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1" onsubmit="return populateGeoFields(this)">
+                                    <form id="attendance-clockin-form" action="{{ route('employee.attendance.clockin') }}" method="POST" style="display:none;">
                                         @csrf
                                         <input type="hidden" name="latitude" class="geo-latitude">
                                         <input type="hidden" name="longitude" class="geo-longitude">
-                                        <button type="submit"
-                                            class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-                                            <i class="fa-solid fa-play"></i>
-                                            Clock In
-                                        </button>
                                     </form>
+                                    <button type="button" onclick="handleClockAction('attendance-clockin-form', 'Clock In', 'Are you sure you want to clock in?', 'Clocked In', 'You have successfully clocked in.')"
+                                        class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-play"></i>
+                                        Clock In
+                                    </button>
                                 @elseif($isClockedIn)
-                                    <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1" onsubmit="return populateGeoFields(this)">
+                                    <form id="attendance-clockout-form" action="{{ route('employee.attendance.clockout') }}" method="POST" style="display:none;">
                                         @csrf
                                         <input type="hidden" name="latitude" class="geo-latitude">
                                         <input type="hidden" name="longitude" class="geo-longitude">
-                                        <button type="submit"
-                                            class="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-                                            <i class="fa-solid fa-stop"></i>
-                                            Clock Out
-                                        </button>
                                     </form>
+                                    <button type="button" onclick="handleClockAction('attendance-clockout-form', 'Clock Out', 'Are you sure you want to clock out?', 'Clocked Out', 'You have successfully clocked out.')"
+                                        class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-stop"></i>
+                                        Clock Out
+                                    </button>
                                 @endif
                                 <button @click="closeAttendanceDrawer()"
                                     class="flex-1 text-sm px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium">
@@ -626,6 +618,34 @@
 @once
 <script src="{{ asset('js/geofencing.js') }}"></script>
 @endonce
+<script>
+    async function handleClockAction(formId, title, message, successTitle, successMessage) {
+        try {
+            await window.showConfirmDialog(title, message, 'Confirm', 'Cancel');
+        } catch { return; }
+
+        const form = document.getElementById(formId);
+        if (window.populateGeoFields) populateGeoFields(form);
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: formData
+            });
+
+            if (response.ok || response.redirected) {
+                window.showSuccessDialog(successTitle, successMessage, 'Done', window.location.href);
+            } else {
+                const data = await response.json().catch(() => ({}));
+                window.showErrorDialog('Error', data.message || 'Something went wrong. Please try again.');
+            }
+        } catch (error) {
+            window.showErrorDialog('Error', 'An unexpected error occurred. Please try again.');
+        }
+    }
+</script>
 <script>
     // Initialize geofencing for desktop attendance page
     (function() {

@@ -51,8 +51,8 @@
     <!-- Table Body -->
     <div class="divide-y divide-gray-200 dark:divide-gray-700">
         @foreach($records as $index => $record)
-        <div x-data="attendanceRow({{ $index }}, @js($record))" 
-             class="grid grid-cols-1 md:grid-cols-6 gap-4 px-6 py-4 bg-white dark:bg-gray-900 
+        <div x-data="attendanceRow({{ $index }}, @js($record))" data-index="{{ $index }}"
+             class="grid grid-cols-1 md:grid-cols-6 gap-4 px-6 py-4 bg-white dark:bg-gray-900
                     hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
              :class="{ 'border-2 border-blue-500': isHighlighted }">
             
@@ -116,30 +116,36 @@
             <div class="flex items-center justify-center">
                 <span class="md:hidden text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 mr-2">Action:</span>
 
-                <!-- Clock In Form (Today, not clocked in) -->
+                <!-- Clock In Button (Today, not clocked in) -->
                 <template x-if="isToday && !timedIn && !isTimedOut">
-                    <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="w-full" onsubmit="return populateGeoFields(this)">
-                        @csrf
-                        <input type="hidden" name="latitude" class="geo-latitude">
-                        <input type="hidden" name="longitude" class="geo-longitude">
-                        <button type="submit"
+                    <div class="w-full">
+                        <form id="table-clockin-form" action="{{ route('employee.attendance.clockin') }}" method="POST" style="display:none;">
+                            @csrf
+                            <input type="hidden" name="latitude" class="geo-latitude">
+                            <input type="hidden" name="longitude" class="geo-longitude">
+                        </form>
+                        <button type="button"
+                            onclick="handleClockAction('table-clockin-form', 'Clock In', 'Are you sure you want to clock in?', 'Clocked In', 'You have successfully clocked in.')"
                             class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                             x-text="buttonText">
                         </button>
-                    </form>
+                    </div>
                 </template>
 
-                <!-- Clock Out Form (Today, clocked in) -->
+                <!-- Clock Out Button (Today, clocked in) -->
                 <template x-if="isToday && timedIn && !isTimedOut">
-                    <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="w-full" onsubmit="return populateGeoFields(this)">
-                        @csrf
-                        <input type="hidden" name="latitude" class="geo-latitude">
-                        <input type="hidden" name="longitude" class="geo-longitude">
-                        <button type="submit"
+                    <div class="w-full">
+                        <form id="table-clockout-form" action="{{ route('employee.attendance.clockout') }}" method="POST" style="display:none;">
+                            @csrf
+                            <input type="hidden" name="latitude" class="geo-latitude">
+                            <input type="hidden" name="longitude" class="geo-longitude">
+                        </form>
+                        <button type="button"
+                            onclick="handleClockAction('table-clockout-form', 'Clock Out', 'Are you sure you want to clock out?', 'Clocked Out', 'You have successfully clocked out.')"
                             class="w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
                             x-text="buttonText">
                         </button>
-                    </form>
+                    </div>
                 </template>
 
                 <!-- View Details Button (past records or completed) -->
@@ -284,28 +290,34 @@
                     <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
                         <div class="flex gap-3">
                             <template x-if="selectedRecord && !selectedRecord.timedIn">
-                                <form action="{{ route('employee.attendance.clockin') }}" method="POST" class="flex-1" onsubmit="return populateGeoFields(this)">
-                                    @csrf
-                                    <input type="hidden" name="latitude" class="geo-latitude">
-                                    <input type="hidden" name="longitude" class="geo-longitude">
-                                    <button type="submit"
+                                <div class="flex-1">
+                                    <form id="drawer-clockin-form" action="{{ route('employee.attendance.clockin') }}" method="POST" style="display:none;">
+                                        @csrf
+                                        <input type="hidden" name="latitude" class="geo-latitude">
+                                        <input type="hidden" name="longitude" class="geo-longitude">
+                                    </form>
+                                    <button type="button"
+                                        onclick="handleClockAction('drawer-clockin-form', 'Clock In', 'Are you sure you want to clock in?', 'Clocked In', 'You have successfully clocked in.')"
                                         class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-play"></i>
                                         Clock In
                                     </button>
-                                </form>
+                                </div>
                             </template>
                             <template x-if="selectedRecord && selectedRecord.timedIn && !selectedRecord.isTimedOut">
-                                <form action="{{ route('employee.attendance.clockout') }}" method="POST" class="flex-1" onsubmit="return populateGeoFields(this)">
-                                    @csrf
-                                    <input type="hidden" name="latitude" class="geo-latitude">
-                                    <input type="hidden" name="longitude" class="geo-longitude">
-                                    <button type="submit"
+                                <div class="flex-1">
+                                    <form id="drawer-clockout-form" action="{{ route('employee.attendance.clockout') }}" method="POST" style="display:none;">
+                                        @csrf
+                                        <input type="hidden" name="latitude" class="geo-latitude">
+                                        <input type="hidden" name="longitude" class="geo-longitude">
+                                    </form>
+                                    <button type="button"
+                                        onclick="handleClockAction('drawer-clockout-form', 'Clock Out', 'Are you sure you want to clock out?', 'Clocked Out', 'You have successfully clocked out.')"
                                         class="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-stop"></i>
                                         Clock Out
                                     </button>
-                                </form>
+                                </div>
                             </template>
                             <template x-if="selectedRecord && selectedRecord.isTimedOut">
                                 <div class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">

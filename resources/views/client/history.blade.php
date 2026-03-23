@@ -758,8 +758,22 @@
                     return;
                 }
 
-                console.log('Submitting feedback for activity:', activity);
+                // Show confirmation dialog first (Promise-based)
+                try {
+                    await window.showConfirmDialog(
+                        'Submit Feedback?',
+                        'You are about to submit your feedback for this service. This action cannot be undone.',
+                        'Submit',
+                        'Cancel'
+                    );
+                } catch (e) {
+                    return; // User cancelled
+                }
 
+                await this.doSubmitRating(activity);
+            },
+
+            async doSubmitRating(activity) {
                 try {
                     const response = await fetch('{{ route("client.history.feedback") }}', {
                         method: 'POST',
@@ -776,27 +790,19 @@
                         })
                     });
 
-                    console.log('Response status:', response.status);
-
                     if (!response.ok) {
                         const errorText = await response.text();
-                        console.error('Error response:', errorText);
                         window.showErrorDialog('Server Error', 'Server error ' + response.status + ': ' + errorText.substring(0, 200));
                         return;
                     }
 
                     const data = await response.json();
-                    console.log('Response data:', data);
 
                     if (data.success) {
-                        // Mark as rated (remove from needsRating)
                         this.activities[this.ratingActivityIndex].needsRating = false;
-
                         this.closeRateModal();
                         window.showSuccessDialog('Feedback Submitted', 'Thank you for your feedback!');
-
-                        // Reload the page to refresh the ratings list
-                        window.location.reload();
+                        setTimeout(() => window.location.reload(), 1500);
                     } else {
                         window.showErrorDialog('Submission Failed', data.message || 'Failed to submit feedback. Please try again.');
                     }

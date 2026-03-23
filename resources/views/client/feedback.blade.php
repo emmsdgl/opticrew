@@ -186,16 +186,7 @@
             </form>
         </div>
 
-        <!-- Success Toast -->
-        <div x-show="showToast" x-transition
-             class="fixed bottom-6 right-6 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 z-50"
-             style="display: none;">
-            <i class="fi fi-rr-check-circle text-2xl"></i>
-            <div>
-                <div class="font-semibold">Thank you for your feedback!</div>
-                <div class="text-sm text-green-100">Your review has been submitted successfully.</div>
-            </div>
-        </div>
+        {{-- Dialogs handled by global-dialogs component (window.showConfirmDialog, window.showSuccessDialog, window.showErrorDialog) --}}
     </div>
 
     @push('scripts')
@@ -214,7 +205,6 @@
                     would_recommend: false
                 },
                 submitting: false,
-                showToast: false,
 
                 get isFormValid() {
                     return this.formData.service_type !== '' &&
@@ -226,6 +216,13 @@
                     if (!this.isFormValid) {
                         window.showErrorDialog('Incomplete Form', 'Please select a service, provide an overall rating, and write at least 10 characters in your comments.');
                         return;
+                    }
+
+                    // Confirmation dialog first
+                    try {
+                        await window.showConfirmDialog('Submit Feedback?', 'You are about to submit your feedback. This action cannot be undone.', 'Submit', 'Cancel');
+                    } catch (e) {
+                        return; // User cancelled
                     }
 
                     this.submitting = true;
@@ -243,13 +240,7 @@
                         const data = await response.json();
 
                         if (response.ok && data.success) {
-                            // Show success message
-                            this.showToast = true;
-                            setTimeout(() => {
-                                this.showToast = false;
-                            }, 5000);
-
-                            // Reset form
+                            window.showSuccessDialog('Thank You!', 'Your feedback has been submitted successfully. We appreciate your time and input!');
                             this.resetForm();
                         } else {
                             window.showErrorDialog('Submission Failed', data.message || 'Failed to submit feedback. Please try again.');

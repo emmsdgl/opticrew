@@ -197,7 +197,7 @@
     @stack('styles')
 </head>
 
-<body class="h-full dark:bg-gray-900 font-sans antialiased">
+<body class="h-full bg-[#ECF1FF] dark:bg-gray-900 font-sans antialiased">
     <x-material-ui.page-loader />
     <div id="main-container">
         <!-- Navigation Header -->

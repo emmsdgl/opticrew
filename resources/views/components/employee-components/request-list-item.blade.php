@@ -22,7 +22,7 @@
 @endphp
 
 {{-- Request Card - No internal modal, parent handles the modal --}}
-<div class="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200 cursor-pointer">
+<div class="bg-white/30 backdrop-blur-md border border-white/40 shadow-sm dark:bg-gray-800/40 dark:border-transparent dark:backdrop-blur-none rounded-lg p-4 hover:bg-white/50 dark:hover:bg-gray-700/40 transition-colors duration-200 cursor-pointer">
     {{-- Header: Type and Date --}}
     <div class="flex justify-between items-start mb-3">
         <h3 class="text-sm font-medium text-gray-900 dark:text-white">

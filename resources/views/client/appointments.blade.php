@@ -643,7 +643,7 @@
                 </div>
             </div>
     
-            <div id="rate-list-container" class="h-64 overflow-y-auto">
+            <div id="rate-list-container">
                 @php
                     // Transform completed appointments to the format expected by the component
                     $services = $completedAppointments->map(function($appointment) {
@@ -666,7 +666,7 @@
 
                 <x-client-components.appointment-page.appointment-rate-list
                     :items="$services"
-                    maxHeight="30rem"
+                    maxHeight="15rem"
                     emptyTitle="No completed appointments yet"
                     emptyMessage="Once you complete appointments, they will appear here for you to rate and provide feedback." />
             </div>

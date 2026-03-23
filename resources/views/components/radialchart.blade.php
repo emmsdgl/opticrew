@@ -13,10 +13,12 @@
         'toDo' => 'To do'
     ],
     'colors' => [
-        'done' => '#2A6DFA',     
-        'inProgress' => '#2AC9FA', 
-        'toDo' => '#0028B3'       
-    ]
+        'done' => '#2A6DFA',
+        'inProgress' => '#2AC9FA',
+        'toDo' => '#0028B3'
+    ],
+    'actionUrl' => null,
+    'actionLabel' => 'View All Tasks',
 ])
 
 <div class="relative w-full h-full flex flex-col">
@@ -24,7 +26,7 @@
     <div class="relative flex-1 min-h-0">
         <!-- Subtle gradient background circle -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-full bg-gradient-to-br from-indigo-50 via-pink-50 to-orange-50 
+            <div class="w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full bg-gradient-to-br from-indigo-50 via-pink-50 to-orange-50
                         dark:from-indigo-950/20 dark:via-pink-950/20 dark:to-orange-950/20 opacity-40"></div>
         </div>
 
@@ -32,9 +34,9 @@
         <div class="relative w-full h-full flex items-center justify-center" id="{{ $chartId }}"></div>
 
         <!-- Custom Center Label (overlays the chart) -->
-        <div class="absolute top-1/3 right-1/3 flex items-center justify-center pointer-events-none">
-            <div class="text-center justify-center w-full px-4">
-                <div class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100" 
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="text-center px-4">
+                <div class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100"
                      id="{{ $chartId }}-total">0</div>
                 <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Total Tasks</div>
             </div>
@@ -42,8 +44,8 @@
     </div>
 
     <!-- Floating Info Card with a unique ID -->
-    <div class="absolute top-2 left-1 sm:top-4 bg-gray-900 dark:bg-gray-800 text-white rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 
-                shadow-lg backdrop-blur-sm bg-opacity-90 dark:bg-opacity-95 z-10 flex items-center gap-2"
+    <div class="absolute top-2 left-1 sm:top-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-2 py-1.5 sm:px-3 sm:py-2
+                shadow-lg border border-gray-200 dark:border-gray-700 z-10 flex items-center gap-2"
          id="{{ $chartId }}-info-card">
         <div class="flex items-center gap-1.5">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
@@ -58,7 +60,7 @@
 
     <!-- Legend -->
     <div class="flex flex-row justify-center gap-3 sm:gap-4 items-center border-gray-200
-                dark:border-gray-700 mb-4 w-full flex-shrink-0 flex-wrap">
+                dark:border-gray-700 mb-1 w-full flex-shrink-0 flex-wrap">
         <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full flex-shrink-0" style="background: {{ $colors['done'] }}"></span>
             <span class="text-xs text-gray-700 dark:text-gray-300">{{ $labels['done'] }}</span>
@@ -72,6 +74,13 @@
             <span class="text-xs text-gray-700 dark:text-gray-300">{{ $labels['toDo'] }}</span>
         </div>
     </div>
+
+    @if($actionUrl)
+        <a href="{{ $actionUrl }}"
+            class="w-full text-center text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors py-1 block">
+            {{ $actionLabel }}
+        </a>
+    @endif
 </div>
 
 @push('scripts')
@@ -170,25 +179,36 @@
                 legend: { show: false },
                 stroke: { lineCap: 'round' },
                 responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: { height: 220 },
+                        plotOptions: {
+                            radialBar: {
+                                hollow: { size: '35%' },
+                                track: { margin: 3 }
+                            }
+                        }
+                    }
+                }, {
                     breakpoint: 640,
                     options: {
-                        chart: {
-                            height: 280
+                        chart: { height: 260 },
+                        plotOptions: {
+                            radialBar: {
+                                hollow: { size: '38%' },
+                                track: { margin: 4 }
+                            }
                         }
                     }
                 }, {
                     breakpoint: 768,
                     options: {
-                        chart: {
-                            height: 320
-                        }
+                        chart: { height: 300 }
                     }
                 }, {
                     breakpoint: 1024,
                     options: {
-                        chart: {
-                            height: 360
-                        }
+                        chart: { height: 340 }
                     }
                 }]
             };

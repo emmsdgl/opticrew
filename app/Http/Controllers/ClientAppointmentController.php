@@ -57,6 +57,7 @@ class ClientAppointmentController extends Controller
                     'other' => 0,
                     'month_change' => 0,
                 ],
+                'topRatedServices' => collect([]),
             ]);
         }
 
@@ -128,7 +129,32 @@ class ClientAppointmentController extends Controller
             'month_change' => $monthChange,
         ];
 
-        return view('client.dashboard', compact('client', 'holidays', 'appointments', 'stats', 'serviceBreakdown'));
+        // Top 3 rated service categories for recommendation card
+        // Group by base service category (e.g. "Final Cleaning - Demo Room" → "Final Cleaning")
+        $baseCategories = ['Final Cleaning', 'Deep Cleaning', 'Daily Cleaning', 'Daily Room Cleaning', 'Snowout Cleaning', 'General Cleaning', 'Hotel Cleaning'];
+        $topRatedServices = \App\Models\Feedback::whereNotNull('service_type')
+            ->where('service_type', '!=', '')
+            ->get()
+            ->groupBy(function ($feedback) use ($baseCategories) {
+                foreach ($baseCategories as $cat) {
+                    if (str_starts_with($feedback->service_type, $cat)) {
+                        return $cat;
+                    }
+                }
+                return $feedback->service_type;
+            })
+            ->map(function ($group, $category) {
+                return (object) [
+                    'service_type' => $category,
+                    'avg_rating' => $group->avg('rating'),
+                    'review_count' => $group->count(),
+                ];
+            })
+            ->sortByDesc('avg_rating')
+            ->take(3)
+            ->values();
+
+        return view('client.dashboard', compact('client', 'holidays', 'appointments', 'stats', 'serviceBreakdown', 'topRatedServices'));
     }
 
     /**

@@ -1,7 +1,7 @@
 @props([
-    'headerName' => null,   
-    'headerDesc' => null,   
-    'headerIcon' => null,   
+    'headerName' => null,
+    'headerDesc' => null,
+    'headerIcon' => null,
 ])
 
 <div
@@ -17,7 +17,7 @@
         </p>
     </div>
         <div id="hero-icon" class="hidden md:hidden lg:block lg:w-[30rem] relative">
-            <img src="{{ asset('images/icons/'.$headerIcon.'.svg') }}" 
+            <img src="{{ asset('images/icons/'.$headerIcon.'.svg') }}"
                 alt="Hero Icon"
                 class="absolute bottom-[-6rem] right-[-1rem] w-[22rem] sm:w-[18rem] md:w-[20rem] lg:w-[30rem]" />
         </div>

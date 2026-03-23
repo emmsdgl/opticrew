@@ -39,6 +39,43 @@
         document.body.style.overflow = 'auto';
     },
 
+    async cancelAppointment(appointmentId) {
+        try {
+            await window.showConfirmDialog(
+                'Cancel Appointment?',
+                'Are you sure you want to cancel this appointment? This action cannot be undone.',
+                'Yes, Cancel',
+                'No, Keep It'
+            );
+        } catch (e) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/client/appointments/' + appointmentId + '/cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                this.closeModal();
+                window.showSuccessDialog('Appointment Cancelled', data.message || 'Your appointment has been successfully cancelled.');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                window.showErrorDialog('Cancellation Failed', data.message || 'Failed to cancel the appointment. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error cancelling appointment:', error);
+            window.showErrorDialog('Error', 'An unexpected error occurred. Please try again.');
+        }
+    },
+
     formatTime(timeString) {
         if (!timeString) return '-';
         const parts = timeString.split(':');
@@ -440,6 +477,7 @@
                         Close
                     </button>
                     <button x-show="selectedAppointment && selectedAppointment.status === 'pending'"
+                        @click="cancelAppointment(selectedAppointment.id)"
                         class="w-full sm:w-auto px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                         Cancel Appointment
                     </button>
