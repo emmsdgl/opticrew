@@ -9,7 +9,7 @@
     $id = 'chain-' . uniqid();
 @endphp
 
-<div id="{{ $id }}" class="w-full {{ $containerClass }}">
+<div id="{{ $id }}" class="w-full overflow-hidden {{ $containerClass }}">
     <div class="flex flex-col xl:flex-row max-w-7xl mx-auto px-4 md:px-8 gap-8 xl:gap-12 justify-center items-center">
 
         {{-- Left Carousel (hidden on mobile) --}}
@@ -48,7 +48,7 @@
         </div>
 
         {{-- Right Carousel --}}
-        <div id="{{ $id }}-right" class="relative w-full max-w-md xl:max-w-2xl h-[640px] flex items-center justify-center xl:-right-14 overflow-hidden">
+        <div id="{{ $id }}-right" class="relative w-full max-w-md xl:max-w-2xl h-[640px] hidden xl:flex items-center justify-center xl:-right-14 overflow-hidden">
             <div class="absolute inset-0 z-10 pointer-events-none">
                 <div class="absolute top-0 h-1/4 w-full bg-gradient-to-b from-white dark:from-gray-900 to-transparent"></div>
                 <div class="absolute bottom-0 h-1/4 w-full bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div>

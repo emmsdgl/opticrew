@@ -203,7 +203,7 @@
     <div class="overflow-x-hidden">
     <!-- Section 1: Original About Section -->
     <section id="container-1"
-        class="scroll-zoom relative flex flex-col items-center justify-center text-center w-full mx-auto px-6 sm:px-8 md:px-12 lg:px-16 py-12 sm:py-24 min-h-[80vh]">
+        class="scroll-zoom relative flex flex-col items-center justify-center text-center w-full mx-auto px-6 sm:px-8 md:px-12 lg:px-16 py-12 sm:py-24 min-h-[80vh] overflow-hidden">
         
         <!-- Main Content - Centered Container -->
         <div class="z-10 w-full max-w-4xl mx-auto">
@@ -213,12 +213,9 @@
             </p>
 
             <!-- Main Heading -->
-            <h1 data-typing data-typing-duration="1.8" class="scroll-zoom-child text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
+            <h1 data-typing data-typing-duration="1.8" class="scroll-zoom-child text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white leading-tight lg:whitespace-nowrap">
                 {{ __('about.section1.we_are') }}
-                <span class="aurora-text inline-flex items-center gap-2">
-                    <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="Sparkle" class="h-6 sm:h-8 md:h-10 lg:h-12 w-auto inline-block">
-                    {{ __('about.section1.company_name') }}
-                </span>
+                <span class="aurora-text inline-flex items-baseline gap-2"><img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="Sparkle" class="h-6 sm:h-8 md:h-10 lg:h-12 w-auto inline-block align-middle">{{ __('about.section1.company_name') }}</span>
             </h1>
 
             <!-- Subtitle -->
@@ -244,7 +241,7 @@
         </div>
 
         <div class="absolute hidden xl:block w-60 lg:w-64 p-4 lg:p-5 rounded-2xl shadow-xl frosted-card card-float"
-            style="top: 30%; right: -5%; animation-delay: 1s;">
+            style="top: 30%; right: 3%; animation-delay: 1s;">
             <div class="absolute -top-3 left-8 h-6 w-6 rounded-full">
                 <img src="{{ asset('images/backgrounds/gradient-circle.svg') }}" alt="Decorator">
             </div>

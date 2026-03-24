@@ -289,7 +289,7 @@
 
             <!-- Expanding Cards with Glow Effect -->
             <x-material-ui.glowing-cards :glowRadius="20" :glowOpacity="1" :animationDuration="400">
-                <div id="expanding-carousel" class="flex gap-2 sm:gap-3 lg:gap-4 justify-center items-stretch h-auto lg:h-[600px] w-full">
+                <div id="expanding-carousel" class="flex gap-2 sm:gap-3 lg:gap-4 justify-center items-stretch h-auto lg:h-[600px] w-full overflow-hidden">
                     @foreach($expandingCards as $index => $card)
                         <x-material-ui.expand-card
                         :title="$card['title']"
@@ -311,7 +311,7 @@
             </x-material-ui.glowing-cards>
 
             <div class="mt-8 sm:mt-12 w-full justify-center align-items-center">
-                <p class="text-center text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 px-4">
+                <p class="text-center text-base text-gray-500 dark:text-gray-300 mb-6 sm:mb-8 px-4">
                     {{ __('services.section2.footer_text') }}
                 </p>
             </div>

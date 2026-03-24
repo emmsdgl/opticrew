@@ -163,6 +163,7 @@ class GoogleAuthController extends Controller
 
         Auth::login($user, true);
         session()->regenerate();
+        session()->forget('banned');
 
         UserActivityLog::log($user->id, UserActivityLog::TYPE_LOGIN, 'Logged in via Google', null, request()->ip());
 
@@ -230,7 +231,7 @@ class GoogleAuthController extends Controller
         session()->regenerate();
 
         // Keep recruitment data in session so the dashboard can open the apply modal
-        session()->forget(['google_auth_purpose']);
+        session()->forget(['google_auth_purpose', 'banned']);
         // recruitment_data is kept intentionally — the dashboard will consume it
 
         return redirect()->route('applicant.dashboard')->with('open_apply_modal', true);

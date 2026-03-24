@@ -505,6 +505,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     Route::get('/client/settings', [ProfileController::class, 'settings'])->name('client.settings');
     Route::get('/client/help-center', [ProfileController::class, 'helpcenter'])->name('client.helpcenter');
     Route::post('/client/settings/update-password', [ProfileController::class, 'updatePassword'])->name('client.settings.update-password');
+    Route::post('/client/settings/set-password', [ProfileController::class, 'setPassword'])->name('client.settings.set-password');
 });
 
 // --- APPLICANT ROUTES ---

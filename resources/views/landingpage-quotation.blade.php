@@ -34,13 +34,13 @@
 @section('content')
     <div class="flex flex-col w-full min-h-[calc(100vh-4rem)] font-sans" x-data="quotationPage()">
         <!-- Hero Section -->
-        <div class="relative isolate px-6 sm:py-24 lg:px-8 lg:pb-32 overflow-hidden">
+        <div class="relative isolate px-6 py-12 sm:py-24 lg:px-8 lg:pb-32 overflow-hidden">
             <div class="mx-auto max-w-4xl text-center fade-in">
                 <h2 class="text-base/7 font-bold text-blue-600">Choose your clean</h2>
-                <h3 data-typing data-typing-duration="1.8" class="my-12 text-6xl md:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
+                <h3 data-typing data-typing-duration="1.8" class="my-12 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
                     Shine brighter with <br><span class="aurora-text">our cleaning services</span>
                 </h3>
-                <p class="mx-auto mt-6 max-w-2xl text-center text-base text-gray-500 dark:text-gray-300">
+                <p class="mx-auto mt-6 max-w-2xl text-center text-sm sm:text-xs lg:text-base text-gray-500 dark:text-gray-300">
                     Professional cleaning services tailored to your space. No hidden fees, transparent pricing, just quality service.
                 </p>
                 <button @click="openModal()"
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Main Pricing Cards Section -->
-        <div class="px-4 md:px-6 lg:px-8 -mt-16 relative z-10">
+        <div class="px-4 md:px-6 lg:px-8 mt-0 sm:-mt-16 relative z-10">
             <div class="mx-auto max-w-7xl">
                 <div class="relative isolate">
                     <div class="mx-auto mt-6 grid max-w-lg grid-cols-1 items-center gap-y-6 sm:mt-6 sm:gap-y-0 lg:max-w-4xl lg:grid-cols-2">
@@ -64,10 +64,10 @@
                             <span class="px-3 py-1 text-blue-600 dark:text-blue-400 bg-blue-600/10 dark:bg-blue-600/20 rounded-full text-xs">Most Popular</span>
                             <h3 class="text-base/7 font-bold text-blue-500 dark:text-blue-400 my-6">Final Cleaning</h3>
                             <p class="mt-4 flex items-baseline gap-x-2">
-                                <span class="text-5xl font-bold tracking-tight text-blue-600 dark:text-white">€70 - €315</span>
+                                <span class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-blue-600 dark:text-white">€70 - €315</span>
                             </p>
-                            <p class="mt-6 text-base/7 text-gray-500 dark:text-gray-300">Complete cleaning solution perfect for regular maintenance and move-out situations.</p>
-                            <p class="mt-6 text-base/7 text-gray-400">Based on unit size</p>
+                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-500 dark:text-gray-300">Complete cleaning solution perfect for regular maintenance and move-out situations.</p>
+                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-400">Based on unit size</p>
                             <ul role="list" class="mt-8 space-y-3 text-sm/6 text-gray-500 dark:text-gray-300 sm:mt-10">
                                 @foreach(['Kitchen cleaning & surfaces', 'Living room & bedroom tidying', 'Bathroom & sauna cleaning', 'Vacuuming & mopping floors'] as $feature)
                                 <li class="flex gap-x-3">
@@ -86,10 +86,10 @@
                             <span class="px-3 py-1 text-white bg-white/20 rounded-full text-xs">Thorough</span>
                             <h3 class="text-base/7 font-bold text-white mt-6">Deep Cleaning</h3>
                             <p class="mt-4 flex items-baseline gap-x-2">
-                                <span class="text-5xl font-bold tracking-tight text-white">€120 - €480</span>
+                                <span class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">€120 - €480</span>
                             </p>
-                            <p class="mt-6 text-base/7 text-gray-100">Intensive cleaning service for spotless results and hard-to-reach areas.</p>
-                            <p class="mt-6 text-base/7 text-gray-100">€48/hour based on space</p>
+                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-100">Intensive cleaning service for spotless results and hard-to-reach areas.</p>
+                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-100">€48/hour based on space</p>
                             <ul role="list" class="mt-8 space-y-3 text-sm/6 text-gray-100 sm:mt-10">
                                 @foreach(['All Final Cleaning tasks included', 'Hard-to-reach areas & corners', 'Detailed scrubbing & sanitization', 'Behind appliances & furniture', 'Window sills & baseboards', 'Deep floor treatment'] as $feature)
                                 <li class="flex gap-x-3">
@@ -109,7 +109,7 @@
                 <div class="my-24 mx-4 sm:mx-8 lg:mx-32 flex flex-col lg:flex-row gap-8">
                     <div class="mb-8 lg:mx-6 flex-shrink-0 lg:w-1/2">
                         <p class="text-base font-bold text-blue-600 dark:text-blue-500 my-6">Detailed Rates</p>
-                        <h3 class="my-6 text-6xl sm:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
+                        <h3 class="my-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
                             Pricing <br><span class="aurora-text">Rate Inclusions</span>
                         </h3>
                         <p class="mt-3 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl">
@@ -153,7 +153,7 @@
                 <!-- Service Rates Header -->
                 <div class="mx-auto max-w-4xl text-center fade-in px-4">
                     <h2 class="text-base/7 font-bold text-blue-600 dark:text-blue-500">Make Every Day Shine!</h2>
-                    <h3 class="my-6 text-6xl sm:text-6xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
+                    <h3 class="my-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
                         Cleaning <span class="aurora-text">Service Rates</span>
                     </h3>
                     <p class="mx-auto mt-6 max-w-2xl text-center text-sm sm:text-base text-gray-500 dark:text-gray-400">

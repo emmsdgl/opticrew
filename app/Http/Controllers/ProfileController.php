@@ -425,6 +425,54 @@ class ProfileController extends Controller
     }
 
     /**
+     * Set password for Google-auth users who don't have one yet
+     */
+    public function setPassword(Request $request)
+    {
+        $user = $request->user();
+
+        // Only allow if user signed up via Google (has google_id and no password)
+        if (!$user->google_id) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'This action is not allowed for your account.'], 403);
+            }
+            return back()->withErrors(['password' => 'This action is not allowed for your account.']);
+        }
+
+        try {
+            $request->validate([
+                'password' => ['required', 'confirmed', 'min:8'],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => collect($e->errors())->flatten()->first(),
+                ], 422);
+            }
+            throw $e;
+        }
+
+        $user->password = bcrypt($request->password);
+        $user->save();
+
+        // Log out the user after setting password
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password set successfully! You can now log in with your email and password.',
+                'redirect' => url('/'),
+            ]);
+        }
+
+        return Redirect::to('/')->with('success', 'Password set successfully! Please log in again.');
+    }
+
+    /**
      * Delete the user's account
      */
     public function destroy(Request $request): RedirectResponse

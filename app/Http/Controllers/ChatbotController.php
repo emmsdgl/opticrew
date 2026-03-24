@@ -3,15 +3,174 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class ChatbotController extends Controller
 {
+    /**
+     * Static keyword-to-response mapping for Fin-noys business topics.
+     * Pricing data sourced from the Price Quotation page tables.
+     */
+    private array $responses = [
+        // Greetings
+        [
+            'keywords' => ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy', 'greetings', 'moi', 'hei', 'terve'],
+            'response' => "Hello! Welcome to Fin-noys Cleaning Services. How can I help you today?\n\nHere are some things I can help with:\n• Our cleaning services and pricing\n• How to book an appointment\n• Service areas we cover\n• Contact information\n• Website navigation",
+        ],
+
+        // About / Company
+        [
+            'keywords' => ['about', 'who are you', 'what is finnoys', 'what is fin-noys', 'company', 'business', 'tell me about'],
+            'response' => "Fin-noys is a professional cleaning services provider with extensive experience in the hospitality industry. We serve homes and businesses across Finland, focusing on the Lapland region, Municipality of Inari, and Saariselkä.\n\nWe offer personal and company booking services including final cleaning, deep cleaning, daily room cleaning, and seasonal snow-out cleaning.",
+        ],
+
+        // Services - General
+        [
+            'keywords' => ['service', 'services', 'offer', 'what do you do', 'cleaning type', 'cleaning options', 'palvelut'],
+            'response' => "We offer the following cleaning services:\n\nPersonal Booking:\n• Deep Cleaning — Thorough top-to-bottom cleaning (€120–€480)\n• Daily Room Cleaning — Complete room refresh for accommodations\n• Snowout Cleaning — Seasonal clearing for cabin pathways\n• Light Daily Cleaning — Routine upkeep for fresh spaces\n• Full Daily Cleaning — Comprehensive cleaning for all areas\n\nCompany Booking:\n• Hotel Rooms, Cabins, Cottages, Igloos\n• Restaurant, Reception, Saunas, Hallway\n\nFor detailed pricing, visit the Price Quotation page.",
+        ],
+
+        // Deep Cleaning
+        [
+            'keywords' => ['deep clean', 'deep cleaning', 'thorough clean', 'top to bottom', 'intensive'],
+            'response' => "Our Deep Cleaning is an intensive service for spotless results in hard-to-reach areas. Base rate: €48/hour.\n\nPricing by unit size (Normal Day / Sun & Holiday):\n• 20–50 m²: €120 / €240\n• 51–70 m²: €168 / €336\n• 71–90 m²: €216 / €432\n• 91–120 m²: €264 / €528\n• 121–140 m²: €312 / €624\n• 141–160 m²: €360 / €720\n• 161–180 m²: €408 / €816\n• 181–220 m²: €480 / €960\n\nIncludes: all final cleaning tasks, hard-to-reach areas, detailed scrubbing, behind appliances, window sills, baseboards, and deep floor treatment.\n\nAll prices include 24% VAT. Sundays and holidays are double rate.",
+        ],
+
+        // Final Cleaning
+        [
+            'keywords' => ['final clean', 'final cleaning', 'move out', 'move-out', 'regular maintenance'],
+            'response' => "Our Final Cleaning is a complete cleaning solution for regular maintenance and move-out situations.\n\nPricing by unit size (Normal Day / Sun & Holiday):\n• 20–50 m²: €70 / €140\n• 51–70 m²: €105 / €210\n• 71–90 m²: €140 / €280\n• 91–120 m²: €175 / €350\n• 121–140 m²: €210 / €420\n• 141–160 m²: €245 / €490\n• 161–180 m²: €280 / €560\n• 181–220 m²: €315 / €630\n\nIncludes: kitchen cleaning, living room & bedroom tidying, bathroom & sauna cleaning, vacuuming & mopping.\n\nAll prices include 24% VAT. Sundays and holidays are double rate.",
+        ],
+
+        // Full Daily Cleaning
+        [
+            'keywords' => ['full daily', 'comprehensive daily'],
+            'response' => "Our Full Daily Cleaning is a comprehensive cleaning service covering all areas for optimal hygiene and presentation. It's ideal for accommodations and businesses that need daily thorough cleaning.\n\nFor exact pricing based on your space, visit the Price Quotation page or contact us for a custom quote.",
+        ],
+
+        // Light Daily Cleaning
+        [
+            'keywords' => ['light daily', 'light cleaning', 'routine', 'upkeep'],
+            'response' => "Our Light Daily Cleaning is a routine upkeep service designed to keep spaces fresh and presentable between deeper cleans.\n\nFor exact pricing based on your space, visit the Price Quotation page or contact us for a custom quote.",
+        ],
+
+        // Daily Room Cleaning
+        [
+            'keywords' => ['daily room', 'room cleaning', 'room refresh'],
+            'response' => "Our Daily Room Cleaning provides a complete room refresh tailored for guest accommodations. It keeps rooms guest-ready with regular maintenance.\n\nFor exact pricing based on your space, visit the Price Quotation page or contact us for a custom quote.",
+        ],
+
+        // Snow Out Cleaning
+        [
+            'keywords' => ['snow out', 'snowout', 'snow cleaning', 'seasonal', 'turnover clean', 'between guests', 'cabin pathway'],
+            'response' => "Our Snowout Cleaning is a seasonal service focused on clearing snow and ice from cabin pathways for safety and accessibility. It also includes comprehensive cleaning for vacation rentals between guest stays.\n\nFor exact pricing based on your space, visit the Price Quotation page or contact us for a custom quote.",
+        ],
+
+        // Pricing / Cost - General
+        [
+            'keywords' => ['price', 'pricing', 'cost', 'how much', 'rate', 'fee', 'quote', 'quotation', 'hinta', 'budget', 'expensive', 'cheap', 'affordable', 'tariff'],
+            'response' => "Our pricing is based on unit size (m²) and service type:\n\nFinal Cleaning (most popular):\n• From €70 (20–50 m²) to €315 (181–220 m²)\n\nDeep Cleaning (€48/hr based):\n• From €120 (20–50 m²) to €480 (181–220 m²)\n\nSpecial Day Rates:\n• Sundays and public holidays are charged at double the normal rate\n\nAll prices include 24% VAT — no hidden fees.\n\nFor a detailed custom quote, visit the Price Quotation page from the main menu.",
+        ],
+
+        // VAT / Tax
+        [
+            'keywords' => ['vat', 'tax', 'alv', 'hidden fee', 'hidden charge', 'extra charge', 'additional cost'],
+            'response' => "All our prices include 24% VAT. There are no hidden fees or additional charges. What you see on our pricing table is the final price you pay.\n\nSundays and public holidays are charged at double the normal rate due to special scheduling requirements.",
+        ],
+
+        // Sunday / Holiday rates
+        [
+            'keywords' => ['sunday', 'holiday', 'weekend', 'special day', 'double rate', 'pyhäpäivä', 'sunnuntai'],
+            'response' => "Our special day rates apply on Sundays and public holidays. These are charged at double the normal rate due to special scheduling requirements.\n\nFor example, Final Cleaning for 20–50 m²:\n• Normal day: €70\n• Sunday/Holiday: €140\n\nDeep Cleaning for 20–50 m²:\n• Normal day: €120\n• Sunday/Holiday: €240",
+        ],
+
+        // Unit size / Square meters
+        [
+            'keywords' => ['square meter', 'square metres', 'unit size', 'how big', 'size', 'neliö', 'm2', 'm²', 'area size'],
+            'response' => "Our pricing is based on unit size in square meters (m²). We cover these size ranges:\n\n• 20–50 m²\n• 51–70 m²\n• 71–90 m²\n• 91–120 m²\n• 121–140 m²\n• 141–160 m²\n• 161–180 m²\n• 181–220 m²\n\nFor spaces larger than 220 m², please contact us for a custom quote.",
+        ],
+
+        // Company booking
+        [
+            'keywords' => ['company', 'corporate', 'hotel', 'cabin', 'cottage', 'igloo', 'restaurant', 'reception', 'sauna', 'hallway', 'yritys'],
+            'response' => "We offer company booking services for businesses including:\n\n• Hotel Rooms Cleaning\n• Cabins & Cottages\n• Igloos\n• Restaurant Cleaning\n• Reception Areas\n• Saunas\n• Hallways\n• Light & Full Daily Cleaning\n• Deep Cleaning & Snowout\n\nFor corporate rates and custom contracts, please contact us or visit the Price Quotation page.",
+        ],
+
+        // Booking / Appointment
+        [
+            'keywords' => ['book', 'booking', 'appointment', 'schedule', 'reserve', 'varaus', 'ajanvaraus', 'how to book', 'make appointment'],
+            'response' => "To book a cleaning service:\n\n1. Log in to your account (or register using Google for convenience)\n2. Go to your Dashboard\n3. Create a new appointment using the booking form (3-step process)\n\nWe offer both personal and company bookings. After booking, you can track appointment status, view assigned teams, and monitor progress from your dashboard.",
+        ],
+
+        // Account / Login / Register
+        [
+            'keywords' => ['login', 'log in', 'sign in', 'register', 'sign up', 'account', 'create account', 'google auth', 'google sign'],
+            'response' => "You can access your account by clicking the 'Log In' button on the top right of the website.\n\nDon't have an account yet? You can register directly or sign in with your Google account for quick access.\n\nOnce logged in, you'll have access to your dashboard where you can manage appointments, track progress, and more.",
+        ],
+
+        // Dashboard
+        [
+            'keywords' => ['dashboard', 'my account', 'my appointments', 'track', 'status', 'progress'],
+            'response' => "Your Dashboard is your central hub after logging in. From there you can:\n\n• Create new cleaning appointments\n• Track appointment status and progress\n• View your assigned cleaning teams\n• Cancel appointments if needed\n• Provide feedback after service completion\n\nLog in to access your Dashboard.",
+        ],
+
+        // Contact
+        [
+            'keywords' => ['contact', 'email', 'phone', 'call', 'reach', 'address', 'location', 'yhteystiedot', 'where are you'],
+            'response' => "You can reach us through:\n\n• Email: finnoys0823@gmail.com\n• Phone: 09288515619\n• Address: Saariselantie 6 C10, Saariselka 99830 Finland\n\nYou can also visit the Contact page on our website for more options.",
+        ],
+
+        // Service Areas
+        [
+            'keywords' => ['area', 'areas', 'region', 'lapland', 'inari', 'saariselka', 'saariselkä', 'finland', 'coverage', 'serve'],
+            'response' => "We serve homes and businesses across:\n\n• Lapland Region\n• Municipality of Inari (including Ivalo, Nellim, Lemmenjoki)\n• Saariselkä and surrounding areas\n\nAll within northern Finland, above the Arctic Circle.",
+        ],
+
+        // Careers / Jobs
+        [
+            'keywords' => ['career', 'careers', 'job', 'jobs', 'apply', 'work', 'hiring', 'employment', 'join', 'työ', 'rekry'],
+            'response' => "Interested in joining our team? Visit the Careers page from the main navigation to see current job openings and submit your application.\n\nWe're always looking for dedicated cleaning professionals to join Fin-noys!",
+        ],
+
+        // Language
+        [
+            'keywords' => ['language', 'finnish', 'english', 'suomi', 'kieli', 'translate'],
+            'response' => "Our website supports both English and Finnish (Suomi). You can switch languages anytime using the language selector in the navigation bar.",
+        ],
+
+        // Cancel / Feedback
+        [
+            'keywords' => ['cancel', 'cancellation', 'feedback', 'review', 'complaint', 'refund'],
+            'response' => "You can cancel appointments directly from your Dashboard after logging in.\n\nAfter a service is completed, you'll have the option to provide feedback about your experience. We value your input as it helps us improve our services.\n\nFor any complaints or refund inquiries, please contact us at finnoys0823@gmail.com or call 09288515619.",
+        ],
+
+        // Payment
+        [
+            'keywords' => ['pay', 'payment', 'invoice', 'billing', 'maksu'],
+            'response' => "For payment and billing inquiries, please contact us directly:\n\n• Email: finnoys0823@gmail.com\n• Phone: 09288515619\n\nAll our prices include 24% VAT with no hidden fees. Visit the Price Quotation page for detailed pricing.",
+        ],
+
+        // Thanks / Goodbye
+        [
+            'keywords' => ['thank', 'thanks', 'kiitos', 'bye', 'goodbye', 'see you', 'appreciate', 'helpful'],
+            'response' => "You're welcome! If you have any more questions about our services, feel free to ask anytime. Have a great day!",
+        ],
+
+        // Help
+        [
+            'keywords' => ['help', 'assist', 'support', 'apu', 'apua'],
+            'response' => "I'm here to help! Here's what I can assist you with:\n\n• Our cleaning services and pricing\n• Final Cleaning & Deep Cleaning rates\n• How to book an appointment\n• Service areas we cover\n• Contact information\n• Company booking options\n\nJust type your question and I'll do my best to help!",
+        ],
+
+        // Website navigation
+        [
+            'keywords' => ['navigate', 'navigation', 'how to', 'where can i find', 'page', 'website', 'site'],
+            'response' => "Here's how to navigate our website:\n\n• Services — View all our cleaning offerings\n• Price Quotation — View pricing tables and request a custom quote\n• About — Learn more about Fin-noys\n• Careers — See job openings\n• Contact — Get in touch with us\n• Log In — Access your dashboard to book and manage appointments\n\nAll pages are accessible from the main navigation menu at the top.",
+        ],
+    ];
+
     public function sendMessage(Request $request)
     {
         try {
-            // Validate request
             $request->validate([
                 'message' => 'required|string|max:1000',
                 'chat_history' => 'array'
@@ -20,16 +179,8 @@ class ChatbotController extends Controller
             $userMessage = $request->input('message');
             $chatHistory = $request->input('chat_history', []);
 
-            // Log for debugging
-            Log::info('Chatbot received message', [
-                'message' => $userMessage,
-                'history_count' => count($chatHistory)
-            ]);
+            $botResponse = $this->getStaticResponse($userMessage);
 
-            // Get AI response using Gemini
-            $botResponse = $this->getGeminiResponse($userMessage, $chatHistory);
-
-            // Update chat history
             $chatHistory[] = [
                 'role' => 'user',
                 'parts' => [['text' => $userMessage]]
@@ -47,19 +198,12 @@ class ChatbotController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation error in chatbot', ['error' => $e->getMessage()]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid request: ' . $e->getMessage()
             ], 422);
 
         } catch (\Exception $e) {
-            Log::error('Chatbot error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Sorry, I encountered an error. Please try again.'
@@ -68,133 +212,33 @@ class ChatbotController extends Controller
     }
 
     /**
-     * Get response from Google Gemini API
+     * Match user message against keyword patterns and return the best static response.
      */
-    private function getGeminiResponse($message, $chatHistory)
+    private function getStaticResponse(string $message): string
     {
-        $apiKey = env('GEMINI_API_KEY');
+        $normalized = mb_strtolower(trim($message));
 
-        if (!$apiKey) {
-            Log::error('GEMINI_API_KEY not configured');
-            return 'Sorry, the chatbot is not properly configured. Please contact support.';
-        }
+        $bestMatch = null;
+        $bestScore = 0;
 
-        $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
-
-        // System instruction for Fin-noys chatbot
-        $systemInstruction = <<<'PROMPT'
-You are the Fin-noys Cleaning Service Assistant chatbot embedded on the Fin-noys website. You ONLY help with topics directly related to Fin-noys cleaning services, the website, and booking.
-
-=== STRICT RULES ===
-1. NEVER answer questions unrelated to Fin-noys, cleaning services, or the website. This includes but is not limited to: cooking, recipes, general knowledge, weather, news, personal advice, tech support, or any other off-topic subject.
-2. If a user asks something unrelated, politely redirect: "I'm here to help with Fin-noys cleaning services! Is there anything about our services, booking, or pricing I can assist you with?"
-3. Do NOT make up information. Only share what is listed below.
-4. Keep responses concise (2-4 short paragraphs max). Do not repeat information within the same response.
-5. Be friendly and professional. Use simple language.
-6. Do NOT use markdown bold (**text**). Use plain text only.
-
-=== ABOUT FIN-NOYS ===
-Fin-noys is a professional cleaning services provider with extensive experience in the hospitality industry. We serve homes and businesses across Finland, focusing on the Lapland region, Municipality of Inari, and Saariselkä.
-
-=== SERVICES OFFERED ===
-- Deep Cleaning: Thorough top-to-bottom cleaning (€120-€200)
-- Full Daily Cleaning: Comprehensive daily cleaning service (€80-€150)
-- Daily Room Cleaning: Complete room refresh, ideal for accommodation providers
-- Light Daily Cleaning: Routine upkeep to keep spaces tidy
-- Snow Out Cleaning: Seasonal clearing of snow and ice (€150-€250)
-
-=== PRICING PLANS ===
-- Contractual Daily Cleaning: Basic daily services
-- Interval Cleaning: Weekly or bi-weekly scheduled service
-- On-Call Cleaning: On-demand service with priority support
-For exact pricing and custom quotes, direct users to the "Price Quotation" page on the website.
-
-=== BOOKING & APPOINTMENTS ===
-- You CANNOT create bookings. Direct users to log in to their account and use the booking form.
-- Customers can book through the website after logging in (3-step booking process).
-- Customers can also register using Google authentication for convenience.
-- After booking, customers can track appointment status, view assigned teams, and monitor progress from their dashboard.
-- Customers can cancel appointments and provide feedback after service completion.
-
-=== WEBSITE NAVIGATION HELP ===
-When users ask how to do something on the website, guide them:
-- To book: "Log in to your account, then go to your Dashboard where you can create a new appointment."
-- To get a quote: "Visit the Price Quotation page from the main menu to submit a custom quote request."
-- To view services: "Check out the Services page from the main navigation for details on all our offerings."
-- To apply for a job: "Visit the Careers page to see current job openings and submit your application."
-- To contact us: "You can reach us through the Contact page, or use the details below."
-
-=== CONTACT INFORMATION ===
-- Email: finnoys0823@gmail.com
-- Phone: 09288515619
-- Address: Saariselantie 6 C10, Saariselka 99830 Finland
-
-=== SERVICE AREAS ===
-Lapland Region, Municipality of Inari, Saariselkä, and surrounding areas in Finland.
-
-=== LANGUAGE SUPPORT ===
-The website supports English and Finnish (Suomi). Users can switch languages using the language selector on the site.
-PROMPT;
-
-        // Prepare contents with system instruction
-        $contents = [];
-
-        // Add chat history
-        foreach ($chatHistory as $item) {
-            $contents[] = [
-                'role' => $item['role'] === 'model' ? 'model' : 'user',
-                'parts' => $item['parts']
-            ];
-        }
-
-        // Add current user message
-        $contents[] = [
-            'role' => 'user',
-            'parts' => [['text' => $message]]
-        ];
-
-        try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'X-goog-api-key' => $apiKey
-                ])
-                ->post($apiUrl, [
-                    'contents' => $contents,
-                    'systemInstruction' => [
-                        'parts' => [['text' => $systemInstruction]]
-                    ],
-                    'generationConfig' => [
-                        'temperature' => 0.4,
-                        'maxOutputTokens' => 1024,
-                        'topP' => 0.9,
-                        'topK' => 40,
-                    ]
-                ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                Log::info('Gemini API response received', [
-                    'status' => $response->status()
-                ]);
-
-                return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Sorry, I could not generate a response.';
+        foreach ($this->responses as $entry) {
+            $score = 0;
+            foreach ($entry['keywords'] as $keyword) {
+                if (str_contains($normalized, mb_strtolower($keyword))) {
+                    $score += strlen($keyword);
+                }
             }
 
-            Log::error('Gemini API request failed', [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
-
-            return 'Sorry, I am having trouble connecting to my services. Please try again in a moment.';
-
-        } catch (\Exception $e) {
-            Log::error('Gemini API exception', [
-                'message' => $e->getMessage()
-            ]);
-
-            return 'Sorry, I encountered an error. Please try again.';
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $bestMatch = $entry['response'];
+            }
         }
+
+        if ($bestMatch) {
+            return $bestMatch;
+        }
+
+        return "I'm sorry, I didn't quite understand that. I can help you with:\n\n• Our cleaning services and pricing\n• Final Cleaning & Deep Cleaning rate tables\n• How to book an appointment\n• Service areas we cover\n• Contact information\n• Company booking options\n\nTry asking about any of these topics!";
     }
 }

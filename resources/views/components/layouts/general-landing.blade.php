@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="overflow-x-hidden">
 
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('mobileMenu', {
+                open: false,
+                toggle() { this.open = !this.open; },
+            });
+        });
+    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 
@@ -197,7 +205,7 @@
     @stack('styles')
 </head>
 
-<body class="h-full bg-[#ECF1FF] dark:bg-gray-900 font-sans antialiased">
+<body class="h-full bg-white dark:bg-gray-900 font-sans antialiased overflow-x-hidden">
     <x-material-ui.page-loader />
     <div id="main-container">
         <!-- Navigation Header -->
@@ -215,16 +223,29 @@
                     </a>
                 </div>
 
-                <!-- Mobile Menu Button -->
-                <div class="flex lg:hidden">
-                    <button type="button" command="show-modal" commandfor="mobile-menu"
-                        class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-gray-200 transition-colors">
-                        <span class="sr-only">Open main menu</span>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon"
-                            aria-hidden="true" class="size-6">
-                            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
+                <!-- Mobile Menu Button + Login -->
+                <div class="flex lg:hidden items-center gap-2" x-data>
+                    <button id="mobile-header-theme-toggle" type="button"
+                        class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2 transition-colors">
+                        <svg class="w-4 h-4 mobile-header-dark-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                        <svg class="w-4 h-4 mobile-header-light-icon hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    </button>
+                    <a href="/login"
+                        class="group text-[10px] font-bold text-blue-950 bg-white border border-blue-950 px-3 py-1.5 rounded-full dark:text-gray-200 dark:bg-gray-700 dark:border-transparent hover:text-blue-600 hover:border-blue-600 dark:hover:text-blue-400 dark:hover:bg-gray-600 transition-colors">
+                        {{ __('common.nav.login') }}
+                        <span aria-hidden="true" class="ml-1 inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+                    </a>
+                    <button type="button" @click="$store.mobileMenu.toggle()"
+                        class="inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-gray-200 transition-colors">
+                        <span class="sr-only" x-text="$store.mobileMenu.open ? 'Close menu' : 'Open menu'"></span>
+                        <div class="w-6 h-6 relative flex items-center justify-center">
+                            <span class="absolute h-0.5 w-5 bg-current rounded transition-all duration-300 ease-in-out"
+                                  :class="$store.mobileMenu.open ? 'rotate-45' : '-translate-y-1.5'"></span>
+                            <span class="absolute h-0.5 w-5 bg-current rounded transition-all duration-300 ease-in-out"
+                                  :class="$store.mobileMenu.open ? 'opacity-0 scale-0' : 'opacity-100'"></span>
+                            <span class="absolute h-0.5 w-5 bg-current rounded transition-all duration-300 ease-in-out"
+                                  :class="$store.mobileMenu.open ? '-rotate-45' : 'translate-y-1.5'"></span>
+                        </div>
                     </button>
                 </div>
 
@@ -306,107 +327,98 @@
                 </div>
             </nav>
 
-            <!-- Mobile Menu Dialog -->
-            <el-dialog>
-                <dialog id="mobile-menu" class="backdrop:bg-black/50 lg:hidden">
-                    <div tabindex="0" class="fixed inset-0 focus:outline-none">
-                        <el-dialog-panel
-                            class="fixed inset-y-0 right-0 z-50 w-[85%] max-w-sm overflow-y-auto bg-white dark:bg-gray-900 shadow-2xl transition-colors">
-                            <!-- Header with Close Button -->
-                            <div class="flex items-center justify-end px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-                                <button type="button" command="close" commandfor="mobile-menu"
-                                    class="rounded-md p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                    <span class="sr-only">Close menu</span>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        aria-hidden="true" class="w-6 h-6">
-                                        <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                </button>
-                            </div>
+            <!-- Mobile Menu Panel (Alpine.js driven) -->
+            <div x-data class="lg:hidden" x-show="$store.mobileMenu.open" x-cloak>
+                {{-- Backdrop --}}
+                <div x-show="$store.mobileMenu.open"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     @click="$store.mobileMenu.open = false"
+                     class="fixed inset-0 z-40 bg-black/50"></div>
 
-                            <!-- Navigation Menu -->
-                            <nav class="px-5 py-6">
-                                <div class="space-y-1">
-                                    <!-- Home -->
-                                    <a href="{{ route('home') }}"
-                                        class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('home') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                                        {{ __('common.nav.home') }}
-                                    </a>
+                {{-- Slide-in Panel --}}
+                <div x-show="$store.mobileMenu.open"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="translate-x-full"
+                     x-transition:enter-end="translate-x-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="translate-x-0"
+                     x-transition:leave-end="translate-x-full"
+                     class="fixed inset-y-0 right-0 z-50 w-[85%] max-w-sm overflow-y-auto bg-white dark:bg-gray-900 shadow-2xl">
 
-                                    <!-- Services -->
-                                    <a href="{{ route('services') }}"
-                                        class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('services') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                                        {{ __('common.nav.services') }}
-                                    </a>
-
-                                    <!-- Price Quotation -->
-                                    <a href="{{ route('quotation') }}"
-                                        class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('quotation') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                                        {{ __('common.nav.pricing') }}
-                                    </a>
-
-                                    <!-- About -->
-                                    <a href="{{ route('about') }}"
-                                        class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('about') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                                        {{ __('common.nav.about') }}
-                                    </a>
-                                </div>
-
-                                <!-- Divider -->
-                                <div class="my-6 border-t border-gray-200 dark:border-gray-700"></div>
-
-                                <!-- Additional Actions -->
-                                <div class="space-y-1">
-                                    <!-- Theme Toggle (Mobile) -->
-                                    <button id="mobile-theme-toggle" type="button"
-                                        class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                                        <span>Theme</span>
-                                        <span id="mobile-theme-text" class="text-xs text-gray-500 dark:text-gray-400">Light</span>
-                                    </button>
-
-                                    <!-- Language Toggle (Mobile) -->
-                                    <button id="mobile-language-toggle" type="button"
-                                        class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                                        <span>Language</span>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">
-                                            @if(app()->getLocale() == 'fi')
-                                                🇫🇮 Suomi
-                                            @else
-                                                🇬🇧 English
-                                            @endif
-                                        </span>
-                                    </button>
-
-                                    <!-- Language Dropdown (Hidden by default) -->
-                                    <div id="mobile-language-dropdown" class="hidden ml-4 space-y-1">
-                                        <a href="{{ route('language.switch', 'en') }}"
-                                            class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                                            🇬🇧 English
-                                        </a>
-                                        <a href="{{ route('language.switch', 'fi') }}"
-                                            class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                                            🇫🇮 Suomi
-                                        </a>
-                                    </div>
-
-                                    <!-- Login Button -->
-                                    <a href="{{ route('login') }}"
-                                        class="block px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                                        {{ __('common.nav.login') }}
-                                    </a>
-                                </div>
-                            </nav>
-                        </el-dialog-panel>
+                    {{-- Header --}}
+                    <div class="flex items-center justify-end px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <button type="button" @click="$store.mobileMenu.open = false"
+                            class="rounded-md p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <span class="sr-only">Close menu</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                aria-hidden="true" class="w-6 h-6">
+                                <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
                     </div>
-                </dialog>
-            </el-dialog>
+
+                    {{-- Navigation --}}
+                    <nav class="px-5 py-6">
+                        <div class="space-y-1">
+                            <a href="{{ route('home') }}"
+                                class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('home') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                                {{ __('common.nav.home') }}
+                            </a>
+                            <a href="{{ route('services') }}"
+                                class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('services') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                                {{ __('common.nav.services') }}
+                            </a>
+                            <a href="{{ route('quotation') }}"
+                                class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('quotation') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                                {{ __('common.nav.pricing') }}
+                            </a>
+                            <a href="{{ route('about') }}"
+                                class="block px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('about') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                                {{ __('common.nav.about') }}
+                            </a>
+                        </div>
+
+                        <div class="my-6 border-t border-gray-200 dark:border-gray-700"></div>
+
+                        <div class="space-y-1">
+                            <button id="mobile-language-toggle" type="button"
+                                class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                                <span>Language</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">
+                                    @if(app()->getLocale() == 'fi')
+                                        🇫🇮 Suomi
+                                    @else
+                                        🇬🇧 English
+                                    @endif
+                                </span>
+                            </button>
+
+                            <div id="mobile-language-dropdown" class="hidden ml-4 space-y-1">
+                                <a href="{{ route('language.switch', 'en') }}"
+                                    class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                                    🇬🇧 English
+                                </a>
+                                <a href="{{ route('language.switch', 'fi') }}"
+                                    class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                                    🇫🇮 Suomi
+                                </a>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
         </header>
 
         <!-- Main Content -->
         @yield('content')
 
         <!-- Chatbot Component -->
-        @include('components.chatbot')
+        @include('components.landing-chatbot')
     </div>
     @include('components.footer')
 
@@ -442,14 +454,23 @@
         // Check for saved theme preference or default to 'light'
         const currentTheme = localStorage.getItem('color-theme') || 'light';
 
+        // Mobile header theme toggle elements
+        const mobileHeaderThemeBtn = document.getElementById('mobile-header-theme-toggle');
+        const mobileHeaderDarkIcon = mobileHeaderThemeBtn ? mobileHeaderThemeBtn.querySelector('.mobile-header-dark-icon') : null;
+        const mobileHeaderLightIcon = mobileHeaderThemeBtn ? mobileHeaderThemeBtn.querySelector('.mobile-header-light-icon') : null;
+
         // Function to update icon visibility
         function updateThemeIcon(theme) {
             if (theme === 'dark') {
                 themeToggleDarkIcon.classList.add('hidden');
                 themeToggleLightIcon.classList.remove('hidden');
+                if (mobileHeaderDarkIcon) mobileHeaderDarkIcon.classList.add('hidden');
+                if (mobileHeaderLightIcon) mobileHeaderLightIcon.classList.remove('hidden');
             } else {
                 themeToggleLightIcon.classList.add('hidden');
                 themeToggleDarkIcon.classList.remove('hidden');
+                if (mobileHeaderLightIcon) mobileHeaderLightIcon.classList.add('hidden');
+                if (mobileHeaderDarkIcon) mobileHeaderDarkIcon.classList.remove('hidden');
             }
         }
 
@@ -461,8 +482,8 @@
         }
         updateThemeIcon(currentTheme);
 
-        // Toggle theme on button click
-        themeToggleBtn.addEventListener('click', function () {
+        // Toggle theme helper
+        function toggleTheme() {
             if (document.documentElement.classList.contains('dark')) {
                 document.documentElement.classList.remove('dark');
                 localStorage.setItem('color-theme', 'light');
@@ -472,7 +493,15 @@
                 localStorage.setItem('color-theme', 'dark');
                 updateThemeIcon('dark');
             }
-        });
+        }
+
+        // Toggle theme on button click (desktop)
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // Toggle theme on mobile header button click
+        if (mobileHeaderThemeBtn) {
+            mobileHeaderThemeBtn.addEventListener('click', toggleTheme);
+        }
     </script>
     <script>
         // LANGUAGE DROPDOWN TOGGLE
@@ -489,34 +518,6 @@
                 // Close dropdown when clicking outside
                 document.addEventListener('click', function () {
                     languageDropdown.classList.add('hidden');
-                });
-            }
-
-            // MOBILE MENU - Theme Toggle
-            const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
-            const mobileThemeText = document.getElementById('mobile-theme-text');
-
-            if (mobileThemeToggle) {
-                // Update text based on current theme
-                function updateMobileThemeText() {
-                    const isDark = document.documentElement.classList.contains('dark');
-                    if (mobileThemeText) {
-                        mobileThemeText.textContent = isDark ? 'Dark' : 'Light';
-                    }
-                }
-
-                updateMobileThemeText();
-
-                mobileThemeToggle.addEventListener('click', function () {
-                    if (document.documentElement.classList.contains('dark')) {
-                        document.documentElement.classList.remove('dark');
-                        localStorage.setItem('color-theme', 'light');
-                    } else {
-                        document.documentElement.classList.add('dark');
-                        localStorage.setItem('color-theme', 'dark');
-                    }
-                    updateMobileThemeText();
-                    updateThemeIcon(localStorage.getItem('color-theme'));
                 });
             }
 

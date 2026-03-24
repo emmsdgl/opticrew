@@ -116,10 +116,20 @@
 
     .action-buttons {
         display: flex;
-        gap: 1rem;
-        margin-top: 3rem;
-        padding-top: 2rem;
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
         border-top: 1px solid #e5e7eb;
+    }
+
+    @media (min-width: 640px) {
+        .action-buttons {
+            flex-direction: row;
+            gap: 1rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+        }
     }
 
     .dark .action-buttons {
@@ -129,11 +139,22 @@
     .btn-agree {
         background: #2563eb;
         color: white;
-        padding: 0.75rem 2rem;
+        padding: 0.625rem 1.25rem;
         border-radius: 0.5rem;
         border: none;
         cursor: pointer;
         transition: all 0.3s ease;
+        width: 100%;
+        text-align: center;
+        font-size: 0.8125rem;
+    }
+
+    @media (min-width: 640px) {
+        .btn-agree {
+            width: auto;
+            padding: 0.75rem 2rem;
+            font-size: 0.875rem;
+        }
     }
 
     .btn-agree:hover {
@@ -145,12 +166,23 @@
     .btn-decline {
         background: transparent;
         color: #6b7280;
-        padding: 0.75rem 2rem;
+        padding: 0.625rem 1.25rem;
         border-radius: 0.5rem;
         font-weight: 600;
         border: none;
         cursor: pointer;
         transition: all 0.3s ease;
+        width: 100%;
+        text-align: center;
+        font-size: 0.8125rem;
+    }
+
+    @media (min-width: 640px) {
+        .btn-decline {
+            width: auto;
+            padding: 0.75rem 2rem;
+            font-size: 0.875rem;
+        }
     }
 
     .btn-decline:hover {
@@ -173,10 +205,10 @@
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="terms-container">
         <p class="agreement-label">AGREEMENT</p>
-        <h1 class="terms-title text-4xl">Terms and Conditions</h1>
+        <h1 class="terms-title text-4xl sm:text-5xl lg:text-6xl">Terms and Conditions</h1>
         
         <div class="terms-intro">
-            <p class="mb-4 text-justify">
+            <p class="mb-4 text-sm sm:text-xs lg:text-base text-justify">
                 These Terms and Conditions govern the relationship between the Service Provider (Fin-noys), 
                 the Employees, and the Clients. By using our Workforce Management & Booking System, CastCrew, for Fin-noys, you agree to 
                 comply with and be bound by the following terms.
@@ -187,7 +219,7 @@
         <h2 class="section-title">1. Service Agreement</h2>
         
         <div class="subsection-title">1.1 For Clients</div>
-        <div class="terms-content">
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p class="mb-3">
                 By using the Service Booking feature, clients agree to provide accurate location 
                 data and access to premises.
@@ -200,7 +232,7 @@
         </div>
 
         <div class="subsection-title">1.2 Employee Obligations</div>
-        <ul class="terms-list">
+        <ul class="terms-list text-sm sm:text-xs lg:text-base">
             <li>
                 <strong>Task Execution:</strong> Employees must adhere to the Cleaning Checklists 
                 and time allocations provided by the system.
@@ -211,8 +243,8 @@
             </li>
         </ul>
 
-        <div class="subsection-title">1.3 Cancellation & Rescheduling</div>
-        <div class="terms-content">
+        <div class="subsection-title text-sm sm:text-xs lg:text-base">1.3 Cancellation & Rescheduling</div>
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
                 Cancellations must be made via the Service Schedule at least 24 hours in advance 
                 to avoid a cancellation fee.
@@ -222,16 +254,16 @@
         <!-- Section 2: User Responsibilities -->
         <h2 class="section-title">2. User Responsibilities</h2>
         
-        <div class="subsection-title">2.1 Account Security</div>
-        <div class="terms-content">
+        <div class="subsection-title text-sm sm:text-xs lg:text-base">2.1 Account Security</div>
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
                 Users are responsible for maintaining the confidentiality of their account credentials. Any activities 
                 that occur under your account are your responsibility.
             </p>
         </div>
 
-        <div class="subsection-title">2.2 Accurate Information</div>
-        <div class="terms-content">
+        <div class="subsection-title text-sm sm:text-xs lg:text-base">2.2 Accurate Information</div>
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
                 All users agree to provide accurate and up-to-date information when using the platform. Inaccurate 
                 information may result in service disruptions or account suspension.
@@ -241,7 +273,7 @@
         <!-- Section 3: Payment Terms -->
         <h2 class="section-title">3. Payment Terms</h2>
         
-        <div class="terms-content">
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <ul class="terms-list">
                 <li>Payment for services must be completed within the specified timeframe as outlined in the service agreement.</li>
                 <li>Late payments may incur additional fees as determined by the company's billing policies.</li>
@@ -252,11 +284,11 @@
         <!-- Section 4: Limitation of Liability -->
         <h2 class="section-title">4. Limitation of Liability</h2>
         
-        <div class="terms-content">
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p class="mb-3">
                 The Service Provider shall not be held liable for any damages arising from:
             </p>
-            <ul class="terms-list">
+            <ul class="terms-list text-sm sm:text-xs lg:text-base">
                 <li>Unauthorized access to or use of our servers and/or personal information stored therein</li>
                 <li>Interruption or cessation of transmission to or from the platform</li>
                 <li>Bugs, viruses, or similar items that may be transmitted through the platform by third parties</li>
@@ -267,7 +299,7 @@
         <!-- Section 5: Dispute Resolution -->
         <h2 class="section-title">5. Dispute Resolution</h2>
         
-        <div class="terms-content">
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
                 In case of problems or disagreements, users are encouraged to first contact the System Administrator 
                 through the Help Center. If disputes cannot be resolved through direct communication, parties agree to 
@@ -278,7 +310,7 @@
         <!-- Section 6: Modifications to Terms -->
         <h2 class="section-title">6. Modifications to Terms</h2>
         
-        <div class="terms-content">
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
                 The company reserves the right to modify these Terms and Conditions at any time. Users will be notified 
                 of significant changes via the System Notifications panel on their dashboard. Continued use of the platform 
@@ -289,7 +321,7 @@
         <!-- Section 7: Contact Information -->
         <h2 class="section-title">7. Contact Information</h2>
         
-        <div class="terms-content">
+        <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
                 If you have questions regarding these Terms and Conditions, please contact the System Administrator 
                 through the Help Center or the provided contact details in your Account Management tab.

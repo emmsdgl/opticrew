@@ -29,6 +29,7 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+        $request->session()->forget('banned');
 
         UserActivityLog::log(
             Auth::id(),

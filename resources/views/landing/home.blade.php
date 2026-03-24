@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="overflow-x-hidden">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <title>Home</title>
+    <style>[x-cloak] { display: none !important; }</style>
     <link rel="icon" href="{{ asset('images/icons/castcrew/castcrew-pic-logo.svg') }}" type="image/svg+xml">
 </head>
 <style>
@@ -88,192 +90,27 @@
     }
 
     /* === CHATBOT STYLES === */
-    .chat-window {
-        width: 400px;
-        max-width: 90vw;
-        height: 600px;
-        max-height: 80vh;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .chat-header {
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #e5e7eb;
-        flex-shrink: 0;
-    }
-
-    .chat-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1rem 0;
-        max-height: 450px;
-        scroll-behavior: smooth;
-    }
-
-    .chat-messages::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .chat-messages::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-
-    .chat-messages::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
-    }
-
-    .chat-messages::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-
-    .chat-message {
-        margin-bottom: 1rem;
-        padding: 0.75rem 1rem;
-        border-radius: 1rem;
-        max-width: 85%;
-        width: fit-content;
-        word-wrap: break-word;
-        word-break: break-word;
-        line-height: 1.5;
-        animation: fadeIn 0.3s ease-in;
-        display: inline-block;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .user-message {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white;
-        float: right;
-        clear: both;
-        border-bottom-right-radius: 0.25rem;
-    }
-
-    .assistant-message {
-        background: #f1f5f9;
-        color: #071957;
-        float: left;
-        clear: both;
-        border-bottom-left-radius: 0.25rem;
-        border: 1px solid #e2e8f0;
-    }
-
-    .loading-indicator {
-        font-style: italic;
-        opacity: 0.7;
-        animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 0.7;
-        }
-        50% {
-            opacity: 0.4;
-        }
-    }
-
-    .chat-input-container {
-        padding-top: 1rem;
-        border-top: 2px solid #e5e7eb;
-        flex-shrink: 0;
-    }
-
-    /* Rate Limit Indicator */
-    .rate-limit-indicator {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.5rem 0.75rem;
-        background: #f8fafc;
-        border-radius: 0.5rem;
-        margin-bottom: 0.75rem;
-        font-size: 0.875rem;
-        border: 1px solid #e2e8f0;
-    }
-
-    .rate-limit-badge {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-weight: 600;
-    }
-
-    .rate-limit-badge.plenty {
-        color: #059669;
-    }
-
-    .rate-limit-badge.low {
-        color: #d97706;
-    }
-
-    .rate-limit-badge.critical {
-        color: #dc2626;
-    }
-
-    .rate-limit-badge i {
-        font-size: 1rem;
-    }
-
-    .cooldown-timer {
-        color: #dc2626;
-        font-weight: 600;
-        animation: pulse 1s ease-in-out infinite;
-    }
-
-    .rate-limit-help {
-        color: #64748b;
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-    }
-
-    /* Unread Message Badge */
-    .unread-badge {
-        position: absolute;
-        top: -4px;
-        right: -4px;
-        background: #dc2626;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        font-weight: bold;
-        border: 2px solid white;
-        animation: badgePulse 2s ease-in-out infinite;
-    }
-
-    @keyframes badgePulse {
-        0%, 100% {
-            transform: scale(1);
-        }
-        50% {
-            transform: scale(1.1);
-        }
-    }
-
-    #toggle-chat {
-        position: relative;
-    }
+    .hc-fab { width:56px; height:56px; background:#2563eb; box-shadow:0 4px 14px rgba(37,99,235,0.4); transition:all 0.3s ease; border:none; cursor:pointer; }
+    .hc-fab:hover { transform:scale(1.1); box-shadow:0 6px 20px rgba(37,99,235,0.5); background:#1d4ed8; }
+    .hc-panel { position:absolute; bottom:0; right:0; width:340px; height:460px; min-height:460px; max-height:calc(100vh - 100px); overflow:hidden; box-shadow:0 5px 40px rgba(0,0,0,0.12),0 2px 10px rgba(0,0,0,0.08); display:flex; flex-direction:column; z-index:100; }
+    @media (min-width:1024px) { .hc-panel { width:380px; height:500px; min-height:500px; max-height:calc(100vh - 100px); } }
+    @media (max-width:640px) { .hc-panel { position:fixed; top:0; left:0; right:0; bottom:0; width:100%!important; height:100%!important; max-height:none; border-radius:0!important; } }
+    @keyframes hcSlideIn { from{opacity:0;transform:translateX(12px) scale(0.96)} to{opacity:1;transform:translateX(0) scale(1)} }
+    @keyframes hcMsg { from{opacity:0;transform:translateY(8px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes hcMsgSent { 0%{transform:scale(0.95);opacity:0.5} 50%{transform:scale(1.02)} 100%{transform:scale(1);opacity:1} }
+    @keyframes hcFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes hcDots { 0%,100%{opacity:0.5} 50%{opacity:0.2} }
+    .hc-panel-anim { animation:hcSlideIn 0.25s ease-out; }
+    .hc-msg { animation:hcMsg 0.35s cubic-bezier(0.16,1,0.3,1); }
+    .hc-msg-user { animation:hcMsgSent 0.4s cubic-bezier(0.16,1,0.3,1); }
+    .hc-float { animation:hcFloat 3s ease-in-out infinite; }
+    .hc-typing { animation:hcDots 1.2s ease-in-out infinite; }
+    .hc-scroll::-webkit-scrollbar { width:3px; }
+    .hc-scroll::-webkit-scrollbar-track { background:transparent; }
+    .hc-scroll::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:3px; }
 </style>
 
-<body class="h-full">
+<body class="h-full overflow-x-hidden">
     <div id="main-container">
         <header class="inset-x-0 top-0 z-50">
             <nav aria-label="Global" class="flex items-center justify-between p-6 lg:px-8">
@@ -378,14 +215,14 @@
                 </dialog>
             </el-dialog>
         </header>
-        <div id="container-1" class="relative isolate text-center w-[60%] mx-auto pt-11 pb-24">
+        <div id="container-1" class="relative isolate text-center w-full sm:w-[85%] lg:w-[60%] mx-auto pt-11 pb-24 px-4 sm:px-0 overflow-hidden">
             <div class="hidden sm:mb-8 sm:flex sm:justify-center">
                 <div
                     class="relative rounded-full px-3 py-1 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
                     {{ __('home.hero.tagline') }}
                 </div>
             </div>
-            <h1 id="header-1" class="text-6xl tracking-normal text-blue-950 p-10 sm:text-6xl">
+            <h1 id="header-1" class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-normal text-blue-950 p-4 sm:p-10">
                 {{ __('home.hero.title_1') }}
                 <span id="cleanliness" class="text-blue-500 inline-flex items-center">
                     <span id="spark" class="mr-2">
@@ -466,14 +303,14 @@
             </div>
         </div>
         <div id="container-3" class=" py-8 sm:py-16">
-            <div class="relative isolate text-center w-[60%] mx-auto pt-3 pb-16">
+            <div class="relative isolate text-center w-full sm:w-[85%] lg:w-[60%] mx-auto pt-3 pb-16 px-4 sm:px-0">
                 <div id="badge-container">
                     <span class="bg-blue-100 text-blue-500 text-xs me-2 px-2.5 py-0.5 rounded-xl">Hotel Cleaning</span>
                     <span class="bg-blue-100 text-blue-500 text-xs me-2 px-2.5 py-0.5 rounded-xl">Snowout</span>
                     <span class="bg-blue-100 text-blue-500 text-xs me-2 px-2.5 py-0.5 rounded-xl">Daily Cleaning</span>
                 </div>
                 <p id="subheader-1" class="text-blue-600 p-12 font-bold">Why Choose Fin-noys?</p>
-                <h1 id="header-1" class="text-6xl tracking-normal text-blue-950 p-3 sm:text-6xl">
+                <h1 id="header-1" class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-normal text-blue-950 p-3">
                     Your trusted partner in professional
                     <span id="cleaning" class="text-blue-500 inline-flex items-center font-bold">
                         cleaning
@@ -532,56 +369,71 @@
 
             </div>
         </div>
-        <div class="fixed end-14 bottom-12 group">
-            <div id="chat-window"
-                class="bg-white rounded-xl chat-window hidden absolute bottom-0 right-full mr-2 mb-2 p-6">
+        <!-- Chatbot -->
+        <div class="fixed bottom-4 right-3 sm:bottom-5 sm:right-5 z-50" x-data="homeChatbot()" x-init="init()">
+            <button @click="toggle()" x-show="!open"
+                    x-transition:enter="transition ease-out duration-200 delay-150"
+                    x-transition:enter-start="opacity-0 scale-75"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-75"
+                    style="width:56px;height:56px;background:#2563eb;box-shadow:0 4px 14px rgba(37,99,235,0.4);border:none;cursor:pointer;"
+                    class="relative flex items-center justify-center rounded-full focus:outline-none focus:ring-4 focus:ring-blue-300 hover:scale-110 hover:shadow-xl">
+                <i class="fas fa-comment-dots text-white text-xl"></i>
+                <span x-show="unread > 0" x-text="unread" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-white"></span>
+            </button>
 
-                <div class="chat-header">
-                    <div class="flex flex-row items-center">
-                        <img src="/images/icons/opticrew-logo.svg" class="h-8 w-8 m-3 mr-2">
-                        <h2 class="text-blue-950 font-semibold mr-6">{{ __('common.chatbot.title') }}</h2>
-                        <button id="close-chat" class="text-white hover:text-gray-200">
-                            <i class="fas fa-times"></i>
-                        </button>
+            <div x-show="open" x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                 @click.outside="open = false"
+                 class="hc-panel hc-panel-anim bg-white rounded-xl" style="border-radius:0.75rem;">
+
+                <div class="flex items-center justify-between px-3 py-2.5 sm:px-4 sm:py-3 flex-shrink-0" style="background:linear-gradient(135deg,#0061ff 0%,#0a7cff 50%,#59a6ff 100%);">
+                    <div class="flex items-center gap-2.5">
+                        <img src="/images/icons/castcrew/castcrew-pic-logo-ondark.svg" class="w-7 h-7 rounded-full" alt="">
+                        <div class="leading-none">
+                            <p class="text-white text-xs font-semibold">Fin-noys Assistant</p>
+                            <p class="text-white/70 text-[10px] flex items-center gap-1 mt-0.5"><span class="w-1.5 h-1.5 bg-green-400 rounded-full inline-block"></span> Online</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button @click="clearChat()" class="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/15 transition" title="Clear"><i class="fas fa-redo" style="font-size:9px"></i></button>
+                        <button @click="open = false" class="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/15 transition" title="Close"><i class="fas fa-times" style="font-size:11px"></i></button>
                     </div>
                 </div>
 
-                <!-- Rate Limit Indicator -->
-                <div id="rate-limit-indicator" class="rate-limit-indicator" style="display: none;">
-                    <div class="rate-limit-badge plenty">
-                        <i class="fas fa-comments"></i>
-                        <span id="rate-limit-text">15/15 {{ __('common.chatbot.messages') }}</span>
+                <div x-show="!started" class="flex-1 flex flex-col items-center justify-center px-5 py-6 text-center overflow-y-auto bg-white" style="min-height:0">
+                    <div class="hc-float mb-4">
+                        <div class="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center">
+                            <img src="/images/icons/opticrew-logo.svg" class="w-9 h-9" alt="">
+                        </div>
                     </div>
-                    <div id="cooldown-container" class="cooldown-timer" style="display: none;">
-                        <i class="fas fa-clock"></i>
-                        <span id="cooldown-text">{{ __('common.chatbot.wait') }} 0s</span>
+                    <p class="text-gray-400 text-[9px] uppercase tracking-widest mb-1">Welcome to</p>
+                    <h2 class="text-base font-bold text-blue-600 mb-1">Fin-noys Assistant</h2>
+                    <p class="text-gray-400 text-[11px] leading-relaxed mb-4 max-w-[200px]">Ask me anything about our cleaning services!</p>
+                    <div class="flex flex-col gap-1.5 w-full max-w-[190px]">
+                        <button @click="send('What services do you offer?')" class="w-full py-1.5 text-[11px] rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 transition">Our Services</button>
+                        <button @click="send('How do I book an appointment?')" class="w-full py-1.5 text-[11px] rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 transition">Book Appointment</button>
+                        <button @click="send('What are your prices?')" class="w-full py-1.5 text-[11px] rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 transition">Pricing Info</button>
+                        <button @click="send('How can I contact you?')" class="w-full py-1.5 text-[11px] rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 transition">Contact Us</button>
                     </div>
                 </div>
 
-                <div id="chat-messages" class="chat-messages">
-                    <div class="assistant-message chat-message">
-                        {!! __('common.chatbot.welcome') !!}
-                    </div>
-                </div>
+                <div x-show="started" x-ref="msgBox" class="hc-scroll flex-1 overflow-y-auto py-2.5 space-y-1.5 bg-gray-50" style="min-height:0"></div>
 
-                <div class="chat-input-container">
-                    <div class="flex items-center">
-                        <input type="text" id="user-input" placeholder="{{ __('common.chatbot.placeholder') }}"
-                            class="flex-grow p-1.5 border border-gray-100 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        <button id="send-button"
-                            class="bg-blue-600 text-white p-3 rounded-r-lg hover:bg-blue-700 transition duration-150">
-                            <i class="fas fa-paper-plane"></i>
+                <div class="px-2.5 py-2 bg-white border-t border-gray-100 flex-shrink-0">
+                    <div class="flex items-center gap-1.5 bg-gray-100 rounded-full pl-3 pr-1 py-0.5">
+                        <input type="text" x-ref="input" x-model="text" @keydown.enter.prevent="send()" placeholder="Type a message..." class="flex-1 bg-transparent border-none outline-none text-xs text-gray-800 placeholder-gray-400 py-1.5 rounded-full">
+                        <button @click="send()" :disabled="busy || !text.trim()" class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors" :class="text.trim() && !busy ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-300 text-gray-400'">
+                            <i class="fas fa-paper-plane" style="font-size:10px"></i>
                         </button>
                     </div>
                 </div>
             </div>
-
-            <button id="toggle-chat" type="button"
-                class="flex items-center justify-center text-white bg-blue-600 rounded-full w-14 h-14 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none shadow-lg">
-                <i class="fas fa-comment-dots w-6 h-4 text-blue-950"></i>
-                <span class="sr-only">Open Chat Assistant</span>
-                <span id="unread-badge" class="unread-badge" style="display: none;">0</span>
-            </button>
         </div>
     </div>
 </body>
@@ -723,311 +575,60 @@
         }
     });
 </script>
-<script type="module">
-
-    // --- CHATBOT LOGIC ---
-    const chatWindow = document.getElementById('chat-window');
-    const toggleButton = document.getElementById('toggle-chat');
-    const closeButton = document.getElementById('close-chat');
-    const messagesContainer = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const sendButton = document.getElementById('send-button');
-    const rateLimitIndicator = document.getElementById('rate-limit-indicator');
-    const rateLimitText = document.getElementById('rate-limit-text');
-    const rateLimitBadge = document.querySelector('.rate-limit-badge');
-    const cooldownContainer = document.getElementById('cooldown-container');
-    const cooldownText = document.getElementById('cooldown-text');
-    const unreadBadge = document.getElementById('unread-badge');
-
-    // ========== CONVERSATION RETENTION WITH SESSIONSTORAGE ==========
-    const STORAGE_KEY = 'opticrew_chat_history';
-    const STORAGE_MESSAGES_KEY = 'opticrew_chat_messages';
-
-    let chatHistory = [];
-    let cooldownInterval = null;
-    let unreadCount = 0;
-    let isChatOpen = false;
-    const apiUrl = "/api/chatbot/message"; // Laravel backend API endpoint
-
-    // Load chat history from sessionStorage (persists until browser/tab closes)
-    function loadChatFromStorage() {
-        try {
-            const stored = sessionStorage.getItem(STORAGE_KEY);
-            const storedMessages = sessionStorage.getItem(STORAGE_MESSAGES_KEY);
-
-            if (stored) {
-                chatHistory = JSON.parse(stored);
-            }
-
-            if (storedMessages) {
-                const messages = JSON.parse(storedMessages);
-                // Restore previous messages
-                messages.forEach(msg => {
-                    appendMessage(msg.role, msg.text, false); // false = don't save again
-                });
-                scrollToBottom();
-            }
-        } catch (error) {
-            console.error('Error loading chat from storage:', error);
-        }
-    }
-
-    // Save chat history to sessionStorage
-    function saveChatToStorage() {
-        try {
-            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
-
-            // Also save rendered messages for UI restoration
-            const messages = [];
-            const messageElements = messagesContainer.querySelectorAll('.chat-message:not(:first-child)'); // Skip welcome message
-            messageElements.forEach(el => {
-                const role = el.classList.contains('user-message') ? 'user' : 'assistant';
-                const text = el.innerHTML.replace(/<br>/g, '\n');
-                messages.push({ role, text });
-            });
-            sessionStorage.setItem(STORAGE_MESSAGES_KEY, JSON.stringify(messages));
-        } catch (error) {
-            console.error('Error saving chat to storage:', error);
-        }
-    }
-
-    // Clear chat storage (call this when user logs in)
-    window.clearChatStorage = function() {
-        sessionStorage.removeItem(STORAGE_KEY);
-        sessionStorage.removeItem(STORAGE_MESSAGES_KEY);
-        chatHistory = [];
-        console.log('Chat history cleared');
+<script>
+function homeChatbot() {
+    return {
+        open: false, started: false, text: '', busy: false, unread: 0, history: [],
+        isMobile() { return window.innerWidth <= 640; },
+        init() {
+            try {
+                const h = sessionStorage.getItem('fn_chat_h');
+                const m = sessionStorage.getItem('fn_chat_m');
+                if (h) this.history = JSON.parse(h);
+                if (m) { const msgs = JSON.parse(m); if (msgs.length) { this.started = true; this.$nextTick(() => { msgs.forEach(m => this._bubble(m.r, m.t)); this._scroll(); }); } }
+            } catch(e) {}
+        },
+        toggle() { this.open = !this.open; if (this.open) { this.unread = 0; this.$nextTick(() => { this.$refs.input?.focus(); this._scroll(); }); } },
+        async send(msg) {
+            const q = msg || this.text.trim(); if (!q || this.busy) return;
+            this.started = true; this.text = ''; this.busy = true; await this.$nextTick();
+            this.history.push({role:'user',parts:[{text:q}]}); this._bubble('user', q);
+            const loader = this._bubble('bot', 'Typing...', true);
+            try {
+                const res = await fetch('/api/chatbot/message', { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'}, body:JSON.stringify({message:q,chat_history:this.history}) });
+                const data = await res.json(); loader.remove();
+                const reply = data.success ? data.message : (data.message||'Sorry, something went wrong.');
+                if (data.success) { this.history = data.chat_history||this.history; this.history.push({role:'model',parts:[{text:data.message}]}); }
+                this._bubble('bot', reply);
+            } catch(e) { loader.remove(); this._bubble('bot', 'Network error. Please try again.'); }
+            this.busy = false; this._save(); if (!this.open) this.unread++; this.$nextTick(() => this.$refs.input?.focus());
+        },
+        _bubble(role, txt, loading=false) {
+            const box = this.$refs.msgBox; if (!box) return null;
+            const isUser = role==='user';
+            const botAv = '/images/icons/castcrew/castcrew-pic-logo.svg';
+            const wrap = document.createElement('div');
+            wrap.className = 'flex '+(isUser?'flex-row-reverse':'flex-row')+' items-start gap-1.5 px-2.5 mb-2';
+            const av = document.createElement('div');
+            av.className = 'w-6 h-6 rounded-full shrink-0 flex items-center justify-center '+(isUser?'bg-blue-500':'bg-gray-200');
+            av.innerHTML = isUser ? '<i class="fas fa-user text-white" style="font-size:10px"></i>' : '<img src="'+botAv+'" class="w-4 h-4" alt="">';
+            const col = document.createElement('div');
+            col.className = 'flex flex-col '+(isUser?'items-end':'items-start')+' min-w-0 max-w-[calc(100%-2.5rem)]';
+            const b = document.createElement('div');
+            b.className = (isUser?'hc-msg-user':'hc-msg')+' px-3 py-2 text-xs leading-relaxed break-words '+(isUser?'text-white rounded-2xl rounded-br-md':'bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md');
+            if (isUser) b.style.background='linear-gradient(135deg,#0084ff,#0066ff)';
+            if (loading) b.classList.add('hc-typing');
+            b.dataset.raw = txt;
+            b.innerHTML = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>').replace(/^•\s?(.+)/gm,'<span class="flex gap-1"><span>&bull;</span><span>$1</span></span>');
+            col.appendChild(b);
+            if (!loading) { const ts=document.createElement('span'); ts.className='text-[9px] text-gray-400 mt-0.5 px-1'; const now=new Date(); let h=now.getHours(); const mn=now.getMinutes(); const ap=h>=12?'PM':'AM'; h=h%12||12; ts.textContent=h+':'+(mn<10?'0':'')+mn+' '+ap; col.appendChild(ts); }
+            wrap.appendChild(av); wrap.appendChild(col);
+            box.appendChild(wrap); this._scroll(); return wrap;
+        },
+        _scroll() { const box = this.$refs.msgBox; if (box) box.scrollTop = box.scrollHeight; },
+        clearChat() { if (!confirm('Clear chat?')) return; this.history=[]; this.started=false; if(this.$refs.msgBox) this.$refs.msgBox.innerHTML=''; sessionStorage.removeItem('fn_chat_h'); sessionStorage.removeItem('fn_chat_m'); },
+        _save() { try { sessionStorage.setItem('fn_chat_h',JSON.stringify(this.history)); const box=this.$refs.msgBox; if(!box) return; const msgs=[]; box.querySelectorAll('.hc-msg').forEach(el=>{const isUser=el.style.background?.includes('0084ff'); msgs.push({r:isUser?'user':'bot',t:el.dataset.raw||el.textContent.trim()});}); sessionStorage.setItem('fn_chat_m',JSON.stringify(msgs)); } catch(e){} }
     };
-
-    // Function to scroll to the bottom of the chat messages
-    function scrollToBottom() {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    // Function to update unread message badge
-    function updateUnreadBadge() {
-        if (unreadCount > 0) {
-            unreadBadge.textContent = unreadCount;
-            unreadBadge.style.display = 'flex';
-        } else {
-            unreadBadge.style.display = 'none';
-        }
-    }
-
-    // Function to increment unread count (when AI responds and chat is closed)
-    function incrementUnread() {
-        if (!isChatOpen) {
-            unreadCount++;
-            updateUnreadBadge();
-        }
-    }
-
-    // Function to clear unread count (when user opens chat)
-    function clearUnread() {
-        unreadCount = 0;
-        updateUnreadBadge();
-    }
-
-    // Function to update rate limit indicator
-    function updateRateLimitDisplay(rateLimitData) {
-        if (!rateLimitData) return;
-
-        const { remaining, limit, reset_in } = rateLimitData;
-
-        // Show indicator
-        rateLimitIndicator.style.display = 'flex';
-
-        // Update text
-        rateLimitText.textContent = `${remaining}/${limit} messages`;
-
-        // Update badge color based on remaining messages
-        rateLimitBadge.classList.remove('plenty', 'low', 'critical');
-        if (remaining > limit * 0.5) {
-            rateLimitBadge.classList.add('plenty'); // Green - plenty remaining
-        } else if (remaining > 0) {
-            rateLimitBadge.classList.add('low'); // Orange - running low
-        } else {
-            rateLimitBadge.classList.add('critical'); // Red - no messages left
-        }
-
-        // Handle cooldown timer
-        if (remaining === 0) {
-            startCooldown(reset_in);
-        } else {
-            stopCooldown();
-        }
-    }
-
-    // Function to start cooldown timer
-    function startCooldown(seconds) {
-        stopCooldown(); // Clear any existing timer
-
-        cooldownContainer.style.display = 'flex';
-        sendButton.disabled = true;
-        userInput.disabled = true;
-        userInput.placeholder = "Rate limit reached...";
-
-        let remainingSeconds = seconds;
-
-        function updateTimer() {
-            cooldownText.textContent = `Wait ${remainingSeconds}s`;
-            remainingSeconds--;
-
-            if (remainingSeconds < 0) {
-                stopCooldown();
-                // Re-enable input after cooldown
-                sendButton.disabled = false;
-                userInput.disabled = false;
-                userInput.placeholder = "Ask a question...";
-            }
-        }
-
-        updateTimer(); // Update immediately
-        cooldownInterval = setInterval(updateTimer, 1000);
-    }
-
-    // Function to stop cooldown timer
-    function stopCooldown() {
-        if (cooldownInterval) {
-            clearInterval(cooldownInterval);
-            cooldownInterval = null;
-        }
-        cooldownContainer.style.display = 'none';
-    }
-
-    // Function to append a message to the chat UI
-    function appendMessage(role, text, saveToStorage = true) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('chat-message', role === 'user' ? 'user-message' : 'assistant-message');
-        messageDiv.innerHTML = text.replace(/\n/g, '<br>'); // Use innerHTML to handle markdown formatting and line breaks
-        messagesContainer.appendChild(messageDiv);
-
-        // Add clearfix to prevent float issues
-        const clearDiv = document.createElement('div');
-        clearDiv.style.clear = 'both';
-        messagesContainer.appendChild(clearDiv);
-
-        scrollToBottom();
-
-        // Save to sessionStorage
-        if (saveToStorage) {
-            saveChatToStorage();
-        }
-    }
-
-    // Function to handle the actual API call to Laravel backend
-    async function getAssistantResponse(query) {
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    message: query,
-                    chat_history: chatHistory
-                })
-            });
-
-            const result = await response.json();
-
-            // Update rate limit display if data is available
-            if (result.rate_limit) {
-                updateRateLimitDisplay(result.rate_limit);
-            }
-
-            if (result.success) {
-                // Update chat history with the backend response
-                chatHistory = result.chat_history || chatHistory;
-
-                // Add assistant response to history
-                chatHistory.push({
-                    role: "model",
-                    parts: [{ text: result.message }]
-                });
-
-                // Save updated history to storage
-                saveChatToStorage();
-
-                return result.message;
-            } else {
-                console.error("API error:", result.message);
-                return result.message || "Sorry, I couldn't process that request.";
-            }
-
-        } catch (error) {
-            console.error("Fetch error:", error);
-            return "A network error occurred. Please check your connection and try again.";
-        }
-    }
-
-    // Function to handle sending a message
-    async function sendMessage() {
-        const query = userInput.value.trim();
-        if (!query) return;
-
-        // Display user message and clear input
-        appendMessage('user', query);
-        userInput.value = '';
-        sendButton.disabled = true;
-        userInput.placeholder = "Assistant is typing...";
-
-        // Display a loading indicator
-        const thinkingMessage = document.createElement('div');
-        thinkingMessage.classList.add('assistant-message', 'chat-message', 'loading-indicator');
-        thinkingMessage.innerHTML = '...';
-        messagesContainer.appendChild(thinkingMessage);
-        scrollToBottom();
-
-        // Get response from backend assistant
-        const responseText = await getAssistantResponse(query);
-
-        // Remove loading indicator
-        messagesContainer.removeChild(thinkingMessage);
-
-        // Display assistant response
-        appendMessage('assistant', responseText);
-
-        // Increment unread count if chat is closed
-        incrementUnread();
-
-        // Re-enable input
-        sendButton.disabled = false;
-        userInput.placeholder = "Ask a question...";
-        userInput.focus();
-    }
-
-    // Event Listeners
-    toggleButton.addEventListener('click', () => {
-        chatWindow.classList.toggle('hidden');
-        isChatOpen = !chatWindow.classList.contains('hidden');
-
-        if (isChatOpen) {
-            // Clear unread messages when opening chat
-            clearUnread();
-            userInput.focus();
-        }
-    });
-
-    closeButton.addEventListener('click', () => {
-        chatWindow.classList.add('hidden');
-        isChatOpen = false;
-    });
-
-    sendButton.addEventListener('click', sendMessage);
-
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-
-    // ========== INITIALIZE: LOAD CHAT HISTORY ON PAGE LOAD ==========
-    window.addEventListener('DOMContentLoaded', () => {
-        loadChatFromStorage();
-    });
-
+}
 </script>
 </html>

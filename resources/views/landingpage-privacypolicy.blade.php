@@ -19,8 +19,16 @@
         margin: 0 auto;
         background: white;
         border-radius: 1rem;
-        padding: 3rem;
+        padding: 1.25rem;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (min-width: 640px) {
+        .terms-container { padding: 2rem; }
+    }
+
+    @media (min-width: 1024px) {
+        .terms-container { padding: 3rem; }
     }
 
     .dark .terms-container {
@@ -42,6 +50,15 @@
         color: #111827;
         margin-bottom: 0.5rem;
         line-height: 1.2;
+        font-size: 1.5rem;
+    }
+
+    @media (min-width: 640px) {
+        .terms-title { font-size: 1.875rem; }
+    }
+
+    @media (min-width: 1024px) {
+        .terms-title { font-size: 2.25rem; }
     }
 
     .dark .terms-title {
@@ -50,8 +67,16 @@
 
     .last-updated {
         color: #6b7280;
-        font-size: 0.875rem;
-        margin-bottom: 1.5rem;
+        font-size: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .last-updated { font-size: 0.8125rem; margin-bottom: 1.25rem; }
+    }
+
+    @media (min-width: 1024px) {
+        .last-updated { font-size: 0.875rem; margin-bottom: 1.5rem; }
     }
 
     .dark .last-updated {
@@ -60,9 +85,17 @@
 
     .terms-intro {
         color: #4b5563;
-        line-height: 1.75;
-        margin-bottom: 2rem;
-        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        font-size: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+        .terms-intro { font-size: 0.8125rem; margin-bottom: 1.75rem; line-height: 1.7; }
+    }
+
+    @media (min-width: 1024px) {
+        .terms-intro { font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.75; }
     }
 
     .dark .terms-intro {
@@ -70,11 +103,19 @@
     }
 
     .section-title {
-        font-size: 1.3rem;
+        font-size: 1rem;
         font-weight: 700;
         color: #111827;
-        margin-top: 2.5rem;
-        margin-bottom: 1rem;
+        margin-top: 1.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+        .section-title { font-size: 1.125rem; margin-top: 2rem; margin-bottom: 0.875rem; }
+    }
+
+    @media (min-width: 1024px) {
+        .section-title { font-size: 1.3rem; margin-top: 2.5rem; margin-bottom: 1rem; }
     }
 
     .dark .section-title {
@@ -82,11 +123,19 @@
     }
 
     .subsection-title {
-        font-size: 1.1rem;
+        font-size: 0.875rem;
         font-weight: 600;
         color: #1f2937;
-        margin-top: 1.5rem;
-        margin-bottom: 0.75rem;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    @media (min-width: 640px) {
+        .subsection-title { font-size: 1rem; margin-top: 1.375rem; margin-bottom: 0.625rem; }
+    }
+
+    @media (min-width: 1024px) {
+        .subsection-title { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
     }
 
     .dark .subsection-title {
@@ -95,8 +144,16 @@
 
     .terms-content {
         color: #4b5563;
-        line-height: 1.75;
-        font-size: 0.95rem;
+        line-height: 1.6;
+        font-size: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+        .terms-content { font-size: 0.8125rem; line-height: 1.7; }
+    }
+
+    @media (min-width: 1024px) {
+        .terms-content { font-size: 0.95rem; line-height: 1.75; }
     }
 
     .dark .terms-content {
@@ -104,16 +161,33 @@
     }
 
     .terms-list {
-        margin-left: 1.5rem;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
+        margin-left: 1rem;
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+        .terms-list { margin-left: 1.25rem; margin-top: 0.875rem; margin-bottom: 0.875rem; }
+    }
+
+    @media (min-width: 1024px) {
+        .terms-list { margin-left: 1.5rem; margin-top: 1rem; margin-bottom: 1rem; }
     }
 
     .terms-list li {
         color: #4b5563;
-        line-height: 1.75;
-        margin-bottom: 0.5rem;
-        padding-left: 0.5rem;
+        line-height: 1.6;
+        margin-bottom: 0.375rem;
+        padding-left: 0.25rem;
+        font-size: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+        .terms-list li { font-size: 0.8125rem; line-height: 1.7; margin-bottom: 0.4375rem; padding-left: 0.375rem; }
+    }
+
+    @media (min-width: 1024px) {
+        .terms-list li { font-size: 0.95rem; line-height: 1.75; margin-bottom: 0.5rem; padding-left: 0.5rem; }
     }
 
     .dark .terms-list li {
@@ -126,10 +200,20 @@
 
     .action-buttons {
         display: flex;
-        gap: 1rem;
-        margin-top: 3rem;
-        padding-top: 2rem;
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
         border-top: 1px solid #e5e7eb;
+    }
+
+    @media (min-width: 640px) {
+        .action-buttons {
+            flex-direction: row;
+            gap: 1rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+        }
     }
 
     .dark .action-buttons {
@@ -139,12 +223,19 @@
     .btn-agree {
         background: #2563eb;
         color: white;
-        padding: 0.75rem 2rem;
+        padding: 0.625rem 1.25rem;
         border-radius: 0.5rem;
         font-weight: 600;
         border: none;
         cursor: pointer;
         transition: all 0.3s ease;
+        width: 100%;
+        text-align: center;
+        font-size: 0.8125rem;
+    }
+
+    @media (min-width: 640px) {
+        .btn-agree { width: auto; padding: 0.75rem 2rem; font-size: 0.875rem; }
     }
 
     .btn-agree:hover {
@@ -156,12 +247,19 @@
     .btn-decline {
         background: transparent;
         color: #6b7280;
-        padding: 0.75rem 2rem;
+        padding: 0.625rem 1.25rem;
         border-radius: 0.5rem;
         font-weight: 600;
         border: none;
         cursor: pointer;
         transition: all 0.3s ease;
+        width: 100%;
+        text-align: center;
+        font-size: 0.8125rem;
+    }
+
+    @media (min-width: 640px) {
+        .btn-decline { width: auto; padding: 0.75rem 2rem; font-size: 0.875rem; }
     }
 
     .btn-decline:hover {
@@ -184,11 +282,11 @@
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="terms-container">
         <p class="agreement-label">PRIVACY</p>
-        <h1 class="terms-title text-4xl">Privacy Policy</h1>
+        <h1 class="terms-title text-4xl sm:text-5xl lg:text-6xl">Privacy Policy</h1>
         <p class="last-updated">Last Updated: January 26, 2026</p>
         
         <div class="terms-intro">
-            <p>
+            <p class="mb-4 text-sm sm:text-xs lg:text-base text-justify">
                 This Privacy Policy describes how our Workforce Management & Booking System collects, uses, and 
                 protects the information of our Employers, Employees, and Clients. By using this platform, you 
                 agree to the data practices described in this policy.

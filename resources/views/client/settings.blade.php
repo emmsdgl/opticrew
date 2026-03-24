@@ -128,19 +128,35 @@
                 </div>
             </div>
             <!--Section 2: Change Password-->
+            @php
+                $isGoogleUser = Auth::user()->google_id && !Auth::user()->password;
+                $hasPassword = !is_null(Auth::user()->password);
+            @endphp
             <div class="w-full p-4 flex flex-col md:flex-row pb-12 md:pb-24">
                 <!--Description Panel-->
                 <div class="section-description w-full md:flex-1 flex-col justify-start text-justify mb-6 md:mb-0">
-                    <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Change Password</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 pr-24">Update your password associated with your account.</p>
+                    <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-3">
+                        {{ $isGoogleUser ? 'Set Password' : 'Change Password' }}
+                    </h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 pr-24">
+                        @if($isGoogleUser)
+                            You signed in with Google. Set a password to also log in with your email and password.
+                        @else
+                            Update your password associated with your account.
+                        @endif
+                    </p>
                 </div>
                 <!--Form Details-->
                 <div class="form-description w-full md:flex-1" x-data="{
+                    isGoogleUser: {{ $isGoogleUser ? 'true' : 'false' }},
                     currentPassword: '', newPassword: '', confirmPassword: '',
                     showCurrent: false, showNew: false, showConfirm: false,
                     submittingPw: false,
                     async submitPassword() {
-                        if (!this.currentPassword || !this.newPassword || !this.confirmPassword) {
+                        if (!this.isGoogleUser && !this.currentPassword) {
+                            window.showErrorDialog('Missing Information', 'Please enter your current password.'); return;
+                        }
+                        if (!this.newPassword || !this.confirmPassword) {
                             window.showErrorDialog('Missing Information', 'Please fill in all password fields.'); return;
                         }
                         if (this.newPassword !== this.confirmPassword) {
@@ -149,27 +165,38 @@
                         if (this.newPassword.length < 8) {
                             window.showErrorDialog('Too Short', 'Password must be at least 8 characters.'); return;
                         }
-                        try { await window.showConfirmDialog('Update Password?', 'Are you sure you want to change your password?', 'Update', 'Cancel'); } catch (e) { return; }
+                        const confirmTitle = this.isGoogleUser ? 'Set Password?' : 'Update Password?';
+                        const confirmMsg = this.isGoogleUser
+                            ? 'This will set a password for your account. You will be logged out and can log in with your email and password.'
+                            : 'Are you sure you want to change your password?';
+                        try { await window.showConfirmDialog(confirmTitle, confirmMsg, this.isGoogleUser ? 'Set Password' : 'Update', 'Cancel'); } catch (e) { return; }
                         this.submittingPw = true;
                         try {
-                            const res = await fetch('{{ route('client.settings.update-password') }}', {
+                            const url = this.isGoogleUser
+                                ? '{{ route('client.settings.set-password') }}'
+                                : '{{ route('client.settings.update-password') }}';
+                            const body = this.isGoogleUser
+                                ? { password: this.newPassword, password_confirmation: this.confirmPassword }
+                                : { current_password: this.currentPassword, password: this.newPassword, password_confirmation: this.confirmPassword };
+                            const res = await fetch(url, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                                body: JSON.stringify({ current_password: this.currentPassword, password: this.newPassword, password_confirmation: this.confirmPassword })
+                                body: JSON.stringify(body)
                             });
                             const data = await res.json();
                             if (data.success) {
-                                window.showSuccessDialog('Password Updated', data.message);
+                                window.showSuccessDialog('Password {{ $isGoogleUser ? "Set" : "Updated" }}', data.message);
                                 setTimeout(() => { window.location.href = data.redirect || '/'; }, 2000);
                             } else {
-                                window.showErrorDialog('Update Failed', data.message || 'Failed to update password.');
+                                window.showErrorDialog('{{ $isGoogleUser ? "Setup" : "Update" }} Failed', data.message || 'Failed to update password.');
                             }
                         } catch (e) { window.showErrorDialog('Error', 'An error occurred. Please try again.'); }
                         finally { this.submittingPw = false; }
                     }
                 }">
                     <div class="space-y-6 mt-0 md:mt-6">
-                        {{-- Current Password --}}
+                        {{-- Current Password (hidden for Google-auth users without a password) --}}
+                        @unless($isGoogleUser)
                         <div class="relative" x-ref="currentPwWrap">
                             <x-material-ui.input-field label="Current Password" :type="'password'" model="currentPassword" icon="fi fi-rr-lock" placeholder="Enter current password" required />
                             <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
@@ -178,10 +205,11 @@
                                 <i class="fa-solid fa-eye-slash text-sm" x-show="showCurrent" style="display:none"></i>
                             </button>
                         </div>
+                        @endunless
 
                         {{-- New Password --}}
                         <div class="relative" x-ref="newPwWrap">
-                            <x-material-ui.input-field label="New Password" :type="'password'" model="newPassword" icon="fi fi-rr-key" placeholder="Minimum 8 characters" required />
+                            <x-material-ui.input-field label="{{ $isGoogleUser ? 'Password' : 'New Password' }}" :type="'password'" model="newPassword" icon="fi fi-rr-key" placeholder="Minimum 8 characters" required />
                             <button type="button" @click="showNew = !showNew; $refs.newPwWrap.querySelector('input').type = showNew ? 'text' : 'password'"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
                                 <i class="fa-solid fa-eye text-sm" x-show="!showNew"></i>
@@ -191,7 +219,7 @@
 
                         {{-- Confirm Password --}}
                         <div class="relative" x-ref="confirmPwWrap">
-                            <x-material-ui.input-field label="Confirm New Password" :type="'password'" model="confirmPassword" icon="fi fi-rr-shield-check" placeholder="Re-enter new password" required />
+                            <x-material-ui.input-field label="Confirm Password" :type="'password'" model="confirmPassword" icon="fi fi-rr-shield-check" placeholder="Re-enter password" required />
                             <button type="button" @click="showConfirm = !showConfirm; $refs.confirmPwWrap.querySelector('input').type = showConfirm ? 'text' : 'password'"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
                                 <i class="fa-solid fa-eye text-sm" x-show="!showConfirm"></i>
@@ -202,8 +230,8 @@
                         <div class="flex justify-center md:justify-end pt-4">
                             <button type="button" @click="submitPassword()" :disabled="submittingPw"
                                 class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 disabled:opacity-50">
-                                <span x-show="!submittingPw">Update Password</span>
-                                <span x-show="submittingPw"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Updating...</span>
+                                <span x-show="!submittingPw">{{ $isGoogleUser ? 'Set Password' : 'Update Password' }}</span>
+                                <span x-show="submittingPw"><i class="fa-solid fa-spinner fa-spin mr-2"></i>{{ $isGoogleUser ? 'Setting...' : 'Updating...' }}</span>
                             </button>
                         </div>
                     </div>

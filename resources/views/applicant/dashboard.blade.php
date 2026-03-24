@@ -431,10 +431,16 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Current Password</p>
-                                            <input type="password" x-model="form.current_password"
-                                                :placeholder="hasPassword ? 'Enter current password' : 'No password set'"
-                                                :disabled="!hasPassword"
-                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <div class="relative">
+                                                <input :type="showCurrentPw ? 'text' : 'password'" x-model="form.current_password"
+                                                    :placeholder="hasPassword ? 'Enter current password' : 'No password set'"
+                                                    :disabled="!hasPassword"
+                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                                <button type="button" @click="showCurrentPw = !showCurrentPw" x-show="hasPassword"
+                                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                                    <i class="fa-solid text-xs" :class="showCurrentPw ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -445,8 +451,14 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">New Password</p>
-                                            <input type="password" x-model="form.new_password" placeholder="Enter new password"
-                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                            <div class="relative">
+                                                <input :type="showNewPw ? 'text' : 'password'" x-model="form.new_password" placeholder="Enter new password"
+                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                                <button type="button" @click="showNewPw = !showNewPw"
+                                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                                    <i class="fa-solid text-xs" :class="showNewPw ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -457,8 +469,14 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Confirm Password</p>
-                                            <input type="password" x-model="form.new_password_confirmation" placeholder="Confirm new password"
-                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                            <div class="relative">
+                                                <input :type="showConfirmPw ? 'text' : 'password'" x-model="form.new_password_confirmation" placeholder="Confirm new password"
+                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                                <button type="button" @click="showConfirmPw = !showConfirmPw"
+                                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                                    <i class="fa-solid text-xs" :class="showConfirmPw ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -507,6 +525,9 @@
             editing: false,
             saving: false,
             hasPassword: @json($hasPassword),
+            showCurrentPw: false,
+            showNewPw: false,
+            showConfirmPw: false,
             form: {
                 phone: @json($profileUser->phone ?? ''),
                 alternative_email: @json($profileUser->alternative_email ?? ''),
@@ -540,6 +561,9 @@
                 this.form.current_password = '';
                 this.form.new_password = '';
                 this.form.new_password_confirmation = '';
+                this.showCurrentPw = false;
+                this.showNewPw = false;
+                this.showConfirmPw = false;
                 this.editing = false;
             },
 
@@ -571,14 +595,19 @@
                     const data = await res.json();
 
                     if (res.ok && data.success) {
+                        if (data.password_changed) {
+                            window.showSuccessDialog('Password Changed', data.message || 'Please log in again with your new password.');
+                            setTimeout(() => { window.location.href = '/'; }, 2000);
+                            return;
+                        }
                         this.editing = false;
                         this.original = { ...this.form };
-                        if (this.form.new_password) {
-                            this.hasPassword = true;
-                        }
                         this.form.current_password = '';
                         this.form.new_password = '';
                         this.form.new_password_confirmation = '';
+                        this.showCurrentPw = false;
+                        this.showNewPw = false;
+                        this.showConfirmPw = false;
                         window.showSuccessDialog('Profile Updated', 'Your profile has been updated successfully.', 'OK');
                     } else {
                         const msg = data.message || Object.values(data.errors || {}).flat().join(', ') || 'Something went wrong.';
