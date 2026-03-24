@@ -3,9 +3,9 @@
     'initialView' => 'week'
 ])
 
-<div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-white/30 dark:bg-transparent rounded-2xl px-6">
+<div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-white/30 dark:bg-transparent rounded-2xl">
     <!-- Calendar Header -->
-    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between px-3 py-4 border-b border-gray-200 dark:border-gray-700 gap-4">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between px-3 py-4 border-b border-gray-200 dark:border-gray-700 gap-4 px-8">
         <!-- Month/Year Display with Picker -->
         <div class="flex items-center gap-4">
             <div class="relative" x-data="{ showTooltip: false }">

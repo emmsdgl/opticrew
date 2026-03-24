@@ -179,6 +179,11 @@ class ClientAppointmentController extends Controller
                     'ongoing' => 0,
                     'completed' => 0,
                     'cancelled' => 0,
+                    'trends' => [
+                        'total' => ['value' => '0%', 'direction' => null],
+                        'ongoing' => ['value' => '0%', 'direction' => null],
+                        'completed' => ['value' => '0%', 'direction' => null],
+                    ],
                 ]
             ]);
         }
@@ -251,6 +256,38 @@ class ClientAppointmentController extends Controller
             'ongoing' => $appointments->whereIn('status', ['pending', 'confirmed'])->count(),
             'completed' => $appointments->where('status', 'completed')->count(),
             'cancelled' => $appointments->where('status', 'cancelled')->count(),
+        ];
+
+        // Calculate month-over-month trends
+        $thisMonth = Carbon::now()->startOfMonth();
+        $lastMonth = Carbon::now()->subMonth()->startOfMonth();
+        $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
+
+        $thisMonthAppointments = $appointments->filter(fn($a) => Carbon::parse($a->service_date)->gte($thisMonth));
+        $lastMonthAppointments = $appointments->filter(fn($a) => Carbon::parse($a->service_date)->gte($lastMonth) && Carbon::parse($a->service_date)->lte($lastMonthEnd));
+
+        $thisMonthTotal = $thisMonthAppointments->count();
+        $lastMonthTotal = $lastMonthAppointments->count();
+        $thisMonthOngoing = $thisMonthAppointments->whereIn('status', ['pending', 'confirmed'])->count();
+        $lastMonthOngoing = $lastMonthAppointments->whereIn('status', ['pending', 'confirmed'])->count();
+        $thisMonthCompleted = $thisMonthAppointments->where('status', 'completed')->count();
+        $lastMonthCompleted = $lastMonthAppointments->where('status', 'completed')->count();
+
+        $calcTrend = function ($current, $previous) {
+            if ($previous == 0) {
+                return $current > 0 ? ['value' => '+100%', 'direction' => 'up'] : ['value' => '0%', 'direction' => null];
+            }
+            $change = round((($current - $previous) / $previous) * 100);
+            return [
+                'value' => ($change >= 0 ? '+' : '') . $change . '%',
+                'direction' => $change >= 0 ? 'up' : 'down',
+            ];
+        };
+
+        $stats['trends'] = [
+            'total' => $calcTrend($thisMonthTotal, $lastMonthTotal),
+            'ongoing' => $calcTrend($thisMonthOngoing, $lastMonthOngoing),
+            'completed' => $calcTrend($thisMonthCompleted, $lastMonthCompleted),
         ];
 
         // Fetch completed appointments for rating (exclude already rated ones)

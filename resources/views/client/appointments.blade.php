@@ -62,43 +62,32 @@
         <div
             class="flex flex-col gap-6 w-full rounded-lg px-8 py-6">
 
-            @php
-                $statCards = [
-                    [
-                        'title' => 'Total Appointments',
-                        'value' => $stats['total'],
-                        'subtitle' => 'All your service requests',
-                        'icon' => 'fa-solid fa-calendar-check',
-                        'iconBg' => '',
-                        'iconColor' => 'text-blue-600',
-                    ],
-                    [
-                        'title' => 'Ongoing Appointments',
-                        'value' => $stats['ongoing'],
-                        'subtitle' => 'Pending or confirmed services',
-                        'icon' => 'fa-solid fa-broom',
-                        'iconBg' => '',
-                        'iconColor' => 'text-blue-600',
-                    ],
-                    [
-                        'title' => 'Completed Services',
-                        'value' => $stats['completed'],
-                        'subtitle' => 'Successfully finished services',
-                        'icon' => 'fa-solid fa-check-circle',
-                        'iconBg' => '',
-                        'iconColor' => 'text-blue-600',
-                    ],
-                ];
-            @endphp
             <x-labelwithvalue label="Availed Services Overview" count="" />
             <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-                @foreach($statCards as $stat)
-                    <x-statisticscard :title="$stat['title']" :value="$stat['value']" :subtitle="$stat['subtitle'] ?? ''"
-                        :trend="$stat['trend'] ?? null" :trend-value="$stat['trendValue'] ?? null"
-                        :trend-label="$stat['trendLabel'] ?? 'vs last month'" :icon="$stat['icon'] ?? null"
-                        :icon-bg="$stat['iconBg'] ?? 'bg-gray-100'" :icon-color="$stat['iconColor'] ?? 'text-gray-600'"
-                        :value-suffix="$stat['valueSuffix'] ?? ''" :value-prefix="$stat['valuePrefix'] ?? ''" />
-                @endforeach
+                <x-employee-components.kpi-stat-card
+                    label="Total Appointments"
+                    :value="(string)$stats['total']"
+                    icon="fa-solid fa-calendar-check"
+                    :trend="$stats['trends']['total']['value']"
+                    :trend-up="$stats['trends']['total']['direction'] === 'up'"
+                    trend-label="vs last month"
+                />
+                <x-employee-components.kpi-stat-card
+                    label="Ongoing Appointments"
+                    :value="(string)$stats['ongoing']"
+                    icon="fa-solid fa-broom"
+                    :trend="$stats['trends']['ongoing']['value']"
+                    :trend-up="$stats['trends']['ongoing']['direction'] === 'up'"
+                    trend-label="vs last month"
+                />
+                <x-employee-components.kpi-stat-card
+                    label="Completed Services"
+                    :value="(string)$stats['completed']"
+                    icon="fa-solid fa-check-circle"
+                    :trend="$stats['trends']['completed']['value']"
+                    :trend-up="$stats['trends']['completed']['direction'] === 'up'"
+                    trend-label="vs last month"
+                />
             </div>
         </div>
         <div class="flex flex-col gap-6 flex-1 w-full rounded-lg px-3">
