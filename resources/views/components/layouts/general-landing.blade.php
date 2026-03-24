@@ -13,6 +13,7 @@
 
 
     <title>@yield('title', 'Fin-noys Cleaning Service')</title>
+    <link rel="icon" href="{{ asset('images/icons/castcrew/castcrew-pic-logo.svg') }}" type="image/svg+xml">
     <script>
         // Suppress Tailwind CDN production warning
         if (typeof tailwindCSS !== 'undefined') {
