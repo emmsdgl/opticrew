@@ -70,7 +70,7 @@
                             const data = await res.json();
                             if (data.success) {
                                 window.showSuccessDialog('Password Updated', data.message);
-                                this.currentPassword = ''; this.newPassword = ''; this.confirmPassword = '';
+                                setTimeout(() => { window.location.href = data.redirect || '/'; }, 2000);
                             } else {
                                 window.showErrorDialog('Update Failed', data.message || 'Failed to update password.');
                             }

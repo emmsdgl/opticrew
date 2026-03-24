@@ -408,22 +408,20 @@ class ProfileController extends Controller
         $user->password = bcrypt($request->password);
         $user->save();
 
+        // Log out the user after password change
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Password updated successfully!',
+                'message' => 'Password updated successfully! You will be redirected to log in again.',
+                'redirect' => url('/'),
             ]);
         }
 
-        // Redirect back to settings page based on role
-        $role = $user->role;
-        if ($role === 'admin') {
-            return Redirect::route('admin.settings')->with('success', 'Password updated successfully!');
-        } elseif ($role === 'employee') {
-            return Redirect::route('employee.settings')->with('success', 'Password updated successfully!');
-        } else {
-            return Redirect::route('client.settings')->with('success', 'Password updated successfully!');
-        }
+        return Redirect::to('/')->with('success', 'Password updated successfully! Please log in again.');
     }
 
     /**
