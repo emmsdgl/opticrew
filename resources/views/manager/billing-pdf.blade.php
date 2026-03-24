@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Billing Report - {{ $company }}</title>
+    <link rel="icon" href="{{ asset('images/icons/castcrew/castcrew-pic-logo.svg') }}" type="image/svg+xml">
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
         h1 { color: #1e40af; font-size: 24px; margin-bottom: 5px; }
