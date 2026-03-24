@@ -128,6 +128,26 @@
             transform: translate(-50%, -50%);
         }
 
+        /* Floating glassmorphism icons */
+        @keyframes floatIcon {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(var(--float-x), var(--float-y));
+            }
+            50% {
+                transform: translate(calc(var(--float-x) * -0.5), calc(var(--float-y) * -0.7));
+            }
+            75% {
+                transform: translate(calc(var(--float-x) * 0.7), calc(var(--float-y) * 0.4));
+            }
+        }
+
+        .floating-icon {
+            animation: floatIcon var(--float-duration, 6s) ease-in-out infinite;
+            animation-delay: var(--float-delay, 0s);
+        }
     </style>
 </head>
 
@@ -150,15 +170,54 @@
                     :auto-demo="true"
                 />
 
-                <h1 id="header1" class="text-4xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
-                    One-stop booking for
-                    <span class="aurora-text font-sans italic font-extrabold" id="spotless_text">a spotless space</span>
-                </h1>
+                {{-- Glassmorphism arc ripples above & below description-container --}}
+                <div class="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
 
-                <p id="desc1" class="text-blue-200 text-opacity-40 text-base text-left mt-3 w-2/3 relative z-10">
-                    Fin-noys is a cleaning agency catering your cleaning needs with its offered quality cleaning
-                    services.
-                </p>
+                    {{-- TOP ARC (inverted, opening upward) --}}
+                    {{-- Outer ripple --}}
+                    <div class="absolute left-1/2 -translate-x-1/2" style="bottom: 78%; width: 92%; aspect-ratio: 2/1;">
+                        <div class="w-full h-full rounded-b-full backdrop-blur-sm bg-white/[0.04] border border-white/[0.12] border-t-0"></div>
+                    </div>
+                    {{-- Middle ripple --}}
+                    <div class="absolute left-1/2 -translate-x-1/2" style="bottom: 82%; width: 78%; aspect-ratio: 2/1;">
+                        <div class="w-full h-full rounded-b-full backdrop-blur-sm bg-white/[0.03] border border-white/[0.07] border-t-0"></div>
+                    </div>
+                    {{-- Inner ripple (most faded) --}}
+                    <div class="absolute left-1/2 -translate-x-1/2" style="bottom: 86%; width: 64%; aspect-ratio: 2/1;">
+                        <div class="w-full h-full rounded-b-full backdrop-blur-sm bg-white/[0.02] border border-white/[0.03] border-t-0"></div>
+                    </div>
+
+                    {{-- BOTTOM ARC glow (bright blue, behind the arcs) --}}
+                    <div class="absolute left-1/2 -translate-x-1/2 bottom-0" style="width: 100%; height: 50%; transform: translateX(-50%);">
+                        <div class="w-full h-full" style="background: radial-gradient(ellipse 60% 70% at 50% 100%, rgba(59, 130, 246, 0.7) 0%, rgba(59, 130, 246, 0.4) 25%, rgba(37, 99, 235, 0.15) 50%, transparent 75%);"></div>
+                    </div>
+
+                    {{-- BOTTOM ARC (opening downward) --}}
+                    {{-- Outer ripple --}}
+                    <div class="absolute left-1/2 -translate-x-1/2" style="top: 78%; width: 92%; aspect-ratio: 2/1;">
+                        <div class="w-full h-full rounded-t-full backdrop-blur-sm bg-white/[0.04] border border-white/[0.12] border-b-0"></div>
+                    </div>
+                    {{-- Middle ripple --}}
+                    <div class="absolute left-1/2 -translate-x-1/2" style="top: 82%; width: 78%; aspect-ratio: 2/1;">
+                        <div class="w-full h-full rounded-t-full backdrop-blur-sm bg-white/[0.03] border border-white/[0.07] border-b-0"></div>
+                    </div>
+                    {{-- Inner ripple (most faded) --}}
+                    <div class="absolute left-1/2 -translate-x-1/2" style="top: 86%; width: 64%; aspect-ratio: 2/1;">
+                        <div class="w-full h-full rounded-t-full backdrop-blur-sm bg-white/[0.02] border border-white/[0.03] border-b-0"></div>
+                    </div>
+                </div>
+
+                <div class="description-container flex flex-col justify-center items-center w-full my-3">
+                    <h1 id="header1" class="text-4xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
+                        One-stop booking for
+                        <span class="aurora-text font-sans italic font-extrabold" id="spotless_text">a spotless space</span>
+                    </h1>
+    
+                    <p id="desc1" class="text-blue-200 text-opacity-40 text-base text-left mt-3 w-2/3 relative z-10">
+                        Fin-noys is a cleaning agency catering your cleaning needs with its offered quality cleaning
+                        services.
+                    </p>
+                </div>
             </div>
         </div>
 
