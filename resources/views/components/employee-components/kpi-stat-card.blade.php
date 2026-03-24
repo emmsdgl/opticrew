@@ -5,11 +5,13 @@
     'trend' => '',
     'trendUp' => false,
     'trendLabel' => 'vs last month',
+    'currentCount' => null,
+    'previousCount' => null,
 ])
 
-<div class="bg-white dark:bg-gray-800/30 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300">
+<div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300">
     <div class="flex items-start justify-between">
-        <div class="p-2 rounded-xl bg-blue-200/30 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+        <div class="p-2 rounded-xl bg-blue-200/30 dark:bg-gray-600/20 text-gray-900 dark:text-gray-100">
             <i class="{{ $icon }} text-base text-blue-600"></i>
         </div>
         @if($trend)
@@ -39,6 +41,19 @@
                         <span class="font-semibold {{ $trendUp ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400' }}">{{ $trend }}</span>
                         {{ $trendUp ? 'increase' : 'decrease' }} in {{ Str::lower($label) }} {{ $trendLabel }}.
                     </p>
+                    @if(!is_null($currentCount) && !is_null($previousCount))
+                        <div class="mt-2 flex items-center justify-between gap-2 text-[11px]">
+                            <div class="flex flex-col items-center flex-1 p-1.5 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                                <span class="text-[10px] text-gray-400 dark:text-gray-500">Last month</span>
+                                <span class="font-bold text-gray-900 dark:text-white">{{ $previousCount }}</span>
+                            </div>
+                            <i class="fas fa-arrow-right text-[8px] text-gray-300 dark:text-gray-600"></i>
+                            <div class="flex flex-col items-center flex-1 p-1.5 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                                <span class="text-[10px] text-gray-400 dark:text-gray-500">This month</span>
+                                <span class="font-bold {{ $trendUp ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white' }}">{{ $currentCount }}</span>
+                            </div>
+                        </div>
+                    @endif
                     <div class="mt-1.5 pt-1.5 border-t border-gray-100 dark:border-gray-700 text-[10px] text-gray-400 dark:text-gray-500">
                         Compared to the previous month
                     </div>

@@ -150,12 +150,12 @@
                     :auto-demo="true"
                 />
 
-                <h1 id="header1" class="text-4xl lg:text-5xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
+                <h1 id="header1" class="text-4xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
                     One-stop booking for
                     <span class="aurora-text font-sans italic font-extrabold" id="spotless_text">a spotless space</span>
                 </h1>
 
-                <p id="desc1" class="text-[#688bff89] text-opacity-40 text-base text-left mt-3 w-2/3 relative z-10">
+                <p id="desc1" class="text-blue-200 text-opacity-40 text-base text-left mt-3 w-2/3 relative z-10">
                     Fin-noys is a cleaning agency catering your cleaning needs with its offered quality cleaning
                     services.
                 </p>
@@ -173,7 +173,7 @@
                         <img src="{{asset('/images/icons/finnoys-text-logo-light.svg')}}" alt="Fin-noys"
                             class="h-3 md:h-6 w-auto cursor-pointer block">
                     </a>
-                    <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 text-[#081032]">Log In</h1>
+                    <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 text-blue-950">Log In</h1>
                     <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm mb-3">Welcome to
                         Fin-noys</p>
                 </div>

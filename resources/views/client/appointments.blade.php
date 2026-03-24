@@ -71,6 +71,8 @@
                     :trend="$stats['trends']['total']['value']"
                     :trend-up="$stats['trends']['total']['direction'] === 'up'"
                     trend-label="vs last month"
+                    :current-count="$stats['trends']['total']['current']"
+                    :previous-count="$stats['trends']['total']['previous']"
                 />
                 <x-employee-components.kpi-stat-card
                     label="Ongoing Appointments"
@@ -79,6 +81,8 @@
                     :trend="$stats['trends']['ongoing']['value']"
                     :trend-up="$stats['trends']['ongoing']['direction'] === 'up'"
                     trend-label="vs last month"
+                    :current-count="$stats['trends']['ongoing']['current']"
+                    :previous-count="$stats['trends']['ongoing']['previous']"
                 />
                 <x-employee-components.kpi-stat-card
                     label="Completed Services"
@@ -87,6 +91,8 @@
                     :trend="$stats['trends']['completed']['value']"
                     :trend-up="$stats['trends']['completed']['direction'] === 'up'"
                     trend-label="vs last month"
+                    :current-count="$stats['trends']['completed']['current']"
+                    :previous-count="$stats['trends']['completed']['previous']"
                 />
             </div>
         </div>

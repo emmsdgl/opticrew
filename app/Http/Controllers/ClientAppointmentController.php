@@ -180,9 +180,9 @@ class ClientAppointmentController extends Controller
                     'completed' => 0,
                     'cancelled' => 0,
                     'trends' => [
-                        'total' => ['value' => '0%', 'direction' => null],
-                        'ongoing' => ['value' => '0%', 'direction' => null],
-                        'completed' => ['value' => '0%', 'direction' => null],
+                        'total' => ['value' => '0%', 'direction' => null, 'current' => 0, 'previous' => 0],
+                        'ongoing' => ['value' => '0%', 'direction' => null, 'current' => 0, 'previous' => 0],
+                        'completed' => ['value' => '0%', 'direction' => null, 'current' => 0, 'previous' => 0],
                     ],
                 ]
             ]);
@@ -275,12 +275,16 @@ class ClientAppointmentController extends Controller
 
         $calcTrend = function ($current, $previous) {
             if ($previous == 0) {
-                return $current > 0 ? ['value' => '+100%', 'direction' => 'up'] : ['value' => '0%', 'direction' => null];
+                return $current > 0
+                    ? ['value' => '+100%', 'direction' => 'up', 'current' => $current, 'previous' => $previous]
+                    : ['value' => '0%', 'direction' => null, 'current' => $current, 'previous' => $previous];
             }
             $change = round((($current - $previous) / $previous) * 100);
             return [
                 'value' => ($change >= 0 ? '+' : '') . $change . '%',
                 'direction' => $change >= 0 ? 'up' : 'down',
+                'current' => $current,
+                'previous' => $previous,
             ];
         };
 
