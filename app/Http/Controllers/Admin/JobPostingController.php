@@ -160,7 +160,12 @@ class JobPostingController extends Controller
             ->orderBy('deleted_at', 'desc')
             ->get();
 
-        return view('admin.recruitment.archived', compact('archivedPostings', 'applicantCounts', 'deletedApplications'));
+        // Get hired applications (archived from recruitment pipeline)
+        $hiredApplications = \App\Models\JobApplication::where('status', 'hired')
+            ->orderBy('reviewed_at', 'desc')
+            ->get();
+
+        return view('admin.recruitment.archived', compact('archivedPostings', 'applicantCounts', 'deletedApplications', 'hiredApplications'));
     }
 
     /**

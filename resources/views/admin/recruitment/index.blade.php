@@ -13,7 +13,6 @@
             ['label' => 'Pending', 'value' => $applications->where('status', 'pending')->count(), 'icon' => 'fi fi-rr-clock', 'iconColor' => '#eab308'],
             ['label' => 'Reviewed', 'value' => $applications->where('status', 'reviewed')->count(), 'icon' => 'fi fi-rr-eye', 'iconColor' => '#3b82f6'],
             ['label' => 'Interview', 'value' => $applications->where('status', 'interview_scheduled')->count(), 'icon' => 'fi fi-rr-calendar', 'iconColor' => '#8b5cf6'],
-            ['label' => 'Hired', 'value' => $applications->where('status', 'hired')->count(), 'icon' => 'fi fi-rr-check-circle', 'iconColor' => '#22c55e'],
             ['label' => 'Total Applications', 'value' => $applications->total(), 'icon' => 'fi fi-rr-document', 'iconColor' => '#6b7280'],
         ]" />
         </div>
@@ -44,7 +43,6 @@
                             'reviewed' => 'Reviewed (' . $applications->where('status', 'reviewed')->count() . ')',
                             'interview_scheduled' =>
                                 'Interview (' . $applications->where('status', 'interview_scheduled')->count() . ')',
-                            'hired' => 'Hired (' . $applications->where('status', 'hired')->count() . ')',
                             'rejected' => 'Rejected (' . $applications->where('status', 'rejected')->count() . ')',
                         ]"
                             onSelect="window.location.href='{{ route('admin.recruitment.index') }}?status={value}' + (document.getElementById('recruitmentSearchInput')?.value ? '&search=' + document.getElementById('recruitmentSearchInput').value : '')" />
@@ -2213,6 +2211,14 @@
                         });
 
                         if (response.ok) {
+                            const data = await response.json();
+
+                            // If server returns a redirect (e.g. hire -> employee setup), navigate there
+                            if (data.redirect) {
+                                window.location.href = data.redirect;
+                                return;
+                            }
+
                             this.selectedApp.status = newStatus;
                             this.drawerStatus = newStatus;
                             this.selectedApp.admin_notes = this.drawerNotes;

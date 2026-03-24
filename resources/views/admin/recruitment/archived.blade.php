@@ -12,6 +12,62 @@
             <p class="text-sm text-gray-600 dark:text-gray-400">View and manage deleted applications and archived job postings</p>
         </div>
 
+        <!-- Hired Applications Section -->
+        <div>
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Hired Applications</h2>
+                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                    x-text="hiredApplications.length"></span>
+            </div>
+
+            <div x-show="hiredApplications.length > 0"
+                class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Email</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Job Title</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Job Type</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Hired At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="(app, index) in hiredApplications" :key="'hired-'+app.id">
+                            <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white" x-text="app.email"></div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400" x-show="app.alternative_email" x-text="app.alternative_email"></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-200" x-text="app.job_title"></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full"
+                                        :class="getAppTypeBadgeClass(app.job_type)"
+                                        x-text="app.job_type ? app.job_type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'N/A'"></span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Hired</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400" x-text="app.reviewed_at"></div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <template x-if="hiredApplications.length === 0">
+                <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-16 text-center">
+                    <i class="fa-solid fa-user-check text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                    <p class="text-base font-medium text-gray-500 dark:text-gray-400">No hired applications</p>
+                    <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Hired applicants will appear here</p>
+                </div>
+            </template>
+        </div>
+
         <!-- Deleted Applications Section -->
         <div>
             <div class="flex items-center gap-3 mb-4">
@@ -218,9 +274,22 @@
                 })
             }));
 
+            const dbHiredApps = @json($hiredApplications ?? []).map(app => ({
+                id: app.id,
+                email: app.email,
+                alternative_email: app.alternative_email,
+                job_title: app.job_title,
+                job_type: app.job_type,
+                status: app.status,
+                reviewed_at: app.reviewed_at ? new Date(app.reviewed_at).toLocaleDateString('en-US', {
+                    month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+                }) : 'N/A'
+            }));
+
             return {
                 archivedPostings: dbPostings,
                 deletedApplications: dbDeletedApps,
+                hiredApplications: dbHiredApps,
                 showSuccess: false,
                 successTitle: '',
                 successMessage: '',

@@ -21,24 +21,29 @@ class TrainingVideoController extends Controller
 
     public function store(Request $request)
     {
+        $isDraft = !filter_var($request->input('is_active', true), FILTER_VALIDATE_BOOLEAN);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string|min:180',
+            'description' => $isDraft ? 'nullable|string' : 'required|string|min:180',
             'video_id' => 'nullable|string|max:255',
             'video_file' => 'nullable|file|mimes:mp4,webm,mov,avi|max:512000',
-            'platform' => 'required|string|in:youtube,upload',
-            'category' => 'required|in:cleaning_techniques,body_safety,hazard_prevention,chemical_safety',
+            'platform' => $isDraft ? 'nullable|string|in:youtube,upload' : 'required|string|in:youtube,upload',
+            'category' => $isDraft ? 'nullable|in:cleaning_techniques,body_safety,hazard_prevention,chemical_safety' : 'required|in:cleaning_techniques,body_safety,hazard_prevention,chemical_safety',
             'duration' => 'nullable|string|max:50',
             'required' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
 
-        if ($validated['platform'] === 'youtube' && empty($validated['video_id'])) {
+        $validated['platform'] = $validated['platform'] ?? 'youtube';
+        $validated['category'] = $validated['category'] ?? 'cleaning_techniques';
+
+        if (!$isDraft && $validated['platform'] === 'youtube' && empty($validated['video_id'])) {
             return response()->json(['success' => false, 'message' => 'YouTube Video ID is required.'], 422);
         }
 
-        if ($validated['platform'] === 'upload' && !$request->hasFile('video_file')) {
+        if (!$isDraft && $validated['platform'] === 'upload' && !$request->hasFile('video_file')) {
             return response()->json(['success' => false, 'message' => 'Video file is required.'], 422);
         }
 

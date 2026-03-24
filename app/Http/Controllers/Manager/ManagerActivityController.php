@@ -31,18 +31,20 @@ class ManagerActivityController extends Controller
         }
 
         $locationIds = $contractedClient->locations()->pluck('id');
+        $since = Carbon::now()->subDays(7);
         $activities = collect();
 
         // Task activities
         if (in_array($filter, ['all', 'tasks'])) {
             $recentTasks = Task::whereIn('location_id', $locationIds)
+                ->where('updated_at', '>=', $since)
                 ->with('location')
                 ->orderBy('updated_at', 'desc')
                 ->limit(30)
                 ->get();
 
             foreach ($recentTasks as $task) {
-                $locationName = $task->location->name ?? 'Unknown';
+                $locationName = $task->location->location_name ?? $task->location->name ?? 'Unknown';
                 $activity = $this->buildTaskActivity($task, $locationName);
                 $activity['category'] = 'tasks';
                 $activity['sort_time'] = $task->updated_at;
@@ -50,7 +52,7 @@ class ManagerActivityController extends Controller
             }
         }
 
-        // Checklist activities
+        // Checklist activities (granular — mirrors mobile API)
         if (in_array($filter, ['all', 'checklist'])) {
             $checklist = CompanyChecklist::where('contracted_client_id', $contractedClient->id)
                 ->where('is_active', true)
@@ -58,28 +60,81 @@ class ManagerActivityController extends Controller
                 ->first();
 
             if ($checklist) {
-                $activities->push([
-                    'type' => 'checklist',
-                    'icon' => 'clipboard-list',
-                    'title' => 'Checklist Updated',
-                    'description' => "{$checklist->name} was last updated",
-                    'time' => $checklist->updated_at->diffForHumans(),
-                    'status' => null,
-                    'category' => 'checklist',
-                    'sort_time' => $checklist->updated_at,
-                ]);
-
-                foreach ($checklist->categories as $category) {
+                // Checklist itself updated
+                if ($checklist->updated_at && $checklist->updated_at >= $since) {
                     $activities->push([
                         'type' => 'checklist',
-                        'icon' => 'folder',
-                        'title' => 'Category: ' . $category->name,
-                        'description' => $category->items->count() . ' items in this category',
-                        'time' => $category->updated_at->diffForHumans(),
-                        'status' => null,
+                        'icon' => 'clipboard-list',
+                        'title' => 'Checklist updated',
+                        'description' => 'Checklist "' . $checklist->name . '" was updated',
+                        'time' => $checklist->updated_at->diffForHumans(),
+                        'status' => 'updated',
                         'category' => 'checklist',
-                        'sort_time' => $category->updated_at,
+                        'sort_time' => $checklist->updated_at,
                     ]);
+                }
+
+                foreach ($checklist->categories as $category) {
+                    // Category was added
+                    if ($category->created_at && $category->created_at >= $since) {
+                        $activities->push([
+                            'type' => 'checklist',
+                            'icon' => 'circle-plus',
+                            'title' => 'Category added',
+                            'description' => 'Category "' . $category->name . '" was added',
+                            'time' => $category->created_at->diffForHumans(),
+                            'status' => 'added',
+                            'category' => 'checklist',
+                            'sort_time' => $category->created_at,
+                        ]);
+                    }
+
+                    // Category was updated (only if updated_at differs from created_at)
+                    if ($category->updated_at && $category->updated_at >= $since
+                        && $category->created_at && $category->updated_at->ne($category->created_at)) {
+                        $activities->push([
+                            'type' => 'checklist',
+                            'icon' => 'pen-to-square',
+                            'title' => 'Category updated',
+                            'description' => 'Category "' . $category->name . '" was updated',
+                            'time' => $category->updated_at->diffForHumans(),
+                            'status' => 'updated',
+                            'category' => 'checklist',
+                            'sort_time' => $category->updated_at,
+                        ]);
+                    }
+
+                    // Items within each category
+                    foreach ($category->items as $item) {
+                        // Item was added
+                        if ($item->created_at && $item->created_at >= $since) {
+                            $activities->push([
+                                'type' => 'checklist',
+                                'icon' => 'circle-plus',
+                                'title' => 'Item added',
+                                'description' => 'Item "' . $item->name . '" was added to "' . $category->name . '"',
+                                'time' => $item->created_at->diffForHumans(),
+                                'status' => 'added',
+                                'category' => 'checklist',
+                                'sort_time' => $item->created_at,
+                            ]);
+                        }
+
+                        // Item was updated (only if updated_at differs from created_at)
+                        if ($item->updated_at && $item->updated_at >= $since
+                            && $item->created_at && $item->updated_at->ne($item->created_at)) {
+                            $activities->push([
+                                'type' => 'checklist',
+                                'icon' => 'pen-to-square',
+                                'title' => 'Item updated',
+                                'description' => 'Item "' . $item->name . '" in "' . $category->name . '" was updated',
+                                'time' => $item->updated_at->diffForHumans(),
+                                'status' => 'updated',
+                                'category' => 'checklist',
+                                'sort_time' => $item->updated_at,
+                            ]);
+                        }
+                    }
                 }
             }
         }
@@ -88,12 +143,13 @@ class ManagerActivityController extends Controller
         if (in_array($filter, ['all', 'reports'])) {
             $reviews = TaskReview::where('contracted_client_id', $contractedClient->id)
                 ->with('task.location')
+                ->where('created_at', '>=', $since)
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
                 ->get();
 
             foreach ($reviews as $review) {
-                $locationName = $review->task->location->name ?? 'Service';
+                $locationName = $review->task?->location?->name ?? 'Service';
                 $activities->push([
                     'type' => 'report',
                     'icon' => 'star',

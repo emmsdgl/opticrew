@@ -60,7 +60,10 @@
                 <!-- Search Bar -->
                 <div class="flex-1">
                     <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Search by name, username, or email..."
+                        {{-- Hidden decoy to prevent Chrome password autofill --}}
+                        <input type="text" name="prevent_autofill" id="prevent_autofill" value="" style="display:none" aria-hidden="true">
+                        <input type="search" id="searchInput" name="account_search_filter" placeholder="Search by name, username, or email..."
+                            autocomplete="new-password"
                             class="w-full px-4 py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
@@ -129,11 +132,11 @@
                                 } elseif ($user->role === 'applicant') {
                                     $role = 'Applicant';
                                     $roleBadge = 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400';
-                                } elseif ($user->client && $user->client->client_type === 'company') {
-                                    $role = 'External Client';
+                                } elseif ($user->role === 'company') {
+                                    $role = 'Company Client';
                                     $roleBadge = 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
                                 } else {
-                                    $role = 'Employer';
+                                    $role = 'Personal Client';
                                     $roleBadge = 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400';
                                 }
                             @endphp
@@ -418,7 +421,104 @@
     </section>
     </x-skeleton-page>
 
+    {{-- Change Role Modal --}}
+    <div id="changeRoleModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Change Role</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Changing role for <span id="changeRoleUserName" class="font-medium text-gray-900 dark:text-white"></span>
+            </p>
+
+            <input type="hidden" id="changeRoleUserId">
+            <input type="hidden" id="changeRoleCurrentRole">
+
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Role</label>
+            <select id="changeRoleSelect"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </select>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeChangeRoleModal()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                    Cancel
+                </button>
+                <button onclick="submitChangeRole()"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Change Role functions
+        const roleTransitions = {
+            employee: [{ value: 'external_client', label: 'Personal Client' }],
+            external_client: [{ value: 'employee', label: 'Employee' }],
+            applicant: [{ value: 'employee', label: 'Employee' }],
+        };
+
+        function openChangeRoleModal(userId, userName, currentRole) {
+            document.getElementById('changeRoleUserId').value = userId;
+            document.getElementById('changeRoleUserName').textContent = userName;
+            document.getElementById('changeRoleCurrentRole').value = currentRole;
+
+            const select = document.getElementById('changeRoleSelect');
+            select.innerHTML = '';
+
+            const options = roleTransitions[currentRole] || [];
+            if (options.length === 0) {
+                select.innerHTML = '<option disabled>No role changes available</option>';
+            } else {
+                options.forEach(opt => {
+                    const el = document.createElement('option');
+                    el.value = opt.value;
+                    el.textContent = opt.label;
+                    select.appendChild(el);
+                });
+            }
+
+            const modal = document.getElementById('changeRoleModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeChangeRoleModal() {
+            const modal = document.getElementById('changeRoleModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function submitChangeRole() {
+            const userId = document.getElementById('changeRoleUserId').value;
+            const newRole = document.getElementById('changeRoleSelect').value;
+
+            if (!newRole) return;
+
+            try {
+                const res = await fetch(`/admin/accounts/${userId}/change-role`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ new_role: newRole })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    closeChangeRoleModal();
+                    window.showSuccessDialog('Role Changed', data.message, 'OK', '{{ route("admin.accounts.index") }}');
+                } else {
+                    window.showErrorDialog('Error', data.message || 'Failed to change role.');
+                }
+            } catch (error) {
+                window.showErrorDialog('Error', 'Something went wrong. Please try again.');
+            }
+        }
+
         // Search functionality for main users table
         const searchInput = document.getElementById('searchInput');
 
@@ -452,6 +552,47 @@
                     row.style.display = (name.includes(searchTerm) || email.includes(searchTerm)) ? '' : 'none';
                 });
             });
+        }
+
+        // Ban/Unban flow
+        async function toggleBanUser(userId, userName, isCurrentlyActive) {
+            const action = isCurrentlyActive ? 'ban' : 'unban';
+
+            try {
+                await window.showPasswordConfirmDialog(
+                    `${isCurrentlyActive ? 'Ban' : 'Unban'} User`,
+                    `Are you sure you want to ${action} ${userName}? Enter your admin password to confirm.`,
+                    `${isCurrentlyActive ? 'Ban' : 'Unban'} User`,
+                    'Cancel'
+                );
+            } catch (e) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/admin/accounts/${userId}/toggle-ban`, {
+                    method: 'PATCH',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    window.showSuccessDialog(
+                        `User ${isCurrentlyActive ? 'Banned' : 'Unbanned'}`,
+                        data.message,
+                        'OK',
+                        '{{ route("admin.accounts.index") }}'
+                    );
+                } else {
+                    window.showErrorDialog('Error', data.message || `Failed to ${action} user.`);
+                }
+            } catch (error) {
+                window.showErrorDialog('Error', 'Something went wrong. Please try again.');
+            }
         }
 
         // Delete flow using components/dialog

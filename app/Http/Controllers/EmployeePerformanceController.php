@@ -209,6 +209,7 @@ class EmployeePerformanceController extends Controller
                 'categoryInfo' => $categoryInfo,
                 'courseProgress' => $courseProgress,
                 'courseStatuses' => $courseStatuses,
+                'courseLastPositions' => $courseLastPositions,
                 'trainingVideos' => $trainingVideos,
             ]);
         }

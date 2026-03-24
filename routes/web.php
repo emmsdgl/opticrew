@@ -139,6 +139,7 @@ Route::get('/register', function () {
 // Google OAuth Routes
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+Route::get('/mobile/google-login', [GoogleAuthController::class, 'mobileRedirect'])->name('mobile.google.redirect');
 Route::post('/auth/google/recruitment-apply', [GoogleAuthController::class, 'recruitmentApply'])->name('recruitment.google.apply');
 
 /*
@@ -324,6 +325,9 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
 
         // Service Performance Reports
         Route::get('/service', [ReportController::class, 'servicePerformance'])->name('service');
+
+        // Course Progress Reports
+        Route::get('/course-progress', [ReportController::class, 'courseProgress'])->name('course-progress');
     });
 
     // --- ADMIN ACCOUNT ROUTES ---
@@ -351,11 +355,18 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::delete('/{userId}/cabin-types/{locationType}', [\App\Http\Controllers\Admin\AccountController::class, 'deleteCabinType'])->name('cabin-types.delete');
 
         Route::post('/{userId}/update-details', [\App\Http\Controllers\Admin\AccountController::class, 'updateContractedClient'])->name('update-details');
+
+        // Change user role
+        Route::patch('/{id}/change-role', [\App\Http\Controllers\Admin\AccountController::class, 'changeRole'])->name('change-role');
+
+        // Ban/unban user
+        Route::patch('/{id}/toggle-ban', [\App\Http\Controllers\Admin\AccountController::class, 'toggleBan'])->name('toggle-ban');
     });
 
     Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
 
-    Route::get('/admin/courses', [\App\Http\Controllers\EmployeePerformanceController::class, 'development'])->name('admin.courses');
+    // Redirect old courses URL to training page
+    Route::redirect('/admin/courses', '/admin/training-videos')->name('admin.courses');
 
     Route::get('/admin/profile', [ProfileController::class, 'show'])->name('admin.profile');
 

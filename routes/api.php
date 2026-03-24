@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\TrainingVideoController;
 use App\Http\Controllers\Api\EmployeeStatsController;
 use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\AdminAppointmentController;
+use App\Http\Controllers\Api\AdminFeedbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +35,7 @@ use App\Http\Controllers\Api\NotificationController;
 
 // Login (No authentication required)
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+Route::post('/google-login', [AuthController::class, 'googleLogin'])->name('api.google-login');
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
@@ -41,6 +44,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Get user profile
     Route::get('/user/profile', [AuthController::class, 'profile'])->name('api.user.profile');
+
+    // Update profile
+    Route::put('/user/profile', [AuthController::class, 'updateProfile'])->name('api.user.profile.update');
 
     // Update password
     Route::post('/user/password', [AuthController::class, 'updatePassword'])->name('api.user.password.update');
@@ -239,6 +245,24 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
         Route::get('/{attendanceId}', [LeaveRequestController::class, 'getAttendanceDetails'])
             ->name('api.admin.attendance.details');
     });
+
+    // Employee Management (Admin)
+    Route::get('/employees', [LeaveRequestController::class, 'getAllEmployees'])
+        ->name('api.admin.employees.index');
+
+    // Feedback Management (Admin)
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])
+        ->name('api.admin.feedback.index');
+
+    // Appointment Management (Admin)
+    Route::get('/appointments', [AdminAppointmentController::class, 'index'])
+        ->name('api.admin.appointments.index');
+    Route::get('/appointments/{id}', [AdminAppointmentController::class, 'show'])
+        ->name('api.admin.appointments.show');
+    Route::post('/appointments/{id}/approve', [AdminAppointmentController::class, 'approve'])
+        ->name('api.admin.appointments.approve');
+    Route::post('/appointments/{id}/reject', [AdminAppointmentController::class, 'reject'])
+        ->name('api.admin.appointments.reject');
 });
 
 /*

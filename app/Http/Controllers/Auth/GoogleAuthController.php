@@ -58,10 +58,21 @@ class GoogleAuthController extends Controller
     /**
      * Handle the callback from Google.
      */
-    public function callback()
+    public function callback(Request $request)
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            // Build the Google callback URL based on the current host
+            $host = $request->getHost();
+            if (str_contains($host, 'finnoys.com')) {
+                $callbackUrl = 'https://finnoys.com/auth/google/callback';
+            } elseif (str_contains($host, 'ngrok')) {
+                $callbackUrl = 'https://' . $host . '/opticrew/public/auth/google/callback';
+            } else {
+                $callbackUrl = 'http://127.0.0.1:8000/auth/google/callback';
+            }
+            $googleUser = Socialite::driver('google')
+                ->redirectUrl($callbackUrl)
+                ->user();
         } catch (\Exception $e) {
             return redirect()->route('login')->with('error', 'Google authentication failed. Please try again.');
         }
@@ -79,6 +90,10 @@ class GoogleAuthController extends Controller
         if ($purpose === 'link_account') {
             session()->forget('google_auth_purpose');
             return $this->handleLinkAccountCallback($googleUser);
+        }
+
+        if ($purpose === 'mobile_login') {
+            return $this->handleMobileLoginCallback($googleUser);
         }
 
         return $this->handleLoginCallback($googleUser);
@@ -414,6 +429,111 @@ class GoogleAuthController extends Controller
             return redirect()->route('quotation')
                 ->with('error', 'Failed to submit quotation. Please try again. ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Redirect to Google OAuth for mobile app login.
+     */
+    public function mobileRedirect(Request $request)
+    {
+        session([
+            'google_auth_purpose' => 'mobile_login',
+            'mobile_callback' => $request->query('callback', 'opticrew://auth'),
+        ]);
+
+        // Build the Google callback URL based on the current host
+        $host = $request->getHost();
+        if (str_contains($host, 'finnoys.com')) {
+            $callbackUrl = 'https://finnoys.com/auth/google/callback';
+        } elseif (str_contains($host, 'ngrok')) {
+            $callbackUrl = 'https://' . $host . '/opticrew/public/auth/google/callback';
+        } else {
+            $callbackUrl = 'http://127.0.0.1:8000/auth/google/callback';
+        }
+
+        return Socialite::driver('google')
+            ->redirectUrl($callbackUrl)
+            ->redirect();
+    }
+
+    /**
+     * Handle Google callback for mobile login — creates Sanctum token and redirects to app.
+     */
+    private function handleMobileLoginCallback($googleUser)
+    {
+        $callback = session('mobile_callback', 'opticrew://auth');
+        session()->forget(['google_auth_purpose', 'mobile_callback']);
+
+        // Find user: by google_id, then email, then alternative_email
+        $user = User::where('google_id', $googleUser->getId())->first();
+
+        if (!$user) {
+            $user = User::where('email', $googleUser->getEmail())->first();
+
+            if ($user) {
+                $user->update(['google_id' => $googleUser->getId()]);
+            } else {
+                $user = User::where('alternative_email', $googleUser->getEmail())->first();
+
+                if ($user) {
+                    $user->update(['google_id' => $googleUser->getId()]);
+                } else {
+                    $user = DB::transaction(function () use ($googleUser) {
+                        $nameParts = explode(' ', $googleUser->getName(), 2);
+
+                        $user = User::create([
+                            'name' => $googleUser->getName(),
+                            'email' => $googleUser->getEmail(),
+                            'google_id' => $googleUser->getId(),
+                            'profile_picture' => $googleUser->getAvatar(),
+                            'email_verified_at' => now(),
+                            'role' => 'external_client',
+                            'terms_accepted_at' => now(),
+                        ]);
+
+                        Client::create([
+                            'user_id' => $user->id,
+                            'client_type' => 'personal',
+                            'first_name' => $nameParts[0],
+                            'last_name' => $nameParts[1] ?? '',
+                            'is_active' => true,
+                        ]);
+
+                        return $user;
+                    });
+                }
+            }
+        }
+
+        // Block applicants and external clients — mobile is only for admin, employee, company
+        if (in_array($user->role, ['applicant', 'external_client'])) {
+            return redirect($callback . '?error=' . urlencode('This account type can only access the website. Please log in at finnoys.com.'));
+        }
+
+        if (!$user->is_active) {
+            return redirect($callback . '?error=' . urlencode('Account is deactivated'));
+        }
+
+        if ($googleUser->getAvatar() && $user->profile_picture !== $googleUser->getAvatar()) {
+            $user->update(['profile_picture' => $googleUser->getAvatar()]);
+        }
+
+        $token = $user->createToken('mobile-app')->plainTextToken;
+        $user->load('employee');
+
+        UserActivityLog::log($user->id, UserActivityLog::TYPE_LOGIN, 'Logged in via Google (mobile)', null, request()->ip());
+
+        $userData = json_encode([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'phone' => $user->phone,
+            'profile_picture' => $user->profile_picture,
+            'employee_id' => $user->employee?->id,
+        ]);
+
+        return redirect($callback . '?token=' . urlencode($token) . '&user=' . urlencode($userData));
     }
 
     /**
