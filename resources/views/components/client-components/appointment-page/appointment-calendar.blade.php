@@ -3,14 +3,16 @@
     'initialView' => 'week'
 ])
 
-<div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+<div x-data="calendarScheduler(@js($events), '{{ $initialView }}')" class="w-full bg-white/30 dark:bg-transparent rounded-2xl px-6">
     <!-- Calendar Header -->
-    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 gap-4">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between px-3 py-4 border-b border-gray-200 dark:border-gray-700 gap-4">
         <!-- Month/Year Display with Picker -->
         <div class="flex items-center gap-4">
-            <div class="relative">
+            <div class="relative" x-data="{ showTooltip: false }">
                 <button @click="showMonthPicker = !showMonthPicker"
-                        class="text-lg lg:text-xl font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        @mouseenter="showTooltip = true"
+                        @mouseleave="showTooltip = false"
+                        class="text-base lg:text-base font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 py-2.5 rounded-lg transition-colors flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <span x-text="currentMonthYear"></span>
                     <i class="fas fa-chevron-down text-sm transition-transform" :class="showMonthPicker ? 'rotate-180' : ''"></i>
                 </button>
@@ -128,7 +130,8 @@
                 </template>
             </div>
 
-            <!-- Time Grid -->
+            <!-- Time Grid (scrollable) -->
+            <div x-ref="timeGrid" class="overflow-y-auto max-h-[600px]">
             <div class="grid gap-4" :class="view === 'week' ? 'grid-cols-8' : 'grid-cols-2'">
                 <!-- Time Labels Column -->
                 <div class="space-y-10">
@@ -139,7 +142,7 @@
 
                 <!-- Event Columns -->
                 <template x-for="day in visibleDays" :key="day.date">
-                    <div class="relative border-l border-gray-200 dark:border-gray-700 min-h-[440px]">
+                    <div class="relative border-l border-gray-200 dark:border-gray-700 min-h-[960px]">
                         <!-- Hour Lines -->
                         <template x-for="(hour, index) in timeSlots" :key="index">
                             <div class="absolute w-full border-t border-gray-100 dark:border-gray-800"
@@ -157,6 +160,7 @@
                         </template>
                     </div>
                 </template>
+            </div>
             </div>
         </div>
 
@@ -267,7 +271,7 @@ function calendarScheduler(initialEvents, initialView) {
         currentDate: new Date(),
         visibleDays: [],
         monthDays: [],
-        timeSlots: ['08 AM', '09 AM', '10 AM', '11 AM', '12 PM', '01 PM', '02 PM', '03 PM', '04 PM', '05 PM', '06 PM'],
+        timeSlots: ['12 AM', '01 AM', '02 AM', '03 AM', '04 AM', '05 AM', '06 AM', '07 AM', '08 AM', '09 AM', '10 AM', '11 AM', '12 PM', '01 PM', '02 PM', '03 PM', '04 PM', '05 PM', '06 PM', '07 PM', '08 PM', '09 PM', '10 PM', '11 PM'],
         showEventModal: false,
         selectedEvent: null,
         showMonthPicker: false,
@@ -277,6 +281,12 @@ function calendarScheduler(initialEvents, initialView) {
         init() {
             this.updateView();
             this.pickerYear = this.currentDate.getFullYear();
+            this.$nextTick(() => {
+                if (this.$refs.timeGrid) {
+                    // Scroll to 8 AM (8th slot × 40px per slot)
+                    this.$refs.timeGrid.scrollTop = 8 * 40;
+                }
+            });
         },
 
         get currentMonthYear() {
@@ -291,6 +301,11 @@ function calendarScheduler(initialEvents, initialView) {
             } else if (this.view === 'month') {
                 this.generateMonthDays();
             }
+            this.$nextTick(() => {
+                if (this.$refs.timeGrid && (this.view === 'week' || this.view === 'day')) {
+                    this.$refs.timeGrid.scrollTop = 8 * 40;
+                }
+            });
         },
 
         updatePickerDisplay() {
@@ -383,7 +398,7 @@ function calendarScheduler(initialEvents, initialView) {
 
         getEventTop(event) {
             const [hours, minutes] = event.startTime.split(':').map(Number);
-            const startHour = 8; // Calendar starts at 8 AM
+            const startHour = 0; // Calendar starts at 12 AM
             const pixelsPerHour = 40; // Changed from 60 to 40
             return ((hours - startHour) * pixelsPerHour) + (minutes * pixelsPerHour / 60);
         },

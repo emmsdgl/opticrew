@@ -60,7 +60,7 @@
     <section role="status" class="w-full flex flex-col lg:flex-col gap-1 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
         <!-- Inner Panel - Summary Cards Container -->
         <div
-            class="flex flex-col gap-6 w-full rounded-lg px-8">
+            class="flex flex-col gap-6 w-full rounded-lg px-8 py-6">
 
             @php
                 $statCards = [
@@ -101,9 +101,12 @@
                 @endforeach
             </div>
         </div>
-        <div class="flex flex-col gap-6 w-full rounded-lg p-8 my-8">
-            <x-labelwithvalue label="Appointments Calendar" count="" />
-            <div class="flex flex-row justify-between w-full items-center">
+        <div class="flex flex-col gap-6 flex-1 w-full rounded-lg px-3">
+            <div class="flex flex-col gap-1 w-full px-8 py-3">
+                    <p class="text-base font-bold text-blue-950 dark:text-white">Appointments Calendar</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-500">View and manage your scheduled appointments in this page.</p>
+            </div>
+
                 @php
                     // Transform appointments to calendar events format
                     $events = $appointments->map(function($appointment) {
@@ -144,7 +147,6 @@
                 @endphp
 
                 <x-client-components.appointment-page.appointment-calendar :events="$events" initial-view="month" />
-            </div>
         </div>
 
         <!-- Saved Services Section (Only shows favorited services from dashboard) -->
@@ -205,7 +207,7 @@
                    x-transition:leave-start="opacity-100 scale-100"
                    x-transition:leave-end="opacity-0 scale-95"
                    href="{{ route('client.appointment.create') }}?service={{ urlencode($service['title']) }}"
-                   class="group flex items-center gap-4 p-4 bg-gray-900 dark:bg-gray-800 rounded-xl border border-gray-700 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
+                   class="group flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
                     <!-- Service Initial Badge -->
                     <div class="flex-shrink-0 w-12 h-12 {{ $service['color'] }} rounded-lg flex items-center justify-center shadow-lg">
                         <span class="text-white font-bold text-sm">{{ $service['initial'] }}</span>
@@ -213,10 +215,10 @@
 
                     <!-- Service Info -->
                     <div class="flex-1 min-w-0">
-                        <h4 class="text-sm font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             {{ $service['title'] }}
                         </h4>
-                        <p class="text-xs text-gray-400 mt-0.5">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                             {{ $service['bookings'] }} {{ $service['bookings'] == 1 ? 'Booking' : 'Bookings' }}
                         </p>
                     </div>
