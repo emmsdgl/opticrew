@@ -1048,11 +1048,11 @@ function renderAccuracyBreakdown(hybridVal, traditionalVal, tableNum) {
                     </div>
                     <div class="accuracy-rates">
                         <div class="rate-row">
-                            <span>RAW Accuracy (Run 0):</span>
+                            <span>RAW Accuracy:</span>
                             <span class="rate-value orange">${traditionalVal.raw_accuracy.toFixed(2)}%</span>
                         </div>
                         <div class="rate-row">
-                            <span>TRUE Accuracy (Run 0):</span>
+                            <span>TRUE Accuracy:</span>
                             <span class="rate-value green">${traditionalVal.true_accuracy.toFixed(2)}%</span>
                         </div>
                     </div>
@@ -1085,11 +1085,11 @@ function renderAccuracyBreakdown(hybridVal, traditionalVal, tableNum) {
                     </div>
                     <div class="accuracy-rates">
                         <div class="rate-row">
-                            <span>RAW Accuracy (Run 0):</span>
+                            <span>RAW Accuracy:</span>
                             <span class="rate-value orange">${hybridVal.raw_accuracy.toFixed(2)}%</span>
                         </div>
                         <div class="rate-row">
-                            <span>TRUE Accuracy (Run 0):</span>
+                            <span>TRUE Accuracy:</span>
                             <span class="rate-value green">${hybridVal.true_accuracy.toFixed(2)}%</span>
                         </div>
                     </div>
