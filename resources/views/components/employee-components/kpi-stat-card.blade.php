@@ -19,8 +19,8 @@
                 <span @mouseenter="showTip = true" @mouseleave="showTip = false"
                       class="text-[10px] px-1.5 py-0.5 rounded-md cursor-help
                     {{ $trendUp
-                        ? 'bg-blue-500 font-semibold text-white dark:bg-gray-800 dark:text-gray-400'
-                        : 'bg-gray-100 font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-400' }}">
+                        ? 'bg-blue-500 font-semibold text-white bg-blue-200/30 dark:bg-gray-600/20 dark:text-gray-400'
+                        : 'bg-gray-100 font-semibold text-gray-600 bg-blue-200/30 dark:bg-gray-600/20 dark:text-gray-400' }}">
                     {{ $trend }}
                 </span>
 
