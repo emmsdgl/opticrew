@@ -121,14 +121,14 @@ class ChatbotController extends Controller
 
         // Service Areas
         [
-            'keywords' => ['area', 'areas', 'region', 'lapland', 'inari', 'saariselka', 'saariselkä', 'finland', 'coverage', 'serve'],
+            'keywords' => ['service area', 'service areas', 'where do you', 'what areas', 'coverage', 'serve', 'lapland', 'inari', 'saariselka', 'saariselkä', 'do you operate', 'location'],
             'response' => "We serve homes and businesses across:\n\n• Lapland Region\n• Municipality of Inari (including Ivalo, Nellim, Lemmenjoki)\n• Saariselkä and surrounding areas\n\nAll within northern Finland, above the Arctic Circle.",
         ],
 
         // Careers / Jobs
         [
-            'keywords' => ['career', 'careers', 'job', 'jobs', 'apply', 'work', 'hiring', 'employment', 'join', 'työ', 'rekry'],
-            'response' => "Interested in joining our team? Visit the Careers page from the main navigation to see current job openings and submit your application.\n\nWe're always looking for dedicated cleaning professionals to join Fin-noys!",
+            'keywords' => ['career', 'careers', 'job', 'jobs', 'apply', 'work for', 'work with', 'hiring', 'employment', 'join', 'vacancy', 'vacancies', 'opening', 'openings', 'recruit', 'recruitment', 'resume', 'cv', 'työ', 'rekry', 'työpaikka'],
+            'response' => "Interested in joining our team? You can view all current job openings and submit your application on our Recruitment page:\n\nhttps://www.finnoys.com/recruitment\n\nWe're always looking for dedicated cleaning professionals to join Fin-noys! Check the page regularly for new opportunities.",
         ],
 
         // Language
@@ -212,12 +212,69 @@ class ChatbotController extends Controller
     }
 
     /**
+     * Off-topic words that indicate the user is NOT asking about Fin-noys services.
+     * If the message contains these AND no strong service-related keywords, reject it.
+     */
+    private array $offTopicWords = [
+        'food', 'dish', 'recipe', 'cook', 'restaurant food', 'eat', 'meal', 'cuisine',
+        'weather', 'forecast', 'temperature', 'rain', 'snow forecast',
+        'news', 'politics', 'election', 'president', 'war',
+        'movie', 'film', 'music', 'song', 'game', 'sport', 'football',
+        'math', 'calculate', 'solve', 'equation',
+        'joke', 'funny', 'story', 'poem', 'write me',
+        'travel', 'tourist', 'visit', 'place to visit', 'sightseeing', 'attraction',
+        'health', 'doctor', 'medicine', 'symptom', 'diet',
+        'programming', 'code', 'python', 'javascript',
+        'history', 'who invented', 'when was', 'capital of',
+        'best place', 'best food', 'best thing', 'recommend me',
+        'what should i', 'where should i',
+    ];
+
+    /**
+     * Strong intent words that confirm the user IS asking about Fin-noys topics.
+     * These override off-topic detection when present.
+     */
+    private array $intentWords = [
+        'clean', 'cleaning', 'finnoys', 'fin-noys', 'book', 'booking', 'appointment',
+        'service', 'services', 'price', 'pricing', 'cost', 'quote', 'quotation',
+        'deep clean', 'final clean', 'snowout', 'snow out', 'daily room',
+        'dashboard', 'login', 'log in', 'register', 'sign up', 'account',
+        'contact', 'email', 'phone', 'address', 'career', 'job', 'apply',
+        'cancel', 'feedback', 'refund', 'payment', 'invoice', 'vat',
+        'cabin', 'cottage', 'igloo', 'hotel', 'sauna',
+        'palvelut', 'varaus', 'hinta', 'siivous',
+    ];
+
+    private string $offTopicResponse = "I appreciate your curiosity, but I can only help with Fin-noys cleaning services topics.\n\nHere's what I can assist you with:\n• Our cleaning services and pricing\n• How to book an appointment\n• Service areas we cover\n• Contact information\n• Website navigation\n\nFeel free to ask about any of these!";
+
+    private string $fallbackResponse = "I'm sorry, I didn't quite understand that. I can help you with:\n\n• Our cleaning services and pricing\n• Final Cleaning & Deep Cleaning rate tables\n• How to book an appointment\n• Service areas we cover\n• Contact information\n• Company booking options\n\nTry asking about any of these topics!";
+
+    /**
      * Match user message against keyword patterns and return the best static response.
      */
     private function getStaticResponse(string $message): string
     {
         $normalized = mb_strtolower(trim($message));
 
+        // Check if the message has a strong service-related intent
+        $hasIntent = false;
+        foreach ($this->intentWords as $intent) {
+            if (str_contains($normalized, $intent)) {
+                $hasIntent = true;
+                break;
+            }
+        }
+
+        // If no service intent found, check for off-topic words
+        if (!$hasIntent) {
+            foreach ($this->offTopicWords as $offTopic) {
+                if (str_contains($normalized, $offTopic)) {
+                    return $this->offTopicResponse;
+                }
+            }
+        }
+
+        // Proceed with keyword matching
         $bestMatch = null;
         $bestScore = 0;
 
@@ -239,6 +296,6 @@ class ChatbotController extends Controller
             return $bestMatch;
         }
 
-        return "I'm sorry, I didn't quite understand that. I can help you with:\n\n• Our cleaning services and pricing\n• Final Cleaning & Deep Cleaning rate tables\n• How to book an appointment\n• Service areas we cover\n• Contact information\n• Company booking options\n\nTry asking about any of these topics!";
+        return $this->fallbackResponse;
     }
 }

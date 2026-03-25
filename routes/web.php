@@ -378,6 +378,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::get('/admin/help-center', [ProfileController::class, 'helpcenter'])->name('admin.helpcenter');
     Route::post('/admin/settings/update-password', [ProfileController::class, 'updatePassword'])->name('admin.settings.update-password');
     Route::post('/admin/settings/quotation', [ProfileController::class, 'updateQuotationSettings'])->name('admin.settings.update-quotation');
+    Route::post('/admin/settings/company', [ProfileController::class, 'updateCompanySettings'])->name('admin.settings.update-company');
 
     // Analytics dashboard for optimization metrics
     Route::get('/optimization-result', EmployeeAnalytics::class)->name('optimization.result');

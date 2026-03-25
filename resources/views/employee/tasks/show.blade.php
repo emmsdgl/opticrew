@@ -783,147 +783,168 @@
                                 <!-- Checklist Items -->
                                 <div class="space-y-3">
                                     @php
-                                        // Checklist templates organized by service type
-                                        $checklistTemplates = [
-                                            'daily_cleaning' => [
-                                                'Sweep and mop floors',
-                                                'Vacuum carpets/rugs',
-                                                'Dust furniture and surfaces',
-                                                'Wipe tables and countertops',
-                                                'Empty trash bins',
-                                                'Wipe kitchen counters',
-                                                'Clean sink',
-                                                'Wash visible dishes',
-                                                'Wipe appliance exteriors',
-                                                'Clean toilet and sink',
-                                                'Wipe mirrors',
-                                                'Mop floor',
-                                                'Organize cluttered areas',
-                                                'Light deodorizing',
-                                            ],
-                                            'snowout_cleaning' => [
-                                                'Remove mud, water, and debris',
-                                                'Clean door mats',
-                                                'Mop and dry floors',
-                                                'Deep vacuum carpets',
-                                                'Mop with disinfectant solution',
-                                                'Wipe walls near entrances',
-                                                'Dry wet surfaces',
-                                                'Check for water accumulation',
-                                                'Clean and sanitize affected areas',
-                                                'Dispose of tracked-in debris',
-                                                'Replace trash liners',
-                                            ],
-                                            'deep_cleaning' => [
-                                                'Dust high and low areas (vents, corners, baseboards)',
-                                                'Clean behind and under furniture',
-                                                'Wash walls and remove stains',
-                                                'Deep vacuum carpets',
-                                                'Clean inside microwave',
-                                                'Degrease stove and range hood',
-                                                'Clean inside refrigerator (if included)',
-                                                'Scrub tile grout',
-                                                'Remove limescale and mold buildup',
-                                                'Deep scrub tiles and grout',
-                                                'Sanitize all fixtures thoroughly',
-                                                'Clean window interiors',
-                                                'Polish handles and knobs',
-                                                'Disinfect frequently touched surfaces',
-                                            ],
-                                            'general_cleaning' => [
-                                                'Dust surfaces',
-                                                'Sweep/vacuum floors',
-                                                'Mop hard floors',
-                                                'Clean glass and mirrors',
-                                                'Wipe countertops',
-                                                'Clean sink',
-                                                'Take out trash',
-                                                'Clean toilet, sink, and mirror',
-                                                'Mop floor',
-                                                'Arrange items neatly',
-                                                'Dispose of garbage',
-                                                'Light air freshening',
-                                            ],
-                                            'hotel_cleaning' => [
-                                                'Make bed with fresh linens',
-                                                'Replace pillowcases and sheets',
-                                                'Dust all surfaces (tables, headboard, shelves)',
-                                                'Vacuum carpet / sweep & mop floor',
-                                                'Clean mirrors and glass surfaces',
-                                                'Check under bed for trash/items',
-                                                'Empty trash bins and replace liners',
-                                                'Clean and disinfect toilet',
-                                                'Scrub shower walls, tub, and floor',
-                                                'Clean sink and countertop',
-                                                'Polish fixtures',
-                                                'Replace towels, bath mat, tissue, and toiletries',
-                                                'Mop bathroom floor',
-                                                'Refill water, coffee, and room amenities',
-                                                'Replace slippers and hygiene kits',
-                                                'Check minibar (if applicable)',
-                                                'Ensure lights, AC, TV working',
-                                                'Arrange curtains neatly',
-                                                'Deodorize room',
-                                            ],
-                                        ];
+                                        $checklistItems = [];
+                                        $checklistCategories = [];
+                                        $useCompanyChecklist = false;
 
-                                        // Determine service type from task description
-                                        $taskDescription = strtolower($task->task_description ?? '');
-                                        $serviceType = 'general_cleaning'; // Default
-
-                                        if (str_contains($taskDescription, 'daily') || str_contains($taskDescription, 'routine')) {
-                                            $serviceType = 'daily_cleaning';
-                                        } elseif (str_contains($taskDescription, 'snowout') || str_contains($taskDescription, 'weather')) {
-                                            $serviceType = 'snowout_cleaning';
-                                        } elseif (str_contains($taskDescription, 'deep')) {
-                                            $serviceType = 'deep_cleaning';
-                                        } elseif (str_contains($taskDescription, 'hotel') || str_contains($taskDescription, 'room turnover')) {
-                                            $serviceType = 'hotel_cleaning';
+                                        // Priority 1: Use company-specific checklist if available
+                                        if (!empty($companyChecklist) && $companyChecklist->categories->count() > 0) {
+                                            $useCompanyChecklist = true;
+                                            $globalIndex = 0;
+                                            foreach ($companyChecklist->categories as $category) {
+                                                $categoryItems = [];
+                                                foreach ($category->items as $item) {
+                                                    $categoryItems[] = [
+                                                        'index' => $globalIndex,
+                                                        'name' => $item->name,
+                                                        'quantity' => $item->quantity,
+                                                    ];
+                                                    $checklistItems[$globalIndex] = $item->name;
+                                                    $globalIndex++;
+                                                }
+                                                if (!empty($categoryItems)) {
+                                                    $checklistCategories[] = [
+                                                        'name' => $category->name,
+                                                        'items' => $categoryItems,
+                                                    ];
+                                                }
+                                            }
                                         }
 
-                                        $checklistItems = $checklistTemplates[$serviceType] ?? $checklistTemplates['general_cleaning'];
+                                        // Priority 2: Fall back to default templates if no company checklist
+                                        if (empty($checklistItems)) {
+                                            $checklistTemplates = [
+                                                'daily_cleaning' => [
+                                                    'Sweep and mop floors', 'Vacuum carpets/rugs', 'Dust furniture and surfaces',
+                                                    'Wipe tables and countertops', 'Empty trash bins', 'Wipe kitchen counters',
+                                                    'Clean sink', 'Wash visible dishes', 'Wipe appliance exteriors',
+                                                    'Clean toilet and sink', 'Wipe mirrors', 'Mop floor',
+                                                    'Organize cluttered areas', 'Light deodorizing',
+                                                ],
+                                                'general_cleaning' => [
+                                                    'Dust surfaces', 'Sweep/vacuum floors', 'Mop hard floors',
+                                                    'Clean glass and mirrors', 'Wipe countertops', 'Clean sink',
+                                                    'Take out trash', 'Clean toilet, sink, and mirror', 'Mop floor',
+                                                    'Arrange items neatly', 'Dispose of garbage', 'Light air freshening',
+                                                ],
+                                                'deep_cleaning' => [
+                                                    'Dust high and low areas (vents, corners, baseboards)', 'Clean behind and under furniture',
+                                                    'Wash walls and remove stains', 'Deep vacuum carpets', 'Clean inside microwave',
+                                                    'Degrease stove and range hood', 'Clean inside refrigerator (if included)',
+                                                    'Scrub tile grout', 'Remove limescale and mold buildup', 'Deep scrub tiles and grout',
+                                                    'Sanitize all fixtures thoroughly', 'Clean window interiors',
+                                                    'Polish handles and knobs', 'Disinfect frequently touched surfaces',
+                                                ],
+                                                'hotel_cleaning' => [
+                                                    'Make bed with fresh linens', 'Replace pillowcases and sheets',
+                                                    'Dust all surfaces (tables, headboard, shelves)', 'Vacuum carpet / sweep & mop floor',
+                                                    'Clean mirrors and glass surfaces', 'Check under bed for trash/items',
+                                                    'Empty trash bins and replace liners', 'Clean and disinfect toilet',
+                                                    'Scrub shower walls, tub, and floor', 'Clean sink and countertop',
+                                                    'Polish fixtures', 'Replace towels, bath mat, tissue, and toiletries',
+                                                    'Mop bathroom floor', 'Refill water, coffee, and room amenities',
+                                                    'Replace slippers and hygiene kits', 'Check minibar (if applicable)',
+                                                    'Ensure lights, AC, TV working', 'Arrange curtains neatly', 'Deodorize room',
+                                                ],
+                                            ];
+
+                                            $taskDescription = strtolower($task->task_description ?? '');
+                                            $serviceType = 'general_cleaning';
+                                            if (str_contains($taskDescription, 'daily') || str_contains($taskDescription, 'routine')) {
+                                                $serviceType = 'daily_cleaning';
+                                            } elseif (str_contains($taskDescription, 'deep')) {
+                                                $serviceType = 'deep_cleaning';
+                                            } elseif (str_contains($taskDescription, 'hotel') || str_contains($taskDescription, 'room turnover')) {
+                                                $serviceType = 'hotel_cleaning';
+                                            }
+
+                                            $checklistItems = $checklistTemplates[$serviceType] ?? $checklistTemplates['general_cleaning'];
+                                        }
 
                                         // Count completed items
                                         $completedCount = 0;
-                                        foreach($checklistItems as $index => $item) {
-                                            if(isset($checklistCompletions[$index]) && $checklistCompletions[$index]->is_completed) {
+                                        foreach ($checklistItems as $index => $item) {
+                                            $itemName = is_array($item) ? $item : $item;
+                                            if (isset($checklistCompletions[$index]) && $checklistCompletions[$index]->is_completed) {
                                                 $completedCount++;
                                             }
                                         }
                                     @endphp
 
-                                    @forelse($checklistItems as $index => $item)
-                                        @php
-                                            $isCompleted = isset($checklistCompletions[$index]) && $checklistCompletions[$index]->is_completed;
-                                        @endphp
-                                        <label
-                                            class="flex items-start gap-3 p-3 rounded-lg {{ $canEditChecklist ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer' : 'cursor-default' }} transition-colors group">
-                                            <div class="flex items-center h-6 mt-0.5">
-                                                <input type="checkbox" id="checklist-{{ $index }}"
-                                                    data-item-index="{{ $index }}"
-                                                    data-item-name="{{ $item }}"
-                                                    class="checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 {{ $canEditChecklist ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' }}"
-                                                    {{ $isCompleted ? 'checked' : '' }}
-                                                    {{ !$canEditChecklist ? 'disabled' : '' }}
-                                                    onchange="toggleChecklistItem(this)">
-                                            </div>
-
-                                            <!-- Item Text -->
-                                            <div class="flex-1">
-                                                <span
-                                                    class="text-sm {{ $isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }} group-hover:text-gray-900 dark:group-hover:text-white transition-colors checklist-text-{{ $index }}">
-                                                    {{ $item }}
-                                                </span>
-                                            </div>
-                                        </label>
-                                    @empty
-                                        <!-- Empty State -->
-                                        <div class="text-center py-12">
-                                            <i class="fas fa-clipboard-list text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
-                                            <p class="text-gray-500 dark:text-gray-400 text-sm">No checklist items</p>
-                                            <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Checklist items will appear here</p>
+                                    {{-- Company checklist with important reminders --}}
+                                    @if($useCompanyChecklist && $companyChecklist->important_reminders)
+                                        <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                            <p class="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1">
+                                                <i class="fas fa-info-circle mr-1"></i> Important Reminders
+                                            </p>
+                                            <p class="text-xs text-blue-600 dark:text-blue-400">{{ $companyChecklist->important_reminders }}</p>
                                         </div>
-                                    @endforelse
+                                    @endif
+
+                                    @if($useCompanyChecklist)
+                                        {{-- Company checklist: grouped by category --}}
+                                        @foreach($checklistCategories as $category)
+                                            <div class="mb-4">
+                                                <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-3">
+                                                    {{ $category['name'] }}
+                                                </h4>
+                                                @foreach($category['items'] as $catItem)
+                                                    @php
+                                                        $idx = $catItem['index'];
+                                                        $isCompleted = isset($checklistCompletions[$idx]) && $checklistCompletions[$idx]->is_completed;
+                                                    @endphp
+                                                    <label class="flex items-start gap-3 p-3 rounded-lg {{ $canEditChecklist ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer' : 'cursor-default' }} transition-colors group">
+                                                        <div class="flex items-center h-6 mt-0.5">
+                                                            <input type="checkbox" id="checklist-{{ $idx }}"
+                                                                data-item-index="{{ $idx }}"
+                                                                data-item-name="{{ $catItem['name'] }}"
+                                                                class="checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 {{ $canEditChecklist ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' }}"
+                                                                {{ $isCompleted ? 'checked' : '' }}
+                                                                {{ !$canEditChecklist ? 'disabled' : '' }}
+                                                                onchange="toggleChecklistItem(this)">
+                                                        </div>
+                                                        <div class="flex-1">
+                                                            <span class="text-sm {{ $isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }} group-hover:text-gray-900 dark:group-hover:text-white transition-colors checklist-text-{{ $idx }}">
+                                                                {{ $catItem['name'] }}
+                                                            </span>
+                                                            @if($catItem['quantity'] && $catItem['quantity'] !== '1')
+                                                                <span class="text-xs text-gray-400 dark:text-gray-500 ml-1">(x{{ $catItem['quantity'] }})</span>
+                                                            @endif
+                                                        </div>
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        {{-- Default template checklist (flat list) --}}
+                                        @forelse($checklistItems as $index => $item)
+                                            @php
+                                                $isCompleted = isset($checklistCompletions[$index]) && $checklistCompletions[$index]->is_completed;
+                                            @endphp
+                                            <label class="flex items-start gap-3 p-3 rounded-lg {{ $canEditChecklist ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer' : 'cursor-default' }} transition-colors group">
+                                                <div class="flex items-center h-6 mt-0.5">
+                                                    <input type="checkbox" id="checklist-{{ $index }}"
+                                                        data-item-index="{{ $index }}"
+                                                        data-item-name="{{ $item }}"
+                                                        class="checklist-item w-4 h-4 text-green-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 dark:focus:ring-green-600 focus:ring-2 {{ $canEditChecklist ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' }}"
+                                                        {{ $isCompleted ? 'checked' : '' }}
+                                                        {{ !$canEditChecklist ? 'disabled' : '' }}
+                                                        onchange="toggleChecklistItem(this)">
+                                                </div>
+                                                <div class="flex-1">
+                                                    <span class="text-sm {{ $isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }} group-hover:text-gray-900 dark:group-hover:text-white transition-colors checklist-text-{{ $index }}">
+                                                        {{ $item }}
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        @empty
+                                            <div class="text-center py-12">
+                                                <i class="fas fa-clipboard-list text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                                                <p class="text-gray-500 dark:text-gray-400 text-sm">No checklist items</p>
+                                                <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Checklist items will appear here</p>
+                                            </div>
+                                        @endforelse
+                                    @endif
                                 </div>
 
                                 <!-- Progress Bar -->

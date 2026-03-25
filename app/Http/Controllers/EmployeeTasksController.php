@@ -112,9 +112,24 @@ class EmployeeTasksController extends Controller
             'checklistCompletions'
         ]);
 
+        // Load company-specific checklist if task belongs to a contracted client
+        $companyChecklist = null;
+        $contractedClientId = $task->location->contracted_client_id ?? $task->client_id ?? null;
+        if ($contractedClientId) {
+            $companyChecklist = \App\Models\CompanyChecklist::where('contracted_client_id', $contractedClientId)
+                ->where('is_active', true)
+                ->with(['categories' => function ($q) {
+                    $q->orderBy('sort_order')->with(['items' => function ($q2) {
+                        $q2->orderBy('sort_order');
+                    }]);
+                }])
+                ->first();
+        }
+
         return view('employee.tasks.show', [
             'employee' => $employee,
             'task' => $task,
+            'companyChecklist' => $companyChecklist,
         ]);
     }
 
@@ -262,15 +277,16 @@ class EmployeeTasksController extends Controller
             return redirect()->back()->with('error', 'Cannot decline a task that has already started or been completed.');
         }
 
-        // SCENARIO #20: Cannot cancel/decline within 30 minutes of scheduled start time
+        // SCENARIO #20: Cannot cancel/decline within grace period of scheduled start time (configurable, default 30 min)
+        $declineRestrictionMinutes = \App\Services\CompanySettingService::get('task_approval_grace_period_minutes', 30);
         if ($task->scheduled_date && $task->scheduled_time) {
             $scheduledStart = Carbon::parse($task->scheduled_date)->setTimeFromTimeString(
                 Carbon::parse($task->scheduled_time)->format('H:i:s')
             );
             $minutesUntilStart = Carbon::now()->diffInMinutes($scheduledStart, false);
 
-            if ($minutesUntilStart <= 30 && $minutesUntilStart >= 0) {
-                return redirect()->back()->with('error', 'Cannot decline a task within 30 minutes of its scheduled start time.');
+            if ($minutesUntilStart <= $declineRestrictionMinutes && $minutesUntilStart >= 0) {
+                return redirect()->back()->with('error', "Cannot decline a task within {$declineRestrictionMinutes} minutes of its scheduled start time.");
             }
         }
 

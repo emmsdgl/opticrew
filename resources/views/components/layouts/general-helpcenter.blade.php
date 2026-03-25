@@ -1,7 +1,7 @@
 @props([
     'faqs' => [], 
     'title' => 'Hi, How can we help you?',
-    'supportPhone' => '+2355555888'
+    'supportPhone' => '+358 123 456 789'
 ])
 
 <div class="flex flex-row w-full gap-6 p-4 md:p-6 h-fit" 
