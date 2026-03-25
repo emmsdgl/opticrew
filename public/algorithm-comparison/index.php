@@ -17,9 +17,19 @@ require_once __DIR__ . '/algorithms/TraditionalGA.php';
 function getDB() {
     static $pdo = null;
     if ($pdo === null) {
-        $envPath = __DIR__ . '/../../.env';
+        // Search upward for .env (works on both local and Hostinger)
+        $envPath = null;
+        $dir = __DIR__;
+        for ($i = 0; $i < 5; $i++) {
+            $dir = dirname($dir);
+            if (file_exists($dir . '/.env')) {
+                $envPath = $dir . '/.env';
+                break;
+            }
+        }
+
         $env = [];
-        if (file_exists($envPath)) {
+        if ($envPath && file_exists($envPath)) {
             foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
                 if (str_starts_with(trim($line), '#')) continue;
                 if (strpos($line, '=') === false) continue;
