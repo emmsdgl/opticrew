@@ -65,7 +65,7 @@
         </div>
 
         <!-- Bottom Section: Recently Completed Tasks + Task Efficiency -->
-        <div class="flex flex-row gap-6">
+        <div class="flex flex-row gap-6 items-stretch">
             <!-- Left: Recently Completed Task List -->
             <div class="flex flex-col gap-6 flex-1">
                 <div>
@@ -97,7 +97,7 @@
             </div>
 
             <!-- Right: Task Efficiency -->
-            <div class="flex flex-col gap-6 w-full lg:w-1/3">
+            <div class="flex flex-col gap-6 w-full lg:w-1/3 [&>div:last-child]:flex-1">
                 <div>
                     <x-labelwithvalue label="Task Efficiency" count="" />
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Overall task performance metrics</p>

@@ -25,7 +25,7 @@
         </div>
     @else
         <!-- Scrollable container (only when items exist) -->
-        <div class="overflow-y-auto {{ $bgClass }} {{ $bgClass === 'bg-transparent' ? 'dark:bg-transparent' : 'bg-white dark:bg-transparent rounded-2xl py-2 shadow-sm border border-gray-200 dark:border-none' }}"
+        <div class="overflow-y-auto {{ $bgClass }} {{ $bgClass === 'bg-transparent' ? 'dark:bg-transparent' : 'bg-white dark:bg-transparent rounded-2xl shadow-sm border border-gray-200 dark:border-none' }}"
              style="{{ $fixedHeight !== 'auto' ? 'height: ' . $fixedHeight . ';' : '' }} max-height: {{ $maxHeight }};"
              @scroll.window="openMenuId = null"
              @scroll="openMenuId = null">

@@ -184,7 +184,7 @@
                 <x-labelwithvalue label="Request Logs" count="({{ count($requestRecords ?? []) }})" />
                 <a href="{{ route('employee.requests.create') }}"
                     class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                    New Request →
+                    <i class="fas fa-plus mr-1"></i>New Request
                 </a>
             </div>
 
