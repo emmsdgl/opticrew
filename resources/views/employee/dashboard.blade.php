@@ -225,8 +225,8 @@
 
                                 @if($courseHasOverflow)
                                     <div class="relative mt-2 cursor-pointer" @click="expanded = true">
-                                        <div class="mx-3 h-2 bg-gray-200/60 dark:bg-gray-700/30 border border-gray-300/50 dark:border-gray-700/50 rounded-b-lg"></div>
-                                        <div class="mx-6 h-1.5 bg-gray-100/60 dark:bg-gray-700/20 border border-gray-200/50 dark:border-gray-700/40 rounded-b-lg"></div>
+                                        <div class="mx-3 h-2 bg-white dark:bg-gray-700/30 border border-gray-300/50 dark:border-gray-700/50 rounded-b-lg"></div>
+                                        <div class="mx-6 h-1.5 bg-white dark:bg-gray-700/20 border border-gray-200/50 dark:border-gray-700/40 rounded-b-lg"></div>
                                         <button type="button"
                                             class="w-full mt-2 text-center text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors py-1">
                                             Show all ({{ $courseHiddenCount }} more)
@@ -259,7 +259,7 @@
 
                 <!-- Tasks Summary - Radial Chart (hidden on small screens) -->
                 <div class="hidden md:block w-full rounded-lg overflow-hidden flex-shrink-0 mt-3">
-                    <div class="w-full aspect-square max-h-[300px] md:max-h-[340px] lg:max-h-[385px] p-2">
+                    <div class="bg-white dark:bg-transparent w-full aspect-square max-h-[300px] md:max-h-[340px] lg:max-h-[385px] p-2">
                         <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
                             'done' => 'Done',
                             'inProgress' => 'In Progress',

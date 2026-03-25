@@ -2,7 +2,7 @@
     'items' => [],
 ])
 
-<div class="bg-white dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+<div class="bg-white dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col justify-evenly h-full">
     {{-- Progress Items --}}
     <div class="space-y-8">
         @foreach($items as $item)

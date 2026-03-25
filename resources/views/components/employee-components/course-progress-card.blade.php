@@ -9,7 +9,7 @@
     $progressBarColor = match(true) {
         $progress >= 100 => 'bg-green-500',
         $progress >= 50 => 'bg-blue-600',
-        default => 'bg-gray-900 dark:bg-white'
+        default => 'bg-blue-600 dark:bg-white'
     };
 
     $statusLabel = match(true) {
@@ -23,7 +23,7 @@
     };
 @endphp
 
-<a href="{{ $buttonUrl }}" class="block p-4 px-6 bg-white/30 backdrop-blur-md border border-white/40 shadow-sm dark:bg-gray-800/40 dark:border-transparent dark:backdrop-blur-none hover:bg-white/50 dark:hover:bg-gray-700/40 rounded-lg transition-colors duration-200 cursor-pointer">
+<a href="{{ $buttonUrl }}" class="block p-4 px-6 bg-white border border-gray-200 shadow-sm dark:bg-gray-800/40 dark:border-transparent dark:backdrop-blur-none hover:bg-gray-50 dark:hover:bg-gray-700/40 rounded-lg transition-colors duration-200 cursor-pointer">
     {{-- Header: Title and Percentage --}}
     <div class="flex items-center justify-between mb-0.5">
         <p class="text-sm font-medium text-gray-900 dark:text-white truncate pr-3">{{ $title }}</p>

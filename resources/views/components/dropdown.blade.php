@@ -28,17 +28,17 @@
     <button
         @click="open = !open"
         type="button"
-        class="bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none
+        class="bg-blue-500 text-white hover:bg-blue-400 focus:ring-4 focus:outline-none
                focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-3 inline-flex justify-between items-center gap-2
                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-blue-800 transition-all duration-300">
-        <span class="text-gray-700 dark:text-white text-xs font-normal">{{ $label }}</span>
+        <span class="text-white dark:text-white text-xs font-normal">{{ $label }}</span>
         @if($wireModel)
-            <span class="text-gray-700 dark:text-white text-xs font-normal" wire:model="{{ $wireModel }}">{{ $default }}</span>
+            <span class="text-white dark:text-white text-xs font-normal" wire:model="{{ $wireModel }}">{{ $default }}</span>
         @else
-            <span class="text-gray-700 dark:text-white text-xs font-normal" x-text="selected"></span>
+            <span class="text-white dark:text-white text-xs font-normal" x-text="selected"></span>
         @endif
         <svg
-            class="w-2.5 h-2.5 ms-2 transition-transform duration-300 text-gray-600 dark:text-gray-400"
+            class="w-2.5 h-2.5 ms-2 transition-transform duration-300 text-white dark:text-white"
             :class="{ 'rotate-180': open }"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"

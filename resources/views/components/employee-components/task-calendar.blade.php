@@ -442,25 +442,29 @@ function calendarScheduler(initialEvents, initialView) {
         },
 
         previousPeriod() {
+            const d = new Date(this.currentDate);
             if (this.view === 'week') {
-                this.currentDate.setDate(this.currentDate.getDate() - 7);
+                d.setDate(d.getDate() - 7);
             } else if (this.view === 'day') {
-                this.currentDate.setDate(this.currentDate.getDate() - 1);
+                d.setDate(d.getDate() - 1);
             } else if (this.view === 'month') {
-                this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+                d.setMonth(d.getMonth() - 1);
             }
+            this.currentDate = d;
             this.pickerYear = this.currentDate.getFullYear();
             this.updateView();
         },
 
         nextPeriod() {
+            const d = new Date(this.currentDate);
             if (this.view === 'week') {
-                this.currentDate.setDate(this.currentDate.getDate() + 7);
+                d.setDate(d.getDate() + 7);
             } else if (this.view === 'day') {
-                this.currentDate.setDate(this.currentDate.getDate() + 1);
+                d.setDate(d.getDate() + 1);
             } else if (this.view === 'month') {
-                this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+                d.setMonth(d.getMonth() + 1);
             }
+            this.currentDate = d;
             this.pickerYear = this.currentDate.getFullYear();
             this.updateView();
         },
