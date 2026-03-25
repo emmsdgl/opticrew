@@ -60,16 +60,17 @@
                             </p>
 
                             <!-- Skills -->
-                            @if($employee->skills && count($employee->skills) > 0)
+                            @php($skillsList = is_array($employee->skills) ? $employee->skills : [])
+                            @if(count($skillsList) > 0)
                                 <div class="flex flex-wrap gap-1 mt-2">
-                                    @foreach(array_slice($employee->skills, 0, 3) as $skill)
+                                    @foreach(array_slice($skillsList, 0, 3) as $skill)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                             {{ $skill }}
                                         </span>
                                     @endforeach
-                                    @if(count($employee->skills) > 3)
+                                    @if(count($skillsList) > 3)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                                            +{{ count($employee->skills) - 3 }}
+                                            +{{ count($skillsList) - 3 }}
                                         </span>
                                     @endif
                                 </div>
