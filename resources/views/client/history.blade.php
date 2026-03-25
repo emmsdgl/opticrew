@@ -65,18 +65,17 @@
                     </div>
 
                     {{-- Sort Dropdown --}}
-                    <div class="flex justify-between items-center">
-                        <select
-                            class="px-4 py-2 bg-transparent dark:bg-transparent rounded-lg text-sm text-gray-900 dark:text-gray-100">
-                            <option>Most Recent</option>
-                            <option>Oldest First</option>
-                            <option>Price: High to Low</option>
-                            <option>Price: Low to High</option>
-                        </select>
+                    <div class="flex justify-end items-center">
+                        <x-dropdown
+                            :label="'Sort:'"
+                            :default="'Most Recent'"
+                            :options="['Most Recent', 'Oldest First', 'Price: High to Low', 'Price: Low to High']"
+                            :id="'client-history-sort'"
+                        />
                     </div>
 
                     {{-- Activity Cards Container --}}
-                    <div class="space-y-3">
+                    <div class="space-y-3 max-h-[21rem] overflow-y-auto">
 
                         {{-- All Tab Content --}}
                         <div x-show="activeTab === 'all'" x-transition:enter="transition ease-out duration-200"

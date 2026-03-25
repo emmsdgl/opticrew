@@ -28,7 +28,7 @@
     <button
         @click="open = !open"
         type="button"
-        class="bg-white text-white hover:bg-blue-300 focus:ring-4 focus:outline-none
+        class="bg-white border border-gray-200 text-white hover:bg-blue-100 focus:ring-4 focus:outline-none
                focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-3 inline-flex justify-between items-center gap-2
                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-blue-800 transition-all duration-300">
         <span class="text-gray-700 dark:text-white text-xs font-normal">{{ $label }}</span>
