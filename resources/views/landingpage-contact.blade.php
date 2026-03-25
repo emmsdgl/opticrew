@@ -14,31 +14,6 @@
         background-color: #1f2937;
     }
 
-    /* Custom input styling */
-    .custom-input {
-        background-color: #f1f3f5;
-        border: 1px solid #e9ecef;
-        transition: all 0.3s ease;
-    }
-
-    .custom-input:focus {
-        background-color: #ffffff;
-        border-color: #2563eb;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-
-    .dark .custom-input {
-        background-color: #374151;
-        border-color: #4b5563;
-        color: #f9fafb;
-    }
-
-    .dark .custom-input:focus {
-        background-color: #1f2937;
-        border-color: #3b82f6;
-    }
-
     /* Contact info card styling */
     .contact-info-card {
         background: none;
@@ -139,7 +114,7 @@
                     </div>
 
                     <!-- Address -->
-                    <div class="flex items-start gap-4">
+                    {{-- <div class="flex items-start gap-4">
                         <div class="contact-icon flex-shrink-0">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
@@ -149,7 +124,7 @@
                             <p class="text-sm opacity-80 mb-1">Address</p>
                             <p class="text-sm font-medium">123 Cleaning Street<br>Helsinki, Finland</p>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <!-- Business Hours -->
                     <div class="flex items-start gap-4">
@@ -169,38 +144,66 @@
             </div>
 
             <!-- Right Side - Contact Form -->
-            <div class="form-card">
-                <form class="space-y-6">
+            <div class="form-card" x-data="{
+                form: { name: '', email: '', service: '', message: '' },
+                submitContact() {
+                    const missing = [];
+                    if (!this.form.name.trim()) missing.push('Name');
+                    if (!this.form.email.trim()) missing.push('Email');
+                    if (!this.form.service) missing.push('Service Type');
+                    if (!this.form.message.trim()) missing.push('Detailed Concern');
+
+                    if (missing.length > 0) {
+                        if (window.showErrorDialog) window.showErrorDialog('Missing Fields', 'Please fill in the following: ' + missing.join(', '));
+                        return;
+                    }
+
+                    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRe.test(this.form.email.trim())) {
+                        if (window.showErrorDialog) window.showErrorDialog('Invalid Email', 'Please enter a valid email address.');
+                        return;
+                    }
+
+                    if (window.showSuccessDialog) window.showSuccessDialog('Message Sent', 'Thank you for reaching out! We will get back to you shortly.');
+                    this.form = { name: '', email: '', service: '', message: '' };
+                }
+            }">
+                <form @submit.prevent="submitContact()" class="space-y-6">
                     <!-- Name -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Name
-                        </label>
-                        <input 
-                            type="text" 
-                            required
-                            placeholder="e.g. Juan Dela Cruz"
-                            class="custom-input w-full text-sm px-4 py-3 rounded-lg text-gray-900 dark:text-white">
-                    </div>
+                    <x-material-ui.input-field
+                        label="Name"
+                        type="text"
+                        model="form.name"
+                        icon="fa-solid fa-user"
+                        placeholder="e.g. Juan Dela Cruz"
+                        required
+                    />
 
                     <!-- Email -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Email
-                        </label>
-                        <input 
-                            type="email" 
-                            required
-                            placeholder="email@example.com"
-                            class="custom-input text-sm w-full px-4 py-3 rounded-lg text-gray-900 dark:text-white">
-                    </div>
+                    <x-material-ui.input-field
+                        label="Email"
+                        type="email"
+                        model="form.email"
+                        icon="fa-solid fa-envelope"
+                        placeholder="email@example.com"
+                        required
+                    />
 
                     <!-- Industry/Service Type -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Service Type
-                        </label>
-                        <select class="custom-input text-sm w-full px-4 py-3 rounded-lg text-gray-900 dark:text-white">
+                    <div class="relative" x-data="{ focused: false, filled: false }" x-init="$watch('form.service', v => filled = !!v)">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 z-[1] text-blue-600 dark:text-blue-600">
+                            <i class="fa-solid fa-briefcase text-sm"></i>
+                        </span>
+                        <select x-model="form.service"
+                            @focus="focused = true"
+                            @blur="focused = false"
+                            class="mui-input peer w-full pl-10 pr-4 pt-5 pb-2 text-sm
+                                   border border-gray-400 dark:border-gray-700 rounded-xl
+                                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                   transition-all duration-200
+                                   focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                                   focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]"
+                            :class="!form.service ? 'text-transparent' : ''">
                             <option value="">Select a service</option>
                             <option value="residential">Residential Cleaning</option>
                             <option value="commercial">Commercial Cleaning</option>
@@ -208,24 +211,35 @@
                             <option value="specialized">Specialized Services</option>
                             <option value="other">Other</option>
                         </select>
+                        <label class="absolute left-10 pointer-events-none transition-all duration-200 origin-left text-gray-400 dark:text-gray-500"
+                            :class="(focused || filled || form.service) ? 'top-1.5 translate-y-0 text-[11px] ' + (focused ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500') : 'top-1/2 -translate-y-1/2 text-sm'">
+                            Service Type <span class="text-red-500">*</span>
+                        </label>
                     </div>
 
                     <!-- Message -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Detailed Concern
+                            <i class="fa-solid fa-comment-dots text-blue-600 mr-1.5"></i>Detailed Concern <span class="text-red-500">*</span>
                         </label>
-                        <textarea 
-                            rows="5" 
+                        <textarea
+                            x-model="form.message"
+                            rows="5"
                             required
                             placeholder="Tell us about your cleaning needs..."
-                            class="custom-input w-full text-sm px-4 py-3 rounded-lg text-gray-900 dark:text-white resize-none"></textarea>
+                            class="w-full pl-4 pr-4 py-3 text-sm
+                                   border border-gray-400 dark:border-gray-700 rounded-xl
+                                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                   placeholder-gray-400 dark:placeholder-gray-500
+                                   transition-all duration-200 resize-none
+                                   focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                                   focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]"></textarea>
                     </div>
 
                     <!-- Submit Button -->
-                    <button 
+                    <button
                         type="submit"
-                        class="submit-btn w-full text-white text-md font-medium py-4 px-6 rounded-full flex items-center justify-center gap-3">
+                        class="submit-btn w-full text-white text-sm font-medium py-4 px-6 rounded-full flex items-center justify-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
@@ -238,3 +252,4 @@
     </div>
 </div>
 @endsection
+

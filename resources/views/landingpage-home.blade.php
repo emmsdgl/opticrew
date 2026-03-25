@@ -91,7 +91,7 @@
             {{ __('home.hero.description') }}
         </p>
         <div class="mt-6 sm:mt-10 flex flex-row items-center justify-center gap-2 sm:gap-x-6 px-4 sm:px-0">
-            <a href="{{ route('services') }}"
+            <a href="{{ route('login') }}"
                 class="shine-btn relative overflow-hidden inline-flex items-center justify-center gap-2 rounded-full px-5 sm:px-6 py-2.5 sm:py-3 font-bold text-base sm:text-lg text-white cursor-pointer group">
                 <!-- Icon Circle -->
                 <span

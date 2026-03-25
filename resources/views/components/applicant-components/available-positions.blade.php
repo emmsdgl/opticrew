@@ -21,7 +21,7 @@
     @if($total > 0)
     <div class="avp-scroll flex flex-nowrap gap-4 overflow-x-auto pb-1 w-full max-w-full">
         @foreach($available as $job)
-        <div class="flex-shrink-0 w-72">
+        <div class="flex-shrink-0 w-[calc(33.333%-0.67rem)]">
             <x-applicant-components.job-card
                 :job="$job"
                 :alreadyApplied="false"

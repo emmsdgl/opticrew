@@ -40,7 +40,7 @@
 
 <div
     x-data="{ slide: 0, saved: {{ $isSaved ? 'true' : 'false' }}, saving: false }"
-    class="flex flex-col rounded-2xl p-4 overflow-hidden shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/80 h-[320px]">
+    class="flex flex-col rounded-xl p-3 overflow-hidden shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/80 h-[340px]">
 
     {{-- ── Slide 1 — Card Face ── --}}
     <div
@@ -51,7 +51,7 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-x-0"
         x-transition:leave-end="opacity-0 -translate-x-3"
-        class="flex flex-col flex-1 p-4 gap-2 min-h-0">
+        class="flex flex-col flex-1 p-2 gap-1.5 min-h-0">
 
         {{-- Company / Type row --}}
         <div class="flex items-center justify-between mb-3">

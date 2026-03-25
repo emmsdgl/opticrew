@@ -32,7 +32,11 @@
     $hasIcon = !empty($icon);
 @endphp
 
-<div class="mui-input-group relative" x-data="{ focused: false, filled: false }" x-init="filled = {{ $model ? "(!!{$model})" : 'false' }}">
+<div class="mui-input-group relative" x-data="{ focused: false, filled: false }" x-init="
+    filled = {{ $model ? "(!!{$model})" : 'false' }};
+    $nextTick(() => { let el = $el.querySelector('.mui-input'); if (el && el.value) filled = true; });
+    setTimeout(() => { let el = $el.querySelector('.mui-input'); if (el && el.value) filled = true; }, 200);
+">
     {{-- Icon --}}
     @if($hasIcon)
         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 z-[1] text-blue-600 dark:text-blue-600">
@@ -53,6 +57,7 @@
             @focus="focused = true"
             @blur="focused = false; filled = !!$el.value"
             @input="filled = !!$el.value"
+            @animationstart="if ($event.animationName === 'onAutoFillStart') filled = true"
             placeholder="{{ $placeholder }}"
             class="mui-input peer w-full {{ $hasIcon ? 'pl-10' : 'pl-4' }} pr-4 {{ $label ? 'pt-5 pb-2' : 'py-2.5' }} text-sm
                    border border-gray-400 dark:border-gray-700 rounded-xl
@@ -80,6 +85,7 @@
             @focus="focused = true"
             @blur="focused = false; filled = !!$el.value"
             @input="filled = !!$el.value"
+            @animationstart="if ($event.animationName === 'onAutoFillStart') filled = true"
             placeholder="{{ $placeholder }}"
             @if(in_array($type, ['date', 'time']))
                 :class="(!focused && !filled && !{{ $model ? $model : 'false' }}) ? 'text-transparent' : 'text-gray-900 dark:text-white'"
@@ -119,5 +125,14 @@
 .mui-input:focus::placeholder {
     color: transparent;
 }
+/* Float label when browser autofills */
+.mui-input:-webkit-autofill ~ label {
+    top: 0.375rem !important;
+    transform: translateY(0) !important;
+    font-size: 11px !important;
+}
+/* Detect autofill via animation and trigger JS */
+@keyframes onAutoFillStart { from { /* empty */ } to { /* empty */ } }
+.mui-input:-webkit-autofill { animation-name: onAutoFillStart; }
 </style>
 @endonce

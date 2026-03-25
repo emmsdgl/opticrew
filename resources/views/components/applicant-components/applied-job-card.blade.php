@@ -27,6 +27,7 @@
     $icon     = $job?->icon      ?? 'fa-briefcase';
     $color    = $iconColors[$job?->icon_color ?? 'blue'];
     $category = $categoryMap[$icon] ?? 'General';
+    $isPositionClosed = !$job || !$job->is_active || $job->status !== 'published';
 
     $statusConfig = [
         'pending'              => ['label' => 'Pending',             'color' => 'yellow', 'icon' => 'fa-clock'],
@@ -36,7 +37,12 @@
         'rejected'             => ['label' => 'Not Selected',        'color' => 'red',    'icon' => 'fa-circle-xmark'],
         'withdrawn'            => ['label' => 'Withdrawn',            'color' => 'gray',   'icon' => 'fa-rotate-left'],
     ];
-    $status = $statusConfig[$application->status] ?? ['label' => ucfirst($application->status), 'color' => 'gray', 'icon' => 'fa-circle'];
+
+    if ($isPositionClosed) {
+        $status = ['label' => 'Position Closed', 'color' => 'gray', 'icon' => 'fa-ban'];
+    } else {
+        $status = $statusConfig[$application->status] ?? ['label' => ucfirst($application->status), 'color' => 'gray', 'icon' => 'fa-circle'];
+    }
 @endphp
 
 <style>
@@ -54,10 +60,10 @@
         withdrawReason: '',
         withdrawDetails: '',
     }"
-    class="flex flex-col p-4 rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700/50 bg-white dark:bg-gray-800/80 p-2 h-[fit-content]">
+    class="flex flex-col p-3 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700/50 bg-white dark:bg-gray-800/80 h-[260px] {{ $isPositionClosed ? 'opacity-60 pointer-events-none grayscale' : '' }}"
 
     {{-- ── Scrollable content body ── --}}
-    <div class="applied-scroll flex-1 overflow-y-auto min-h-0 p-4 pb-0 flex flex-col gap-2 mb-6">
+    <div class="applied-scroll flex-1 overflow-y-auto min-h-0 p-2 pb-0 flex flex-col gap-1.5 mb-4">
 
         {{-- Icon / category / type row + status badge --}}
         <div class="flex items-center justify-between mb-1">

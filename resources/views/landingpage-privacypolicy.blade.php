@@ -446,10 +446,6 @@
             </p>
         </div>
 
-        <div class="action-buttons">
-            <button class="btn-decline font-medium text-sm">Disagree</button>
-            <button class="btn-agree font-medium text-sm">I agree with the policy</button>
-        </div>
     </div>
 </div>
 @endsection

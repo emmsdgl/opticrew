@@ -33,7 +33,7 @@
                         <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">{{ __('common.footer.support') }}</h3>
                         <ul class="space-y-3">
                             <li><a href="{{ route('contact') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.contact') }}</a></li>
-                            <li><a href="{{ route('documentation') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">{{ __('common.footer.documentation') }}</a></li>
+                            <li><a href="{{ route('documentation') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition">How to Use</a></li>
                         </ul>
                     </div>
 

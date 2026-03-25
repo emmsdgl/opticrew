@@ -94,43 +94,21 @@ document.addEventListener('alpine:init', () => {
     if (document.querySelector('[x-sonner-registered]')) return;
     document.documentElement.setAttribute('x-sonner-registered', '');
 
-    // Bell chime using Web Audio API
+    // Preload notification sound
+    window._notifSfxSrc = '/sfx/notification_sfx.mp3';
+    window._notifSfxSkip = 0.5; // skip dead air at start (seconds)
+
+    // Preload into browser cache
+    try { new Audio(window._notifSfxSrc).load(); } catch(e) {}
+
+    // Play sound immediately per notification (allows overlap)
     window.playBellChime = function() {
         try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-            // Bell tone 1
-            const osc1 = ctx.createOscillator();
-            const gain1 = ctx.createGain();
-            osc1.type = 'sine';
-            osc1.frequency.setValueAtTime(830, ctx.currentTime);
-            osc1.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.3);
-            gain1.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-            osc1.connect(gain1);
-            gain1.connect(ctx.destination);
-            osc1.start(ctx.currentTime);
-            osc1.stop(ctx.currentTime + 0.6);
-
-            // Bell tone 2 (harmonic)
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(1245, ctx.currentTime + 0.08);
-            osc2.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.35);
-            gain2.gain.setValueAtTime(0, ctx.currentTime);
-            gain2.gain.setValueAtTime(0.15, ctx.currentTime + 0.08);
-            gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
-            osc2.start(ctx.currentTime);
-            osc2.stop(ctx.currentTime + 0.5);
-
-            // Clean up
-            setTimeout(() => ctx.close(), 1000);
-        } catch (e) {
-            // Audio not supported or blocked
-        }
+            const audio = new Audio(window._notifSfxSrc);
+            audio.volume = 0.5;
+            audio.currentTime = window._notifSfxSkip;
+            audio.play().catch(() => {});
+        } catch (e) {}
     };
 
     // Notification type mapping

@@ -263,8 +263,22 @@ document.addEventListener('DOMContentLoaded', function() {
     window.__opticrewTours = window.__opticrewTours || {};
     window.__opticrewTours[tourName] = driverObj;
 
-    // Auto-start if user hasn't completed this tour yet
-    if (autoStart && !hasCompleted) {
+    // Auto-start only on first login (never seen before)
+    const seenKey = 'tour_seen_' + tourName;
+    const alreadySeen = hasCompleted || localStorage.getItem(seenKey) === '1';
+
+    if (autoStart && !alreadySeen) {
+        // Mark as seen immediately so it never auto-starts again
+        localStorage.setItem(seenKey, '1');
+        // Also persist server-side so it survives browser changes
+        fetch('{{ route("tour.complete") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ tour: tourName })
+        });
         setTimeout(() => {
             driverObj.drive();
         }, 800);

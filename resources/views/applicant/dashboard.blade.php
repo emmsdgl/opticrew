@@ -263,42 +263,45 @@
     </x-slot:sidebarBottom>
 
     {{-- ── Middle Content ── --}}
+    <div class="mx-8">
 
-    {{-- Welcome Header --}}
-    <x-applicant-components.herocard
-        headerName="{{ $user->name }}"
-        headerDesc="Browse open positions and track your applications."
-        headerIcon=""
-    />
-
-    {{-- Applied Positions --}}
-    <div id="tour-app-my-applications">
-    <div class="mt-6 mb-6">
-        <x-labelwithvalue
-            label="My Applications"
-            count="{{ $myApplications->count() }}"
+        {{-- Welcome Header --}}
+        <x-applicant-components.herocard
+            headerName="{{ $user->name }}"
+            headerDesc="Browse open positions and track your applications."
+            headerIcon=""
         />
-    </div>
-    <x-applicant-components.applied-positions :applications="$myApplications" :jobPostings="$jobPostings" />
-    </div>
 
-    {{-- Available Positions --}}
-    @php
-        $appliedTitles = $myApplications->pluck('job_title')->map(fn($t) => strtolower(trim($t)))->toArray();
-        $availableCount = $jobPostings->filter(fn($job) => !in_array(strtolower(trim($job->title)), $appliedTitles))->count();
-    @endphp
-    <div id="tour-app-available-jobs">
-    <div class="mt-6 mb-6">
-        <x-labelwithvalue
-            label="Available Job Positions"
-            count="{{ $availableCount }}"
-        />
-    </div>
-    <x-applicant-components.available-positions :jobPostings="$jobPostings" :applications="$myApplications" :savedJobIds="$savedJobIds ?? []" />
-    </div>
+        {{-- Applied Positions --}}
+        <div id="tour-app-my-applications">
+        <div class="mt-6 mb-6">
+            <x-labelwithvalue
+                label="My Applications"
+                count="{{ $myApplications->count() }}"
+            />
+        </div>
+        <x-applicant-components.applied-positions :applications="$myApplications" :jobPostings="$allJobPostings" />
+        </div>
 
-    {{-- Apply Modal (global — listens for open-apply-modal window events) --}}
-    <x-applicant-components.apply-modal />
+        {{-- Available Positions --}}
+        @php
+            $appliedTitles = $myApplications->pluck('job_title')->map(fn($t) => strtolower(trim($t)))->toArray();
+            $availableCount = $jobPostings->filter(fn($job) => !in_array(strtolower(trim($job->title)), $appliedTitles))->count();
+        @endphp
+        <div id="tour-app-available-jobs">
+        <div class="mt-6 mb-6">
+            <x-labelwithvalue
+                label="Available Job Positions"
+                count="{{ $availableCount }}"
+            />
+        </div>
+        <x-applicant-components.available-positions :jobPostings="$jobPostings" :applications="$myApplications" :savedJobIds="$savedJobIds ?? []" />
+        </div>
+
+        {{-- Apply Modal (global — listens for open-apply-modal window events) --}}
+        <x-applicant-components.apply-modal />
+
+    </div>
 
     {{-- Profile Modal (triggered from header dropdown) --}}
     @php $profileUser = auth()->user(); @endphp

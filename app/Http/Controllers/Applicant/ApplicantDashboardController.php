@@ -12,6 +12,7 @@ use App\Mail\ApplicationReceivedAfterHours;
 use App\Mail\ApplicationWithdrawnFarewell;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +24,7 @@ class ApplicantDashboardController extends Controller
         $user = Auth::user();
 
         $jobPostings = JobPosting::active()->orderBy('created_at', 'desc')->get();
+        $allJobPostings = JobPosting::orderBy('created_at', 'desc')->get();
 
         $myApplications = JobApplication::where('email', $user->email)
             ->where('status', '!=', 'withdrawn')
@@ -40,7 +42,7 @@ class ApplicantDashboardController extends Controller
 
         $hasPassword = !empty($user->password);
 
-        return view('applicant.dashboard', compact('user', 'jobPostings', 'myApplications', 'savedJobIds', 'pendingApply', 'withdrawnCount', 'hasPassword'));
+        return view('applicant.dashboard', compact('user', 'jobPostings', 'allJobPostings', 'myApplications', 'savedJobIds', 'pendingApply', 'withdrawnCount', 'hasPassword'));
     }
 
     public function updateProfile(Request $request)
@@ -266,10 +268,11 @@ class ApplicantDashboardController extends Controller
     public function submitApplication(Request $request)
     {
         $request->validate([
-            'job_title' => 'required|string|max:255',
-            'job_type'  => 'nullable|string|max:50',
-            'email'     => 'required|email|max:255',
-            'resume'    => 'required|file|mimes:docx,pdf|max:10240',
+            'job_title'         => 'required|string|max:255',
+            'job_type'          => 'nullable|string|max:50',
+            'email'             => 'required|email|max:255',
+            'alternative_email' => 'required|email|max:255',
+            'resume'            => 'required|file|mimes:docx,pdf|max:10240',
         ]);
 
         // Block banned users from submitting
@@ -334,75 +337,85 @@ class ApplicantDashboardController extends Controller
             }
         }
 
-        $application = JobApplication::create([
-            'job_title'            => $request->job_title,
-            'job_type'             => $request->job_type ?? null,
-            'email'                => $user ? $user->email : $request->email,
-            'alternative_email'    => $request->alternative_email ?? null,
-            'resume_path'          => $path,
-            'resume_original_name' => $file->getClientOriginalName(),
-            'documents'            => $documents ?: null,
-            'applicant_profile'    => json_encode($profile),
-            'status'               => 'pending',
-            'status_history'       => [[
-                'from' => null,
-                'to' => 'pending',
-                'timestamp' => now()->toIso8601String(),
-                'by' => $user ? $user->name : 'Applicant',
-            ]],
-        ]);
+        $application = DB::transaction(function () use ($request, $user, $path, $file, $documents, $profile) {
+            return JobApplication::create([
+                'job_title'            => $request->job_title,
+                'job_type'             => $request->job_type ?? null,
+                'email'                => $user ? $user->email : $request->email,
+                'alternative_email'    => $request->alternative_email ?? null,
+                'resume_path'          => $path,
+                'resume_original_name' => $file->getClientOriginalName(),
+                'documents'            => $documents ?: null,
+                'applicant_profile'    => json_encode($profile),
+                'status'               => 'pending',
+                'status_history'       => [[
+                    'from' => null,
+                    'to' => 'pending',
+                    'timestamp' => now()->toIso8601String(),
+                    'by' => $user ? $user->name : 'Applicant',
+                ]],
+            ]);
+        });
 
-        $notificationService = app(NotificationService::class);
-        $notificationService->notifyAdminsNewJobApplication($application);
+        // Post-submission tasks (non-critical — wrapped in try/catch so they don't break the response)
+        try {
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyAdminsNewJobApplication($application);
 
-        // In-app notification for the applicant
-        if ($user) {
-            $notificationService->notifyApplicantApplicationSubmitted($application, $user);
+            if ($user) {
+                $notificationService->notifyApplicantApplicationSubmitted($application, $user);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Post-submission notification error: ' . $e->getMessage());
         }
 
         // Scenario #6: Auto-response if submitted outside business hours (Mon-Fri 8AM-5PM)
-        $now = now();
-        $hour = (int) $now->format('H');
-        $isWeekend = $now->isWeekend();
-        $isAfterHours = $isWeekend || $hour < 8 || $hour >= 17;
+        try {
+            $now = now();
+            $hour = (int) $now->format('H');
+            $isWeekend = $now->isWeekend();
+            $isAfterHours = $isWeekend || $hour < 8 || $hour >= 17;
 
-        if ($isAfterHours) {
-            $nextBusinessDay = $now->copy();
-            if ($isWeekend) {
-                $nextBusinessDay = $nextBusinessDay->next(\Carbon\Carbon::MONDAY);
-            } else {
-                $nextBusinessDay = $nextBusinessDay->addWeekday();
-            }
-            $responseEta = $nextBusinessDay->format('l, F d, Y') . ' (next business day)';
+            if ($isAfterHours) {
+                $nextBusinessDay = $now->copy();
+                if ($isWeekend) {
+                    $nextBusinessDay = $nextBusinessDay->next(\Carbon\Carbon::MONDAY);
+                } else {
+                    $nextBusinessDay = $nextBusinessDay->addWeekday();
+                }
+                $responseEta = $nextBusinessDay->format('l, F d, Y') . ' (next business day)';
 
-            try {
                 $recipients = [$application->email];
                 if ($application->alternative_email) {
                     $recipients[] = $application->alternative_email;
                 }
                 Mail::to($recipients)->send(new ApplicationReceivedAfterHours($application, $responseEta));
-            } catch (\Exception $e) {
-                \Log::error('Failed to send after-hours auto-response: ' . $e->getMessage());
             }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send after-hours auto-response: ' . $e->getMessage());
         }
 
         // Scenario #5: Duplicate detection by phone number
-        $phone = $profile['phone'] ?? '';
-        if (!empty($phone)) {
-            $existingApp = JobApplication::where('id', '!=', $application->id)
-                ->where('email', '!=', $application->email)
-                ->whereNotNull('applicant_profile')
-                ->get()
-                ->first(function ($app) use ($phone) {
-                    $p = json_decode($app->applicant_profile, true);
-                    $existingPhone = preg_replace('/[^0-9]/', '', $p['phone'] ?? '');
-                    $newPhone = preg_replace('/[^0-9]/', '', $phone);
-                    return !empty($existingPhone) && $existingPhone === $newPhone;
-                });
+        try {
+            $phone = $profile['phone'] ?? '';
+            if (!empty($phone)) {
+                $existingApp = JobApplication::where('id', '!=', $application->id)
+                    ->where('email', '!=', $application->email)
+                    ->whereNotNull('applicant_profile')
+                    ->get()
+                    ->first(function ($app) use ($phone) {
+                        $p = json_decode($app->applicant_profile, true);
+                        $existingPhone = preg_replace('/[^0-9]/', '', $p['phone'] ?? '');
+                        $newPhone = preg_replace('/[^0-9]/', '', $phone);
+                        return !empty($existingPhone) && $existingPhone === $newPhone;
+                    });
 
-            if ($existingApp) {
-                $notificationService->notifyAdminsDuplicateApplicant($application, $existingApp, $phone);
+                if ($existingApp) {
+                    \Log::warning('Duplicate applicant detected: phone ' . $phone . ' matches application #' . $existingApp->id);
+                }
             }
+        } catch (\Exception $e) {
+            \Log::error('Duplicate detection error: ' . $e->getMessage());
         }
 
         return response()->json([

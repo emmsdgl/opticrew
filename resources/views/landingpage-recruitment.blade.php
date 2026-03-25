@@ -12,6 +12,11 @@
             background-color: #111827;
         }
 
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
         /* Custom scrollbar */
         .scrollbar-custom {
             scrollbar-width: thin;
@@ -795,24 +800,47 @@
     {{-- Application Modal --}}
     <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
         style="display: none;" x-data="{
-            termsAccepted: document.cookie.includes('finnoys_terms_accepted=1'),
-            policyAccepted: document.cookie.includes('finnoys_policy_accepted=1')
+            termsOpened: document.cookie.includes('finnoys_terms_accepted=1'),
+            privacyOpened: document.cookie.includes('finnoys_policy_accepted=1'),
+            agreed: false,
+            openRecruitTermsModal() {
+                document.getElementById('recruit-terms-modal').style.display = 'flex';
+            },
+            openRecruitPrivacyModal() {
+                document.getElementById('recruit-privacy-modal').style.display = 'flex';
+            },
+            markTermsRead() {
+                this.termsOpened = true;
+                document.cookie = 'finnoys_terms_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
+                document.getElementById('recruit-terms-modal').style.display = 'none';
+                if (window.showSuccessDialog) window.showSuccessDialog('Terms Accepted', 'You have read and accepted the Terms & Conditions.');
+            },
+            markPrivacyRead() {
+                this.privacyOpened = true;
+                document.cookie = 'finnoys_policy_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
+                document.getElementById('recruit-privacy-modal').style.display = 'none';
+                if (window.showSuccessDialog) window.showSuccessDialog('Privacy Policy Accepted', 'You have read and accepted the Privacy Policy.');
+            },
+            get checkboxEnabled() { return this.termsOpened && this.privacyOpened; },
+            get canSubmit() { return this.agreed && this.checkboxEnabled; }
         }">
-        <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto scrollbar-custom">
-            {{-- Modal Header --}}
-            <div
-                class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center z-10">
-                <button onclick="closeApplicationModal()"
-                    class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                    <i class="fas fa-arrow-left text-xl"></i>
-                </button>
-                <p class="text-sm text-center mr-3 w-full text-gray-900 dark:text-white">
-                    Want to proceed with your application?
-                </p>
-            </div>
+        <div class="bg-white dark:bg-gray-800 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto scrollbar-custom relative">
+            {{-- Close Button --}}
+            <button onclick="closeApplicationModal()" type="button"
+                class="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
+                <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
 
             {{-- Modal Body --}}
             <div class="p-6">
+                <p class="text-sm text-center mr-3 my-6 w-full text-gray-900 dark:text-white">
+                    Application Form
+                </p>
+                <p class="text-3xl font-bold text-center mr-3 my-6 w-full text-gray-900 dark:text-white">
+                    Want to proceed <br>with your application?
+                </p>
                 <form id="applicationForm" action="{{ route('recruitment.google.apply') }}" method="POST"
                     class="space-y-4 p-3">
                     @csrf
@@ -822,61 +850,50 @@
 
                     {{-- Google Sign-In Info --}}
                     <div class="text-center">
-                        <div
-                            class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fab fa-google text-2xl text-blue-600"></i>
+                        <div class="relative w-16 h-16 mx-auto my-4">
+                            <div class="absolute inset-0 rounded-full bg-blue-400/20 dark:bg-blue-500/15 animate-[ripple_2s_ease-out_infinite]"></div>
+                            <div class="absolute inset-0 rounded-full bg-blue-400/15 dark:bg-blue-500/10 animate-[ripple_2s_ease-out_0.6s_infinite]"></div>
+                            <div class="absolute inset-0 rounded-full bg-blue-400/10 dark:bg-blue-500/5 animate-[ripple_2s_ease-out_1.2s_infinite]"></div>
+                            <div class="relative w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                <i class="fab fa-google text-2xl text-blue-600"></i>
+                            </div>
                         </div>
-                        <p class="flex flex-col text-sm text-gray-600 dark:text-gray-400 leading-relaxed my-8">
-                            <span class="font-bold">Sign in with your Google account to apply.</span> <span
+                        <p class="flex flex-col text-sm text-gray-600 dark:text-gray-400 leading-relaxed my-12">
+                            <span class="font-normal">Sign in with your Google account to apply.</span> <span
                                 class="font-normal">Your email will be used for application updates.</span>
                         </p>
                     </div>
 
-                    {{-- Terms and Conditions Acceptance --}}
-                    <div class="space-y-2 px-4 bg-amber">
-                        <div id="termsCheckRow"
-                            class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
-                            :class="termsAccepted ?
-                                'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' :
-                                'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'"
-                            onclick="navigateToTerms()">
-                            <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
-                                :class="termsAccepted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-500'">
-                                <i class="fas fa-check text-white text-xs" x-show="termsAccepted"></i>
-                            </div>
-                            <span class="text-sm flex-1"
-                                :class="termsAccepted ? 'text-green-700 dark:text-green-400' :
-                                    'text-gray-600 dark:text-gray-400'">
-                                <span
-                                    x-text="termsAccepted ? 'Terms and Conditions accepted' : 'Read and accept Terms and Conditions'"></span>
+                    {{-- Terms and Conditions Checkbox --}}
+                    <div class="px-4 text-sm">
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" x-model="agreed" :disabled="!checkboxEnabled"
+                                class="mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 bg-transparent appearance-none cursor-pointer checked:bg-blue-600 checked:border-blue-600 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <span class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                                By signing in, I agree to the
+                                <button type="button" @click.prevent="openRecruitTermsModal()"
+                                    class="text-sm text-blue-600 hover:underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-xs inline">
+                                    Terms & Conditions
+                                </button>
+                                <span x-show="termsOpened" class="text-green-500 text-[10px]"><i class="fas fa-check-circle"></i></span>
+                                and
+                                <button type="button" @click.prevent="openRecruitPrivacyModal()"
+                                    class="text-sm text-blue-600 hover:underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-xs inline">
+                                    Privacy Policy
+                                </button>
+                                <span x-show="privacyOpened" class="text-green-500 text-[10px]"><i class="fas fa-check-circle"></i></span>.
                             </span>
-                            <i class="fas fa-arrow-right text-xs text-gray-400" x-show="!termsAccepted"></i>
-                        </div>
-
-                        <div id="policyCheckRow"
-                            class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
-                            :class="policyAccepted ?
-                                'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' :
-                                'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'"
-                            onclick="navigateToPolicy()">
-                            <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
-                                :class="policyAccepted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-500'">
-                                <i class="fas fa-check text-white text-xs" x-show="policyAccepted"></i>
-                            </div>
-                            <span class="text-sm flex-1"
-                                :class="policyAccepted ? 'text-green-700 dark:text-green-400' :
-                                    'text-gray-600 dark:text-gray-400'">
-                                <span
-                                    x-text="policyAccepted ? 'Privacy Policy accepted' : 'Read and accept Privacy Policy'"></span>
-                            </span>
-                            <i class="fas fa-arrow-right text-xs text-gray-400" x-show="!policyAccepted"></i>
-                        </div>
+                        </label>
+                        <p x-show="!checkboxEnabled" class="text-[10px] text-amber-600 dark:text-amber-400 mt-1.5 ml-7">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Please open and read both documents to enable the checkbox
+                        </p>
                     </div>
 
                     {{-- Sign in with Google to Apply --}}
                     <div class="px-4 py-2">
-                        <button type="submit" id="googleApplyBtn" :disabled="!termsAccepted || !policyAccepted"
-                            :class="(!termsAccepted || !policyAccepted) ? 'opacity-50 cursor-not-allowed' :
+                        <button type="submit" id="googleApplyBtn" :disabled="!canSubmit"
+                            :class="!canSubmit ? 'opacity-50 cursor-not-allowed' :
                             'hover:bg-gray-50 dark:hover:bg-gray-600 shadow-lg hover:shadow-xl'"
                             class="w-full flex items-center justify-center gap-3 py-3.5 px-4 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 transition-colors">
                             <svg width="20" height="20" viewBox="0 0 48 48">
@@ -892,15 +909,90 @@
                             <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Sign in with Google to
                                 Apply</span>
                         </button>
-
                     </div>
-
-                    <p x-show="!termsAccepted || !policyAccepted"
-                        class="text-xs text-center text-amber-600 dark:text-amber-400">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Please accept both Terms and Privacy Policy to continue
-                    </p>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recruitment Terms & Conditions Modal -->
+    <div id="recruit-terms-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" style="display: none;">
+        <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Terms & Conditions</h2>
+                <button type="button" onclick="document.getElementById('recruit-terms-modal').style.display='none'" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
+                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="space-y-4 text-gray-700 dark:text-gray-300">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Last Updated: November 5, 2025</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">1. Acceptance of Terms</h3>
+                    <p class="text-sm leading-relaxed">By accessing or using the OptiCrew workforce management and scheduling platform (the "System"), you ("User") agree to comply with and be bound by these Terms and Conditions.</p>
+                    <p class="text-sm leading-relaxed">If you do not agree with any part of these Terms, you must refrain from using the System.</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">2. System Operations and Allocation Rules</h3>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.1 Workforce Allocation</h4>
+                    <p class="text-sm leading-relaxed">OptiCrew automatically determines the optimal number of employees required for each task based on employee availability, pending workload, budget constraints, and utilization targets.</p>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.2 Team Composition and Driver Requirement</h4>
+                    <p class="text-sm leading-relaxed">Each assigned team must include at least one employee registered as having valid driving skills.</p>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.3 Task Prioritization</h4>
+                    <p class="text-sm leading-relaxed">Tasks labeled with an "Arrival Status" are assigned the highest scheduling priority.</p>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.4 Schedule Generation and Re-Optimization</h4>
+                    <p class="text-sm leading-relaxed">Schedules are generated automatically. If a new task is added before a schedule is finalized, the System will regenerate an optimized schedule.</p>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.5 Working Hours Compliance</h4>
+                    <p class="text-sm leading-relaxed">The System enforces a maximum of 12 working hours per day per employee, in compliance with Finnish labor standards.</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">3. System Authority and Finality</h3>
+                    <p class="text-sm leading-relaxed">All task assignments and schedules are the outcome of automated, rule-based optimization and are deemed final for operational purposes.</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">4. Modifications to System Rules</h3>
+                    <p class="text-sm leading-relaxed">OptiCrew reserves the right to modify these Terms at any time. Continued use constitutes acceptance of revised Terms.</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">5. Contact Information</h3>
+                    <p class="text-sm leading-relaxed">For inquiries, contact: opticrewhelpcenter@gmail.com</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" onclick="document.querySelector('#applicationModal').__x.$data.markTermsRead()" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
+                    I have read the Terms & Conditions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recruitment Privacy Policy Modal -->
+    <div id="recruit-privacy-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" style="display: none;">
+        <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Privacy Policy</h2>
+                <button type="button" onclick="document.getElementById('recruit-privacy-modal').style.display='none'" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
+                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="space-y-4 text-gray-700 dark:text-gray-300">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Last updated: January 2024</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">1. Information We Collect</h3>
+                    <p class="text-sm leading-relaxed">We collect information you provide directly to us, including your name, email address, phone number, payment information, and service preferences.</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">2. How We Use Your Information</h3>
+                    <p class="text-sm leading-relaxed">We use the information we collect to provide, maintain, and improve our services, to process your bookings, and to communicate with you.</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">3. Information Sharing</h3>
+                    <p class="text-sm leading-relaxed">We do not sell or rent your personal information to third parties. We may share your information with service providers who assist us.</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">4. Data Security</h3>
+                    <p class="text-sm leading-relaxed">We implement appropriate technical and organizational measures to protect your personal information.</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">5. Your Rights</h3>
+                    <p class="text-sm leading-relaxed">You have the right to access, update, or delete your personal information. You may also opt-out of promotional communications.</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">6. Cookies and Tracking</h3>
+                    <p class="text-sm leading-relaxed">We use cookies and similar tracking technologies to improve our services. You can control cookies through your browser settings.</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">7. Contact Us</h3>
+                    <p class="text-sm leading-relaxed">If you have any questions about this Privacy Policy, please contact us at privacy@finnoys.com.</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" onclick="document.querySelector('#applicationModal').__x.$data.markPrivacyRead()" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
+                    I have read the Privacy Policy
+                </button>
             </div>
         </div>
     </div>
@@ -930,21 +1022,7 @@
             }
         });
 
-        // Navigate to Terms page with return context
         let selectedJobId = null;
-
-        function navigateToTerms() {
-            if (document.cookie.includes('finnoys_terms_accepted=1')) return;
-            const jobId = selectedJobId || '';
-            window.location.href = '{{ route('termscondition') }}?from=recruitment&job=' + jobId;
-        }
-
-        // Navigate to Policy page with return context
-        function navigateToPolicy() {
-            if (document.cookie.includes('finnoys_policy_accepted=1')) return;
-            const jobId = selectedJobId || '';
-            window.location.href = '{{ route('privacypolicy') }}?from=recruitment&job=' + jobId;
-        }
 
         // Dynamically generated jobs from database
         const jobs = {

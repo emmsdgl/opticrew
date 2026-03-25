@@ -89,7 +89,7 @@
                 <!-- Inner Down - Tasks Particulars -->
                 <div id="tour-emp-tasks" class="w-full flex-1 flex flex-col">
                     <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
-                    <div class="todo-list-container rounded-lg my-6 bg-white/30 backdrop-blur-md border border-white/40 shadow-sm dark:bg-gray-800/40 dark:border-transparent dark:backdrop-blur-none flex-1">
+                    <div class="todo-list-container rounded-lg my-6 bg-white shadow-sm dark:bg-gray-800/40 dark:border-transparent flex-1">
                         @php
                             // Transform tasks to the format expected by task-overview-list component
                             $tasks = $todoList
@@ -258,8 +258,8 @@
                 </div>
 
                 <!-- Tasks Summary - Radial Chart (hidden on small screens) -->
-                <div class="hidden md:block w-full rounded-lg overflow-hidden flex-shrink-0 mt-3">
-                    <div class="bg-white dark:bg-transparent w-full aspect-square max-h-[300px] md:max-h-[340px] lg:max-h-[385px] p-2">
+                <div class="hidden md:block w-full rounded-lg overflow-hidden flex-shrink-0 mt-3 bg-white dark:bg-transparent p-2">
+                    <div class="w-full aspect-square max-h-[300px] md:max-h-[340px] lg:max-h-[385px]">
                         <x-radialchart :chart-data="$tasksSummary" chart-id="task-chart" title="Last 7 days" :labels="[
                             'done' => 'Done',
                             'inProgress' => 'In Progress',

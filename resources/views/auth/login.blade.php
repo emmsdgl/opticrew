@@ -55,6 +55,11 @@
             transition: border-color 0.2s ease;
         }
 
+        @keyframes onAutoFillStart { from {} to {} }
+        .input-group input:-webkit-autofill {
+            animation-name: onAutoFillStart;
+        }
+
         .input-group input:focus {
             border-color: #0077FF;
         }
@@ -70,7 +75,8 @@
         }
 
         .input-group input:focus+label,
-        .input-group input.not-empty+label {
+        .input-group input.not-empty+label,
+        .input-group input:-webkit-autofill+label {
             top: -0.6em;
             left: 2.3em;
             font-size: 0.75rem;
@@ -106,26 +112,37 @@
         /* Checkbox styling */
         input[type="checkbox"] {
             appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 1px solid #868282;
-            border-radius: 4px;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            min-height: 18px;
+            border: 1.5px solid #c4c4c4;
+            border-radius: 6px;
             position: relative;
             cursor: pointer;
+            background: transparent;
+            transition: all 0.15s ease;
         }
 
         input[type="checkbox"]:checked {
             background-color: #0077FF;
+            border-color: #0077FF;
         }
 
         input[type="checkbox"]:checked::after {
             content: "✓";
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+        }
+
+        input[type="checkbox"]:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         /* Floating glassmorphism icons */
@@ -224,7 +241,7 @@
         <!-- LOG IN CONTENTS -->
         <div id="container-2"
             class="w-full min-h-screen md:w-1/2 flex justify-center items-center px-6 py-12 md:px-12 lg:px-16 xl:px-24">
-            <form action="{{ route('login') }}" method="POST" class="space-y-4 w-full max-w-md h-fit">
+            <form action="{{ route('login') }}" method="POST" class="space-y-4 w-full max-w-md h-fit px-8">
                 @csrf
 
                 <div id="container-2-1" class="flex flex-col items-start my-12 w-full">
@@ -310,14 +327,14 @@
                     </button>
                 </div>
 
-                <div id="container-2-layer" class="text-sm">
+                {{-- <div id="container-2-layer" class="text-sm">
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" class="border border-gray-300" name="remember">
                         <span class="text-gray-500 font-sans text-sm">Remember Me</span>
                     </label>
                     <a href="{{ route('forgot.password') }}" class="text-blue-600 hover:underline text-sm">Forgot
                         Password?</a>
-                </div>
+                </div> --}}
 
                 <input type="submit" id="btn-login"
                     class="text-sm font-sans font-semibold hover:bg-blue-800 focus:outline-white" value="Login">
@@ -330,9 +347,11 @@
                     </p>
                 </div> --}}
 
+                
                 <!-- Sign in with Google -->
                 <a href="{{ route('google.redirect') }}" id="btn-google"
-                    class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-full bg-white hover:bg-gray-50 transition-colors duration-200 mt-3 no-underline">
+                    class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-full bg-white transition-colors duration-200 mt-3 no-underline opacity-50 cursor-not-allowed pointer-events-none"
+                    aria-disabled="true">
                     <svg width="20" height="20" viewBox="0 0 48 48">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -342,10 +361,110 @@
                     <span class="text-sm font-semibold text-gray-600">Sign in with Google</span>
                 </a>
 
+                <!-- Terms Agreement Checkbox -->
+                <div class="mt-3 w-full items-center text-center">
+                    <label class="flex items-start space-x-2 cursor-pointer" id="terms-label">
+                        <input type="checkbox" id="google-terms-checkbox" disabled>
+                        <span class="text-xs text-gray-500 leading-relaxed">
+                            By signing in, you confirm that you have read and agreed to the
+                            <button type="button" id="terms-link" class="text-blue-600 hover:underline font-bold bg-transparent border-0 p-0 cursor-pointer text-xs">Terms & Conditions</button>
+                            and
+                            <button type="button" id="privacy-link" class="text-blue-600 hover:underline font-bold bg-transparent border-0 p-0 cursor-pointer text-xs">Privacy Policy</button>.
+                        </span>
+                    </label>
+                </div>
+
             </form>
         </div>
     </div>
 
+
+    <!-- Terms & Conditions Modal -->
+    <div id="terms-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style="display: none;">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-5 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-900">Terms & Conditions</h2>
+                <button type="button" onclick="closeTermsModal()" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1" id="terms-modal-content">
+                <div class="space-y-4 text-gray-700">
+                    <p class="text-sm text-gray-500 font-medium">Last Updated: November 5, 2025</p>
+                    <h3 class="text-base font-bold text-gray-900 mt-4">1. Acceptance of Terms</h3>
+                    <p class="text-sm leading-relaxed">By accessing or using the OptiCrew workforce management and scheduling platform (the "System"), you ("User") agree to comply with and be bound by these Terms and Conditions.</p>
+                    <p class="text-sm leading-relaxed">If you do not agree with any part of these Terms, you must refrain from using the System.</p>
+                    <h3 class="text-base font-bold text-gray-900 mt-4">2. System Operations and Allocation Rules</h3>
+                    <h4 class="text-sm font-semibold text-gray-900 mt-3">2.1 Workforce Allocation</h4>
+                    <p class="text-sm leading-relaxed">OptiCrew automatically determines the optimal number of employees required for each task based on employee availability, pending workload, budget constraints, and utilization targets.</p>
+                    <h4 class="text-sm font-semibold text-gray-900 mt-3">2.2 Team Composition and Driver Requirement</h4>
+                    <p class="text-sm leading-relaxed">Each assigned team must include at least one employee registered as having valid driving skills.</p>
+                    <h4 class="text-sm font-semibold text-gray-900 mt-3">2.3 Task Prioritization</h4>
+                    <p class="text-sm leading-relaxed">Tasks labeled with an "Arrival Status" are assigned the highest scheduling priority.</p>
+                    <h4 class="text-sm font-semibold text-gray-900 mt-3">2.4 Schedule Generation and Re-Optimization</h4>
+                    <p class="text-sm leading-relaxed">Schedules are generated automatically. If a new task is added before a schedule is finalized, the System will regenerate an optimized schedule.</p>
+                    <h4 class="text-sm font-semibold text-gray-900 mt-3">2.5 Working Hours Compliance</h4>
+                    <p class="text-sm leading-relaxed">The System enforces a maximum of 12 working hours per day per employee, in compliance with Finnish labor standards.</p>
+                    <h3 class="text-base font-bold text-gray-900 mt-4">3. System Authority and Finality</h3>
+                    <p class="text-sm leading-relaxed">All task assignments and schedules are the outcome of automated, rule-based optimization and are deemed final for operational purposes.</p>
+                    <h3 class="text-base font-bold text-gray-900 mt-4">4. Modifications to System Rules</h3>
+                    <p class="text-sm leading-relaxed">OptiCrew reserves the right to modify these Terms at any time. Continued use constitutes acceptance of revised Terms.</p>
+                    <h3 class="text-base font-bold text-gray-900 mt-4">5. Contact Information</h3>
+                    <p class="text-sm leading-relaxed">For inquiries, contact: opticrewhelpcenter@gmail.com</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200">
+                <button type="button" onclick="markTermsRead()" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
+                    I have read the Terms & Conditions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacy-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style="display: none;">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-5 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-900">Privacy Policy</h2>
+                <button type="button" onclick="closePrivacyModal()" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1" id="privacy-modal-content">
+                <div class="space-y-4 text-gray-700">
+                    <p class="text-sm text-gray-500">Last updated: January 2024</p>
+                    <h3 class="text-base font-semibold text-gray-900 mt-4">1. Information We Collect</h3>
+                    <p class="text-sm leading-relaxed">We collect information you provide directly to us, including your name, email address, phone number, payment information, and service preferences.</p>
+                    <h3 class="text-base font-semibold text-gray-900 mt-4">2. How We Use Your Information</h3>
+                    <p class="text-sm leading-relaxed">We use the information we collect to provide, maintain, and improve our services, to process your bookings, and to communicate with you.</p>
+                    <h3 class="text-base font-semibold text-gray-900 mt-4">3. Information Sharing</h3>
+                    <p class="text-sm leading-relaxed">We do not sell or rent your personal information to third parties. We may share your information with service providers who assist us.</p>
+                    <h3 class="text-base font-semibold text-gray-900 mt-4">4. Data Security</h3>
+                    <p class="text-sm leading-relaxed">We implement appropriate technical and organizational measures to protect your personal information.</p>
+                    <h3 class="text-base font-semibold text-gray-900 mt-4">5. Your Rights</h3>
+                    <p class="text-sm leading-relaxed">You have the right to access, update, or delete your personal information. You may also opt-out of promotional communications.</p>
+                    <h3 class="text-base font-semibold text-gray-900 mt-4">6. Cookies and Tracking</h3>
+                    <p class="text-sm leading-relaxed">We use cookies and similar tracking technologies to improve our services. You can control cookies through your browser settings.</p>
+                    <h3 class="text-base font-semibold text-gray-900 mt-4">7. Contact Us</h3>
+                    <p class="text-sm leading-relaxed">If you have any questions about this Privacy Policy, please contact us at privacy@finnoys.com.</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200">
+                <button type="button" onclick="markPrivacyRead()" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
+                    I have read the Privacy Policy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function closeTermsModal() { document.getElementById('terms-modal').style.display = 'none'; }
+        function closePrivacyModal() { document.getElementById('privacy-modal').style.display = 'none'; }
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -365,7 +484,23 @@
                         input.classList.remove('not-empty');
                     }
                 });
+
+                // Detect browser autofill via animation event
+                input.addEventListener('animationstart', (e) => {
+                    if (e.animationName === 'onAutoFillStart') {
+                        input.classList.add('not-empty');
+                    }
+                });
             });
+
+            // Re-check after delay for autofill that happens after DOMContentLoaded
+            setTimeout(() => {
+                inputs.forEach(input => {
+                    if (input.value.trim() !== '') {
+                        input.classList.add('not-empty');
+                    }
+                });
+            }, 500);
 
             const passwordInput = document.getElementById('input-password');
             const togglePassword = document.getElementById('togglePassword');
@@ -378,6 +513,69 @@
                 iconEyeClosed.style.display = isPassword ? 'none' : 'block';
                 iconEyeOpen.style.display = isPassword ? 'block' : 'none';
             });
+
+            // Terms & Privacy checkbox logic for Google Sign-in (persisted via cookies)
+            let termsOpened = document.cookie.includes('finnoys_terms_accepted=1');
+            let privacyOpened = document.cookie.includes('finnoys_policy_accepted=1');
+            const googleCheckbox = document.getElementById('google-terms-checkbox');
+            const googleBtn = document.getElementById('btn-google');
+            const termsLink = document.getElementById('terms-link');
+            const privacyLink = document.getElementById('privacy-link');
+
+            function updateCheckboxState() {
+                if (termsOpened && privacyOpened) {
+                    googleCheckbox.disabled = false;
+                }
+            }
+
+            function updateGoogleBtn() {
+                if (googleCheckbox.checked) {
+                    googleBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                    googleBtn.classList.add('hover:bg-gray-50');
+                    googleBtn.setAttribute('aria-disabled', 'false');
+                } else {
+                    googleBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                    googleBtn.classList.remove('hover:bg-gray-50');
+                    googleBtn.setAttribute('aria-disabled', 'true');
+                }
+            }
+
+            // Restore state on load
+            updateCheckboxState();
+            if (termsOpened && privacyOpened) {
+                googleCheckbox.checked = true;
+                updateGoogleBtn();
+            }
+
+            termsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                document.getElementById('terms-modal').style.display = 'flex';
+            });
+
+            privacyLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                document.getElementById('privacy-modal').style.display = 'flex';
+            });
+
+            // Called from "I have read" buttons in modals
+            window.markTermsRead = function() {
+                termsOpened = true;
+                document.cookie = 'finnoys_terms_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
+                updateCheckboxState();
+                document.getElementById('terms-modal').style.display = 'none';
+                if (window.showSuccessDialog) window.showSuccessDialog('Terms Accepted', 'You have read and accepted the Terms & Conditions.');
+            };
+            window.markPrivacyRead = function() {
+                privacyOpened = true;
+                document.cookie = 'finnoys_policy_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
+                updateCheckboxState();
+                document.getElementById('privacy-modal').style.display = 'none';
+                if (window.showSuccessDialog) window.showSuccessDialog('Privacy Policy Accepted', 'You have read and accepted the Privacy Policy.');
+            };
+
+            googleCheckbox.addEventListener('change', updateGoogleBtn);
         });
 
     </script>

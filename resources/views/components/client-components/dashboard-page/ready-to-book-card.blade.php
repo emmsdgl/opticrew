@@ -1,5 +1,5 @@
 <div class="snap-start shrink-0 w-full">
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 h-full">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm dark:border-none p-6 py-2 h-full">
         <div class="flex flex-col lg:flex-row items-center lg:items-start gap-6">
             <!-- Text Content -->
             <div class="flex-1 w-full">

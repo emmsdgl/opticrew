@@ -225,7 +225,7 @@
             </div>
 
             <!-- Inner Bottom - Appointments List -->
-            <div id="tour-client-appointments" class="flex flex-col">
+            <div id="tour-client-appointments" class="flex flex-col flex-1">
                 <div class="flex flex-row justify-between">
                     <x-labelwithvalue label="Appointments Today" :count="'(' . $stats['ongoing'] . ')'" />
                     <div class="flex flex-row gap-2">
@@ -299,7 +299,7 @@
                     </div>
                 </div>
                 <!-- Fixed height when items exist, auto height for empty state -->
-                <div id="dashboard-appointments-list" class="rounded-lg my-6 bg-white shadow-sm dark:bg-gray-800/40 {{ $appointments->count() > 0 ? 'h-48 overflow-y-auto' : '' }}">
+                <div id="dashboard-appointments-list" class="rounded-lg my-6 bg-white shadow-sm dark:bg-gray-800/40 flex-1 min-h-[24rem] {{ $appointments->count() > 0 ? 'overflow-y-auto' : '' }}">
                     <x-client-components.appointment-page.appointment-overview-list :items="$appointments->map(function ($appointment) {
                         return [
                             'id' => $appointment->id,
@@ -344,7 +344,7 @@
         <!-- Right Panel - Attendance Overview -->
         <div id="tour-client-right-panel" class="flex flex-col gap-3 w-full lg:w-1/3 rounded-lg h-auto">
             <!-- Ready To Book Card - NEW -->
-            <div id="ready-card" class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div id="ready-card" class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl shadow-sm">
                 <!-- Background Image for Light Mode -->
                 <div class="absolute inset-0 bg-cover bg-center block dark:hidden"
                     style="background-image: url('{{ asset('images/backgrounds/ready-to-book-bg.svg') }}');">
@@ -380,7 +380,7 @@
                 </div>
             </div>
             <!-- Inner Up - Recommendation Service List -->
-            <div class="mt-3 w-full flex flex-col rounded-lg {{ $appointments->count() > 0 ? 'max-h-96 overflow-y-auto' : '' }}">
+            <div class="mt-3 w-full flex flex-col rounded-lg">
                 <div
                     class="flex flex-col gap-6 snap-x snap-mandatory scroll-smooth scrollbar-custom w-full">
 

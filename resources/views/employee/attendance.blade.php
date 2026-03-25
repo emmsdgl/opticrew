@@ -81,18 +81,6 @@
                     <i class="fas fa-check-circle"></i> You're Present Today, Clocked in at {{ $clockInTimeFormatted }}
                 </span>
             </div>
-        @elseif(!$hasAttendanceToday)
-            <div class="p-4 bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500 rounded-lg">
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-exclamation-triangle text-orange-500 text-xl mt-0.5"></i>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-orange-800 dark:text-orange-300 text-sm">Clock In Required</h4>
-                        <p class="text-orange-700 dark:text-orange-400 text-sm mt-1">
-                            You haven't clocked in yet today. Use the attendance drawer to clock in.
-                        </p>
-                    </div>
-                </div>
-            </div>
         @endif
 
         <!-- Inner Panel - Summary Cards Container -->
@@ -692,5 +680,24 @@
         }
     });
 </script>
+
+@if(!$hasAttendanceToday && !$isClockedIn)
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            const sonnerEl = document.querySelector('[x-data="sonnerToast()"]');
+            if (sonnerEl && sonnerEl._x_dataStack) {
+                Alpine.$data(sonnerEl).show(
+                    'Clock In Reminder',
+                    "You haven't clocked in yet today. Use the attendance drawer to clock in.",
+                    'warning', {
+                        persistent: true,
+                    }
+                );
+            }
+        }, 1000);
+    });
+</script>
+@endif
 @endpush
 </x-layouts.general-employee>

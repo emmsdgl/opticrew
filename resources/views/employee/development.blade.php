@@ -11,7 +11,9 @@
 
                     {{-- Search Bar --}}
                     <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Search courses..."
+                        <input type="search" id="searchInput" placeholder="Search courses..."
+                            autocomplete="off" readonly
+                            onfocus="this.removeAttribute('readonly')"
                             class="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
                         <svg class="absolute right-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">

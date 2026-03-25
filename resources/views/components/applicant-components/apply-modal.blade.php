@@ -9,6 +9,7 @@
     $defaultPhone = $authUser?->phone    ?? '';
     $defaultAddr  = $authUser?->location ?? '';
     $defaultEmail = $authUser?->email    ?? '';
+    $cscApiKey    = env('CSC_API_KEY', '');
 @endphp
 
 @once
@@ -111,8 +112,11 @@
             email:             '{{ addslashes($defaultEmail) }}',
             alternative_email: '',
 
-            city:              '',
             country:           '',
+            region:            '',
+            city:              '',
+            district:          '',
+            street:            '',
             linkedin:          '',
         },
 
@@ -121,67 +125,154 @@
         skillInput:    '',
         langInput:     '',
 
-        // Country / City dropdown state
-        countries:       [],
-        cities:          [],
+        // CSC API for address
+        cscApiKey:       '{{ $cscApiKey }}',
+        cscBaseUrl:      'https://api.countrystatecity.in/v1',
+        cscCountries:    [],
+        cscStates:       [],
+        cscCities:       [],
         countrySearch:   '',
+        regionSearch:    '',
         citySearch:      '',
         showCountryDrop: false,
+        showRegionDrop:  false,
         showCityDrop:    false,
         loadingCities:   false,
+        selectedCountryIso2: '',
+
+        // Supported country configs
+        countryConfigs: {
+            'Finland':     { iso2: 'FI', fields: ['region', 'city', 'district'], labels: { region: 'Region (Maakunta)', city: 'Municipality (Kunta)', district: 'District' } },
+            'Philippines': { iso2: 'PH', fields: ['region', 'city', 'street'],   labels: { region: 'Region', city: 'City', street: 'Street Address' } },
+        },
+
+        get currentConfig() {
+            return this.countryConfigs[this.form.country] || null;
+        },
+        get isKnownCountry() { return !!this.currentConfig; },
+        get showDistrict() { return this.currentConfig?.fields.includes('district'); },
+        get showStreet() { return this.currentConfig?.fields.includes('street'); },
+        get regionLabel() { return this.currentConfig?.labels.region || 'Region'; },
+        get cityLabel() { return this.currentConfig?.labels.city || 'City'; },
+        get lastFieldLabel() {
+            if (this.showDistrict) return this.currentConfig?.labels.district || 'District';
+            if (this.showStreet) return this.currentConfig?.labels.street || 'Street';
+            return '';
+        },
 
         get filteredCountries() {
             const q = this.countrySearch.toLowerCase();
-            if (!q) return this.countries.slice(0, 50);
-            return this.countries.filter(c => c.toLowerCase().includes(q)).slice(0, 50);
+            if (!q) return this.cscCountries.slice(0, 50);
+            return this.cscCountries.filter(c => c.name.toLowerCase().includes(q)).slice(0, 50);
+        },
+        get filteredRegions() {
+            const q = this.regionSearch.toLowerCase();
+            if (!q) return this.cscStates;
+            return this.cscStates.filter(s => (s.displayName || s.name).toLowerCase().includes(q));
         },
         get filteredCities() {
             const q = this.citySearch.toLowerCase();
-            if (!q) return this.cities.slice(0, 50);
-            return this.cities.filter(c => c.toLowerCase().includes(q)).slice(0, 50);
+            if (!q) return this.cscCities;
+            return this.cscCities.filter(c => c.name.toLowerCase().includes(q));
         },
 
-        selectCountry(name) {
-            this.form.country    = name;
-            this.countrySearch   = name;
-            this.showCountryDrop = false;
-            this.form.city       = '';
-            this.citySearch      = '';
-            this.cities          = [];
-            this.fetchCities(name);
+        async cscFetch(endpoint) {
+            const res = await fetch(`${this.cscBaseUrl}${endpoint}`, {
+                headers: { 'X-CSCAPI-KEY': this.cscApiKey }
+            });
+            if (!res.ok) throw new Error('CSC API error: ' + res.status);
+            return res.json();
         },
+
+        async loadCountries() {
+            if (this.cscCountries.length) return;
+            try {
+                const countries = await this.cscFetch('/countries');
+                this.cscCountries = countries.sort((a, b) => a.name.localeCompare(b.name));
+            } catch (e) { console.error('Failed to load countries:', e); }
+        },
+
+        async selectCountry(country) {
+            this.form.country = country.name;
+            this.selectedCountryIso2 = country.iso2;
+            this.countrySearch   = '';
+            this.showCountryDrop = false;
+            this.form.region     = '';
+            this.form.city       = '';
+            this.form.district   = '';
+            this.form.street     = '';
+            this.regionSearch    = '';
+            this.citySearch      = '';
+            this.cscStates       = [];
+            this.cscCities       = [];
+            await this.loadStatesForCountry(country.iso2);
+        },
+
+        async loadStatesForCountry(iso2) {
+            const overrides = {
+                'National Capital Region (Metro Manila)': 'National Capital Region (NCR)',
+            };
+            try {
+                const states = await this.cscFetch(`/countries/${iso2}/states`);
+                this.cscStates = states.map(s => ({
+                    ...s,
+                    displayName: overrides[s.name] || s.name,
+                })).sort((a, b) => (a.displayName).localeCompare(b.displayName));
+            } catch (e) { console.error('Failed to load states:', e); }
+        },
+
+        selectRegion(state) {
+            this.form.region     = state.displayName || state.name;
+            this.regionSearch    = '';
+            this.showRegionDrop  = false;
+            this.form.city       = '';
+            this.form.district   = '';
+            this.form.street     = '';
+            this.citySearch      = '';
+            this.cscCities       = [];
+            this.loadCitiesForState(state.iso2);
+        },
+
+        // Hardcoded cities for regions that the CSC API doesn't serve properly
+        manualCities: {
+            'PH': {
+                'National Capital Region (Metro Manila)': [
+                    'Manila', 'Quezon City', 'Makati', 'Taguig', 'Pasig',
+                    'Parañaque', 'Las Piñas', 'Muntinlupa', 'Marikina', 'Pasay',
+                    'Caloocan', 'Malabon', 'Navotas', 'Valenzuela', 'San Juan',
+                    'Mandaluyong', 'Pateros'
+                ],
+            }
+        },
+
+        async loadCitiesForState(stateIso2) {
+            this.loadingCities = true;
+            const countryIso2 = this.selectedCountryIso2 || this.currentConfig?.iso2 || '';
+            let cities = [];
+
+            // Attempt 1: state-specific endpoint
+            try {
+                const result = await this.cscFetch(`/countries/${countryIso2}/states/${stateIso2}/cities`);
+                if (Array.isArray(result) && result.length > 0) cities = result;
+            } catch (e) {}
+
+            // Attempt 2: manual fallback for known problematic regions
+            if (cities.length === 0) {
+                const stateObj = this.cscStates.find(s => s.iso2 === stateIso2);
+                const manualList = this.manualCities[countryIso2]?.[stateObj?.name];
+                if (manualList) {
+                    cities = manualList.map(name => ({ name, id: name }));
+                }
+            }
+
+            this.cscCities = cities.map(c => ({ name: c.name, id: c.id || c.name })).sort((a, b) => a.name.localeCompare(b.name));
+            this.loadingCities = false;
+        },
+
         selectCity(name) {
             this.form.city    = name;
             this.citySearch   = name;
             this.showCityDrop = false;
-        },
-
-        async fetchCountries() {
-            if (this.countries.length) return;
-            try {
-                const res  = await fetch('https://countriesnow.space/api/v0.1/countries', { signal: AbortSignal.timeout(8000) });
-                const data = await res.json();
-                if (!data.error && Array.isArray(data.data)) {
-                    this.countries = data.data.map(c => c.country).sort();
-                }
-            } catch (_) {}
-        },
-        async fetchCities(country) {
-            if (!country) return;
-            this.loadingCities = true;
-            try {
-                const res  = await fetch('https://countriesnow.space/api/v0.1/countries/cities', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ country }),
-                    signal: AbortSignal.timeout(8000),
-                });
-                const data = await res.json();
-                if (!data.error && Array.isArray(data.data)) {
-                    this.cities = data.data.sort();
-                }
-            } catch (_) {}
-            this.loadingCities = false;
         },
 
         addSkill() {
@@ -208,23 +299,29 @@
                 email:             '{{ addslashes($defaultEmail) }}',
                 alternative_email: '',
 
-                city:              '',
                 country:           '',
+                region:            '',
+                city:              '',
+                district:          '',
+                street:            '',
                 linkedin:          '',
             };
-            this.skillsList    = [];
-            this.languagesList = [];
-            this.skillInput    = '';
-            this.langInput     = '';
-            this.countrySearch = '';
-            this.citySearch    = '';
-            this.cities        = [];
-            this.altEmailError = '';
+            this.skillsList          = [];
+            this.languagesList       = [];
+            this.skillInput          = '';
+            this.langInput           = '';
+            this.countrySearch       = '';
+            this.regionSearch        = '';
+            this.citySearch          = '';
+            this.selectedCountryIso2 = '';
+            this.cscStates           = [];
+            this.cscCities           = [];
+            this.altEmailError       = '';
         },
 
         validateAltEmail() {
-            const v = this.form.alternative_email.trim();
-            if (!v) { this.altEmailError = ''; return; }
+            const v = (this.form.alternative_email || '').trim();
+            if (!v) { this.altEmailError = 'Alternative email is required'; return; }
             const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             this.altEmailError = re.test(v) ? '' : 'Please enter a valid email address';
         },
@@ -237,9 +334,17 @@
             if (!(this.form.phone || '').trim()) missing.push('Phone / Mobile');
             if (!(this.form.email || '').trim()) missing.push('Email Address');
             if (!(this.form.country || '').trim()) missing.push('Country');
-            if (!(this.form.city || '').trim()) missing.push('City');
+            if (this.isKnownCountry) {
+                if (!(this.form.region || '').trim()) missing.push(this.regionLabel);
+                if (!(this.form.city || '').trim()) missing.push(this.cityLabel);
+                if (this.showDistrict && !(this.form.district || '').trim()) missing.push(this.lastFieldLabel);
+                if (this.showStreet && !(this.form.street || '').trim()) missing.push(this.lastFieldLabel);
+            }
 
-            if (this.altEmailError) {
+            if (!(this.form.alternative_email || '').trim()) {
+                missing.push('Alternative Email');
+                this.altEmailError = 'Alternative email is required';
+            } else if (this.altEmailError) {
                 missing.push('Alternative Email (invalid format)');
             }
 
@@ -272,8 +377,11 @@
                 phone: this.pickField(fields, ['phone', 'mobile', 'mobile_number', 'contact_number', 'phone_number']),
                 email: this.pickField(fields, ['email', 'email_address', 'primary_email']),
 
-                city: this.pickField(fields, ['city', 'municipality']),
-                country: this.pickField(fields, ['country', 'nationality']),
+                country: this.pickField(fields, ['country', 'nationality', 'location_country']),
+                region: this.pickField(fields, ['region', 'state', 'province', 'maakunta']),
+                city: '',
+                district: this.pickField(fields, ['district', 'area', 'neighborhood', 'kaupunginosa']),
+                street: this.pickField(fields, ['street', 'street_address', 'address', 'barangay']),
                 linkedin: this.pickField(fields, ['linkedin', 'linkedin_url', 'linkedin_profile']),
             };
 
@@ -314,7 +422,7 @@
             this.showError     = false;
             this.resetForm();
             this.open          = true;
-            this.fetchCountries();
+            this.loadCountries();
         },
 
         closeModal() { this.open = false; },
@@ -370,26 +478,45 @@
                 if (data.success) {
                     const fields = data.fields ?? data.data?.fields ?? {};
                     this.applyExtractedFields(fields);
-                    // Sync dropdown search fields with extracted values
-                    if (this.form.country) {
-                        this.countrySearch = this.form.country;
-                        await this.fetchCities(this.form.country);
-                    }
-                    // Validate extracted city against the API city list
-                    if (this.form.city && this.cities.length) {
-                        const extractedCity = this.form.city.toLowerCase().trim();
-                        const matched = this.cities.find(c => c.toLowerCase() === extractedCity);
-                        if (matched) {
-                            this.form.city  = matched;
-                            this.citySearch = matched;
+
+                    // Match extracted country to CSC countries
+                    if (this.form.country && this.cscCountries.length) {
+                        const extractedCountry = this.form.country.toLowerCase().trim();
+                        const countryMatch = this.cscCountries.find(c => c.name.toLowerCase() === extractedCountry);
+                        if (countryMatch) {
+                            this.form.country = countryMatch.name;
+                            this.selectedCountryIso2 = countryMatch.iso2;
+                            await this.loadStatesForCountry(countryMatch.iso2);
+
+                            // Match region
+                            if (this.form.region && this.cscStates.length) {
+                                const extractedRegion = this.form.region.toLowerCase().trim();
+                                const regionMatch = this.cscStates.find(s => s.name.toLowerCase() === extractedRegion);
+                                if (regionMatch) {
+                                    this.form.region = regionMatch.name;
+                                    await this.loadCitiesForState(regionMatch.iso2);
+
+                                    // Match city/municipality
+                                    if (this.form.city && this.cscCities.length) {
+                                        const extractedCity = this.form.city.toLowerCase().trim();
+                                        const cityMatch = this.cscCities.find(c => c.name.toLowerCase() === extractedCity);
+                                        if (cityMatch) {
+                                            this.form.city = cityMatch.name;
+                                            this.citySearch = cityMatch.name;
+                                        } else {
+                                            this.form.city = '';
+                                            this.citySearch = '';
+                                        }
+                                    }
+                                } else {
+                                    this.form.region = '';
+                                }
+                            }
                         } else {
-                            // No exact match — clear the city so user picks manually
-                            this.form.city  = '';
-                            this.citySearch = '';
+                            this.form.country = '';
                         }
-                    } else if (this.form.city) {
-                        this.citySearch = this.form.city;
                     }
+                    if (this.form.city) this.citySearch = this.form.city;
                 }
             } catch (_) {}
             this.loading = false;
@@ -416,9 +543,32 @@
                 Object.entries(this.form).forEach(([k, v]) => fd.append(k, v));
                 fd.append('skills', this.skillsList.join(', '));
                 fd.append('languages', this.languagesList.join(', '));
-                const res  = await fetch('{{ route('applicant.apply.submit') }}', { method: 'POST', body: fd });
-                const data = await res.json();
-                if (data.success) {
+                const res  = await fetch('{{ route('applicant.apply.submit') }}', {
+                    method: 'POST',
+                    body: fd,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch (e) {
+                    this.errorMsg = 'Server returned an unexpected response. Please try again.';
+                    this.showError = true;
+                    this.loading = false;
+                    return;
+                }
+                if (!res.ok) {
+                    // Laravel validation errors
+                    if (data.errors) {
+                        const msgs = Object.values(data.errors).flat();
+                        this.errorMsg = msgs.join(', ');
+                    } else {
+                        this.errorMsg = data.message || 'Something went wrong.';
+                    }
+                    this.showError = true;
+                } else if (data.success) {
                     this.showSuccess = true;
                 } else {
                     this.errorMsg  = data.message || 'Something went wrong.';
@@ -630,7 +780,7 @@
                                     <input type="email" x-model="form.email" class="am-input" autocomplete="off" autocapitalize="off" spellcheck="false">
                                 </div>
                                 <div>
-                                    <label class="text-sm font-normal text-gray-500 dark:text-gray-500 block mb-0.5">Alternative Email</label>
+                                    <label class="text-sm font-normal text-gray-500 dark:text-gray-500 block mb-0.5">Alternative Email <span class="text-red-500">*</span></label>
                                     <input type="email" x-model="form.alternative_email" @input="validateAltEmail()" class="am-input"
                                         :class="altEmailError && 'border-red-400 dark:border-red-500 focus:border-red-400 focus:ring-red-400/40'">
                                     <p x-show="altEmailError" x-text="altEmailError" class="text-[10px] text-red-500 dark:text-red-400 mt-0.5"></p>
@@ -638,38 +788,102 @@
                                 {{-- Country dropdown --}}
                                 <div class="relative" @mousedown.outside="showCountryDrop = false">
                                     <label class="text-sm font-normal text-gray-500 dark:text-gray-500 block mb-0.5">Country</label>
-                                    <input type="text"
-                                        x-model="countrySearch"
-                                        @focus="showCountryDrop = true"
-                                        @input="showCountryDrop = true"
-                                        placeholder="Search country…"
-                                        class="am-input" autocomplete="off">
-                                    <div x-show="showCountryDrop && filteredCountries.length" x-cloak
-                                        class="am-dropdown absolute z-50 left-0 right-0 mt-1 max-h-36 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-                                        <template x-for="c in filteredCountries" :key="c">
-                                            <button type="button" @mousedown.prevent="selectCountry(c)"
-                                                class="w-full text-left px-3 py-1.5 text-[11px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                                x-text="c"></button>
-                                        </template>
+                                    <button type="button" @click="showCountryDrop = !showCountryDrop"
+                                        class="am-input w-full text-left flex items-center justify-between">
+                                        <span x-text="form.country || 'Select Country...'"
+                                            :class="form.country ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"></span>
+                                        <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200"
+                                            :class="showCountryDrop && 'rotate-180'"></i>
+                                    </button>
+                                    <div x-show="showCountryDrop" x-cloak
+                                        class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-hidden">
+                                        <div class="p-1.5 border-b border-gray-200 dark:border-gray-700">
+                                            <input type="text" x-model="countrySearch" placeholder="Search country..."
+                                                class="w-full px-2 py-1 text-[11px] border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500" autocomplete="off">
+                                        </div>
+                                        <div class="max-h-36 overflow-y-auto">
+                                            <template x-for="c in filteredCountries" :key="c.iso2">
+                                                <button type="button" @mousedown.prevent="selectCountry(c)"
+                                                    class="w-full text-left px-3 py-1.5 text-[11px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                    :class="form.country === c.name ? 'bg-blue-50 dark:bg-blue-900/20' : ''"
+                                                    x-text="c.name"></button>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
-                                {{-- City (editable with suggestions) --}}
-                                <div class="relative" @mousedown.outside="showCityDrop = false">
-                                    <label class="text-sm font-normal text-gray-500 dark:text-gray-500 block mb-0.5">City</label>
-                                    <input type="text"
-                                        x-model="citySearch"
-                                        @focus="if(cities.length) showCityDrop = true"
-                                        @input="form.city = citySearch; if(cities.length) showCityDrop = true"
-                                        :placeholder="loadingCities ? 'Loading cities…' : 'Type your city…'"
-                                        class="am-input" autocomplete="off">
-                                    <div x-show="showCityDrop && filteredCities.length" x-cloak
-                                        class="am-dropdown absolute z-50 left-0 right-0 mt-1 max-h-36 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-                                        <template x-for="c in filteredCities" :key="c">
-                                            <button type="button" @mousedown.prevent="selectCity(c)"
-                                                class="w-full text-left px-3 py-1.5 text-[11px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                                x-text="c"></button>
-                                        </template>
+
+                                {{-- Region dropdown (shows when country is selected and known) --}}
+                                <div x-show="isKnownCountry" class="relative" @mousedown.outside="showRegionDrop = false">
+                                    <label class="text-sm font-normal text-gray-500 dark:text-gray-500 block mb-0.5" x-text="regionLabel"></label>
+                                    <button type="button" @click="if(cscStates.length > 0) showRegionDrop = !showRegionDrop"
+                                        :class="cscStates.length === 0 ? 'opacity-50 cursor-not-allowed' : ''"
+                                        class="am-input w-full text-left flex items-center justify-between">
+                                        <span x-text="form.region || ('Select ' + regionLabel + '...')"
+                                            :class="form.region ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"></span>
+                                        <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200"
+                                            :class="showRegionDrop && 'rotate-180'"></i>
+                                    </button>
+                                    <div x-show="showRegionDrop" x-cloak
+                                        class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-hidden">
+                                        <div class="p-1.5 border-b border-gray-200 dark:border-gray-700">
+                                            <input type="text" x-model="regionSearch" placeholder="Search..."
+                                                class="w-full px-2 py-1 text-[11px] border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500" autocomplete="off">
+                                        </div>
+                                        <div class="max-h-36 overflow-y-auto">
+                                            <template x-for="s in filteredRegions" :key="s.iso2">
+                                                <button type="button" @mousedown.prevent="selectRegion(s)"
+                                                    class="w-full text-left px-3 py-1.5 text-[11px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                    :class="form.region === (s.displayName || s.name) ? 'bg-blue-50 dark:bg-blue-900/20' : ''"
+                                                    x-text="s.displayName || s.name"></button>
+                                            </template>
+                                        </div>
                                     </div>
+                                </div>
+
+                                {{-- City/Municipality dropdown (shows when region selected and known country) --}}
+                                <div x-show="isKnownCountry" class="relative" @mousedown.outside="showCityDrop = false">
+                                    <label class="text-sm font-normal text-gray-500 dark:text-gray-500 block mb-0.5" x-text="cityLabel"></label>
+                                    <button type="button" @click="if(cscCities.length > 0) showCityDrop = !showCityDrop"
+                                        :class="cscCities.length === 0 ? 'opacity-50 cursor-not-allowed' : ''"
+                                        class="am-input w-full text-left flex items-center justify-between">
+                                        <span x-text="loadingCities ? 'Loading...' : (form.city || ('Select ' + cityLabel + '...'))"
+                                            :class="form.city ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"></span>
+                                        <i class="fas fa-chevron-down text-[9px] text-gray-400 transition-transform duration-200"
+                                            :class="showCityDrop && 'rotate-180'"></i>
+                                    </button>
+                                    <div x-show="showCityDrop" x-cloak
+                                        class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-hidden">
+                                        <div class="p-1.5 border-b border-gray-200 dark:border-gray-700">
+                                            <input type="text" x-model="citySearch" placeholder="Search..."
+                                                class="w-full px-2 py-1 text-[11px] border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500" autocomplete="off">
+                                        </div>
+                                        <div class="max-h-36 overflow-y-auto">
+                                            <template x-for="c in filteredCities" :key="c.name">
+                                                <button type="button" @mousedown.prevent="selectCity(c.name)"
+                                                    class="w-full text-left px-3 py-1.5 text-[11px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                    :class="form.city === c.name ? 'bg-blue-50 dark:bg-blue-900/20' : ''"
+                                                    x-text="c.name"></button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- District (Finland) --}}
+                                <div x-show="showDistrict">
+                                    <label class="text-sm font-normal text-gray-500 dark:text-gray-500 block mb-0.5" x-text="lastFieldLabel"></label>
+                                    <input type="text" x-model="form.district" placeholder="e.g. Kallio, Kamppi..."
+                                        :disabled="!form.city"
+                                        :class="!form.city ? 'opacity-50 cursor-not-allowed' : ''"
+                                        class="am-input" autocomplete="off">
+                                </div>
+
+                                {{-- Street (Philippines) --}}
+                                <div x-show="showStreet">
+                                    <label class="text-sm font-normal text-gray-500 dark:text-gray-500 block mb-0.5" x-text="lastFieldLabel"></label>
+                                    <input type="text" x-model="form.street" placeholder="e.g. 123 Rizal Street, Brgy. San Antonio"
+                                        :disabled="!form.city"
+                                        :class="!form.city ? 'opacity-50 cursor-not-allowed' : ''"
+                                        class="am-input" autocomplete="off">
                                 </div>
                                 {{-- LinkedIn (optional) --}}
                                 <div>
