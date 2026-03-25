@@ -74,42 +74,79 @@
             background-color: #1f2937;
         }
 
-        /* Active navigation pill indicator */
+        /* Morphing navigation */
+        .morphing-nav {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 4px;
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        .dark .morphing-nav {
+            background: transparent;
+        }
+
+        .morphing-nav-pill {
+            position: absolute;
+            top: 4px;
+            left: 0;
+            height: calc(100% - 8px);
+            border-radius: 9999px;
+            background-color: #E8EAF2;
+            transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+
+        .dark .morphing-nav-pill {
+            background-color: rgba(55, 65, 81, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
         .nav-link {
             position: relative;
+            z-index: 1;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.75rem 1rem;
+            padding: 0.625rem 1rem;
             border-radius: 9999px;
-            transition: all 0.3s ease;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         @media (min-width: 1024px) {
             .nav-link {
-                padding: 1rem 1rem;
+                padding: 0.75rem 1.25rem;
             }
         }
 
         .nav-link.active {
-            background-color: #E8EAF2;
+            color: #172554 !important;
+            font-weight: 400;
         }
 
         .dark .nav-link.active {
-            background-color: rgba(55, 65, 81, 1);
-            /* gray-700 */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            color: white !important;
         }
 
         .nav-link .nav-icon {
             width: 1rem;
             height: 1rem;
-            display: none;
             flex-shrink: 0;
             line-height: 1;
+            opacity: 0;
+            max-width: 0;
+            overflow: hidden;
+            transition: opacity 0.25s ease, max-width 0.3s ease;
         }
 
         .nav-link.active .nav-icon {
+            opacity: 1;
+            max-width: 1.5rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -119,6 +156,17 @@
             line-height: 1;
             display: inline-flex;
             align-items: center;
+        }
+
+        /* Page transition */
+        .page-transition {
+            opacity: 0;
+            animation: pageFadeIn 0.35s ease-out forwards;
+        }
+
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         #header-1,
@@ -249,28 +297,43 @@
                     </button>
                 </div>
 
-                <!-- Desktop Navigation Links -->
-                <div class="hidden lg:flex lg:gap-x-2 xl:gap-x-4 text-xs xl:text-sm">
-                    <a href="{{ route('home') }}"
-                        class="nav-link {{ request()->routeIs('home') ? 'active text-blue-950 dark:text-white font-bold' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
-                        <i class="nav-icon fas fa-home text-blue-950 dark:text-white"></i>
-                        <span>{{ __('common.nav.home') }}</span>
-                    </a>
-                    <a href="{{ route('services') }}"
-                        class="nav-link {{ request()->routeIs('services') ? 'active text-blue-950 dark:text-white font-bold' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
-                        <i class="nav-icon fas fa-broom text-blue-950 dark:text-white"></i>
-                        <span>{{ __('common.nav.services') }}</span>
-                    </a>
-                    <a href="{{ route('quotation') }}"
-                        class="nav-link {{ request()->routeIs('quotation') ? 'active text-blue-950 dark:text-white font-bold' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
-                        <i class="nav-icon fas fa-file-invoice-dollar text-blue-950 dark:text-white"></i>
-                        <span>{{ __('common.nav.pricing') }}</span>
-                    </a>
-                    <a href="{{ route('about') }}"
-                        class="nav-link {{ request()->routeIs('about') ? 'active text-blue-950 dark:text-white font-bold' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
-                        <i class="nav-icon fas fa-info-circle text-blue-950 dark:text-white"></i>
-                        <span>{{ __('common.nav.about') }}</span>
-                    </a>
+                <!-- Desktop Navigation Links (Morphing Nav) -->
+                <div class="hidden lg:flex text-xs xl:text-sm"
+                    x-data="morphingNav()" x-init="init()">
+                    <div class="morphing-nav" x-ref="navContainer">
+                        {{-- Sliding pill --}}
+                        <div class="morphing-nav-pill" x-ref="pill"
+                            :style="`left: ${pillLeft}px; width: ${pillWidth}px;`"></div>
+
+                        <a href="{{ route('home') }}" x-ref="nav-home"
+                            @mouseenter="hoverTab('nav-home')"
+                            @mouseleave="unhover()"
+                            class="nav-link {{ request()->routeIs('home') ? 'active font-normal' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
+                            <i class="nav-icon fas fa-home text-blue-950 dark:text-white"></i>
+                            <span>{{ __('common.nav.home') }}</span>
+                        </a>
+                        <a href="{{ route('services') }}" x-ref="nav-services"
+                            @mouseenter="hoverTab('nav-services')"
+                            @mouseleave="unhover()"
+                            class="nav-link {{ request()->routeIs('services') ? 'active font-normal' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
+                            <i class="nav-icon fas fa-broom text-blue-950 dark:text-white"></i>
+                            <span>{{ __('common.nav.services') }}</span>
+                        </a>
+                        <a href="{{ route('quotation') }}" x-ref="nav-pricing"
+                            @mouseenter="hoverTab('nav-pricing')"
+                            @mouseleave="unhover()"
+                            class="nav-link {{ request()->routeIs('quotation') ? 'active font-normal' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
+                            <i class="nav-icon fas fa-file-invoice-dollar text-blue-950 dark:text-white"></i>
+                            <span>{{ __('common.nav.pricing') }}</span>
+                        </a>
+                        <a href="{{ route('about') }}" x-ref="nav-about"
+                            @mouseenter="hoverTab('nav-about')"
+                            @mouseleave="unhover()"
+                            class="nav-link {{ request()->routeIs('about') ? 'active font-normal' : 'text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400' }}">
+                            <i class="nav-icon fas fa-info-circle text-blue-950 dark:text-white"></i>
+                            <span>{{ __('common.nav.about') }}</span>
+                        </a>
+                    </div>
                 </div>
                 <!-- Right side items: Theme Toggle, Language Switcher, Login -->
                 <div class="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-2 xl:gap-x-4">
@@ -415,7 +478,9 @@
         </header>
 
         <!-- Main Content -->
-        @yield('content')
+        <main class="page-transition">
+            @yield('content')
+        </main>
 
         <!-- Chatbot Component -->
         @include('components.landing-chatbot')
@@ -429,6 +494,66 @@
     <x-material-ui.typing-text />
 
     @stack('scripts')
+
+    <script>
+        // Morphing Nav component
+        function morphingNav() {
+            return {
+                pillLeft: 0,
+                pillWidth: 0,
+                activeRef: null,
+                hovering: false,
+
+                init() {
+                    // Determine which tab is active based on server-side class
+                    this.$nextTick(() => {
+                        const activeEl = this.$refs.navContainer.querySelector('.nav-link.active');
+                        if (activeEl) {
+                            // Find the ref name
+                            const refs = ['nav-home', 'nav-services', 'nav-pricing', 'nav-about'];
+                            for (const ref of refs) {
+                                if (this.$refs[ref] === activeEl) {
+                                    this.activeRef = ref;
+                                    break;
+                                }
+                            }
+                            this.movePillTo(activeEl);
+                        }
+
+                        // Recalculate on resize
+                        window.addEventListener('resize', () => {
+                            if (this.activeRef && this.$refs[this.activeRef]) {
+                                this.movePillTo(this.$refs[this.activeRef]);
+                            }
+                        });
+                    });
+                },
+
+                movePillTo(el) {
+                    if (!el || !this.$refs.navContainer) return;
+                    const containerRect = this.$refs.navContainer.getBoundingClientRect();
+                    const elRect = el.getBoundingClientRect();
+                    this.pillLeft = elRect.left - containerRect.left;
+                    this.pillWidth = elRect.width;
+                },
+
+                hoverTab(ref) {
+                    this.hovering = true;
+                    if (this.$refs[ref]) {
+                        this.movePillTo(this.$refs[ref]);
+                    }
+                },
+
+                unhover() {
+                    this.hovering = false;
+                    // Return pill to active tab
+                    if (this.activeRef && this.$refs[this.activeRef]) {
+                        this.movePillTo(this.$refs[this.activeRef]);
+                    }
+                }
+            };
+        }
+    </script>
 
     <script>
         // Force scroll to top on page load/refresh

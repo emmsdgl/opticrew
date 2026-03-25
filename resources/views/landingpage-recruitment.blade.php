@@ -3,6 +3,8 @@
 @section('title', 'Job Opportunities')
 @push('styles')
     <style>
+        [x-cloak] { display: none !important; }
+
         body {
             background-image: none;
             background-color: #F6FAFD;
@@ -209,6 +211,20 @@
                 background-position: 0% 50%;
             }
         }
+        /* Detail panel icon colors */
+        .detail-icon[data-icon-color="green"] { color: #16a34a; }
+        .detail-icon[data-icon-color="purple"] { color: #9333ea; }
+        .detail-icon[data-icon-color="orange"] { color: #ea580c; }
+        .detail-icon[data-icon-color="red"] { color: #dc2626; }
+        .detail-icon[data-icon-color="blue"] { color: #2563eb; }
+        .detail-icon:not([data-icon-color]) { color: #2563eb; }
+
+        .dark .detail-icon[data-icon-color="green"] { color: #4ade80; }
+        .dark .detail-icon[data-icon-color="purple"] { color: #c084fc; }
+        .dark .detail-icon[data-icon-color="orange"] { color: #fb923c; }
+        .dark .detail-icon[data-icon-color="red"] { color: #f87171; }
+        .dark .detail-icon[data-icon-color="blue"] { color: #60a5fa; }
+        .dark .detail-icon:not([data-icon-color]) { color: #60a5fa; }
     </style>
 @endpush
 
@@ -235,7 +251,7 @@
                     </div>
 
                     {{-- Hero Search Bar --}}
-                    <div
+                    <div id="heroSearchBar"
                         class="bg-white dark:bg-gray-800 rounded-full shadow-lg shadow-gray-200/60 dark:shadow-black/20 p-2 flex items-center gap-2 max-w-lg mx-auto lg:mx-0">
                         <div class="flex items-center gap-2 flex-1 pl-4">
                             <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor"
@@ -243,22 +259,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <input type="text" placeholder="Job Title or keyword"
-                                class="w-full bg-transparent border-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none py-2"
-                                x-data x-ref="heroSearch"
-                                @keydown.enter.prevent="
-                                    const val = $refs.heroSearch.value.trim();
-                                    if (val) {
-                                        document.querySelector('#jobListingsSection').scrollIntoView({ behavior: 'smooth' });
-                                        setTimeout(() => {
-                                            const mainSearch = document.querySelector('[x-model=&quot;searchQuery&quot;]');
-                                            if (mainSearch) { mainSearch.value = val; mainSearch.dispatchEvent(new Event('input')); }
-                                        }, 500);
-                                    }
-                                ">
+                            <input type="text" id="heroSearchInput" placeholder="Job Title or keyword"
+                                class="w-full bg-transparent border-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-0 py-2"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();window.heroSearchGo();}">
                         </div>
-                        <div
-                            class="hidden sm:flex items-center gap-2 flex-1 pl-4 border-l border-gray-200 dark:border-gray-600">
+                        <div id="heroLocWrapper"
+                            class="hidden sm:flex items-center gap-2 flex-1 pl-4 border-l border-gray-200 dark:border-gray-600"
+                            x-data="heroLocationDropdown()"
+                            @click.away="openLoc = false"
+                            @resize.window="if(openLoc) positionDropdown()">
                             <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -266,27 +275,61 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <input type="text" placeholder="Location"
-                                class="w-full bg-transparent border-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none py-2"
-                                x-data x-ref="heroLocation"
-                                @keydown.enter.prevent="
-                                    document.querySelector('#jobListingsSection').scrollIntoView({ behavior: 'smooth' });
-                                ">
+                            <input type="hidden" id="heroLocationInput" :value="selectedLoc">
+                            {{-- Dropdown trigger --}}
+                            <button type="button" @click="toggle()" x-ref="locTrigger"
+                                class="w-full flex items-center justify-between bg-transparent text-sm py-2 pr-2 cursor-pointer focus:outline-none focus:ring-0"
+                                :class="selectedLoc ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400'">
+                                <span x-text="selectedLabel" class="truncate"></span>
+                                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 ml-1 transition-transform duration-200"
+                                    :class="openLoc ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            {{-- Dropdown content (teleported to body to avoid overflow clipping) --}}
+                            <template x-teleport="body">
+                                <div x-show="openLoc" x-cloak
+                                    x-ref="locDropdown"
+                                    @click.away="openLoc = false"
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 -translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 -translate-y-1"
+                                    class="fixed z-[9999] bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1.5 max-h-60 overflow-y-auto scrollbar-custom"
+                                    :style="dropdownStyle">
+                                    {{-- All Locations option --}}
+                                    <button type="button"
+                                        @click="selectLocation('', 'All Locations')"
+                                        class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2"
+                                        :class="selectedLoc === '' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'">
+                                        <svg class="w-4 h-4 flex-shrink-0" :class="selectedLoc === '' ? 'text-blue-500' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>All Locations</span>
+                                    </button>
+                                    @php
+                                        $heroLocations = ($jobPostings ?? collect())->pluck('location')->unique()->sort()->values();
+                                    @endphp
+                                    @foreach($heroLocations as $loc)
+                                        <button type="button"
+                                            @click="selectLocation('{{ $loc }}', '{{ $loc }}')"
+                                            class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2"
+                                            :class="selectedLoc === '{{ $loc }}' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'">
+                                            <svg class="w-4 h-4 flex-shrink-0" :class="selectedLoc === '{{ $loc }}' ? 'text-blue-500' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            <span>{{ $loc }}</span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </template>
                         </div>
                         <button
                             class="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-sm font-normal px-6 py-3 rounded-full transition-colors"
-                            x-data
-                            @click="
-                                const heroSearch = document.querySelector('[x-ref=&quot;heroSearch&quot;]');
-                                const val = heroSearch ? heroSearch.value.trim() : '';
-                                document.querySelector('#jobListingsSection').scrollIntoView({ behavior: 'smooth' });
-                                if (val) {
-                                    setTimeout(() => {
-                                        const mainSearch = document.querySelector('[x-model=&quot;searchQuery&quot;]');
-                                        if (mainSearch) { mainSearch.value = val; mainSearch.dispatchEvent(new Event('input')); }
-                                    }, 500);
-                                }
-                            ">
+                            onclick="window.heroSearchGo()">
                             Search
                         </button>
                     </div>
@@ -379,8 +422,15 @@
 
             <div class="flex flex-col lg:flex-row gap-6">
 
-                {{-- Left Sidebar - Filters --}}
-                <aside class="w-full lg:w-80 xl:w-96 flex-shrink-0">
+                {{-- Left Sidebar - Filters (hidden by default, toggled) --}}
+                <aside x-show="showFilters" x-cloak
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-x-4"
+                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 translate-x-0"
+                    x-transition:leave-end="opacity-0 -translate-x-4"
+                    class="w-full lg:w-80 xl:w-96 flex-shrink-0">
                     <div
                         class="bg-white shadow-lg dark:bg-gray-900 rounded-2xl p-6 sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-custom">
 
@@ -499,15 +549,18 @@
 
                 {{-- Middle - Job Cards List --}}
                 <div class="flex-1 min-w-0">
-                    {{-- Search Bar
-                    <div class="relative mb-4">
-                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                        <input type="text" x-model="searchQuery" @input="applyFilters()"
-                            placeholder="Search by Category, Company or ..."
-                            class="w-full text-sm pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400">
-                    </div> --}}
+                    {{-- Filter Toggle --}}
+                    <div class="flex items-center gap-3 mb-4">
+                        <button @click="showFilters = !showFilters"
+                            class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :class="showFilters ? 'text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600' : 'text-gray-400'">
+                            <i class="fas fa-sliders-h text-sm"></i>
+                        </button>
+                        <span class="text-sm text-gray-500 dark:text-gray-400" x-show="searchQuery">
+                            Searching: "<span x-text="searchQuery" class="font-medium text-gray-700 dark:text-gray-200"></span>"
+                            <button @click="searchQuery = ''; selectedLocations = []; applyFilters();" class="ml-1 text-red-500 hover:text-red-600 text-xs font-medium">Clear</button>
+                        </span>
+                    </div>
 
                     {{-- Results Header --}}
                     <div class="flex items-center justify-between mb-4 px-8">
@@ -530,7 +583,8 @@
 
                     {{-- Scrollable Job Cards --}}
                     <div
-                        class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[calc(100vh-8rem)] overflow-y-auto overflow-x-visible scrollbar-custom px-1 pb-2">
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[calc(100vh-8rem)] overflow-y-auto overflow-x-visible scrollbar-custom px-1 pb-2"
+                        :class="!showFilters ? 'xl:grid-cols-4' : 'xl:grid-cols-3'">
                         @forelse($jobPostings ?? [] as $job)
                             @php
                                 $iconBgClass = match ($job->icon_color) {
@@ -580,13 +634,13 @@
                                     <div class="flex items-start gap-3 mb-3">
                                         <div
                                             class="w-10 h-10 {{ $iconBgClass }} rounded-xl flex items-center justify-center flex-shrink-0">
-                                            <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-sm"></i>
+                                            <i class="fas {{ $job->icon }} {{ $iconTextClass }} text-base"></i>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-bold text-gray-900 dark:text-white leading-snug truncate"
+                                            <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug truncate"
                                                 title="{{ $job->title }}">
                                                 {{ $job->title }}</h3>
-                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                            <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
                                                 {{ $job->location }}
                                             </p>
                                         </div>
@@ -599,14 +653,14 @@
                                     {{-- Type Badges --}}
                                     <div class="flex flex-wrap gap-1.5 mb-3">
                                         <span
-                                            class="px-2.5 py-0.5 {{ $typeBadgeClass }} text-xs font-medium rounded-full">
+                                            class="px-2.5 py-0.5 {{ $typeBadgeClass }} text-sm font-medium rounded-full">
                                             {{ $job->type_badge }}
                                         </span>
                                     </div>
 
                                     {{-- Description --}}
                                     <p
-                                        class="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 flex-1 leading-relaxed">
+                                        class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 flex-1 leading-relaxed">
                                         {{ $job->description }}
                                     </p>
 
@@ -614,9 +668,9 @@
                                     <div
                                         class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto">
                                         <span
-                                            class="text-sm font-bold text-gray-900 dark:text-white">&euro;{{ $job->salary }}<span
-                                                class="text-xs font-normal text-gray-400">/hr</span></span>
-                                        <span class="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                                            class="text-base font-bold text-gray-900 dark:text-white">&euro;{{ $job->salary }}<span
+                                                class="text-sm font-normal text-gray-400">/hr</span></span>
+                                        <span class="text-sm text-gray-400 dark:text-gray-500 flex items-center gap-1">
                                             <i class="far fa-clock"></i>
                                             Posted {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
                                         </span>
@@ -644,161 +698,165 @@
                     </div>
                 </div>
 
-                {{-- Job Detail Panel --}}
-                <div x-show="showDetail" x-cloak x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0"
-                    class="w-full lg:w-80 xl:w-96 flex-shrink-0">
-                    <div
-                        class="bg-white dark:bg-gray-900 shadow-lg rounded-2xl sticky top-6 max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden">
-                        <template x-if="selectedJob">
-                            <div class="flex flex-col h-full min-h-0">
-                                {{-- Scrollable content --}}
-                                <div class="flex-1 overflow-y-auto scrollbar-custom min-h-0">
-                                    {{-- Top section: Icon + Title + Location --}}
-                                    <div
-                                        class="px-6 pt-8 pb-5 flex flex-col items-center text-center border-b border-gray-100 dark:border-gray-700">
-                                        {{-- Close button --}}
-                                        <button @click="showDetail = false; selectedJobId = null; selectedJob = null;"
-                                            class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors z-10">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-
-                                        {{-- Company Icon --}}
-                                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-sm dark:shadow-none"
-                                            :class="{
-                                                'bg-green-50 dark:bg-green-900/30': selectedJob
-                                                    .iconColor === 'green',
-                                                'bg-purple-50 dark:bg-purple-900/30': selectedJob
-                                                    .iconColor === 'purple',
-                                                'bg-orange-50 dark:bg-orange-900/30': selectedJob
-                                                    .iconColor === 'orange',
-                                                'bg-red-50 dark:bg-red-900/30': selectedJob.iconColor === 'red',
-                                                'bg-blue-50 dark:bg-blue-900/30': !['green', 'purple', 'orange', 'red']
-                                                    .includes(selectedJob.iconColor)
-                                            }">
-                                            <i class="fas text-2xl"
-                                                :class="[selectedJob.icon, {
-                                                    'text-green-600 dark:text-green-400': selectedJob
-                                                        .iconColor === 'green',
-                                                    'text-purple-600 dark:text-purple-400': selectedJob
-                                                        .iconColor === 'purple',
-                                                    'text-orange-600 dark:text-orange-400': selectedJob
-                                                        .iconColor === 'orange',
-                                                    'text-red-600 dark:text-red-400': selectedJob
-                                                        .iconColor === 'red',
-                                                    'text-blue-600 dark:text-blue-400': !['green', 'purple',
-                                                        'orange', 'red'
-                                                    ].includes(selectedJob.iconColor)
-                                                }]"></i>
-                                        </div>
-
-                                        {{-- Title --}}
-                                        <h2 class="text-lg font-bold text-gray-900 dark:text-white leading-snug mb-1"
-                                            x-text="selectedJob.title"></h2>
-
-                                        {{-- Company + Location --}}
-                                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedJob.location">
-                                        </p>
-                                    </div>
-                                    {{-- About the Job --}}
-                                    <div class="px-6 py-5">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">About the Job</h3>
-                                        <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                            <p class="w-full text-justify" x-text="selectedJob.description"></p>
-                                        </div>
-                                    </div>
-                                    {{-- Required Skills (Minimum qualifications) --}}
-                                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700"
-                                        x-show="selectedJob.requiredSkills && selectedJob.requiredSkills.length > 0">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required
-                                            Skills:</h3>
-                                        <ul class="space-y-2">
-                                            <template x-for="skill in selectedJob.requiredSkills" :key="skill">
-                                                <li
-                                                    class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                                    <span
-                                                        class="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0">&#8226;</span>
-                                                    <span x-text="skill"></span>
-                                                </li>
-                                            </template>
-                                        </ul>
-                                    </div>
-
-                                    {{-- Required Documents --}}
-                                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700"
-                                        x-show="selectedJob.requiredDocs && selectedJob.requiredDocs.length > 0">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required documents
-                                        </h3>
-                                        <ul class="space-y-2">
-                                            <template x-for="doc in selectedJob.requiredDocs"
-                                                :key="typeof doc === 'object' ? doc.name : doc">
-                                                <li
-                                                    class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                                    <span
-                                                        class="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0">&#8226;</span>
-                                                    <span>
-                                                        <span x-text="typeof doc === 'object' ? doc.name : doc"></span>
-                                                        <template x-if="typeof doc === 'object' && doc.type">
-                                                            <span
-                                                                class="ml-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400"
-                                                                x-text="doc.type"></span>
-                                                        </template>
-                                                    </span>
-                                                </li>
-                                            </template>
-                                        </ul>
-                                    </div>
-
-
-
-                                    {{-- Benefits --}}
-                                    <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
-                                        x-show="selectedJob.benefits && selectedJob.benefits.length > 0">
-                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Benefits:</h3>
-                                        <ul class="space-y-2">
-                                            <template x-for="benefit in selectedJob.benefits" :key="benefit">
-                                                <li
-                                                    class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                                                    <div
-                                                        class="w-5 h-5 bg-blue-50 dark:bg-blue-900/30 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                        <i
-                                                            class="fas fa-check text-blue-600 dark:text-blue-400 text-[8px]"></i>
-                                                    </div>
-                                                    <span x-text="benefit"></span>
-                                                </li>
-                                            </template>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                {{-- Fixed bottom: Apply Now + Heart --}}
-                                <div
-                                    class="px-6 py-4 rounded-xl border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center gap-3 flex-shrink-0">
-                                    <button @click="openApplicationModal()"
-                                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full transition-all shadow-md text-sm font-semibold hover:shadow-lg">
-                                        Apply Now
-                                    </button>
-                                    <button @click.stop
-                                        class="w-11 h-11 bg-gray-100 dark:bg-gray-700 text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 rounded-full transition-colors flex items-center justify-center flex-shrink-0">
-                                        <i class="far fa-heart text-lg"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
             </div>
         </div>
+
+        {{-- Job Detail Slide-In Drawer --}}
+        <div @keydown.escape.window="if(showDetail){ showDetail = false; selectedJobId = null; selectedJob = null; }"
+            x-effect="document.body.style.overflow = showDetail ? 'hidden' : ''">
+            {{-- Backdrop --}}
+            <div x-show="showDetail" x-cloak
+                class="fixed inset-0 z-[99] bg-black/40 backdrop-blur-sm"
+                @click="showDetail = false; selectedJobId = null; selectedJob = null;"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0">
+            </div>
+
+            {{-- Drawer Panel --}}
+            <div x-show="showDetail" x-cloak
+                class="fixed inset-y-0 right-0 z-[100] w-full sm:w-[420px] md:w-[480px] flex flex-col bg-white dark:bg-gray-900 shadow-2xl"
+                x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="translate-x-full"
+                x-transition:enter-end="translate-x-0"
+                x-transition:leave="transition ease-in duration-200 transform"
+                x-transition:leave-start="translate-x-0"
+                x-transition:leave-end="translate-x-full">
+
+                    <template x-if="selectedJob">
+                        <div class="flex flex-col h-full min-h-0">
+                            {{-- Drawer Header --}}
+                            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
+                                <h2 class="text-base font-bold text-gray-900 dark:text-white">Job Details</h2>
+                                <button @click="showDetail = false; selectedJobId = null; selectedJob = null;"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {{-- Scrollable content --}}
+                            <div class="flex-1 overflow-y-auto scrollbar-custom min-h-0">
+                                {{-- Top section: Icon + Title + Location --}}
+                                <div class="px-6 pt-8 pb-5 flex flex-col items-center text-center border-b border-gray-100 dark:border-gray-700">
+                                    {{-- Company Icon --}}
+                                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-sm dark:shadow-none"
+                                        :class="{
+                                            'bg-green-50 dark:bg-green-900/30': selectedJob.iconColor === 'green',
+                                            'bg-purple-50 dark:bg-purple-900/30': selectedJob.iconColor === 'purple',
+                                            'bg-orange-50 dark:bg-orange-900/30': selectedJob.iconColor === 'orange',
+                                            'bg-red-50 dark:bg-red-900/30': selectedJob.iconColor === 'red',
+                                            'bg-blue-50 dark:bg-blue-900/30': !['green', 'purple', 'orange', 'red'].includes(selectedJob.iconColor)
+                                        }">
+                                        <i class="fas text-2xl detail-icon"
+                                            :class="selectedJob.icon"
+                                            :data-icon-color="selectedJob.iconColor"></i>
+                                    </div>
+
+                                    {{-- Title --}}
+                                    <h2 class="text-lg font-bold text-gray-900 dark:text-white leading-snug mb-1"
+                                        x-text="selectedJob.title"></h2>
+
+                                    {{-- Location --}}
+                                    <p class="text-sm text-gray-500 dark:text-gray-400" x-text="selectedJob.location"></p>
+
+                                    {{-- Salary + Type badges --}}
+                                    <div class="flex items-center gap-2 mt-3">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white">
+                                            &euro;<span x-text="selectedJob.salary"></span><span class="text-xs font-normal text-gray-400">/hr</span>
+                                        </span>
+                                        <span class="px-2.5 py-0.5 text-xs font-medium rounded-full"
+                                            :class="{
+                                                'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400': selectedJob.type === 'part-time',
+                                                'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400': selectedJob.type === 'remote',
+                                                'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': selectedJob.type === 'full-time' || !['part-time','remote'].includes(selectedJob.type)
+                                            }"
+                                            x-text="selectedJob.typeBadge || selectedJob.type"></span>
+                                    </div>
+                                </div>
+
+                                {{-- About the Job --}}
+                                <div class="px-6 py-5">
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">About the Job</h3>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                        <p class="w-full text-justify" x-text="selectedJob.description"></p>
+                                    </div>
+                                </div>
+
+                                {{-- Required Skills --}}
+                                <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
+                                    x-show="selectedJob.requiredSkills && selectedJob.requiredSkills.length > 0">
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required Skills</h3>
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-for="skill in selectedJob.requiredSkills" :key="skill">
+                                            <span class="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                                                x-text="skill"></span>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Required Documents --}}
+                                <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
+                                    x-show="selectedJob.requiredDocs && selectedJob.requiredDocs.length > 0">
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required Documents</h3>
+                                    <ul class="space-y-2">
+                                        <template x-for="doc in selectedJob.requiredDocs"
+                                            :key="typeof doc === 'object' ? doc.name : doc">
+                                            <li class="flex items-center gap-2.5 text-sm text-gray-600 dark:text-gray-400">
+                                                <i class="fas fa-file-alt text-xs text-gray-400 dark:text-gray-500"></i>
+                                                <span>
+                                                    <span x-text="typeof doc === 'object' ? doc.name : doc"></span>
+                                                    <template x-if="typeof doc === 'object' && doc.type">
+                                                        <span class="ml-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400"
+                                                            x-text="doc.type"></span>
+                                                    </template>
+                                                </span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+
+                                {{-- Benefits --}}
+                                <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
+                                    x-show="selectedJob.benefits && selectedJob.benefits.length > 0">
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Benefits</h3>
+                                    <ul class="space-y-2">
+                                        <template x-for="benefit in selectedJob.benefits" :key="benefit">
+                                            <li class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                <div class="w-5 h-5 bg-blue-50 dark:bg-blue-900/30 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <i class="fas fa-check text-blue-600 dark:text-blue-400 text-[8px]"></i>
+                                                </div>
+                                                <span x-text="benefit"></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {{-- Fixed bottom: Apply Now + Heart --}}
+                            <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center gap-3 flex-shrink-0">
+                                <button @click="openApplicationModal()"
+                                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full transition-all shadow-md text-sm font-semibold hover:shadow-lg">
+                                    Apply Now
+                                </button>
+                                <button @click.stop
+                                    class="w-11 h-11 bg-gray-100 dark:bg-gray-700 text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 rounded-full transition-colors flex items-center justify-center flex-shrink-0">
+                                    <i class="far fa-heart text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
 
     </div>
 
     {{-- Application Modal --}}
-    <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+    <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-[200] flex items-center justify-center p-4"
         style="display: none;" x-data="{
             termsOpened: document.cookie.includes('finnoys_terms_accepted=1'),
             privacyOpened: document.cookie.includes('finnoys_policy_accepted=1'),
@@ -916,7 +974,7 @@
     </div>
 
     <!-- Recruitment Terms & Conditions Modal -->
-    <div id="recruit-terms-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" style="display: none;">
+    <div id="recruit-terms-modal" class="fixed inset-0 z-[250] flex items-center justify-center bg-black/50 p-4" style="display: none;">
         <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-bold text-gray-900 dark:text-white">Terms & Conditions</h2>
@@ -960,7 +1018,7 @@
     </div>
 
     <!-- Recruitment Privacy Policy Modal -->
-    <div id="recruit-privacy-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" style="display: none;">
+    <div id="recruit-privacy-modal" class="fixed inset-0 z-[250] flex items-center justify-center bg-black/50 p-4" style="display: none;">
         <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-bold text-gray-900 dark:text-white">Privacy Policy</h2>
@@ -1024,6 +1082,64 @@
 
         let selectedJobId = null;
 
+        // Hero location dropdown component
+        function heroLocationDropdown() {
+            return {
+                openLoc: false,
+                selectedLoc: '',
+                selectedLabel: 'All Locations',
+                dropdownStyle: '',
+
+                toggle() {
+                    this.openLoc = !this.openLoc;
+                    if (this.openLoc) {
+                        this.$nextTick(() => this.positionDropdown());
+                    }
+                },
+
+                selectLocation(val, label) {
+                    this.selectedLoc = val;
+                    this.selectedLabel = label;
+                    this.openLoc = false;
+                },
+
+                positionDropdown() {
+                    const trigger = this.$refs.locTrigger;
+                    if (!trigger) return;
+                    const rect = trigger.getBoundingClientRect();
+                    const width = Math.max(rect.width + 40, 220);
+                    this.dropdownStyle = `top: ${rect.bottom + 8}px; left: ${rect.left}px; width: ${width}px;`;
+                }
+            };
+        }
+
+        // Hero search bar handler
+        window.heroSearchGo = function() {
+            const keyword = document.getElementById('heroSearchInput').value.trim();
+            const locationSelect = document.getElementById('heroLocationInput');
+            const location = locationSelect ? locationSelect.value : '';
+
+            // Scroll to job listings
+            document.querySelector('#jobListingsSection').scrollIntoView({ behavior: 'smooth' });
+
+            // Set search query on the Alpine component
+            setTimeout(() => {
+                const el = document.querySelector('#jobListingsSection');
+                if (!el) return;
+                // Alpine v3: use Alpine.$data helper or _x_dataStack
+                const data = (typeof Alpine !== 'undefined' && Alpine.$data) ? Alpine.$data(el) : (el._x_dataStack ? el._x_dataStack[0] : null);
+                if (data) {
+                    data.searchQuery = keyword || '';
+                    if (location) {
+                        data.selectedLocations = [location];
+                    } else {
+                        data.selectedLocations = [];
+                    }
+                    data.applyFilters();
+                }
+            }, 400);
+        };
+
         // Dynamically generated jobs from database
         const jobs = {
             @foreach ($jobPostings ?? [] as $job)
@@ -1049,6 +1165,7 @@
         function recruitmentPage() {
             return {
                 searchQuery: '',
+                showFilters: false,
                 selectedTypes: [],
                 selectedLocations: [],
                 selectedCategories: [],
@@ -1185,15 +1302,11 @@
                     });
                     this.categories = Object.values(catCounts);
 
-                    // Auto-select from URL param, or default to newest job
+                    // Auto-select from URL param only
                     const urlParams = new URLSearchParams(window.location.search);
                     const jobId = urlParams.get('job');
                     if (jobId && jobs[jobId]) {
                         this.selectJob(parseInt(jobId));
-                    } else if (allJobIds.length > 0) {
-                        // Select the newest job (highest ID)
-                        const newestId = Math.max(...allJobIds);
-                        this.selectJob(newestId);
                     }
 
                     this.applyFilters();

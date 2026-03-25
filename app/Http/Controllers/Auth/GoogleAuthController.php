@@ -136,6 +136,7 @@ class GoogleAuthController extends Controller
                             'email_verified_at' => now(),
                             'role' => 'external_client',
                             'terms_accepted_at' => now(),
+                            'is_active' => true,
                         ]);
 
                         Client::create([
@@ -212,6 +213,7 @@ class GoogleAuthController extends Controller
                     'email_verified_at' => now(),
                     'role' => 'applicant',
                     'terms_accepted_at' => now(),
+                    'is_active' => true,
                 ]);
             }
         }
@@ -490,6 +492,7 @@ class GoogleAuthController extends Controller
                             'email_verified_at' => now(),
                             'role' => 'external_client',
                             'terms_accepted_at' => now(),
+                            'is_active' => true,
                         ]);
 
                         Client::create([
