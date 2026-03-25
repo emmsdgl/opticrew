@@ -92,12 +92,18 @@
              @mouseleave="avatarHover = false">
             <div class="p-[3px] rounded-full bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-500 shadow-lg">
                 <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 ring-2 ring-white dark:ring-[#1E293B] relative">
+                    @php
+                        $pcNameParts = explode(' ', trim($user->name ?? ''));
+                        $pcInitials = strtoupper(substr($pcNameParts[0] ?? '', 0, 1) . substr(end($pcNameParts) ?: '', 0, 1));
+                        if (strlen($pcInitials) < 1) $pcInitials = '?';
+                    @endphp
                     <template x-if="picPreview">
-                        <img :src="picPreview" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                        <img :src="picPreview" alt="{{ $user->name }}" class="w-full h-full object-cover"
+                            x-on:error="picPreview = ''">
                     </template>
                     <template x-if="!picPreview">
-                        <div class="w-full h-full flex items-center justify-center">
-                            <i class="fa-solid fa-user text-2xl text-gray-400 dark:text-gray-500"></i>
+                        <div class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                            <span class="text-white font-bold text-2xl">{{ $pcInitials }}</span>
                         </div>
                     </template>
 

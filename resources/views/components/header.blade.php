@@ -100,20 +100,33 @@
             <button id="profile-dropdown-toggle" class="flex items-center space-x-2 md:space-x-3 hover:opacity-80 transition-opacity">
                 <div class="flex-shrink-0">
                     @auth
+                        @php
+                            $headerNameParts = explode(' ', trim(auth()->user()->name ?? ''));
+                            $headerInitials = strtoupper(substr($headerNameParts[0] ?? '', 0, 1) . substr(end($headerNameParts) ?: '', 0, 1));
+                            if (strlen($headerInitials) < 1) $headerInitials = '?';
+                        @endphp
                         @if(auth()->user()->profile_picture)
                             @php
-                                // Handle both old and new profile picture paths
                                 $profilePic = auth()->user()->profile_picture;
                                 $profileUrl = str_starts_with($profilePic, 'profile_pictures/')
                                     ? asset('storage/' . $profilePic)
                                     : asset($profilePic);
                             @endphp
-                            <img src="{{ $profileUrl }}?v={{ time() }}" alt="User" class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;">
+                            <img src="{{ $profileUrl }}?v={{ time() }}" alt="User"
+                                class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-gray-200 dark:ring-gray-700 items-center justify-center" style="display:none;">
+                                <span class="text-white font-bold text-xs md:text-[10px]">{{ $headerInitials }}</span>
+                            </div>
                         @else
-                            <img src="https://i.pravatar.cc/40" alt="User" class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;">
+                            <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">
+                                <span class="text-white font-bold text-xs md:text-[10px]">{{ $headerInitials }}</span>
+                            </div>
                         @endif
                     @else
-                        <img src="https://i.pravatar.cc/40" alt="Guest" class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;">
+                        <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 ring-2 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">
+                            <span class="text-white font-bold text-xs">?</span>
+                        </div>
                     @endauth
                 </div>
 

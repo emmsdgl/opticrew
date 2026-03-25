@@ -345,8 +345,13 @@
                                 @if($profileUser && $profileUser->profile_picture)
                                     <img src="{{ $profileUser->profile_picture }}" alt="{{ $profileUser->name }}" class="w-full h-full object-cover">
                                 @else
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <i class="fa-solid fa-user text-2xl text-gray-400 dark:text-gray-500"></i>
+                                    @php
+                                        $nameParts = explode(' ', trim($profileUser->name ?? ''));
+                                        $initials = strtoupper(substr($nameParts[0] ?? '', 0, 1) . substr(end($nameParts) ?: '', 0, 1));
+                                        if (strlen($initials) < 1) $initials = '?';
+                                    @endphp
+                                    <div class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                                        <span class="text-white font-bold text-2xl">{{ $initials }}</span>
                                     </div>
                                 @endif
                             </div>
@@ -361,18 +366,60 @@
 
                         <div class="space-y-4 text-left px-2">
                             {{-- Phone --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                                     <i class="fa-solid fa-phone text-xs text-blue-500 dark:text-blue-400"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Phone</p>
                                     <template x-if="!editing">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" x-text="form.phone || '—'"></p>
+                                        <p class="text-sm font-normal text-gray-800 dark:text-gray-200 truncate" x-text="form.phone || '—'"></p>
                                     </template>
                                     <template x-if="editing">
-                                        <input type="tel" x-model="form.phone" placeholder="Enter phone number"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                        <div>
+                                            <div class="flex items-stretch">
+                                                {{-- Country prefix dropdown (signup style with flag images) --}}
+                                                <div class="relative" @click.away="phoneDropOpen = false">
+                                                    <button type="button" @click="phoneDropOpen = !phoneDropOpen"
+                                                        class="flex items-center gap-1.5 h-full px-2.5 py-1.5 rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-xs font-normal text-gray-800 dark:text-gray-200 focus:outline-none whitespace-nowrap">
+                                                        <img :src="phonePrefix === '+63' ? '{{ asset('images/icons/philippine_flag.png') }}' : '{{ asset('images/icons/finland-flag.svg') }}'"
+                                                            class="h-3.5 w-auto" :alt="phonePrefix === '+63' ? 'PH' : 'FI'">
+                                                        <span x-text="phonePrefix" class="text-xs font-medium"></span>
+                                                        <svg class="w-2.5 h-2.5 text-gray-400 transition-transform" :class="phoneDropOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                                    </button>
+                                                    <div x-show="phoneDropOpen" x-cloak x-transition
+                                                        class="absolute left-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 w-52 py-1.5">
+                                                        <button type="button" @click="setPhonePrefix('+63', '🇵🇭', 10); phoneDropOpen = false"
+                                                            class="w-full text-left px-3 py-2 text-xs flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                                                            :class="phonePrefix === '+63' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-700 dark:text-gray-200'">
+                                                            <img src="{{ asset('images/icons/philippine_flag.png') }}" class="h-4 w-auto" alt="PH">
+                                                            <span>+63</span>
+                                                            <span class="text-gray-400 dark:text-gray-500 text-[10px] ml-auto">Philippines</span>
+                                                        </button>
+                                                        <button type="button" @click="setPhonePrefix('+358', '🇫🇮', 9); phoneDropOpen = false"
+                                                            class="w-full text-left px-3 py-2 text-xs flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                                                            :class="phonePrefix === '+358' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-700 dark:text-gray-200'">
+                                                            <img src="{{ asset('images/icons/finland-flag.svg') }}" class="h-4 w-auto" alt="FI">
+                                                            <span>+358</span>
+                                                            <span class="text-gray-400 dark:text-gray-500 text-[10px] ml-auto">Finland</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {{-- Local number --}}
+                                                <input type="tel" x-model="phoneLocal"
+                                                    @input="phoneLocal = phoneLocal.replace(/[^\d]/g, ''); syncPhone()"
+                                                    @blur="validatePhoneNumber()"
+                                                    :placeholder="phonePrefix === '+63' ? '9XX XXX XXXX' : '4X XXX XXXX'"
+                                                    :maxlength="phoneMaxLen"
+                                                    class="flex-1 text-sm font-normal text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-r-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all"
+                                                    :class="phoneError ? 'border-red-500 dark:border-red-500' : ''">
+                                            </div>
+                                            <p x-show="phoneError" x-text="phoneError" x-cloak class="mt-1 text-[10px] text-red-500"></p>
+                                            <p class="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500" x-show="!phoneError">
+                                                <span x-show="phonePrefix === '+63'">10 digits starting with 9</span>
+                                                <span x-show="phonePrefix === '+358'">7-9 digits starting with 4 or 5</span>
+                                            </p>
+                                        </div>
                                     </template>
                                 </div>
                             </div>
@@ -400,7 +447,7 @@
                                     </template>
                                     <template x-if="editing">
                                         <input type="email" x-model="form.alternative_email" placeholder="Enter alternative email"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                            class="w-full text-sm font-normal text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
                                     </template>
                                 </div>
                             </div>
@@ -417,7 +464,7 @@
                                     </template>
                                     <template x-if="editing">
                                         <input type="text" x-model="form.location" placeholder="Enter address"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                            class="w-full text-sm font-normal text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
                                     </template>
                                 </div>
                             </div>
@@ -425,7 +472,7 @@
                             {{-- Change Password (edit mode only) --}}
                             <template x-if="editing">
                                 <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-4">
-                                    <p class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Change Password</p>
+                                    <p class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 tracking-wider">Change Password</p>
 
                                     {{-- Current Password --}}
                                     <div class="flex items-center gap-3">
@@ -438,10 +485,11 @@
                                                 <input :type="showCurrentPw ? 'text' : 'password'" x-model="form.current_password"
                                                     :placeholder="hasPassword ? 'Enter current password' : 'No password set'"
                                                     :disabled="!hasPassword"
-                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                                    class="w-full text-sm font-normal text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                                                 <button type="button" @click="showCurrentPw = !showCurrentPw" x-show="hasPassword"
                                                     class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                                    <i class="fa-solid text-xs" :class="showCurrentPw ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                                    <svg x-show="!showCurrentPw" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                                    <svg x-show="showCurrentPw" x-cloak xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                                                 </button>
                                             </div>
                                         </div>
@@ -456,10 +504,11 @@
                                             <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">New Password</p>
                                             <div class="relative">
                                                 <input :type="showNewPw ? 'text' : 'password'" x-model="form.new_password" placeholder="Enter new password"
-                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                                    class="w-full text-sm font-normal text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
                                                 <button type="button" @click="showNewPw = !showNewPw"
                                                     class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                                    <i class="fa-solid text-xs" :class="showNewPw ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                                    <svg x-show="!showNewPw" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                                    <svg x-show="showNewPw" x-cloak xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                                                 </button>
                                             </div>
                                         </div>
@@ -474,14 +523,18 @@
                                             <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Confirm Password</p>
                                             <div class="relative">
                                                 <input :type="showConfirmPw ? 'text' : 'password'" x-model="form.new_password_confirmation" placeholder="Confirm new password"
-                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                                                    class="w-full text-sm font-normal text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
                                                 <button type="button" @click="showConfirmPw = !showConfirmPw"
                                                     class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                                    <i class="fa-solid text-xs" :class="showConfirmPw ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                                    <svg x-show="!showConfirmPw" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                                    <svg x-show="showConfirmPw" x-cloak xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
+
+                                    {{-- Password Strength Indicator --}}
+                                    <x-material-ui.password-strength model="form.new_password" />
                                 </div>
                             </template>
                         </div>
@@ -531,6 +584,14 @@
             showCurrentPw: false,
             showNewPw: false,
             showConfirmPw: false,
+            // Phone prefix state
+            phonePrefix: '+63',
+            phoneFlag: '🇵🇭',
+            phoneLocal: '',
+            phoneMaxLen: 10,
+            phoneDropOpen: false,
+            phoneError: '',
+            phoneStore: { '+63': '', '+358': '' },
             form: {
                 phone: @json($profileUser->phone ?? ''),
                 alternative_email: @json($profileUser->alternative_email ?? ''),
@@ -540,6 +601,48 @@
                 new_password_confirmation: '',
             },
             original: {},
+
+            initPhone() {
+                this.phoneStore = { '+63': '', '+358': '' };
+                const ph = this.form.phone || '';
+                if (ph.startsWith('+358')) {
+                    this.phonePrefix = '+358'; this.phoneFlag = '🇫🇮'; this.phoneMaxLen = 9;
+                    this.phoneLocal = ph.replace('+358', '').replace(/^0/, '');
+                } else if (ph.startsWith('+63')) {
+                    this.phonePrefix = '+63'; this.phoneFlag = '🇵🇭'; this.phoneMaxLen = 10;
+                    this.phoneLocal = ph.replace('+63', '').replace(/^0/, '');
+                } else {
+                    this.phoneLocal = ph.replace(/[^\d]/g, '');
+                }
+                this.phoneStore[this.phonePrefix] = this.phoneLocal;
+            },
+
+            setPhonePrefix(prefix, flag, max) {
+                this.phoneStore[this.phonePrefix] = this.phoneLocal;
+                this.phonePrefix = prefix;
+                this.phoneFlag = flag;
+                this.phoneMaxLen = max;
+                this.phoneError = '';
+                this.phoneLocal = this.phoneStore[prefix] || '';
+                this.syncPhone();
+            },
+
+            syncPhone() {
+                this.form.phone = this.phoneLocal ? this.phonePrefix + this.phoneLocal : '';
+            },
+
+            validatePhoneNumber() {
+                if (!this.phoneLocal) { this.phoneError = ''; return; }
+                if (this.phonePrefix === '+63') {
+                    if (this.phoneLocal.length !== 10) this.phoneError = 'Must be exactly 10 digits';
+                    else if (!this.phoneLocal.startsWith('9')) this.phoneError = 'Must start with 9';
+                    else this.phoneError = '';
+                } else if (this.phonePrefix === '+358') {
+                    if (this.phoneLocal.length < 7 || this.phoneLocal.length > 9) this.phoneError = 'Must be 7-9 digits';
+                    else if (!/^[45]/.test(this.phoneLocal)) this.phoneError = 'Must start with 4 or 5';
+                    else this.phoneError = '';
+                }
+            },
 
             openModal() {
                 this.profileOpen = true;
@@ -556,6 +659,7 @@
 
             startEditing() {
                 this.original = { ...this.form };
+                this.initPhone();
                 this.editing = true;
             },
 
@@ -567,10 +671,42 @@
                 this.showCurrentPw = false;
                 this.showNewPw = false;
                 this.showConfirmPw = false;
+                this.phoneError = '';
+                this.phoneDropOpen = false;
                 this.editing = false;
             },
 
             async saveProfile() {
+                // Validate phone if entered
+                if (this.phoneLocal) {
+                    this.validatePhoneNumber();
+                    if (this.phoneError) {
+                        window.showErrorDialog('Invalid Phone', this.phoneError);
+                        return;
+                    }
+                }
+
+                // Validate password strength if changing password
+                if (this.form.new_password) {
+                    if (this.form.new_password !== this.form.new_password_confirmation) {
+                        window.showErrorDialog('Mismatch', 'New password and confirmation do not match.');
+                        return;
+                    }
+                    if (this.form.new_password.length < 8) {
+                        window.showErrorDialog('Too Short', 'Password must be at least 8 characters.');
+                        return;
+                    }
+                    let pwScore = 0;
+                    const p = this.form.new_password;
+                    if (p.length > 5) pwScore++; if (p.length > 8) pwScore++;
+                    if (/[A-Z]/.test(p)) pwScore++; if (/[a-z]/.test(p)) pwScore++;
+                    if (/[0-9]/.test(p)) pwScore++; if (/[^A-Za-z0-9]/.test(p)) pwScore++;
+                    if (pwScore < 5) {
+                        window.showErrorDialog('Weak Password', 'Password must be at least Strong. Include uppercase, lowercase, numbers, and special characters.');
+                        return;
+                    }
+                }
+
                 try {
                     const confirmed = await window.showConfirmDialog(
                         'Update Profile',

@@ -90,114 +90,7 @@
                     <div class="px-6 pb-6">
                         <div class="mb-3 border-t border-gray-100 dark:border-gray-700"></div>
 
-                        <div class="space-y-3 text-left">
-                            {{-- Phone --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-phone text-xs text-blue-500 dark:text-blue-400"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Phone</p>
-                                    <template x-if="!editing">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" x-text="form.phone || '—'"></p>
-                                    </template>
-                                    <template x-if="editing">
-                                        <input type="tel" x-model="form.phone" placeholder="+358 XX XXX XXXX"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                    </template>
-                                </div>
-                            </div>
-
-                            {{-- Email (read-only) --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-envelope text-xs text-blue-500 dark:text-blue-400"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Email</p>
-                                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{{ $profileUser->email ?? '—' }}</p>
-                                </div>
-                            </div>
-
-                            {{-- Username --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-user-tag text-xs text-blue-500 dark:text-blue-400"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Username</p>
-                                    <template x-if="!editing">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" x-text="form.username || '—'"></p>
-                                    </template>
-                                    <template x-if="editing">
-                                        <input type="text" x-model="form.username" placeholder="Enter username"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                    </template>
-                                </div>
-                            </div>
-
-                            {{-- Location --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-location-dot text-xs text-blue-500 dark:text-blue-400"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Location</p>
-                                    <template x-if="!editing">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" x-text="form.location || '—'"></p>
-                                    </template>
-                                    <template x-if="editing">
-                                        <input type="text" x-model="form.location" placeholder="Enter location"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                    </template>
-                                </div>
-                            </div>
-
-                            {{-- Change Password (edit mode only) --}}
-                            <template x-if="editing">
-                                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-3">
-                                    <p class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Change Password</p>
-
-                                    {{-- Current Password --}}
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-lock text-xs text-blue-500 dark:text-blue-400"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Current Password</p>
-                                            <input type="password" x-model="form.current_password"
-                                                :placeholder="hasPassword ? 'Enter current password' : 'No password set'"
-                                                :disabled="!hasPassword"
-                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                        </div>
-                                    </div>
-
-                                    {{-- New Password --}}
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-key text-xs text-blue-500 dark:text-blue-400"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">New Password</p>
-                                            <input type="password" x-model="form.new_password" placeholder="Enter new password"
-                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                        </div>
-                                    </div>
-
-                                    {{-- Confirm Password --}}
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-check-double text-xs text-blue-500 dark:text-blue-400"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Confirm Password</p>
-                                            <input type="password" x-model="form.new_password_confirmation" placeholder="Confirm new password"
-                                                class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
+                        @include('components.partials.profile-modal-fields', ['profileUser' => $profileUser, 'hasPassword' => $hasPassword])
 
                         {{-- Save Button (edit mode) --}}
                         <div x-show="editing" x-transition class="mt-5">
@@ -223,6 +116,15 @@
             editing: false,
             saving: false,
             hasPassword: @json($hasPassword),
+            showCurrentPw: false,
+            showNewPw: false,
+            showConfirmPw: false,
+            phonePrefix: '+358',
+            phoneLocal: '',
+            phoneMaxLen: 9,
+            phoneDropOpen: false,
+            phoneError: '',
+            phoneStore: { '+63': '', '+358': '' },
             form: {
                 phone: @json($profileUser->phone ?? ''),
                 username: @json($profileUser->username ?? ''),
@@ -233,40 +135,66 @@
             },
             original: {},
 
-            openModal() {
-                this.profileOpen = true;
-                this.editing = false;
+            initPhone() {
+                this.phoneStore = { '+63': '', '+358': '' };
+                const ph = this.form.phone || '';
+                if (ph.startsWith('+358')) { this.phonePrefix = '+358'; this.phoneMaxLen = 9; this.phoneLocal = ph.replace('+358', '').replace(/^0/, ''); }
+                else if (ph.startsWith('+63')) { this.phonePrefix = '+63'; this.phoneMaxLen = 10; this.phoneLocal = ph.replace('+63', '').replace(/^0/, ''); }
+                else if (/^09\d{9}$/.test(ph)) { this.phonePrefix = '+63'; this.phoneMaxLen = 10; this.phoneLocal = ph.replace(/^0/, ''); }
+                else if (/^0[45]\d{6,8}$/.test(ph)) { this.phonePrefix = '+358'; this.phoneMaxLen = 9; this.phoneLocal = ph.replace(/^0/, ''); }
+                else { this.phoneLocal = ph.replace(/[^\d]/g, ''); }
+                this.phoneStore[this.phonePrefix] = this.phoneLocal;
+            },
+            setPhonePrefix(prefix, max) {
+                this.phoneStore[this.phonePrefix] = this.phoneLocal;
+                this.phonePrefix = prefix; this.phoneMaxLen = max; this.phoneError = '';
+                this.phoneLocal = this.phoneStore[prefix] || '';
+                this.syncPhone();
+            },
+            syncPhone() { this.form.phone = this.phoneLocal ? this.phonePrefix + this.phoneLocal : ''; },
+            validatePhoneNumber() {
+                if (!this.phoneLocal) { this.phoneError = ''; return; }
+                if (this.phonePrefix === '+63') {
+                    if (this.phoneLocal.length !== 10) this.phoneError = 'Must be exactly 10 digits';
+                    else if (!this.phoneLocal.startsWith('9')) this.phoneError = 'Must start with 9';
+                    else this.phoneError = '';
+                } else if (this.phonePrefix === '+358') {
+                    if (this.phoneLocal.length < 7 || this.phoneLocal.length > 9) this.phoneError = 'Must be 7-9 digits';
+                    else if (!/^[45]/.test(this.phoneLocal)) this.phoneError = 'Must start with 4 or 5';
+                    else this.phoneError = '';
+                }
             },
 
-            closeModal() {
-                if (this.editing) {
-                    this.cancelEditing();
-                    return;
-                }
-                this.profileOpen = false;
-            },
+            openModal() { this.profileOpen = true; this.editing = false; },
+            closeModal() { if (this.editing) { this.cancelEditing(); return; } this.profileOpen = false; },
 
             startEditing() {
                 this.original = { ...this.form };
+                this.initPhone();
                 this.editing = true;
                 window.dispatchEvent(new CustomEvent('profile-edit-toggled', { detail: { editing: true } }));
             },
 
             cancelEditing() {
                 this.form = { ...this.original };
-                this.form.current_password = '';
-                this.form.new_password = '';
-                this.form.new_password_confirmation = '';
+                this.form.current_password = ''; this.form.new_password = ''; this.form.new_password_confirmation = '';
+                this.showCurrentPw = false; this.showNewPw = false; this.showConfirmPw = false;
+                this.phoneError = ''; this.phoneDropOpen = false;
                 this.editing = false;
                 window.dispatchEvent(new CustomEvent('profile-edit-toggled', { detail: { editing: false } }));
             },
 
             async saveProfile() {
-                try {
-                    const confirmed = await window.showConfirmDialog(
-                        'Update Profile',
-                        'Are you sure you want to save these changes to your profile?',
-                        'Save',
+                if (this.phoneLocal) { this.validatePhoneNumber(); if (this.phoneError) { window.showErrorDialog('Invalid Phone', this.phoneError); return; } }
+                if (this.form.new_password) {
+                    if (this.form.new_password !== this.form.new_password_confirmation) { window.showErrorDialog('Mismatch', 'New password and confirmation do not match.'); return; }
+                    if (this.form.new_password.length < 8) { window.showErrorDialog('Too Short', 'Password must be at least 8 characters.'); return; }
+                    let s = 0; const p = this.form.new_password;
+                    if (p.length > 5) s++; if (p.length > 8) s++; if (/[A-Z]/.test(p)) s++; if (/[a-z]/.test(p)) s++; if (/[0-9]/.test(p)) s++; if (/[^A-Za-z0-9]/.test(p)) s++;
+                    if (s < 5) { window.showErrorDialog('Weak Password', 'Password must be at least Strong. Include uppercase, lowercase, numbers, and special characters.'); return; }
+                    if (this.hasPassword && !this.form.current_password) { window.showErrorDialog('Missing Information', 'Please enter your current password.'); return; }
+                }
+                try { await window.showConfirmDialog('Update Profile', 'Are you sure you want to save these changes?', 'Save',
                         'Cancel'
                     );
                 } catch {

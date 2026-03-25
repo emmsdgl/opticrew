@@ -22,10 +22,10 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
         } else {
-          document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('dark');
         }
     </script>
     <script>
@@ -196,8 +196,7 @@
             const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 
             const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+            const currentTheme = savedTheme || 'dark';
 
             applyTheme(currentTheme);
 

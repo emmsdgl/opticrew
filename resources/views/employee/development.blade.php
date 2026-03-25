@@ -496,12 +496,34 @@
             }
 
             function onPlayerReady(event) {
+                // YouTube may return 0 for duration until playback starts — retry
                 videoDuration = player.getDuration();
-                const course = courses[currentCourseId];
+                if (videoDuration <= 0) {
+                    const durationPoll = setInterval(() => {
+                        if (player && player.getDuration && player.getDuration() > 0) {
+                            videoDuration = player.getDuration();
+                            clearInterval(durationPoll);
+                            restoreYTPosition();
+                        }
+                    }, 500);
+                    // Timeout after 10s
+                    setTimeout(() => clearInterval(durationPoll), 10000);
+                } else {
+                    restoreYTPosition();
+                }
+            }
 
-                // Restore saved progress and position
+            function restoreYTPosition() {
+                const course = courses[currentCourseId];
                 if (course && course.lastPosition > 0 && course.status !== 'completed') {
                     player.seekTo(course.lastPosition, true);
+                    // Pre-fill watchedSeconds up to the saved position based on saved progress
+                    if (course.savedProgress > 0 && videoDuration > 0) {
+                        const approxWatched = Math.floor((course.savedProgress / 100) * videoDuration);
+                        for (let i = 0; i < approxWatched; i++) {
+                            watchedSeconds.add(i);
+                        }
+                    }
                     updateProgressUI(course.lastPosition, videoDuration, course.savedProgress || 0);
                 } else if (course && course.status === 'completed') {
                     updateProgressUI(0, videoDuration, 100);
@@ -510,30 +532,48 @@
                 }
             }
 
+            let lastYTTime = 0; // Track last known time to detect seeks
+
             function onPlayerStateChange(event) {
+                // Re-fetch duration on every state change (covers late-loading metadata)
+                if (player && player.getDuration && player.getDuration() > 0) {
+                    videoDuration = player.getDuration();
+                }
+
                 if (event.data === YT.PlayerState.PLAYING) {
-                    // Start tracking progress
+                    // Detect seek: if current time jumped significantly from last known time
+                    const currentTime = player.getCurrentTime();
+                    if (Math.abs(currentTime - lastYTTime) > 3) {
+                        // User seeked — don't credit skipped seconds
+                        lastYTTime = currentTime;
+                    }
+
                     startProgressTracking();
                     updateProgressStatus('watching');
 
-                    // Update course status to "in_progress" if it was pending
                     if (courses[currentCourseId].status === 'pending') {
                         courses[currentCourseId].status = 'in_progress';
                         updateCourseStatusTag('in_progress');
                         saveProgressToServer(currentCourseId, calculateWatchedPercentage());
 
-                        // Update sidebar course item
                         const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
                         if (courseItem) {
                             courseItem.setAttribute('data-status', 'in_progress');
                         }
                     }
                 } else if (event.data === YT.PlayerState.PAUSED) {
+                    lastYTTime = player.getCurrentTime();
                     stopProgressTracking();
                     updateProgressStatus('paused');
                 } else if (event.data === YT.PlayerState.ENDED) {
                     stopProgressTracking();
                     checkCompletion(true);
+                } else if (event.data === YT.PlayerState.BUFFERING) {
+                    // Update duration during buffering too
+                    if (player && player.getDuration) {
+                        const d = player.getDuration();
+                        if (d > 0) videoDuration = d;
+                    }
                 }
             }
 
@@ -544,10 +584,25 @@
 
             let saveCounter = 0;
             function getCurrentTime() {
-                if (player && player.getCurrentTime) return player.getCurrentTime();
-                if (uploadedPlayer && !uploadedPlayer.paused) return uploadedPlayer.currentTime;
-                if (uploadedPlayer) return uploadedPlayer.currentTime;
+                try {
+                    if (player && typeof player.getCurrentTime === 'function') {
+                        const t = player.getCurrentTime();
+                        if (typeof t === 'number' && !isNaN(t)) return t;
+                    }
+                } catch (e) { /* player may be destroyed */ }
+                if (uploadedPlayer) return uploadedPlayer.currentTime || 0;
                 return 0;
+            }
+
+            function getDuration() {
+                try {
+                    if (player && typeof player.getDuration === 'function') {
+                        const d = player.getDuration();
+                        if (typeof d === 'number' && d > 0) return d;
+                    }
+                } catch (e) { /* player may be destroyed */ }
+                if (uploadedPlayer && uploadedPlayer.duration) return uploadedPlayer.duration;
+                return videoDuration;
             }
 
             function startProgressTracking() {
@@ -555,8 +610,24 @@
 
                 progressInterval = setInterval(() => {
                     const currentTime = getCurrentTime();
-                    if (currentTime > 0) {
-                        watchedSeconds.add(Math.floor(currentTime));
+
+                    // Re-fetch duration from YouTube API if still 0
+                    if (videoDuration <= 0 && player && player.getDuration) {
+                        const d = player.getDuration();
+                        if (d > 0) videoDuration = d;
+                    }
+
+                    if (currentTime > 0 && videoDuration > 0) {
+                        const sec = Math.floor(currentTime);
+
+                        // Only credit the second if playback is continuous (not a seek jump)
+                        if (typeof lastYTTime !== 'undefined' && Math.abs(currentTime - lastYTTime) <= 2) {
+                            watchedSeconds.add(sec);
+                        } else {
+                            // After a seek, start crediting from new position
+                            watchedSeconds.add(sec);
+                        }
+                        lastYTTime = currentTime;
 
                         const watchedPercentage = calculateWatchedPercentage();
                         updateProgressUI(currentTime, videoDuration, watchedPercentage);

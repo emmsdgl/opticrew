@@ -57,6 +57,14 @@
                             window.showErrorDialog('Too Short', 'Password must be at least 8 characters.');
                             return;
                         }
+                        let pwScore = 0;
+                        if (this.newPassword.length > 5) pwScore++; if (this.newPassword.length > 8) pwScore++;
+                        if (/[A-Z]/.test(this.newPassword)) pwScore++; if (/[a-z]/.test(this.newPassword)) pwScore++;
+                        if (/[0-9]/.test(this.newPassword)) pwScore++; if (/[^A-Za-z0-9]/.test(this.newPassword)) pwScore++;
+                        if (pwScore < 5) {
+                            window.showErrorDialog('Weak Password', 'Password must be at least Strong. Include uppercase, lowercase, numbers, and special characters.');
+                            return;
+                        }
                         try {
                             await window.showConfirmDialog('Update Password?', 'Are you sure you want to change your password?', 'Update', 'Cancel');
                         } catch (e) { return; }
@@ -97,8 +105,8 @@
                         />
                         <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
-                            <i class="fa-solid fa-eye text-sm" x-show="!showCurrent"></i>
-                            <i class="fa-solid fa-eye-slash text-sm" x-show="showCurrent" style="display:none"></i>
+                            <svg x-show="!showCurrent" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg x-show="showCurrent" x-cloak xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                         </button>
                     </div>
 
@@ -114,8 +122,8 @@
                         />
                         <button type="button" @click="showNew = !showNew; $refs.newPwWrap.querySelector('input').type = showNew ? 'text' : 'password'"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
-                            <i class="fa-solid fa-eye text-sm" x-show="!showNew"></i>
-                            <i class="fa-solid fa-eye-slash text-sm" x-show="showNew" style="display:none"></i>
+                            <svg x-show="!showNew" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg x-show="showNew" x-cloak xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                         </button>
                     </div>
 
@@ -131,10 +139,13 @@
                         />
                         <button type="button" @click="showConfirm = !showConfirm; $refs.confirmPwWrap.querySelector('input').type = showConfirm ? 'text' : 'password'"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
-                            <i class="fa-solid fa-eye text-sm" x-show="!showConfirm"></i>
-                            <i class="fa-solid fa-eye-slash text-sm" x-show="showConfirm" style="display:none"></i>
+                            <svg x-show="!showConfirm" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg x-show="showConfirm" x-cloak xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                         </button>
                     </div>
+
+                    {{-- Password Strength Indicator --}}
+                    <x-material-ui.password-strength model="newPassword" />
 
                     <button type="button" @click="submitPassword()" :disabled="submittingPw"
                             class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50">
@@ -471,17 +482,6 @@
                 </h2>
 
                 <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Profile Visibility</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Make your profile visible to other users</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                        </label>
-                    </div>
-
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-900 dark:text-white">Two-Factor Authentication</p>
