@@ -17,7 +17,7 @@ require_once __DIR__ . '/algorithms/TraditionalGA.php';
 function getDB() {
     static $pdo = null;
     if ($pdo === null) {
-        $envPath = __DIR__ . '/../.env';
+        $envPath = __DIR__ . '/../../.env';
         $env = [];
         if (file_exists($envPath)) {
             foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
