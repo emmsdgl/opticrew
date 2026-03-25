@@ -37,7 +37,7 @@
             @forelse($employees as $employee)
                 <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow duration-200 employee-card"
                      data-name="{{ strtolower($employee->user->name ?? '') }}"
-                     data-skills="{{ strtolower(implode(',', $employee->skills ?? [])) }}">
+                     data-skills="{{ strtolower(is_array($employee->skills) ? implode(',', $employee->skills) : ($employee->skills ?? '')) }}">
                     <div class="flex items-start gap-4">
                         <!-- Avatar -->
                         <div class="flex-shrink-0">

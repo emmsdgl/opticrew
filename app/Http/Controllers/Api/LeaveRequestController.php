@@ -121,14 +121,14 @@ class LeaveRequestController extends Controller
             $isEmergency = $request->type === 'emergency';
             $daysUntilLeave = Carbon::today()->diffInDays($startDate, false);
 
-            // SCENARIO #13: Standard leave must be booked 4 days prior
-            // The 3-day prior period will mark the employee as unavailable in scheduling pool
-            if (!$isEmergency && $daysUntilLeave < 4) {
+            // SCENARIO #13: Standard leave must be booked N days prior (configurable, default 4)
+            $minimumLeaveNoticeDays = \App\Services\CompanySettingService::get('minimum_leave_notice_days', 4);
+            if (!$isEmergency && $daysUntilLeave < $minimumLeaveNoticeDays) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Standard leave requests must be submitted at least 4 days before the leave date. For urgent situations, please select "Emergency" leave type.',
+                    'message' => "Standard leave requests must be submitted at least {$minimumLeaveNoticeDays} days before the leave date. For urgent situations, please select \"Emergency\" leave type.",
                     'error_code' => 'MINIMUM_LEAVE_NOTICE',
-                    'minimum_date' => Carbon::today()->addDays(4)->format('Y-m-d'),
+                    'minimum_date' => Carbon::today()->addDays($minimumLeaveNoticeDays)->format('Y-m-d'),
                 ], 422);
             }
 

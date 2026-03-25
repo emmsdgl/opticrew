@@ -37,7 +37,8 @@ class ManagerScheduleController extends Controller
                 ->toArray();
         }
 
-        return view('manager.schedule', compact('locationTypes'));
+        $minimumBookingNoticeDays = \App\Services\CompanySettingService::get('minimum_booking_notice_days', 3);
+        return view('manager.schedule', compact('locationTypes', 'minimumBookingNoticeDays'));
     }
 
     /**
@@ -141,6 +142,17 @@ class ManagerScheduleController extends Controller
             $grouped[$groupName]['items'][] = $loc;
         }
 
+        // Natural sort items within each group so #1, #2, #10 display in numeric order
+        foreach ($grouped as &$group) {
+            usort($group['items'], function ($a, $b) {
+                return strnatcasecmp($a['location_name'], $b['location_name']);
+            });
+        }
+        unset($group);
+
+        // Natural sort the groups themselves
+        uksort($grouped, 'strnatcasecmp');
+
         return response()->json([
             'locations' => $locationData,
             'grouped' => array_values($grouped),
@@ -228,6 +240,18 @@ class ManagerScheduleController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        // Scenario #1: Enforce minimum booking notice (configurable, default 3 days)
+        $minimumNoticeDays = \App\Services\CompanySettingService::get('minimum_booking_notice_days', 3);
+        $scheduledDate = Carbon::parse($request->scheduled_date)->startOfDay();
+        $earliestAllowed = Carbon::today()->addDays($minimumNoticeDays)->startOfDay();
+
+        if ($scheduledDate->lt($earliestAllowed)) {
+            return response()->json([
+                'message' => "Tasks must be booked at least {$minimumNoticeDays} days in advance. Earliest available date: {$earliestAllowed->format('M d, Y')}.",
+                'errors' => ['scheduled_date' => ["Minimum {$minimumNoticeDays}-day booking notice required."]],
+            ], 422);
         }
 
         // Verify all locations belong to this contracted client

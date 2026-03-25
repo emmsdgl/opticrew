@@ -330,8 +330,8 @@ class ReportController extends Controller
             })
             ->toArray();
 
-        // Overtime threshold and rate
-        $overtimeThresholdHours = 8;
+        // SCENARIO #16: Overtime threshold (configurable, default 8 hours)
+        $overtimeThresholdHours = \App\Services\CompanySettingService::get('overtime_threshold_hours', 8);
         $overtimeRate = $employee->salary_per_hour + 0.50; // e.g. €13.00 + €0.50 = €13.50/hr
 
         // Get all attendance records

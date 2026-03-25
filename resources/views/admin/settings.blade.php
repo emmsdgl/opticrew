@@ -267,6 +267,157 @@
                 </form>
             </div>
 
+            <!-- Workforce Configuration -->
+            <div id="workforce-config" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6"
+                 x-data="{
+                    savingConfig: false,
+                    config: {
+                        minimum_booking_notice_days: {{ $companySettings['minimum_booking_notice_days'] }},
+                        minimum_leave_notice_days: {{ $companySettings['minimum_leave_notice_days'] }},
+                        task_approval_grace_period_minutes: {{ $companySettings['task_approval_grace_period_minutes'] }},
+                        reassignment_grace_period_minutes: {{ $companySettings['reassignment_grace_period_minutes'] }},
+                        unstaffed_escalation_timeout_minutes: {{ $companySettings['unstaffed_escalation_timeout_minutes'] }},
+                        overtime_threshold_hours: {{ $companySettings['overtime_threshold_hours'] }},
+                        geofence_radius: {{ $companySettings['geofence_radius'] }},
+                    },
+                    async saveConfig() {
+                        try {
+                            await window.showConfirmDialog('Save Configuration?', 'Are you sure you want to update the workforce configuration? These changes affect how scenarios are enforced across the system.', 'Save', 'Cancel');
+                        } catch (e) { return; }
+                        this.savingConfig = true;
+                        try {
+                            const res = await fetch('{{ route('admin.settings.update-company') }}', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                body: JSON.stringify(this.config)
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                window.showSuccessDialog('Configuration Saved', data.message);
+                            } else {
+                                let errorMsg = data.message || 'Failed to save configuration.';
+                                if (data.errors) {
+                                    errorMsg = Object.values(data.errors).flat().join('\n');
+                                }
+                                window.showErrorDialog('Save Failed', errorMsg);
+                            }
+                        } catch (e) {
+                            window.showErrorDialog('Error', 'An error occurred. Please try again.');
+                        } finally { this.savingConfig = false; }
+                    }
+                 }">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                    <i class="fa-solid fa-gears mr-2 text-blue-500"></i>
+                    Workforce Configuration
+                </h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">Configure scenario-based thresholds that control how the system enforces business rules.</p>
+
+                <div class="space-y-5">
+                    <!-- Booking & Leave Section -->
+                    <div>
+                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Booking & Leave Rules</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Minimum Booking Notice -->
+                            <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Minimum Booking Notice</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">How many days in advance must tasks be booked?</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" x-model.number="config.minimum_booking_notice_days" min="1" max="30"
+                                           class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">days</span>
+                                </div>
+                            </div>
+
+                            <!-- Minimum Leave Notice -->
+                            <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Minimum Leave Notice</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">How many days in advance must standard leave be requested?</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" x-model.number="config.minimum_leave_notice_days" min="1" max="30"
+                                           class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Task Management Section -->
+                    <div>
+                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Task Management</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Task Approval Grace Period -->
+                            <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Approval Grace Period</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Minutes before an unapproved task is marked as unstaffed.</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" x-model.number="config.task_approval_grace_period_minutes" min="5" max="240"
+                                           class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">minutes</span>
+                                </div>
+                            </div>
+
+                            <!-- Reassignment Grace Period -->
+                            <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reassignment Grace Period</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Minutes allowed for task reassignment after leave approval.</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" x-model.number="config.reassignment_grace_period_minutes" min="5" max="240"
+                                           class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">minutes</span>
+                                </div>
+                            </div>
+
+                            <!-- Unstaffed Escalation Timeout -->
+                            <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unstaffed Escalation Timeout</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Minutes before unaccepted tasks trigger critical escalation.</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" x-model.number="config.unstaffed_escalation_timeout_minutes" min="10" max="480"
+                                           class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">minutes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pay & Geofencing Section -->
+                    <div>
+                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Pay & Geofencing</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Overtime Threshold -->
+                            <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Overtime Threshold</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Hours after which overtime pay rate is applied.</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" x-model.number="config.overtime_threshold_hours" min="1" max="24"
+                                           class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">hours</span>
+                                </div>
+                            </div>
+
+                            <!-- Geofence Radius -->
+                            <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Geofence Radius</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Allowed distance (meters) from job site for clock-in.</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" x-model.number="config.geofence_radius" min="10" max="1000"
+                                           class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">meters</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button type="button" @click="saveConfig()" :disabled="savingConfig"
+                            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50">
+                        <span x-show="!savingConfig">Save Configuration</span>
+                        <span x-show="savingConfig"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving...</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Notification Preferences -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">

@@ -142,6 +142,12 @@
                                 <i class="fa-regular fa-user w-5 text-gray-500 dark:text-gray-400"></i>
                                 <span class="ml-3">Profile</span>
                             </button>
+                        @elseif(auth()->user()->role === 'company')
+                            <a href="{{ route('manager.profile') }}"
+                                class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fa-regular fa-user w-5 text-gray-500 dark:text-gray-400"></i>
+                                <span class="ml-3">Profile</span>
+                            </a>
                         @else
                             <a href="{{ route('admin.profile') }}"
                                 class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -153,8 +159,9 @@
                         @if(auth()->user()->role !== 'applicant')
                         <a href="{{
                             auth()->user()->role === 'admin' ? route('admin.settings') :
+                            (auth()->user()->role === 'company' ? route('manager.settings') :
                             (auth()->user()->role === 'employee' ? route('employee.settings') :
-                            route('client.settings'))
+                            route('client.settings')))
                         }}"
                             class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <i class="fa-solid fa-gear w-5 text-gray-500 dark:text-gray-400"></i>
@@ -173,8 +180,9 @@
 
                         <a href="{{
                             auth()->user()->role === 'admin' ? route('admin.helpcenter') :
+                            (auth()->user()->role === 'company' ? route('manager.helpcenter') :
                             (auth()->user()->role === 'employee' ? route('employee.helpcenter') :
-                            route('client.helpcenter'))
+                            route('client.helpcenter')))
                         }}"
                             class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <i class="fa-regular fa-circle-question w-5 text-gray-500 dark:text-gray-400"></i>

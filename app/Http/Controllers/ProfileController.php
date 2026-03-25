@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use App\Models\Task;
 use App\Models\QuotationSetting;
+use App\Services\CompanySettingService;
 
 class ProfileController extends Controller
 {
@@ -87,6 +88,8 @@ class ProfileController extends Controller
         // Return appropriate view based on role
         if ($role === 'admin') {
             return view('admin.profile', compact('cards'));
+        } elseif ($role === 'company') {
+            return view('manager.profile', compact('cards'));
         } else {
             return view('employee.profile', compact('cards'));
         }
@@ -101,6 +104,8 @@ class ProfileController extends Controller
         $role = $user->role;
 
         if ($role === 'admin') {
+            return view('admin.profile-edit', compact('user'));
+        } elseif ($role === 'company') {
             return view('admin.profile-edit', compact('user'));
         } elseif ($role === 'employee') {
             return view('employee.profile-edit', compact('user'));
@@ -329,7 +334,18 @@ class ProfileController extends Controller
                 'pdf_general_cleaning' => QuotationSetting::getPdfPath('general_cleaning'),
                 'pdf_hotel_cleaning' => QuotationSetting::getPdfPath('hotel_cleaning'),
             ];
-            return view('admin.settings', compact('user', 'quotationSettings'));
+            $companySettings = [
+                'minimum_booking_notice_days' => CompanySettingService::get('minimum_booking_notice_days', 3),
+                'minimum_leave_notice_days' => CompanySettingService::get('minimum_leave_notice_days', 4),
+                'task_approval_grace_period_minutes' => CompanySettingService::get('task_approval_grace_period_minutes', 30),
+                'reassignment_grace_period_minutes' => CompanySettingService::get('reassignment_grace_period_minutes', 30),
+                'unstaffed_escalation_timeout_minutes' => CompanySettingService::get('unstaffed_escalation_timeout_minutes', 60),
+                'overtime_threshold_hours' => CompanySettingService::get('overtime_threshold_hours', 8),
+                'geofence_radius' => CompanySettingService::get('geofence_radius', 110),
+            ];
+            return view('admin.settings', compact('user', 'quotationSettings', 'companySettings'));
+        } elseif ($role === 'company') {
+            return view('manager.settings', compact('user'));
         } elseif ($role === 'employee') {
             return view('employee.settings', compact('user'));
         } else {
@@ -367,6 +383,43 @@ class ProfileController extends Controller
 
         return Redirect::route('admin.settings')->with('success', 'Quotation settings updated successfully!');
     }
+
+    /**
+     * Update workforce configuration (company_settings)
+     */
+    public function updateCompanySettings(Request $request)
+    {
+        $request->validate([
+            'minimum_booking_notice_days' => 'required|integer|min:1|max:30',
+            'minimum_leave_notice_days' => 'required|integer|min:1|max:30',
+            'task_approval_grace_period_minutes' => 'required|integer|min:5|max:240',
+            'reassignment_grace_period_minutes' => 'required|integer|min:5|max:240',
+            'unstaffed_escalation_timeout_minutes' => 'required|integer|min:10|max:480',
+            'overtime_threshold_hours' => 'required|integer|min:1|max:24',
+            'geofence_radius' => 'required|integer|min:10|max:1000',
+        ]);
+
+        $settings = [
+            'minimum_booking_notice_days' => ['type' => 'integer', 'desc' => 'Scenario #1: Minimum days notice required for booking'],
+            'minimum_leave_notice_days' => ['type' => 'integer', 'desc' => 'Scenario #13: Minimum days notice for standard leave requests'],
+            'task_approval_grace_period_minutes' => ['type' => 'integer', 'desc' => 'Scenario #19: Grace period (minutes) for employee to approve/start assigned task'],
+            'reassignment_grace_period_minutes' => ['type' => 'integer', 'desc' => 'Scenario #18: Grace period (minutes) for task reassignment after leave approval'],
+            'unstaffed_escalation_timeout_minutes' => ['type' => 'integer', 'desc' => 'Scenario #15: Minutes before CRITICAL_ESCALATION for unaccepted tasks'],
+            'overtime_threshold_hours' => ['type' => 'integer', 'desc' => 'Scenario #16: Hours after which overtime pay is computed'],
+            'geofence_radius' => ['type' => 'integer', 'desc' => 'Geofence radius in meters for clock-in verification'],
+        ];
+
+        foreach ($settings as $key => $meta) {
+            CompanySettingService::set($key, $request->input($key), $meta['type'], $meta['desc']);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Workforce configuration updated successfully!']);
+        }
+
+        return Redirect::route('admin.settings')->with('success', 'Workforce configuration updated successfully!');
+    }
+
     /**
      * Show help center page based on user role
      */
@@ -377,6 +430,8 @@ class ProfileController extends Controller
 
         if ($role === 'admin') {
             return view('admin.help-center', compact('user'));
+        } elseif ($role === 'company') {
+            return view('manager.help-center', compact('user'));
         } elseif ($role === 'employee') {
             return view('employee.help-center', compact('user'));
         } else {
