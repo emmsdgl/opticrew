@@ -225,7 +225,6 @@
     <x-slot:sidebarBottom>
         <div class="py-12 px-6">
             <div class="shadow-sm">
-                {{-- <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-2.5">Summary</h3> --}}
                 <div class="flex flex-col gap-2">
                     {{-- Available Jobs --}}
                     <div class="flex items-center gap-3 p-2.5 rounded-xl shadow-sm">
@@ -242,10 +241,10 @@
                         <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-gray-700">
                             <i class="fa-solid fa-paper-plane text-sm text-gray-600 dark:text-gray-400"></i>
                         </div>
-                        <div class="flex-1 min-w-0 ">
-                            <div class="text-sm font-semibold text-gray-900 dark:text-white ">My Applications</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white">My Applications</div>
                         </div>
-                        <span class="text-xs mb-3 text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full flex-shrink-0">{{ $myApplications->count() }}</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full flex-shrink-0">{{ $myApplications->count() }}</span>
                     </div>
                     {{-- Withdrawn --}}
                     <div class="flex items-center gap-3 p-2.5 rounded-xl shadow-sm">
@@ -263,369 +262,42 @@
     </x-slot:sidebarBottom>
 
     {{-- ── Middle Content ── --}}
-    <div class="mx-8">
 
-        {{-- Welcome Header --}}
-        <x-applicant-components.herocard
-            headerName="{{ $user->name }}"
-            headerDesc="Browse open positions and track your applications."
-            headerIcon=""
+    {{-- Row 1: Hero Card --}}
+    <x-applicant-components.herocard
+        headerName="{{ $user->name }}"
+        headerDesc="Browse open positions and track your applications."
+        headerIcon=""
+    />
+
+    {{-- Row 2: My Applications --}}
+    <div>
+        <x-labelwithvalue
+            label="My Applications"
+            count="{{ $myApplications->count() }}"
         />
-
-        {{-- Applied Positions --}}
-        <div id="tour-app-my-applications">
-        <div class="mt-6 mb-6">
-            <x-labelwithvalue
-                label="My Applications"
-                count="{{ $myApplications->count() }}"
-            />
+        <div class="mt-3">
+            <x-applicant-components.applied-positions :applications="$myApplications" :jobPostings="$allJobPostings" />
         </div>
-        <x-applicant-components.applied-positions :applications="$myApplications" :jobPostings="$allJobPostings" />
-        </div>
-
-        {{-- Available Positions --}}
-        @php
-            $appliedTitles = $myApplications->pluck('job_title')->map(fn($t) => strtolower(trim($t)))->toArray();
-            $availableCount = $jobPostings->filter(fn($job) => !in_array(strtolower(trim($job->title)), $appliedTitles))->count();
-        @endphp
-        <div id="tour-app-available-jobs">
-        <div class="mt-6 mb-6">
-            <x-labelwithvalue
-                label="Available Job Positions"
-                count="{{ $availableCount }}"
-            />
-        </div>
-        <x-applicant-components.available-positions :jobPostings="$jobPostings" :applications="$myApplications" :savedJobIds="$savedJobIds ?? []" />
-        </div>
-
-        {{-- Apply Modal (global — listens for open-apply-modal window events) --}}
-        <x-applicant-components.apply-modal />
-
     </div>
 
-    {{-- Profile Modal (triggered from header dropdown) --}}
-    @php $profileUser = auth()->user(); @endphp
-    <div x-data="profileModal()" @open-profile-modal.window="openModal()">
-        <template x-teleport="body">
-            <div x-show="profileOpen" x-cloak
-                 class="fixed inset-0 z-[70] flex items-center justify-center p-4"
-                 @keydown.escape.window="closeModal()">
-                <div x-show="profileOpen"
-                     x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                     @click="closeModal()"
-                     class="absolute inset-0 bg-black/50"></div>
-                <div x-show="profileOpen"
-                     x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                     class="relative w-full max-w-sm max-h-[85vh] bg-white dark:bg-[#1E293B] rounded-2xl shadow-2xl overflow-y-auto">
-
-                    {{-- Edit / Save button (top-right) --}}
-                    <button x-show="!editing" @click="startEditing()"
-                        class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur shadow-md flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-110 transition-all" title="Edit Profile">
-                        <i class="fa-solid fa-pen text-xs"></i>
-                    </button>
-
-                    {{-- Close / Cancel button (top-left) --}}
-                    <button @click="editing ? cancelEditing() : closeModal()"
-                        class="absolute top-4 left-4 z-10 w-8 h-8 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur shadow-md flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:scale-110 transition-all"
-                        :title="editing ? 'Cancel' : 'Close'">
-                        <i class="fa-solid fa-xmark text-xs"></i>
-                    </button>
-
-                    {{-- Cover --}}
-                    <div class="h-28 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 relative">
-                        <div class="absolute inset-0 bg-black/10"></div>
-                    </div>
-
-                    {{-- Avatar --}}
-                    <div class="flex justify-center -mt-12 relative z-10">
-                        <div class="p-1 rounded-full bg-white dark:bg-[#1E293B] shadow-lg">
-                            <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                @if($profileUser && $profileUser->profile_picture)
-                                    <img src="{{ $profileUser->profile_picture }}" alt="{{ $profileUser->name }}" class="w-full h-full object-cover">
-                                @else
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <i class="fa-solid fa-user text-2xl text-gray-400 dark:text-gray-500"></i>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Body --}}
-                    <div class="px-6 pt-3 pb-6 text-center">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ $profileUser->name ?? 'Applicant' }}</h3>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ $profileUser->email ?? '' }}</p>
-                        <div class="my-5 border-t border-gray-100 dark:border-gray-700"></div>
-
-                        <div class="space-y-4 text-left px-2">
-                            {{-- Phone --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-phone text-xs text-blue-500 dark:text-blue-400"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Phone</p>
-                                    <template x-if="!editing">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" x-text="form.phone || '—'"></p>
-                                    </template>
-                                    <template x-if="editing">
-                                        <input type="tel" x-model="form.phone" placeholder="Enter phone number"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                    </template>
-                                </div>
-                            </div>
-
-                            {{-- Email (read-only) --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-envelope text-xs text-blue-500 dark:text-blue-400"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Email</p>
-                                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{{ $profileUser->email ?? '—' }}</p>
-                                </div>
-                            </div>
-
-                            {{-- Alternative Email --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-at text-xs text-blue-500 dark:text-blue-400"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Alternative Email</p>
-                                    <template x-if="!editing">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" x-text="form.alternative_email || '—'"></p>
-                                    </template>
-                                    <template x-if="editing">
-                                        <input type="email" x-model="form.alternative_email" placeholder="Enter alternative email"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                    </template>
-                                </div>
-                            </div>
-
-                            {{-- Address --}}
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-location-dot text-xs text-blue-500 dark:text-blue-400"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Address</p>
-                                    <template x-if="!editing">
-                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" x-text="form.location || '—'"></p>
-                                    </template>
-                                    <template x-if="editing">
-                                        <input type="text" x-model="form.location" placeholder="Enter address"
-                                            class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                    </template>
-                                </div>
-                            </div>
-
-                            {{-- Change Password (edit mode only) --}}
-                            <template x-if="editing">
-                                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-4">
-                                    <p class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Change Password</p>
-
-                                    {{-- Current Password --}}
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-lock text-xs text-blue-500 dark:text-blue-400"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Current Password</p>
-                                            <div class="relative">
-                                                <input :type="showCurrentPw ? 'text' : 'password'" x-model="form.current_password"
-                                                    :placeholder="hasPassword ? 'Enter current password' : 'No password set'"
-                                                    :disabled="!hasPassword"
-                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <button type="button" @click="showCurrentPw = !showCurrentPw" x-show="hasPassword"
-                                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                                    <i class="fa-solid text-xs" :class="showCurrentPw ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- New Password --}}
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-key text-xs text-blue-500 dark:text-blue-400"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">New Password</p>
-                                            <div class="relative">
-                                                <input :type="showNewPw ? 'text' : 'password'" x-model="form.new_password" placeholder="Enter new password"
-                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                                <button type="button" @click="showNewPw = !showNewPw"
-                                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                                    <i class="fa-solid text-xs" :class="showNewPw ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- Confirm Password --}}
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-check-double text-xs text-blue-500 dark:text-blue-400"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Confirm Password</p>
-                                            <div class="relative">
-                                                <input :type="showConfirmPw ? 'text' : 'password'" x-model="form.new_password_confirmation" placeholder="Confirm new password"
-                                                    class="w-full text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
-                                                <button type="button" @click="showConfirmPw = !showConfirmPw"
-                                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                                    <i class="fa-solid text-xs" :class="showConfirmPw ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-
-                        {{-- Save Button (edit mode) --}}
-                        <div x-show="editing" x-transition class="mt-5">
-                            <button @click="saveProfile()" :disabled="saving"
-                                class="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                                <span x-show="!saving">Save Changes</span>
-                                <span x-show="saving" class="flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-spinner fa-spin text-xs"></i> Saving...
-                                </span>
-                            </button>
-                        </div>
-
-                        {{-- Stats --}}
-                        <div class="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <div class="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-700">
-                                <div class="flex flex-col items-center px-2 gap-0.5">
-                                    <span class="font-bold text-base text-gray-900 dark:text-white">{{ $myApplications->count() }}</span>
-                                    <span class="text-[10px] text-gray-400 dark:text-gray-500">Applied</span>
-                                </div>
-                                <div class="flex flex-col items-center px-2 gap-0.5">
-                                    <span class="font-bold text-base text-yellow-500 dark:text-yellow-400">{{ $myApplications->whereIn('status', ['pending', 'reviewed'])->count() }}</span>
-                                    <span class="text-[10px] text-gray-400 dark:text-gray-500">Pending</span>
-                                </div>
-                                <div class="flex flex-col items-center px-2 gap-0.5">
-                                    <span class="font-bold text-base text-green-500 dark:text-green-400">{{ $myApplications->where('status', 'hired')->count() }}</span>
-                                    <span class="text-[10px] text-gray-400 dark:text-gray-500">Hired</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </template>
+    {{-- Row 3: Available Positions --}}
+    @php
+        $appliedTitles = $myApplications->pluck('job_title')->map(fn($t) => strtolower(trim($t)))->toArray();
+        $availableCount = $jobPostings->filter(fn($job) => !in_array(strtolower(trim($job->title)), $appliedTitles))->count();
+    @endphp
+    <div>
+        <x-labelwithvalue
+            label="Available Job Positions"
+            count="{{ $availableCount }}"
+        />
+        <div class="mt-3">
+            <x-applicant-components.available-positions :jobPostings="$jobPostings" :applications="$myApplications" :savedJobIds="$savedJobIds ?? []" />
+        </div>
     </div>
 
-    @push('scripts')
-    <script>
-    function profileModal() {
-        return {
-            profileOpen: false,
-            editing: false,
-            saving: false,
-            hasPassword: @json($hasPassword),
-            showCurrentPw: false,
-            showNewPw: false,
-            showConfirmPw: false,
-            form: {
-                phone: @json($profileUser->phone ?? ''),
-                alternative_email: @json($profileUser->alternative_email ?? ''),
-                location: @json($profileUser->location ?? ''),
-                current_password: '',
-                new_password: '',
-                new_password_confirmation: '',
-            },
-            original: {},
-
-            openModal() {
-                this.profileOpen = true;
-                this.editing = false;
-            },
-
-            closeModal() {
-                if (this.editing) {
-                    this.cancelEditing();
-                    return;
-                }
-                this.profileOpen = false;
-            },
-
-            startEditing() {
-                this.original = { ...this.form };
-                this.editing = true;
-            },
-
-            cancelEditing() {
-                this.form = { ...this.original };
-                this.form.current_password = '';
-                this.form.new_password = '';
-                this.form.new_password_confirmation = '';
-                this.showCurrentPw = false;
-                this.showNewPw = false;
-                this.showConfirmPw = false;
-                this.editing = false;
-            },
-
-            async saveProfile() {
-                try {
-                    const confirmed = await window.showConfirmDialog(
-                        'Update Profile',
-                        'Are you sure you want to save these changes to your profile?',
-                        'Save',
-                        'Cancel'
-                    );
-                } catch {
-                    return;
-                }
-
-                this.saving = true;
-
-                try {
-                    const res = await fetch('{{ route("applicant.profile.update") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify(this.form),
-                    });
-
-                    const data = await res.json();
-
-                    if (res.ok && data.success) {
-                        if (data.password_changed) {
-                            window.showSuccessDialog('Password Changed', data.message || 'Please log in again with your new password.');
-                            setTimeout(() => { window.location.href = '/'; }, 2000);
-                            return;
-                        }
-                        this.editing = false;
-                        this.original = { ...this.form };
-                        this.form.current_password = '';
-                        this.form.new_password = '';
-                        this.form.new_password_confirmation = '';
-                        this.showCurrentPw = false;
-                        this.showNewPw = false;
-                        this.showConfirmPw = false;
-                        window.showSuccessDialog('Profile Updated', 'Your profile has been updated successfully.', 'OK');
-                    } else {
-                        const msg = data.message || Object.values(data.errors || {}).flat().join(', ') || 'Something went wrong.';
-                        window.showErrorDialog('Update Failed', msg, 'OK');
-                    }
-                } catch (e) {
-                    window.showErrorDialog('Update Failed', 'A network error occurred. Please try again.', 'OK');
-                } finally {
-                    this.saving = false;
-                }
-            }
-        };
-    }
-    </script>
-    @endpush
+    {{-- Apply Modal --}}
+    <x-applicant-components.apply-modal />
 
     @php
         $allJobsJson = $jobPostings->map(fn($j) => [
@@ -697,165 +369,75 @@
 
             elasticFillStyle() {
                 const left = this.thumbPercent(this.salaryMin);
-                const right = this.thumbPercent(this.salaryMax);
-                return `left:${left}%;width:${right - left}%`;
+                const width = this.thumbPercent(this.salaryMax) - left;
+                return `left:${left}%;width:${width}%`;
             },
 
             startDrag(e, which) {
                 this.activeThumb = which;
-                e.target.closest('.elastic-slider-thumb').setPointerCapture(e.pointerId);
-
                 const track = this.$refs.sliderTrack;
                 const onMove = (ev) => {
                     const rect = track.getBoundingClientRect();
-                    let pct = (ev.clientX - rect.left) / rect.width;
-                    pct = Math.max(0, Math.min(1, pct));
-                    const val = Math.round(this.salaryAbsMin + pct * (this.salaryAbsMax - this.salaryAbsMin));
-
+                    let pct = ((ev.clientX - rect.left) / rect.width) * 100;
+                    pct = Math.max(0, Math.min(100, pct));
+                    const val = Math.round(this.salaryAbsMin + (pct / 100) * (this.salaryAbsMax - this.salaryAbsMin));
                     if (which === 'min') {
-                        this.salaryMin = Math.min(val, this.salaryMax);
+                        this.salaryMin = Math.min(val, this.salaryMax - 1);
+                        this.sliderBounce = 'left';
                     } else {
-                        this.salaryMax = Math.max(val, this.salaryMin);
+                        this.salaryMax = Math.max(val, this.salaryMin + 1);
+                        this.sliderBounce = 'right';
                     }
-
-                    // Bounce icons when near edges
-                    if (pct <= 0.02) { this.sliderBounce = 'left'; }
-                    else if (pct >= 0.98) { this.sliderBounce = 'right'; }
-                    else { this.sliderBounce = null; }
-
-                    this.applyFilters();
                 };
-
                 const onUp = () => {
                     this.activeThumb = null;
                     this.sliderBounce = null;
-                    document.removeEventListener('pointermove', onMove);
-                    document.removeEventListener('pointerup', onUp);
+                    window.removeEventListener('pointermove', onMove);
+                    window.removeEventListener('pointerup', onUp);
+                    this.applyFilters();
                 };
-
-                document.addEventListener('pointermove', onMove);
-                document.addEventListener('pointerup', onUp);
+                window.addEventListener('pointermove', onMove);
+                window.addEventListener('pointerup', onUp);
             },
 
             handleTrackClick(e) {
                 const rect = this.$refs.sliderTrack.getBoundingClientRect();
-                let pct = (e.clientX - rect.left) / rect.width;
-                pct = Math.max(0, Math.min(1, pct));
-                const val = Math.round(this.salaryAbsMin + pct * (this.salaryAbsMax - this.salaryAbsMin));
-
-                // Snap to closest thumb
+                let pct = ((e.clientX - rect.left) / rect.width) * 100;
+                pct = Math.max(0, Math.min(100, pct));
+                const val = Math.round(this.salaryAbsMin + (pct / 100) * (this.salaryAbsMax - this.salaryAbsMin));
                 const distMin = Math.abs(val - this.salaryMin);
                 const distMax = Math.abs(val - this.salaryMax);
-                if (distMin <= distMax) {
-                    this.salaryMin = Math.min(val, this.salaryMax);
-                } else {
-                    this.salaryMax = Math.max(val, this.salaryMin);
-                }
+                if (distMin <= distMax) { this.salaryMin = Math.min(val, this.salaryMax - 1); }
+                else { this.salaryMax = Math.max(val, this.salaryMin + 1); }
                 this.applyFilters();
             },
 
             applyFilters() {
-                const cards = document.querySelectorAll('.avp-scroll > div');
-                let count = 0;
+                const cards = document.querySelectorAll('[data-job-card]');
+                let visible = 0;
+                cards.forEach(card => {
+                    const type = card.dataset.jobType || '';
+                    const loc = card.dataset.jobLocation || '';
+                    const sal = parseFloat(card.dataset.jobSalary || 0);
 
-                allJobs.forEach((job, i) => {
-                    if (i >= cards.length) return;
-                    const card = cards[i];
-                    let show = true;
+                    const typeOk = this.selectedTypes.length === 0 || this.selectedTypes.includes(type);
+                    const locOk = this.selectedLocations.length === 0 || this.selectedLocations.includes(loc);
+                    const salOk = sal >= this.salaryMin && sal <= this.salaryMax;
 
-                    if (this.search) {
-                        const q = this.search.toLowerCase();
-                        if (!job.title.toLowerCase().includes(q)) show = false;
+                    if (typeOk && locOk && salOk) {
+                        card.style.display = '';
+                        visible++;
+                    } else {
+                        card.style.display = 'none';
                     }
-
-                    if (this.selectedTypes.length > 0) {
-                        if (!this.selectedTypes.includes(job.type)) show = false;
-                    }
-
-                    if (this.selectedLocations.length > 0) {
-                        if (!this.selectedLocations.includes(job.location)) show = false;
-                    }
-
-                    if (job.salary > 0 && (job.salary < this.salaryMin || job.salary > this.salaryMax)) {
-                        show = false;
-                    }
-
-                    card.style.display = show ? '' : 'none';
-                    if (show) count++;
                 });
-
-                this.visibleCount = count;
-                const sidebarEl = document.getElementById('sidebar-visible-count');
-                if (sidebarEl) sidebarEl.textContent = count;
-
-                // Show/hide filtered empty state
-                const scrollEl = document.querySelector('.avp-scroll');
-                const emptyEl = document.getElementById('avp-filtered-empty');
-                if (scrollEl && emptyEl) {
-                    scrollEl.style.display = count === 0 ? 'none' : '';
-                    emptyEl.classList.toggle('hidden', count > 0);
-                }
+                this.visibleCount = visible;
+                const counter = document.getElementById('sidebar-visible-count');
+                if (counter) counter.textContent = visible;
             },
-
-            resetFilters() {
-                this.search = '';
-                this.selectedTypes = [];
-                this.selectedLocations = [];
-                this.salaryMin = this.salaryAbsMin;
-                this.salaryMax = this.salaryAbsMax;
-                this.applyFilters();
-            }
         };
     }
     </script>
     @endpush
 
-    {{-- Auto-open apply modal if redirected from landing page recruitment --}}
-    @if(!empty($pendingApply))
-    @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                window.dispatchEvent(new CustomEvent('open-apply-modal', {
-                    detail: {
-                        title: @json($pendingApply['job_title'] ?? ''),
-                        type: @json($pendingApply['job_type'] ?? ''),
-                        requiredDocs: @json($pendingApply['required_docs'] ?? []),
-                    }
-                }));
-            }, 500);
-        });
-    </script>
-    @endpush
-    @endif
-
-    <x-guided-tour tourName="applicant-dashboard" :steps="json_encode([
-        [
-            'title' => 'Welcome to the Job Portal',
-            'description' => 'Find and apply for available positions here. Let us show you how to navigate the portal!',
-            'side' => 'bottom',
-            'align' => 'center',
-        ],
-        [
-            'element' => '#sidebar',
-            'title' => 'Navigation Menu',
-            'description' => 'Access your Dashboard, Saved jobs, Interview schedules, and Withdrawn applications from here.',
-            'side' => 'right',
-            'align' => 'start',
-        ],
-        [
-            'element' => '#tour-app-my-applications',
-            'title' => 'My Applications',
-            'description' => 'Track the status of all your submitted job applications here. See which ones are pending, under review, or have received responses.',
-            'side' => 'bottom',
-            'align' => 'center',
-        ],
-        [
-            'element' => '#tour-app-available-jobs',
-            'title' => 'Available Positions',
-            'description' => 'Browse all open job positions. Click on any job to view details and apply. You can also save jobs for later.',
-            'side' => 'top',
-            'align' => 'center',
-        ],
-    ])" />
 </x-layouts.general-applicant>

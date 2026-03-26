@@ -8,7 +8,7 @@
         </x-applicant-components.applicant-sidebar>
     @endslot
 
-    <div class="flex flex-1 min-h-0 bg-[#EFF5FF] dark:bg-gray-900">
+    <div class="flex flex-1 min-h-0 h-full bg-[#EFF5FF] dark:bg-gray-900">
 
         {{-- ── Middle Content ───────────────────────────────────────────────── --}}
         <section class="flex-1 min-w-0 p-4 md:p-6 flex flex-col gap-4 overflow-y-auto">

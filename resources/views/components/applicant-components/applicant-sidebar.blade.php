@@ -43,7 +43,6 @@
                 ['label' => 'Dashboard', 'icon' => 'fa-solid fa-house', 'href' => route('applicant.dashboard'), 'route' => 'applicant.dashboard'],
                 ['label' => 'Interviews', 'icon' => 'fa-solid fa-calendar-check', 'href' => route('applicant.interviews'), 'route' => 'applicant.interviews'],
                 ['label' => 'Withdrawn', 'icon' => 'fa-solid fa-rotate-left', 'href' => route('applicant.withdrawn'), 'route' => 'applicant.withdrawn'],
-                ['label' => 'Privacy Policy', 'icon' => 'fa-solid fa-shield-halved', 'href' => route('privacypolicy'), 'route' => 'privacypolicy'],
             ];
         @endphp
 
