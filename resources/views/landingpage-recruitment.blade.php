@@ -994,11 +994,11 @@
                 <div class="space-y-4 text-gray-700 dark:text-gray-300">
                     <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Last Updated: November 5, 2025</p>
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">1. Acceptance of Terms</h3>
-                    <p class="text-sm leading-relaxed">By accessing or using the OptiCrew workforce management and scheduling platform (the "System"), you ("User") agree to comply with and be bound by these Terms and Conditions.</p>
+                    <p class="text-sm leading-relaxed">By accessing or using the Castcrew workforce management and scheduling platform (the "System"), you ("User") agree to comply with and be bound by these Terms and Conditions.</p>
                     <p class="text-sm leading-relaxed">If you do not agree with any part of these Terms, you must refrain from using the System.</p>
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">2. System Operations and Allocation Rules</h3>
                     <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.1 Workforce Allocation</h4>
-                    <p class="text-sm leading-relaxed">OptiCrew automatically determines the optimal number of employees required for each task based on employee availability, pending workload, budget constraints, and utilization targets.</p>
+                    <p class="text-sm leading-relaxed">Castcrew automatically determines the optimal number of employees required for each task based on employee availability, pending workload, budget constraints, and utilization targets.</p>
                     <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.2 Team Composition and Driver Requirement</h4>
                     <p class="text-sm leading-relaxed">Each assigned team must include at least one employee registered as having valid driving skills.</p>
                     <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.3 Task Prioritization</h4>
@@ -1010,7 +1010,7 @@
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">3. System Authority and Finality</h3>
                     <p class="text-sm leading-relaxed">All task assignments and schedules are the outcome of automated, rule-based optimization and are deemed final for operational purposes.</p>
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">4. Modifications to System Rules</h3>
-                    <p class="text-sm leading-relaxed">OptiCrew reserves the right to modify these Terms at any time. Continued use constitutes acceptance of revised Terms.</p>
+                    <p class="text-sm leading-relaxed">Castcrew reserves the right to modify these Terms at any time. Continued use constitutes acceptance of revised Terms.</p>
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">5. Contact Information</h3>
                     <p class="text-sm leading-relaxed">For inquiries, contact: opticrewhelpcenter@gmail.com</p>
                 </div>
