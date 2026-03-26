@@ -801,12 +801,46 @@
             </script>
             <script>
                 async function handleClockAction(formId, title, message, successTitle, successMessage) {
+                    // Check location permission first
+                    try {
+                        const permResult = await navigator.permissions.query({ name: 'geolocation' });
+                        if (permResult.state === 'denied') {
+                            window.showErrorDialog('Location Required', 'Location access is blocked. Please click the lock icon in the address bar, allow Location, and reload the page.');
+                            return;
+                        }
+                    } catch (e) { /* permissions API not supported */ }
+
+                    // Request location - block clock in/out if denied
+                    let position;
+                    try {
+                        position = await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                                enableHighAccuracy: true, timeout: 10000, maximumAge: 30000
+                            });
+                        });
+                    } catch (geoError) {
+                        if (geoError.code === geoError.PERMISSION_DENIED) {
+                            window.showErrorDialog('Location Required', 'Location permission is required to clock in/out. Please enable location access in your browser settings and try again.');
+                        } else {
+                            window.showErrorDialog('Location Error', 'Unable to get your location. Please check your device settings and try again.');
+                        }
+                        return;
+                    }
+
                     try {
                         await window.showConfirmDialog(title, message, 'Confirm', 'Cancel');
                     } catch { return; }
 
                     const form = document.getElementById(formId);
-                    populateGeoFields(form);
+
+                    // Set location from the position we just obtained
+                    const latField = form.querySelector('.geo-latitude');
+                    const lngField = form.querySelector('.geo-longitude');
+                    if (latField && lngField) {
+                        latField.value = position.coords.latitude;
+                        lngField.value = position.coords.longitude;
+                    }
+
                     const formData = new FormData(form);
 
                     try {

@@ -78,7 +78,50 @@
 
 
                     <!-- Toggle Settings -->
-                    <div class="space-y-6">
+                    <div class="space-y-6" x-data="{
+                        locationEnabled: false,
+                        locationStatus: 'checking',
+                        async checkLocationPermission() {
+                            if (!navigator.permissions) {
+                                this.locationStatus = 'unsupported';
+                                return;
+                            }
+                            try {
+                                const result = await navigator.permissions.query({ name: 'geolocation' });
+                                this.locationEnabled = result.state === 'granted';
+                                this.locationStatus = result.state;
+                                result.onchange = () => {
+                                    this.locationEnabled = result.state === 'granted';
+                                    this.locationStatus = result.state;
+                                };
+                            } catch (e) {
+                                this.locationStatus = 'unsupported';
+                            }
+                        },
+                        toggleLocation() {
+                            if (this.locationEnabled) {
+                                window.showErrorDialog('Location Access', 'To disable location access, please update your browser site permissions. Click the lock/site icon in the address bar and set Location to Block.');
+                                return;
+                            }
+                            navigator.geolocation.getCurrentPosition(
+                                () => {
+                                    this.locationEnabled = true;
+                                    this.locationStatus = 'granted';
+                                    window.showSuccessDialog('Location Enabled', 'Location access has been granted. Your location will be used for attendance verification.');
+                                },
+                                (error) => {
+                                    this.locationEnabled = false;
+                                    this.locationStatus = 'denied';
+                                    if (error.code === error.PERMISSION_DENIED) {
+                                        window.showErrorDialog('Permission Denied', 'Location access was denied. To enable it, click the lock/site icon in the address bar and allow Location.');
+                                    } else {
+                                        window.showErrorDialog('Location Error', 'Unable to access your location. Please try again.');
+                                    }
+                                }
+                            );
+                        },
+                        init() { this.checkLocationPermission(); }
+                    }">
                         <!-- Enable Location Access -->
                         <div
                             class="flex items-start justify-between py-4 border-b border-gray-200 dark:border-gray-800">
@@ -87,13 +130,17 @@
                                     Enable Location Access
                                 </h3>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Share your location for attendance verification and proceeding
+                                    <span x-show="locationStatus === 'checking'">Checking permission...</span>
+                                    <span x-show="locationStatus === 'granted'" x-cloak>Location access is enabled for attendance verification</span>
+                                    <span x-show="locationStatus === 'denied'" x-cloak>Location access is denied. Toggle to request permission</span>
+                                    <span x-show="locationStatus === 'prompt'" x-cloak>Share your location for attendance verification and proceeding</span>
+                                    <span x-show="locationStatus === 'unsupported'" x-cloak>Your browser does not support location permissions</span>
                                 </p>
                             </div>
                             <div class="ml-4 flex-shrink-0">
                                 <!-- Toggle Switch -->
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer" data-toggle-id="profile-visibility">
+                                <label class="relative inline-flex items-center cursor-pointer" @click.prevent="toggleLocation()">
+                                    <input type="checkbox" class="sr-only peer" :checked="locationEnabled">
                                     <div
                                         class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                     </div>

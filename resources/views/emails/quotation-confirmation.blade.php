@@ -110,18 +110,6 @@
                     </tr>
                     @endif
 
-                    {{-- Next Steps --}}
-                    <tr>
-                        <td style="padding: 8px 40px 24px;">
-                            <p style="margin: 0 0 12px; font-size: 14px; color: #4b5563; line-height: 1.7;">
-                                <strong>What happens next?</strong>
-                            </p>
-                            <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.7;">
-                                Our team will review your request and prepare a detailed quotation tailored to your specific needs. You can expect to hear from us within 1-2 business days.
-                            </p>
-                        </td>
-                    </tr>
-
                     {{-- Sign-off --}}
                     <tr>
                         <td style="padding: 8px 40px 24px;">
