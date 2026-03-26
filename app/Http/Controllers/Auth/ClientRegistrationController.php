@@ -149,6 +149,18 @@ class ClientRegistrationController extends Controller
     }
 
     /**
+     * Check if a username is already taken.
+     */
+    public function checkUsername(Request $request)
+    {
+        $request->validate(['username' => 'required|string|min:1']);
+
+        $taken = User::where('username', $request->username)->exists();
+
+        return response()->json(['available' => !$taken]);
+    }
+
+    /**
      * Send OTP to the user's email.
      */
     public function sendOtp(Request $request)

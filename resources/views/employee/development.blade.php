@@ -293,9 +293,50 @@
             let isCompleted = false;
             const COMPLETION_THRESHOLD = 90; // Must watch 90% to complete
             let saveTimeout = null;
+            let currentCourseCompleted = false; // Whether current course has been completed at least once
+
+            // Lock/unlock sidebar controls based on completion
+            function lockControls() {
+                document.querySelectorAll('.course-item').forEach(item => {
+                    if (item.getAttribute('data-course-id') != currentCourseId) {
+                        item.style.pointerEvents = 'none';
+                        item.style.opacity = '0.5';
+                    }
+                });
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.disabled = true;
+                    tab.style.pointerEvents = 'none';
+                    tab.style.opacity = '0.5';
+                });
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.disabled = true;
+                    searchInput.style.opacity = '0.5';
+                }
+            }
+
+            function unlockControls() {
+                document.querySelectorAll('.course-item').forEach(item => {
+                    item.style.pointerEvents = '';
+                    item.style.opacity = '';
+                });
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.disabled = false;
+                    tab.style.pointerEvents = '';
+                    tab.style.opacity = '';
+                });
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.disabled = false;
+                    searchInput.style.opacity = '';
+                }
+            }
 
             // Save progress to server
             function saveProgressToServer(courseId, progress) {
+                // Don't save if course is already completed — protect saved progress from replays
+                if (currentCourseCompleted && progress < 100) return;
+
                 clearTimeout(saveTimeout);
                 saveTimeout = setTimeout(() => {
                     const lastPosition = (player && player.getCurrentTime) ? Math.floor(player.getCurrentTime()) : 0;
@@ -321,7 +362,8 @@
                     const progress = calculateWatchedPercentage();
                     const status = courses[currentCourseId].status;
                     const lastPosition = (player && player.getCurrentTime) ? Math.floor(player.getCurrentTime()) : 0;
-                    if (status !== 'pending') {
+                    // Don't overwrite completed progress on page leave
+                    if (status !== 'pending' && !(currentCourseCompleted && progress < 100)) {
                         navigator.sendBeacon(
                             '{{ route("employee.development.save-progress") }}',
                             new Blob([JSON.stringify({
@@ -352,17 +394,27 @@
             function applyRestoredProgress(course) {
                 if (course.status === 'completed') {
                     isCompleted = true;
+                    currentCourseCompleted = true;
                     updateProgressUI(0, 0, 100);
                     updateProgressStatus('completed');
                     document.getElementById('completionBadge').classList.remove('hidden');
                     updateCourseStatusTag('completed');
+                    unlockControls();
                 } else if (course.status === 'in_progress' && course.savedProgress > 0) {
+                    currentCourseCompleted = false;
                     updateProgressUI(0, 0, course.savedProgress);
                     updateProgressStatus('paused');
                     updateCourseStatusTag('in_progress');
+                    lockControls();
                 } else if (course.status === 'in_progress') {
+                    currentCourseCompleted = false;
                     updateProgressStatus('paused');
                     updateCourseStatusTag('in_progress');
+                    lockControls();
+                } else {
+                    // pending
+                    currentCourseCompleted = false;
+                    lockControls();
                 }
             }
 
@@ -708,6 +760,7 @@
 
                 if (percentage >= COMPLETION_THRESHOLD || videoEnded) {
                     isCompleted = true;
+                    currentCourseCompleted = true;
 
                     // Update UI
                     updateProgressStatus('completed');
@@ -730,6 +783,9 @@
 
                     // Save completion to database
                     saveProgressToServer(currentCourseId, 100);
+
+                    // Unlock controls now that course is completed
+                    unlockControls();
                 }
             }
 
