@@ -155,7 +155,7 @@
     }
 </style>
 
-<body class="bg-[#ECF1FF] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-x-hidden">
+<body class="bg-[#ECF1FF] text-gray-700 dark:bg-[#0F172A] dark:text-gray-100 font-sans transition-colors duration-300 overflow-hidden">
     <x-material-ui.page-loader />
     {{$sidebar}}
 

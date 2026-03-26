@@ -45,9 +45,15 @@ class AccountController extends Controller
             $query->where('role', 'applicant');
         }
 
-        // Exclude applicants from 'all' view (they have their own section)
+        // Exclude applicants and personal clients from 'all' view (they have their own sections)
         if ($accountType === 'all') {
-            $query->where('role', '!=', 'applicant');
+            $query->where('role', '!=', 'applicant')
+                  ->where(function($q) {
+                      $q->where('role', '!=', 'external_client')
+                        ->orWhereHas('client', function($sub) {
+                            $sub->where('client_type', '!=', 'personal');
+                        });
+                  });
         }
 
         $users = $query->paginate(5);
@@ -65,10 +71,19 @@ class AccountController extends Controller
             })->count();
         $applicantsCount = User::where('role', 'applicant')->count();
 
+        // Get personal clients (paginated separately)
+        $personalClients = User::with(['client'])
+            ->where('role', 'external_client')
+            ->whereHas('client', function($q) {
+                $q->where('client_type', 'personal');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'personal_page');
+
         // Get registered applicants (paginated separately)
         $applicants = User::where('role', 'applicant')->orderBy('created_at', 'desc')->paginate(5, ['*'], 'applicants_page');
 
-        return view('admin.accounts.index', compact('users', 'accountType', 'employeesCount', 'contractedCompanyCount', 'companyCount', 'personalCount', 'applicantsCount', 'applicants'));
+        return view('admin.accounts.index', compact('users', 'accountType', 'employeesCount', 'contractedCompanyCount', 'companyCount', 'personalCount', 'applicantsCount', 'applicants', 'personalClients'));
     }
 
     /**

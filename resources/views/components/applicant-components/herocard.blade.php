@@ -8,7 +8,7 @@
     class="flex flex-col lg:flex-row items-center justify-center w-full max-w-full px-6 py-6 gap-4 border border-gray-300/30 dark:border-gray-700 rounded-lg shadow-sm relative bg-gradient-to-br from-[#1730F0] via-[#2A6DFA] to-[#4169E1] dark:bg-none dark:bg-gray-800">
 
     <!-- Left content -->
-    <div class="w-full lg:w-2/3 pl-0 lg:pl-12 text-center lg:text-left relative z-10 py-6">
+    <div class="w-full pl-0 lg:pl-12 text-center lg:text-left relative z-10 py-6">
         <p class="text-sm sm:text-sm md:text-sm font-sans font-bold text-white opacity-90 max-w-[90%] mx-0 mb-3 lg:mx-0">
             <x-blur-text text="Applicant Dashboard" :delay="80" direction="top" :stepDuration="0.30" />
         </p>
@@ -19,10 +19,10 @@
             <x-blur-text text="{{ $headerDesc }}" :delay="80" direction="top" :stepDuration="0.30" />
         </p>
     </div>
-        <div id="hero-icon" class="hidden md:hidden lg:block lg:w-[30rem] relative z-10">
-            {{-- <img src="{{ asset('images/icons/'.$headerIcon.'.svg') }}" 
+        {{-- <div id="hero-icon" class="hidden md:hidden lg:block lg:w-[30rem] relative z-10">
+            <img src="{{ asset('images/icons/'.$headerIcon.'.svg') }}"
                 alt="Hero Icon"
-                class="absolute bottom-[-6rem] right-[-1rem] w-[22rem] sm:w-[18rem] md:w-[20rem] lg:w-[30rem]" /> --}}
-        </div>
+                class="absolute bottom-[-6rem] right-[-1rem] w-[22rem] sm:w-[18rem] md:w-[20rem] lg:w-[30rem]" />
+        </div> --}}
 
 </div>

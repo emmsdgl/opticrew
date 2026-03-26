@@ -263,7 +263,7 @@
     </x-slot:sidebarBottom>
 
     {{-- ── Middle Content ── --}}
-    <div class="mx-8">
+    <div class="mx-8 min-w-0">
 
         {{-- Welcome Header --}}
         <x-applicant-components.herocard
