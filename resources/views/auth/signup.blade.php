@@ -642,11 +642,16 @@
                                         <i
                                             class="fas fa-hashtag absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                         <input type="tel" id="input-phone" placeholder=" "
-                                            class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                            class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                             name="phone_number" required>
                                         <label for="input-phone">Phone Number</label>
+                                        <div id="phone-validation-icon" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 z-10">
+                                            <i id="phone-valid-icon" class="fas fa-check-circle text-green-500 text-sm hidden"></i>
+                                            <i id="phone-invalid-icon" class="fas fa-times-circle text-red-500 text-sm hidden"></i>
+                                        </div>
                                     </div>
                                 </div>
+                                <p id="phone-error-msg" class="text-xs text-red-500 hidden mt-[-0.5rem]"></p>
 
                                 <div class="input-container w-full relative">
                                     <i
@@ -708,10 +713,16 @@
                                     <i
                                         class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-[#081032]"></i>
                                     <input type="text" id="input-street" placeholder=" "
-                                        class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                                        class="input-field w-full pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                         name="street_address" required>
                                     <label for="input-street">Street Address</label>
+                                    <button type="button" id="geolocate-btn" title="Use my current location"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700 transition-colors z-10">
+                                        <i id="geo-icon" class="fas fa-location-crosshairs text-sm"></i>
+                                        <i id="geo-spinner" class="fas fa-spinner fa-spin text-sm hidden"></i>
+                                    </button>
                                 </div>
+                                <p id="geo-status-msg" class="text-xs text-blue-500 hidden mt-[-0.5rem]"></p>
                             </div>
                             <!-- End Personal Account Fields -->
 
@@ -853,7 +864,13 @@
                                     class="input-field w-full pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                                     name="username" value="{{ old('username') }}" required>
                                 <label for="input-username">Username</label>
+                                <div id="username-availability" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 z-10">
+                                    <i id="username-spinner" class="fas fa-spinner fa-spin text-gray-400 text-sm hidden"></i>
+                                    <i id="username-available-icon" class="fas fa-check-circle text-green-500 text-sm hidden"></i>
+                                    <i id="username-taken-icon" class="fas fa-times-circle text-red-500 text-sm hidden"></i>
+                                </div>
                             </div>
+                            <p id="username-status-msg" class="text-xs text-center max-w-md mx-auto hidden"></p>
                             @error('username')
                                 <p class="text-red-500 text-xs text-center max-w-md mx-auto">{{ $message }}</p>
                             @enderror
@@ -885,6 +902,11 @@
                                 <div id="username-length-indicator" class="flex items-center text-xs">
                                     <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
                                     <span class="text-gray-500">Username: 6-8 characters</span>
+                                </div>
+                                <!-- Username Availability -->
+                                <div id="username-available-indicator" class="flex items-center text-xs">
+                                    <i class="fas fa-circle text-gray-300 mr-2 text-[8px]"></i>
+                                    <span class="text-gray-500">Username is available</span>
                                 </div>
 
                                 <!-- Password Requirements -->
@@ -1004,18 +1026,280 @@
                 }
             }
 
-            // Username validation (6-8 characters)
+            // Username validation (6-8 characters + availability check)
+            let usernameCheckTimeout = null;
+            let isUsernameAvailable = false;
+            const usernameAvailableIndicator = document.getElementById('username-available-indicator');
+            const usernameStatusMsg = document.getElementById('username-status-msg');
+            const usernameAvailabilityContainer = document.getElementById('username-availability');
+            const usernameSpinner = document.getElementById('username-spinner');
+            const usernameAvailableIcon = document.getElementById('username-available-icon');
+            const usernameTakenIcon = document.getElementById('username-taken-icon');
+
+            function showUsernameStatus(type, message) {
+                usernameAvailabilityContainer.classList.remove('hidden');
+                usernameSpinner.classList.add('hidden');
+                usernameAvailableIcon.classList.add('hidden');
+                usernameTakenIcon.classList.add('hidden');
+
+                if (type === 'loading') {
+                    usernameSpinner.classList.remove('hidden');
+                    usernameStatusMsg.classList.add('hidden');
+                } else if (type === 'available') {
+                    usernameAvailableIcon.classList.remove('hidden');
+                    usernameStatusMsg.textContent = message;
+                    usernameStatusMsg.className = 'text-xs text-center max-w-md mx-auto text-green-600';
+                    updateIndicator(usernameAvailableIndicator, true);
+                } else if (type === 'taken') {
+                    usernameTakenIcon.classList.remove('hidden');
+                    usernameStatusMsg.textContent = message;
+                    usernameStatusMsg.className = 'text-xs text-center max-w-md mx-auto text-red-500';
+                    updateIndicator(usernameAvailableIndicator, false);
+                } else {
+                    usernameAvailabilityContainer.classList.add('hidden');
+                    usernameStatusMsg.classList.add('hidden');
+                    updateIndicator(usernameAvailableIndicator, false);
+                }
+            }
+
             if (usernameField) {
                 usernameField.addEventListener('input', () => {
                     const username = usernameField.value.trim();
-                    const isValid = username.length >= 6 && username.length <= 8;
-                    updateIndicator(usernameIndicator, isValid);
 
-                    // Show error message if exceeds max length
+                    // Enforce max length
                     if (username.length > 8) {
                         usernameField.value = username.substring(0, 8);
                     }
+
+                    const isLengthValid = username.length >= 6 && username.length <= 8;
+                    updateIndicator(usernameIndicator, isLengthValid);
+
+                    // Clear previous timeout
+                    clearTimeout(usernameCheckTimeout);
+                    isUsernameAvailable = false;
+
+                    if (!isLengthValid) {
+                        showUsernameStatus('hide');
+                        return;
+                    }
+
+                    // Debounce: check availability after 500ms
+                    showUsernameStatus('loading');
+                    usernameCheckTimeout = setTimeout(() => {
+                        fetch('/signup/check-username', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({ username: username })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (usernameField.value.trim() === username) {
+                                if (data.available) {
+                                    isUsernameAvailable = true;
+                                    showUsernameStatus('available', 'Username is available');
+                                } else {
+                                    isUsernameAvailable = false;
+                                    showUsernameStatus('taken', 'Username is already taken');
+                                }
+                                checkFormCompletion();
+                            }
+                        })
+                        .catch(() => {
+                            showUsernameStatus('hide');
+                        });
+                    }, 500);
                 });
+            }
+
+            // ===== REAL-TIME PHONE NUMBER VALIDATION =====
+            const phoneInput = document.getElementById('input-phone');
+            const phoneValidationIcon = document.getElementById('phone-validation-icon');
+            const phoneValidIcon = document.getElementById('phone-valid-icon');
+            const phoneInvalidIcon = document.getElementById('phone-invalid-icon');
+            const phoneErrorMsg = document.getElementById('phone-error-msg');
+
+            function validatePhoneNumber() {
+                if (!phoneInput) return;
+                const phone = phoneInput.value.replace(/\D/g, '');
+                const selectedCodeEl = document.getElementById('selected-code');
+                const countryCode = selectedCodeEl ? selectedCodeEl.textContent.replace('+', '') : '358';
+
+                phoneValidationIcon.classList.remove('hidden');
+                phoneValidIcon.classList.add('hidden');
+                phoneInvalidIcon.classList.add('hidden');
+                phoneErrorMsg.classList.add('hidden');
+
+                if (phone.length === 0) {
+                    phoneValidationIcon.classList.add('hidden');
+                    return;
+                }
+
+                let isValid = false;
+                let errorMessage = '';
+
+                if (countryCode === '358') {
+                    // Finland: 7-10 digits
+                    isValid = phone.length >= 7 && phone.length <= 10;
+                    if (!isValid) errorMessage = 'Finnish numbers must be 7-10 digits';
+                } else if (countryCode === '46') {
+                    // Sweden: 7-10 digits
+                    isValid = phone.length >= 7 && phone.length <= 10;
+                    if (!isValid) errorMessage = 'Swedish numbers must be 7-10 digits';
+                } else if (countryCode === '47') {
+                    // Norway: 8 digits
+                    isValid = phone.length === 8;
+                    if (!isValid) errorMessage = 'Norwegian numbers must be 8 digits';
+                } else if (countryCode === '45') {
+                    // Denmark: 8 digits
+                    isValid = phone.length === 8;
+                    if (!isValid) errorMessage = 'Danish numbers must be 8 digits';
+                } else {
+                    isValid = phone.length >= 7;
+                    if (!isValid) errorMessage = 'Phone number must be at least 7 digits';
+                }
+
+                if (isValid) {
+                    phoneValidIcon.classList.remove('hidden');
+                    phoneInput.classList.remove('ring-2', 'ring-red-500');
+                    phoneInput.classList.add('ring-2', 'ring-green-500');
+                } else {
+                    phoneInvalidIcon.classList.remove('hidden');
+                    phoneErrorMsg.textContent = errorMessage;
+                    phoneErrorMsg.classList.remove('hidden');
+                    phoneInput.classList.remove('ring-2', 'ring-green-500');
+                    phoneInput.classList.add('ring-2', 'ring-red-500');
+                }
+            }
+
+            if (phoneInput) {
+                phoneInput.addEventListener('input', validatePhoneNumber);
+                phoneInput.addEventListener('blur', validatePhoneNumber);
+            }
+
+            // Re-validate phone when country code changes
+            const dropdownItems = document.querySelectorAll('#dropdown-list .custom-dropdown-item');
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    setTimeout(validatePhoneNumber, 100);
+                });
+            });
+
+            // ===== GEOLOCATION AUTO-FILL =====
+            const geolocateBtn = document.getElementById('geolocate-btn');
+            const geoIcon = document.getElementById('geo-icon');
+            const geoSpinner = document.getElementById('geo-spinner');
+            const geoStatusMsg = document.getElementById('geo-status-msg');
+
+            if (geolocateBtn && navigator.geolocation) {
+                geolocateBtn.addEventListener('click', () => {
+                    geoIcon.classList.add('hidden');
+                    geoSpinner.classList.remove('hidden');
+                    geoStatusMsg.textContent = 'Getting your location...';
+                    geoStatusMsg.className = 'text-xs text-blue-500 mt-[-0.5rem]';
+
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+
+                            // Reverse geocode using Nominatim (free, no API key needed)
+                            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`, {
+                                headers: { 'Accept-Language': 'en' }
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                geoIcon.classList.remove('hidden');
+                                geoSpinner.classList.add('hidden');
+
+                                if (data && data.address) {
+                                    const addr = data.address;
+
+                                    // Fill street address
+                                    const streetParts = [addr.house_number, addr.road].filter(Boolean);
+                                    const streetInput = document.getElementById('input-street');
+                                    if (streetInput && streetParts.length > 0) {
+                                        streetInput.value = streetParts.join(' ');
+                                        streetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                    }
+
+                                    // Try to match state/region
+                                    const stateValue = addr.state || addr.region || addr.county || '';
+                                    if (stateValue) {
+                                        const stateItems = document.querySelectorAll('#state-dropdown-list .custom-dropdown-item');
+                                        let matched = false;
+                                        stateItems.forEach(item => {
+                                            if (item.dataset.value && item.dataset.value.toLowerCase() === stateValue.toLowerCase()) {
+                                                item.click();
+                                                matched = true;
+                                            }
+                                        });
+
+                                        // If no exact match, try partial match
+                                        if (!matched) {
+                                            stateItems.forEach(item => {
+                                                if (item.dataset.value && (
+                                                    stateValue.toLowerCase().includes(item.dataset.value.toLowerCase()) ||
+                                                    item.dataset.value.toLowerCase().includes(stateValue.toLowerCase())
+                                                )) {
+                                                    item.click();
+                                                    matched = true;
+                                                }
+                                            });
+                                        }
+
+                                        // After state is selected, try to match city (with delay for cities to load)
+                                        const cityValue = addr.city || addr.town || addr.village || addr.municipality || '';
+                                        if (cityValue && matched) {
+                                            setTimeout(() => {
+                                                const cityItems = document.querySelectorAll('#city-dropdown-list .custom-dropdown-item');
+                                                cityItems.forEach(item => {
+                                                    if (item.dataset.value && (
+                                                        item.dataset.value.toLowerCase() === cityValue.toLowerCase() ||
+                                                        cityValue.toLowerCase().includes(item.dataset.value.toLowerCase()) ||
+                                                        item.dataset.value.toLowerCase().includes(cityValue.toLowerCase())
+                                                    )) {
+                                                        item.click();
+                                                    }
+                                                });
+                                            }, 1500); // Wait for cities to load after state selection
+                                        }
+                                    }
+
+                                    geoStatusMsg.textContent = 'Location detected! You can edit the fields if needed.';
+                                    geoStatusMsg.className = 'text-xs text-green-600 mt-[-0.5rem]';
+                                    setTimeout(() => { geoStatusMsg.classList.add('hidden'); }, 4000);
+                                    checkFormCompletion();
+                                } else {
+                                    geoStatusMsg.textContent = 'Could not determine address. Please fill in manually.';
+                                    geoStatusMsg.className = 'text-xs text-yellow-600 mt-[-0.5rem]';
+                                }
+                            })
+                            .catch(() => {
+                                geoIcon.classList.remove('hidden');
+                                geoSpinner.classList.add('hidden');
+                                geoStatusMsg.textContent = 'Failed to get address. Please fill in manually.';
+                                geoStatusMsg.className = 'text-xs text-red-500 mt-[-0.5rem]';
+                            });
+                        },
+                        (error) => {
+                            geoIcon.classList.remove('hidden');
+                            geoSpinner.classList.add('hidden');
+                            if (error.code === error.PERMISSION_DENIED) {
+                                geoStatusMsg.textContent = 'Location access denied. Please enable it in your browser settings.';
+                            } else {
+                                geoStatusMsg.textContent = 'Unable to get your location. Please fill in manually.';
+                            }
+                            geoStatusMsg.className = 'text-xs text-red-500 mt-[-0.5rem]';
+                        },
+                        { enableHighAccuracy: true, timeout: 10000 }
+                    );
+                });
+            } else if (geolocateBtn) {
+                geolocateBtn.title = 'Geolocation not supported by your browser';
+                geolocateBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
             // Password strength validation
@@ -1628,7 +1912,7 @@
                 const isConfirmed = confirmPassword && password && (password.value === confirmPassword.value &&
                     password.value.length > 0);
                 const isUsernameComplete = username && username.value.trim() !== "" && username.value.trim()
-                    .length >= 4; // Changed to >=4 for a more typical minimum
+                    .length >= 6 && username.value.trim().length <= 8 && isUsernameAvailable;
                 const isSecAns1Complete = secans1 && secans1.value.trim() !== "";
                 const isSecAns2Complete = secans2 && secans2.value.trim() !== "";
 

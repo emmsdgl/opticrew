@@ -7,59 +7,10 @@
         background-color: #f8f9fa;
         background-image: none;
     }
-    
-    /* Remove background image in dark mode */
+
     .dark body {
         background-image: none;
-        background-color: #1f2937;
-    }
-
-    /* Contact info card styling */
-    .contact-info-card {
-        background: none;
-        border-radius: 1.5rem;
-        padding: 3rem;
-    }
-
-    .dark .contact-info-card {
-        background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
-    }
-
-    /* Form card styling */
-    .form-card {
-        background: white;
-        border-radius: 1.5rem;
-        padding: 3rem;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-    }
-
-    .dark .form-card {
-        background: #1f2937;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Button styling */
-    .submit-btn {
-        background: #2563eb;
-        color:white;
-        transition: all 0.3s ease;
-    }
-
-    .submit-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-    }
-
-    /* Icon styling */
-    .contact-icon {
-        width: 48px;
-        height: 48px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(10px);
+        background-color: #111827;
     }
 </style>
 @endpush
@@ -67,12 +18,12 @@
 @section('content')
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-        <div class="grid lg:grid-cols-2 gap-8 items-start">
-            
+        <div class="grid lg:grid-cols-2 gap-8 items-stretch">
+
             <!-- Left Side - Contact Information -->
-            <div class="contact-info-card text-blue-950">
+            <div class="rounded-3xl p-12 text-blue-950 dark:text-white dark:bg-gradient-to-br dark:from-violet-900 dark:to-violet-800 flex flex-col justify-between">
                 <div class="mb-8">
-                    <p class="text-sm font-sm uppercase tracking-wider my-6 opacity-90">
+                    <p class="text-sm font-medium uppercase tracking-wider my-6 opacity-90">
                         WE'RE HERE TO HELP YOU
                     </p>
                     <h1 class="text-3xl lg:text-4xl font-bold leading-tight mb-3">
@@ -85,10 +36,10 @@
                     </p>
                 </div>
 
-                <div class="space-y-6 mt-12">
+                <div class="space-y-6 my-4">
                     <!-- Email -->
                     <div class="flex items-start gap-4">
-                        <div class="contact-icon flex-shrink-0">
+                        <div class="w-12 h-12 bg-white/20 dark:bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
                                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
@@ -102,7 +53,7 @@
 
                     <!-- Phone -->
                     <div class="flex items-start gap-4">
-                        <div class="contact-icon flex-shrink-0">
+                        <div class="w-12 h-12 bg-white/20 dark:bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
                             </svg>
@@ -115,7 +66,7 @@
 
                     <!-- Address -->
                     {{-- <div class="flex items-start gap-4">
-                        <div class="contact-icon flex-shrink-0">
+                        <div class="w-12 h-12 bg-white/20 dark:bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                             </svg>
@@ -128,7 +79,7 @@
 
                     <!-- Business Hours -->
                     <div class="flex items-start gap-4">
-                        <div class="contact-icon flex-shrink-0">
+                        <div class="w-12 h-12 bg-white/20 dark:bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
                             </svg>
@@ -144,7 +95,7 @@
             </div>
 
             <!-- Right Side - Contact Form -->
-            <div class="form-card" x-data="{
+            <div class="bg-white dark:bg-gray-800 rounded-3xl p-12 shadow-[0_10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)]" x-data="{
                 form: { name: '', email: '', service: '', message: '' },
                 submitContact() {
                     const missing = [];
@@ -239,7 +190,7 @@
                     <!-- Submit Button -->
                     <button
                         type="submit"
-                        class="submit-btn w-full text-white text-sm font-medium py-4 px-6 rounded-full flex items-center justify-center gap-3">
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-4 px-6 rounded-full flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_25px_rgba(102,126,234,0.4)]">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
@@ -252,4 +203,3 @@
     </div>
 </div>
 @endsection
-

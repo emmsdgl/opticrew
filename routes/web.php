@@ -592,6 +592,7 @@ Route::post('/signup', [ClientRegistrationController::class, 'store'])
 
 Route::post('/signup/send-otp', [ClientRegistrationController::class, 'sendOtp'])->middleware('guest');
 Route::post('/signup/verify-otp', [ClientRegistrationController::class, 'verifyOtp'])->middleware('guest');
+Route::post('/signup/check-username', [ClientRegistrationController::class, 'checkUsername'])->middleware('guest');
 
 Route::get('/forgotpassword', [ForgotPasswordController::class, 'showForgotPasswordForm'])->name('forgot.password');
 Route::post('/forgotpassword/get-questions', [ForgotPasswordController::class, 'getSecurityQuestions'])->name('password.getQuestions');
