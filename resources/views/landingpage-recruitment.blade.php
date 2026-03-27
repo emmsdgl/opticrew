@@ -931,8 +931,11 @@
                     {{-- Terms and Conditions Checkbox --}}
                     <div class="px-4 text-sm" x-show="!(termsOpened && privacyOpened && agreed)">
                         <div class="flex items-start space-x-3">
-                            <input type="checkbox" x-model="agreed" :disabled="!checkboxEnabled"
-                                class="mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 bg-transparent appearance-none cursor-pointer checked:bg-blue-600 checked:border-blue-600 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <div class="relative mt-0.5 flex-shrink-0" @click="if(!checkboxEnabled) { window.showErrorDialog('Action Required', 'Please open and read both the Terms & Conditions and Privacy Policy before you can agree.'); }">
+                                <input type="checkbox" x-model="agreed" :disabled="!checkboxEnabled"
+                                    class="w-5 h-5 rounded border-2 border-gray-400 bg-transparent appearance-none cursor-pointer checked:bg-blue-600 checked:border-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    :class="!checkboxEnabled && 'pointer-events-none'">
+                            </div>
                             <span class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                                 By signing in, I agree to the
                                 <button type="button" @click.stop="openRecruitTermsModal()"
@@ -945,13 +948,9 @@
                                     class="text-sm text-blue-600 hover:underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-xs inline">
                                     Privacy Policy
                                 </button>
-                                <span x-show="privacyOpened" class="text-green-500 text-[10px]"><i class="fas fa-check-circle"></i></span>.
+                                <span x-show="privacyOpened" class="text-green-500 text-xs"><i class="fas fa-check-circle"></i></span>.
                             </span>
                         </div>
-                        <p x-show="!checkboxEnabled" class="text-[10px] text-amber-600 dark:text-amber-400 mt-1.5 ml-7">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Please open and read both documents to enable the checkbox
-                        </p>
                     </div>
                     {{-- Already accepted indicator --}}
                     <div class="px-4 text-sm" x-show="termsOpened && privacyOpened && agreed" x-cloak>
