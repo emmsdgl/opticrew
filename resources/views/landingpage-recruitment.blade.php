@@ -922,7 +922,7 @@
                                 <i class="fab fa-google text-2xl text-blue-600"></i>
                             </div>
                         </div>
-                        <p class="flex flex-col text-sm text-gray-600 dark:text-gray-400 leading-relaxed my-12">
+                        <p class="flex flex-col text-sm text-gray-600 dark:text-gray-400 leading-relaxed mt-8 mb-4">
                             <span class="font-normal">Sign in with your Google account to apply.</span> <span
                                 class="font-normal">Your email will be used for application updates.</span>
                         </p>
@@ -955,9 +955,14 @@
                     </div>
                     {{-- Already accepted indicator --}}
                     <div class="px-4 text-sm" x-show="termsOpened && privacyOpened && agreed" x-cloak>
-                        <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
+                        <div class="flex flex-col items-center gap-1 text-center text-green-600 dark:text-green-400">
                             <i class="fas fa-check-circle text-sm"></i>
-                            <span class="text-sm">Terms & Conditions and Privacy Policy accepted</span>
+                            <span class="text-sm">The
+                                <button type="button" @click.stop="openRecruitTermsModal()" class="text-green-700 dark:text-green-300 font-semibold underline hover:text-green-800 dark:hover:text-green-200 bg-transparent border-0 p-0 cursor-pointer text-sm inline">Terms & Conditions</button>
+                                and
+                                <button type="button" @click.stop="openRecruitPrivacyModal()" class="text-green-700 dark:text-green-300 font-semibold underline hover:text-green-800 dark:hover:text-green-200 bg-transparent border-0 p-0 cursor-pointer text-sm inline">Privacy Policy</button>
+                                had already been read and accepted
+                            </span>
                         </div>
                     </div>
 
@@ -1022,9 +1027,16 @@
                     <p class="text-sm leading-relaxed">For inquiries, contact: opticrewhelpcenter@gmail.com</p>
                 </div>
             </div>
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
-                <button type="button" onclick="document.querySelector('#applicationModal').__x.$data.markTermsRead()" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700" x-data="{ alreadyAccepted: document.cookie.includes('finnoys_terms_accepted=1') }">
+                <button x-show="!alreadyAccepted" type="button" @click="
+                    const el = document.getElementById('applicationModal');
+                    if (el && el._x_dataStack) { el._x_dataStack[0].markTermsRead(); }
+                    else { document.cookie = 'finnoys_terms_accepted=1; path=/; max-age=' + (30*24*60*60); document.getElementById('recruit-terms-modal').style.display='none'; unlockScroll(); }
+                " class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
                     I have read the Terms & Conditions
+                </button>
+                <button x-show="alreadyAccepted" x-cloak type="button" disabled class="w-full py-2.5 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-semibold rounded-full cursor-not-allowed">
+                    Already Agreed
                 </button>
             </div>
         </div>
@@ -1060,9 +1072,16 @@
                     <p class="text-sm leading-relaxed">If you have any questions about this Privacy Policy, please contact us at privacy@finnoys.com.</p>
                 </div>
             </div>
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
-                <button type="button" onclick="document.querySelector('#applicationModal').__x.$data.markPrivacyRead()" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700" x-data="{ alreadyAccepted: document.cookie.includes('finnoys_policy_accepted=1') }">
+                <button x-show="!alreadyAccepted" type="button" @click="
+                    const el = document.getElementById('applicationModal');
+                    if (el && el._x_dataStack) { el._x_dataStack[0].markPrivacyRead(); }
+                    else { document.cookie = 'finnoys_policy_accepted=1; path=/; max-age=' + (30*24*60*60); document.getElementById('recruit-privacy-modal').style.display='none'; unlockScroll(); }
+                " class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
                     I have read the Privacy Policy
+                </button>
+                <button x-show="alreadyAccepted" x-cloak type="button" disabled class="w-full py-2.5 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-semibold rounded-full cursor-not-allowed">
+                    Already Agreed
                 </button>
             </div>
         </div>
