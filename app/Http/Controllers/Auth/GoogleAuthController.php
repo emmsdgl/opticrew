@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
@@ -74,7 +75,15 @@ class GoogleAuthController extends Controller
                 ->redirectUrl($callbackUrl)
                 ->user();
         } catch (\Exception $e) {
-            return redirect()->route('login')->with('error', 'Google authentication failed. Please try again.');
+            Log::error('Google OAuth callback failed', [
+                'message' => $e->getMessage(),
+                'host' => $request->getHost(),
+                'callbackUrl' => $callbackUrl ?? 'not set',
+                'purpose' => session('google_auth_purpose', 'unknown'),
+            ]);
+
+            $redirectRoute = session('google_auth_purpose') === 'recruitment' ? 'recruitment' : 'login';
+            return redirect()->route($redirectRoute)->with('error', 'Google authentication failed. Please try again.');
         }
 
         $purpose = session('google_auth_purpose', 'login');

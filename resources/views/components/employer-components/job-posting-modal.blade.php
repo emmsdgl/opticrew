@@ -47,6 +47,49 @@
                         placeholder="e.g., Deep Cleaning Specialist">
                 </div>
 
+                <!-- Job Category -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Category
+                        *</label>
+                    <div class="relative" x-data="{ categoryOpen: false }">
+                        <button type="button" @click="categoryOpen = !categoryOpen"
+                            class="w-full flex items-center justify-between px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm bg-white dark:bg-gray-700">
+                            <span class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
+                                    :class="getIconBgClass(formData.iconColor)">
+                                    <i class="fas text-xs"
+                                        :class="[formData.icon, getIconTextClass(formData.iconColor)]"></i>
+                                </span>
+                                <span x-text="getCategoryLabel(formData.category)"></span>
+                            </span>
+                            <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200"
+                                :class="categoryOpen && 'rotate-180'"></i>
+                        </button>
+                        <div x-show="categoryOpen" @click.away="categoryOpen = false" x-transition
+                            class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <template x-for="cat in jobCategories" :key="cat.value">
+                                <button type="button"
+                                    @click="formData.category = cat.value; formData.icon = cat.icon; formData.iconColor = cat.color; categoryOpen = false; populateDefaults(cat.value);"
+                                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-left"
+                                    :class="formData.category === cat.value ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
+                                    <span
+                                        class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                                        :class="getIconBgClass(cat.color)">
+                                        <i class="fas text-xs"
+                                            :class="[cat.icon, getIconTextClass(cat.color)]"></i>
+                                    </span>
+                                    <div class="flex flex-col">
+                                        <span class="text-gray-900 dark:text-white font-medium"
+                                            x-text="cat.label"></span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500 leading-tight"
+                                            x-text="cat.description"></span>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Description -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description
@@ -175,48 +218,6 @@
                         </div>
                     </div>
 
-                    <!-- Job Category -->
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Category
-                            *</label>
-                        <div class="relative" x-data="{ categoryOpen: false }">
-                            <button type="button" @click="categoryOpen = !categoryOpen"
-                                class="w-full flex items-center justify-between px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm bg-white dark:bg-gray-700">
-                                <span class="flex items-center gap-2">
-                                    <span class="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
-                                        :class="getIconBgClass(formData.iconColor)">
-                                        <i class="fas text-xs"
-                                            :class="[formData.icon, getIconTextClass(formData.iconColor)]"></i>
-                                    </span>
-                                    <span x-text="getCategoryLabel(formData.category)"></span>
-                                </span>
-                                <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200"
-                                    :class="categoryOpen && 'rotate-180'"></i>
-                            </button>
-                            <div x-show="categoryOpen" @click.away="categoryOpen = false" x-transition
-                                class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                <template x-for="cat in jobCategories" :key="cat.value">
-                                    <button type="button"
-                                        @click="formData.category = cat.value; formData.icon = cat.icon; formData.iconColor = cat.color; categoryOpen = false; populateDefaults(cat.value);"
-                                        class="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-left"
-                                        :class="formData.category === cat.value ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
-                                        <span
-                                            class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                                            :class="getIconBgClass(cat.color)">
-                                            <i class="fas text-xs"
-                                                :class="[cat.icon, getIconTextClass(cat.color)]"></i>
-                                        </span>
-                                        <div class="flex flex-col">
-                                            <span class="text-gray-900 dark:text-white font-medium"
-                                                x-text="cat.label"></span>
-                                            <span class="text-xs text-gray-400 dark:text-gray-500 leading-tight"
-                                                x-text="cat.description"></span>
-                                        </div>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="space-y-6">

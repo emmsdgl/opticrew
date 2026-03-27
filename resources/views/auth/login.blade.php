@@ -379,7 +379,7 @@
                                 <input type="checkbox" id="google-terms-checkbox" disabled
                                     :class="(!termsOpened || !privacyOpened) && 'pointer-events-none'">
                             </div>
-                            <span class="text-xs text-gray-500 leading-relaxed text-left">
+                            <span class="text-xs text-gray-500 leading-relaxed text-center">
                                 By signing in, you confirm that you have read and agreed to the
                                 <button type="button" id="terms-link" class="text-blue-600 hover:underline font-bold bg-transparent border-0 p-0 cursor-pointer text-xs">Terms & Conditions</button>
                                 <span x-show="termsOpened" class="text-green-500 text-xs"><i class="fas fa-check-circle"></i></span>
