@@ -701,9 +701,10 @@
             </div>
         </div>
 
-        {{-- Job Detail Slide-In Drawer --}}
+        {{-- Job Detail Slide-In Drawer — teleported to body to escape parent transform stacking context --}}
+        <template x-teleport="body">
         <div @keydown.escape.window="if(showDetail){ showDetail = false; selectedJobId = null; selectedJob = null; }"
-            x-effect="document.body.style.overflow = showDetail ? 'hidden' : ''">
+            x-init="$watch('showDetail', val => { if (val) lockScroll(); else unlockScroll(); })">
             {{-- Backdrop --}}
             <div x-show="showDetail" x-cloak
                 class="fixed inset-0 z-[99] bg-black/40 backdrop-blur-sm"
@@ -854,8 +855,9 @@
             </div>
 
     </div>
+    </template>
 
-    {{-- Application Modal --}}
+    {{-- Application Modal — moved to body via JS to escape parent transform stacking context --}}
     <div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 z-[200] flex items-center justify-center p-4"
         style="display: none;" x-data="{
             termsOpened: document.cookie.includes('finnoys_terms_accepted=1'),
@@ -863,20 +865,24 @@
             agreed: false,
             openRecruitTermsModal() {
                 document.getElementById('recruit-terms-modal').style.display = 'flex';
+                lockScroll();
             },
             openRecruitPrivacyModal() {
                 document.getElementById('recruit-privacy-modal').style.display = 'flex';
+                lockScroll();
             },
             markTermsRead() {
                 this.termsOpened = true;
                 document.cookie = 'finnoys_terms_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
                 document.getElementById('recruit-terms-modal').style.display = 'none';
+                unlockScroll();
                 if (window.showSuccessDialog) window.showSuccessDialog('Terms Accepted', 'You have read and accepted the Terms & Conditions.');
             },
             markPrivacyRead() {
                 this.privacyOpened = true;
                 document.cookie = 'finnoys_policy_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
                 document.getElementById('recruit-privacy-modal').style.display = 'none';
+                unlockScroll();
                 if (window.showSuccessDialog) window.showSuccessDialog('Privacy Policy Accepted', 'You have read and accepted the Privacy Policy.');
             },
             get checkboxEnabled() { return this.termsOpened && this.privacyOpened; },
@@ -978,7 +984,7 @@
         <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-bold text-gray-900 dark:text-white">Terms & Conditions</h2>
-                <button type="button" onclick="document.getElementById('recruit-terms-modal').style.display='none'" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
+                <button type="button" onclick="document.getElementById('recruit-terms-modal').style.display='none'; unlockScroll();" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
                     <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -988,11 +994,11 @@
                 <div class="space-y-4 text-gray-700 dark:text-gray-300">
                     <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Last Updated: November 5, 2025</p>
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">1. Acceptance of Terms</h3>
-                    <p class="text-sm leading-relaxed">By accessing or using the OptiCrew workforce management and scheduling platform (the "System"), you ("User") agree to comply with and be bound by these Terms and Conditions.</p>
+                    <p class="text-sm leading-relaxed">By accessing or using the Castcrew workforce management and scheduling platform (the "System"), you ("User") agree to comply with and be bound by these Terms and Conditions.</p>
                     <p class="text-sm leading-relaxed">If you do not agree with any part of these Terms, you must refrain from using the System.</p>
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">2. System Operations and Allocation Rules</h3>
                     <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.1 Workforce Allocation</h4>
-                    <p class="text-sm leading-relaxed">OptiCrew automatically determines the optimal number of employees required for each task based on employee availability, pending workload, budget constraints, and utilization targets.</p>
+                    <p class="text-sm leading-relaxed">Castcrew automatically determines the optimal number of employees required for each task based on employee availability, pending workload, budget constraints, and utilization targets.</p>
                     <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.2 Team Composition and Driver Requirement</h4>
                     <p class="text-sm leading-relaxed">Each assigned team must include at least one employee registered as having valid driving skills.</p>
                     <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.3 Task Prioritization</h4>
@@ -1004,7 +1010,7 @@
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">3. System Authority and Finality</h3>
                     <p class="text-sm leading-relaxed">All task assignments and schedules are the outcome of automated, rule-based optimization and are deemed final for operational purposes.</p>
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">4. Modifications to System Rules</h3>
-                    <p class="text-sm leading-relaxed">OptiCrew reserves the right to modify these Terms at any time. Continued use constitutes acceptance of revised Terms.</p>
+                    <p class="text-sm leading-relaxed">Castcrew reserves the right to modify these Terms at any time. Continued use constitutes acceptance of revised Terms.</p>
                     <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">5. Contact Information</h3>
                     <p class="text-sm leading-relaxed">For inquiries, contact: opticrewhelpcenter@gmail.com</p>
                 </div>
@@ -1022,7 +1028,7 @@
         <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-bold text-gray-900 dark:text-white">Privacy Policy</h2>
-                <button type="button" onclick="document.getElementById('recruit-privacy-modal').style.display='none'" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
+                <button type="button" onclick="document.getElementById('recruit-privacy-modal').style.display='none'; unlockScroll();" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
                     <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -1414,15 +1420,30 @@
                         document.getElementById('applicationRequiredDocs').value = JSON.stringify(jobs[this.selectedJobId].requiredDocs || []);
                     }
                     document.getElementById('applicationModal').style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
+                    lockScroll();
                 }
             };
+        }
+
+        // Scroll lock helpers — locks both html and body
+        let scrollLockCount = 0;
+        function lockScroll() {
+            scrollLockCount++;
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+        }
+        function unlockScroll() {
+            scrollLockCount = Math.max(0, scrollLockCount - 1);
+            if (scrollLockCount === 0) {
+                document.documentElement.style.overflow = '';
+                document.body.style.overflow = '';
+            }
         }
 
         // Modal functions (global)
         function closeApplicationModal() {
             document.getElementById('applicationModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            unlockScroll();
             document.getElementById('applicationForm').reset();
         }
 
@@ -1460,6 +1481,12 @@
             if (e.target === this) {
                 closeApplicationModal();
             }
+        });
+
+        // Move modals to body to escape parent transform stacking context
+        ['applicationModal', 'recruit-terms-modal', 'recruit-privacy-modal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) document.body.appendChild(el);
         });
     </script>
 @endpush

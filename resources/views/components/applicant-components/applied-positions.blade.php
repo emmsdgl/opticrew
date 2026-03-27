@@ -16,7 +16,7 @@
 
     {{-- ── Cards ── --}}
     @if($total > 0)
-    <div class="ap-scroll flex flex-nowrap gap-4 overflow-x-auto pb-1 w-full max-w-full">
+    <div class="ap-scroll flex flex-nowrap gap-4 overflow-x-auto pb-1 w-full">
         @foreach($applications as $application)
             @php
                 $matchedJob = $jobPostings->firstWhere('title', $application->job_title);

@@ -73,12 +73,10 @@
                     <!-- Account Type Filter -->
                     <div class="w-full md:w-auto">
                         <x-filter-dropdown label="Filter by Account Type" :selected="$accountType" :options="[
-                            'all' => 'All Accounts (' . ($employeesCount + $contractedCompanyCount + $companyCount + $personalCount) . ')',
+                            'all' => 'All Accounts (' . ($employeesCount + $contractedCompanyCount + $companyCount) . ')',
                             'employees' => 'Employee Accounts (' . $employeesCount . ')',
                             'contracted_company' => 'Contracted Company Accounts (' . $contractedCompanyCount . ')',
                             'company' => 'External Company Accounts (' . $companyCount . ')',
-                            'personal' => 'Personal/Private Accounts (' . $personalCount . ')',
-                            'applicants' => 'Applicant Accounts (' . $applicantsCount . ')',
                         ]"
                             onSelect="window.location.href='{{ route('admin.accounts.index') }}?type={value}'" />
                     </div>
@@ -257,6 +255,152 @@
                 <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No accounts found</p>
                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Try adjusting your filters or add a new account</p>
+            </div>
+        @endif
+
+        {{-- ═══════════════════════════════════════════════════════════════ --}}
+        {{-- Personal Clients Table                                          --}}
+        {{-- ═══════════════════════════════════════════════════════════════ --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8 mb-2">
+            <div>
+                <x-labelwithvalue label="Personal Clients" count="{{ $personalCount }}" />
+            </div>
+            <div class="flex-1 max-w-xs">
+                <div class="relative">
+                    <input type="text" id="personalSearchInput" placeholder="Search personal clients..."
+                        class="w-full px-4 py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+
+        @if($personalClients->count() > 0)
+            <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="w-full min-w-[800px]" id="personalClientsTable">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Name</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Title</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Joined</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($personalClients as $client)
+                            <tr class="even:bg-gray-50 dark:even:bg-gray-800/50 personal-row"
+                                data-personal-name="{{ strtolower($client->name) }}"
+                                data-personal-email="{{ strtolower($client->email) }}">
+
+                                <!-- Name -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-shrink-0">
+                                            @if($client->profile_picture)
+                                                <img src="{{ $client->profile_picture }}" alt="" class="h-10 w-10 rounded-full object-cover shadow-md">
+                                            @else
+                                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                                                    {{ strtoupper(substr($client->name, 0, 2)) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-semibold {{ !$client->is_active ? 'text-red-500 line-through dark:text-red-400' : 'text-gray-900 dark:text-white' }}">{{ $client->name }}</span>
+                                                @if(!$client->is_active)
+                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">BANNED</span>
+                                                @endif
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $client->email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Title -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Personal Account</div>
+                                    <div class="text-xs text-blue-600 dark:text-blue-400">{{ $client->username ? '@' . $client->username : '@' }}</div>
+                                </td>
+
+                                <!-- Status -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($client->google_id)
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Verified</span>
+                                    @elseif($client->email_verified_at)
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">Not Linked</span>
+                                    @else
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">Pending</span>
+                                    @endif
+                                </td>
+
+                                <!-- Joined -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-200">{{ $client->created_at->format('M d, Y') }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ $client->created_at->format('h:i A') }}</div>
+                                </td>
+
+                                <!-- Action -->
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end gap-2" x-data="{ open: false }">
+                                        <a href="{{ route('admin.accounts.show', $client->id) }}"
+                                            class="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                                            title="View">
+                                            <i class="fa-regular fa-eye text-sm"></i>
+                                        </a>
+                                        <a href="{{ route('admin.accounts.edit', $client->id) }}"
+                                            class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                            title="Edit">
+                                            <i class="fa-solid fa-pen text-sm"></i>
+                                        </a>
+
+                                        <!-- More Actions Dropdown -->
+                                        <div class="relative">
+                                            <button @click="open = !open" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="More actions">
+                                                <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+                                            </button>
+                                            <div x-show="open" @click.away="open = false" x-transition
+                                                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 py-1">
+
+                                                <!-- Change Role -->
+                                                <button @click="open = false; openChangeRoleModal({{ $client->id }}, '{{ $client->name }}', '{{ $client->role }}')"
+                                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                                                    <i class="fa-solid fa-user-tag text-xs text-blue-500"></i> Change Role
+                                                </button>
+
+                                                <!-- Ban/Unban -->
+                                                <button @click="open = false; toggleBanUser({{ $client->id }}, '{{ $client->name }}', {{ $client->is_active ? 'true' : 'false' }})"
+                                                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 {{ $client->is_active ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
+                                                    <i class="fa-solid {{ $client->is_active ? 'fa-ban' : 'fa-check-circle' }} text-xs"></i>
+                                                    {{ $client->is_active ? 'Ban User' : 'Unban User' }}
+                                                </button>
+
+                                                <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                                                <!-- Delete -->
+                                                <button @click="open = false; confirmDelete({{ $client->id }})"
+                                                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+                                                    <i class="fa-solid fa-trash text-xs"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                @if($personalClients->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                        <x-pagination :paginator="$personalClients" />
+                    </div>
+                @endif
+            </div>
+        @else
+            <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-16 text-center">
+                <i class="fa-solid fa-user text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No personal clients yet</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Personal client accounts will appear here</p>
             </div>
         @endif
 
@@ -540,6 +684,19 @@
         }
 
         searchInput.addEventListener('input', filterAccounts);
+
+        // Search functionality for personal clients table
+        const personalSearchInput = document.getElementById('personalSearchInput');
+        if (personalSearchInput) {
+            personalSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                document.querySelectorAll('.personal-row').forEach(row => {
+                    const name = row.getAttribute('data-personal-name') || '';
+                    const email = row.getAttribute('data-personal-email') || '';
+                    row.style.display = (name.includes(searchTerm) || email.includes(searchTerm)) ? '' : 'none';
+                });
+            });
+        }
 
         // Search functionality for applicants table
         const applicantSearchInput = document.getElementById('applicantSearchInput');

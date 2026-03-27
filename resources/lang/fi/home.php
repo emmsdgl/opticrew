@@ -3,7 +3,7 @@
 return [
     // Hero Section
     'hero' => [
-        'tagline' => 'OptiCrew: Ovesi puhtaaseen tilaan.',
+        'tagline' => 'Castcrew: Ovesi puhtaaseen tilaan.',
         'title_1' => 'Toimittamassa',
         'title_cleanliness' => 'puhtautta',
         'title_2' => 'jokaiseen nurkkaan',

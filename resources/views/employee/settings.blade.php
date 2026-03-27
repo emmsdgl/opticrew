@@ -78,22 +78,69 @@
 
 
                     <!-- Toggle Settings -->
-                    <div class="space-y-6">
-                        <!-- Profile Visibility -->
+                    <div class="space-y-6" x-data="{
+                        locationEnabled: false,
+                        locationStatus: 'checking',
+                        async checkLocationPermission() {
+                            if (!navigator.permissions) {
+                                this.locationStatus = 'unsupported';
+                                return;
+                            }
+                            try {
+                                const result = await navigator.permissions.query({ name: 'geolocation' });
+                                this.locationEnabled = result.state === 'granted';
+                                this.locationStatus = result.state;
+                                result.onchange = () => {
+                                    this.locationEnabled = result.state === 'granted';
+                                    this.locationStatus = result.state;
+                                };
+                            } catch (e) {
+                                this.locationStatus = 'unsupported';
+                            }
+                        },
+                        toggleLocation() {
+                            if (this.locationEnabled) {
+                                window.showErrorDialog('Location Access', 'To disable location access, please update your browser site permissions. Click the lock/site icon in the address bar and set Location to Block.');
+                                return;
+                            }
+                            navigator.geolocation.getCurrentPosition(
+                                () => {
+                                    this.locationEnabled = true;
+                                    this.locationStatus = 'granted';
+                                    window.showSuccessDialog('Location Enabled', 'Location access has been granted. Your location will be used for attendance verification.');
+                                },
+                                (error) => {
+                                    this.locationEnabled = false;
+                                    this.locationStatus = 'denied';
+                                    if (error.code === error.PERMISSION_DENIED) {
+                                        window.showErrorDialog('Permission Denied', 'Location access was denied. To enable it, click the lock/site icon in the address bar and allow Location.');
+                                    } else {
+                                        window.showErrorDialog('Location Error', 'Unable to access your location. Please try again.');
+                                    }
+                                }
+                            );
+                        },
+                        init() { this.checkLocationPermission(); }
+                    }">
+                        <!-- Enable Location Access -->
                         <div
                             class="flex items-start justify-between py-4 border-b border-gray-200 dark:border-gray-800">
                             <div class="flex-1 pr-4">
                                 <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                                    Profile Visibility
+                                    Enable Location Access
                                 </h3>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Make your profile visible to team members
+                                    <span x-show="locationStatus === 'checking'">Checking permission...</span>
+                                    <span x-show="locationStatus === 'granted'" x-cloak>Location access is enabled for attendance verification</span>
+                                    <span x-show="locationStatus === 'denied'" x-cloak>Location access is denied. Toggle to request permission</span>
+                                    <span x-show="locationStatus === 'prompt'" x-cloak>Share your location for attendance verification and proceeding</span>
+                                    <span x-show="locationStatus === 'unsupported'" x-cloak>Your browser does not support location permissions</span>
                                 </p>
                             </div>
                             <div class="ml-4 flex-shrink-0">
                                 <!-- Toggle Switch -->
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer" data-toggle-id="profile-visibility">
+                                <label class="relative inline-flex items-center cursor-pointer" @click.prevent="toggleLocation()">
+                                    <input type="checkbox" class="sr-only peer" :checked="locationEnabled">
                                     <div
                                         class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
                                     </div>
@@ -149,6 +196,13 @@
                         if (this.newPassword.length < 8) {
                             window.showErrorDialog('Too Short', 'Password must be at least 8 characters.'); return;
                         }
+                        let pwScore = 0;
+                        if (this.newPassword.length > 5) pwScore++; if (this.newPassword.length > 8) pwScore++;
+                        if (/[A-Z]/.test(this.newPassword)) pwScore++; if (/[a-z]/.test(this.newPassword)) pwScore++;
+                        if (/[0-9]/.test(this.newPassword)) pwScore++; if (/[^A-Za-z0-9]/.test(this.newPassword)) pwScore++;
+                        if (pwScore < 5) {
+                            window.showErrorDialog('Weak Password', 'Password must be at least Strong. Include uppercase, lowercase, numbers, and special characters.'); return;
+                        }
                         try { await window.showConfirmDialog('Update Password?', 'Are you sure you want to change your password?', 'Update', 'Cancel'); } catch (e) { return; }
                         this.submittingPw = true;
                         try {
@@ -174,8 +228,8 @@
                             <x-material-ui.input-field label="Current Password" :type="'password'" model="currentPassword" icon="fi fi-rr-lock" placeholder="Enter current password" required />
                             <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
-                                <i class="fa-solid fa-eye text-sm" x-show="!showCurrent"></i>
-                                <i class="fa-solid fa-eye-slash text-sm" x-show="showCurrent" style="display:none"></i>
+                                <svg x-show="!showCurrent" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                <svg x-show="showCurrent" x-cloak xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                             </button>
                         </div>
 
@@ -184,8 +238,8 @@
                             <x-material-ui.input-field label="New Password" :type="'password'" model="newPassword" icon="fi fi-rr-key" placeholder="Minimum 8 characters" required />
                             <button type="button" @click="showNew = !showNew; $refs.newPwWrap.querySelector('input').type = showNew ? 'text' : 'password'"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
-                                <i class="fa-solid fa-eye text-sm" x-show="!showNew"></i>
-                                <i class="fa-solid fa-eye-slash text-sm" x-show="showNew" style="display:none"></i>
+                                <svg x-show="!showNew" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                <svg x-show="showNew" x-cloak xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                             </button>
                         </div>
 
@@ -194,10 +248,13 @@
                             <x-material-ui.input-field label="Confirm New Password" :type="'password'" model="confirmPassword" icon="fi fi-rr-shield-check" placeholder="Re-enter new password" required />
                             <button type="button" @click="showConfirm = !showConfirm; $refs.confirmPwWrap.querySelector('input').type = showConfirm ? 'text' : 'password'"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
-                                <i class="fa-solid fa-eye text-sm" x-show="!showConfirm"></i>
-                                <i class="fa-solid fa-eye-slash text-sm" x-show="showConfirm" style="display:none"></i>
+                                <svg x-show="!showConfirm" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                <svg x-show="showConfirm" x-cloak xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                             </button>
                         </div>
+
+                        {{-- Password Strength Indicator --}}
+                        <x-material-ui.password-strength model="newPassword" />
 
                         <div class="flex justify-center md:justify-end pt-4">
                             <button type="button" @click="submitPassword()" :disabled="submittingPw"
@@ -318,8 +375,8 @@
                                 <!-- Dropdown Button -->
                                 <button @click="open = !open" type="button"
                                     class="w-full bg-white hover:bg-gray-50 focus:ring-2 focus:outline-none focus:ring-blue-500
-                               border border-gray-300 dark:border-gray-600 rounded-lg text-sm px-4 py-3 flex justify-between items-center
-                               dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-blue-800 transition-all duration-300">
+                               border border-gray-400 dark:border-gray-700 rounded-xl text-sm px-4 py-3 flex justify-between items-center
+                               dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-blue-800 transition-all duration-300">
                                     <span class="text-gray-900 dark:text-white text-sm font-normal flex-1 text-left"
                                         x-text="selected"></span>
                                     <svg class="w-3 h-3 ml-2 flex-shrink-0 transition-transform duration-300 text-gray-500 dark:text-gray-400"
@@ -381,8 +438,8 @@
                                 <!-- Dropdown Button -->
                                 <button @click="open = !open" type="button"
                                     class="w-full bg-white hover:bg-gray-50 focus:ring-2 focus:outline-none focus:ring-blue-500
-                               border border-gray-300 dark:border-gray-600 rounded-lg text-sm px-4 py-3 flex justify-between items-center
-                               dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-blue-800 transition-all duration-300">
+                               border border-gray-400 dark:border-gray-700 rounded-xl text-sm px-4 py-3 flex justify-between items-center
+                               dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-blue-800 transition-all duration-300">
                                     <span class="text-gray-900 dark:text-white text-sm font-normal flex-1 text-left"
                                         x-text="selected"></span>
                                     <svg class="w-3 h-3 ml-2 flex-shrink-0 transition-transform duration-300 text-gray-500 dark:text-gray-400"

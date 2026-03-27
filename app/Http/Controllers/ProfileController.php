@@ -343,7 +343,12 @@ class ProfileController extends Controller
                 'overtime_threshold_hours' => CompanySettingService::get('overtime_threshold_hours', 8),
                 'geofence_radius' => CompanySettingService::get('geofence_radius', 110),
             ];
-            return view('admin.settings', compact('user', 'quotationSettings', 'companySettings'));
+            $salarySettings = [
+                'salary_full_time' => CompanySettingService::get('salary_full_time', 2500),
+                'salary_part_time' => CompanySettingService::get('salary_part_time', 1200),
+                'salary_remote' => CompanySettingService::get('salary_remote', 2000),
+            ];
+            return view('admin.settings', compact('user', 'quotationSettings', 'companySettings', 'salarySettings'));
         } elseif ($role === 'company') {
             return view('manager.settings', compact('user'));
         } elseif ($role === 'employee') {
@@ -418,6 +423,34 @@ class ProfileController extends Controller
         }
 
         return Redirect::route('admin.settings')->with('success', 'Workforce configuration updated successfully!');
+    }
+
+    /**
+     * Update job posting salary configuration
+     */
+    public function updateSalarySettings(Request $request)
+    {
+        $request->validate([
+            'salary_full_time' => 'required|numeric|min:0',
+            'salary_part_time' => 'required|numeric|min:0',
+            'salary_remote' => 'required|numeric|min:0',
+        ]);
+
+        $settings = [
+            'salary_full_time' => ['type' => 'decimal', 'desc' => 'Default base salary for full-time job postings (EUR)'],
+            'salary_part_time' => ['type' => 'decimal', 'desc' => 'Default base salary for part-time job postings (EUR)'],
+            'salary_remote' => ['type' => 'decimal', 'desc' => 'Default base salary for remote job postings (EUR)'],
+        ];
+
+        foreach ($settings as $key => $meta) {
+            CompanySettingService::set($key, $request->input($key), $meta['type'], $meta['desc']);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Salary configuration updated successfully!']);
+        }
+
+        return Redirect::route('admin.settings')->with('success', 'Salary configuration updated successfully!');
     }
 
     /**

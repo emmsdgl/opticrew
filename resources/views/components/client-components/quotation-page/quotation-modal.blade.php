@@ -36,8 +36,11 @@
     }
 </style>
 
-{{-- Modal Wrapper --}}
-<div x-show="showModal" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display:none">
+{{-- Modal Wrapper — teleported to body to escape parent transform stacking context --}}
+<template x-teleport="body">
+<div x-show="showModal"
+     x-init="$watch('showModal', val => { document.documentElement.style.overflow = val ? 'hidden' : ''; document.body.style.overflow = val ? 'hidden' : ''; })"
+     x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display:none">
     {{-- Backdrop --}}
     <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -46,10 +49,10 @@
     {{-- Modal Content --}}
     <div x-show="showModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100"
          x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-75"
-         class="relative z-10 w-full max-w-2xl px-8 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-h-[95vh] min-h-[80vh] flex flex-col overflow-hidden">
+         class="relative z-10 w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
 
         {{-- Header with Stepper --}}
-        <div class="px-8 py-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <div class="px-6 sm:px-8 py-5 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Request Quotation</h2>
                 <button @click="showModal = false; document.body.style.overflow = ''" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -73,7 +76,7 @@
         </div>
 
         {{-- Body --}}
-        <div class="flex-1 px-8 py-6 overflow-y-auto quotation-modal-scroll">
+        <div class="flex-1 px-6 sm:px-8 py-6 overflow-y-auto quotation-modal-scroll">
 
             {{-- Step 1: Service --}}
             <div x-show="step === 1" x-transition>
@@ -419,7 +422,7 @@
         </div>
 
         {{-- Footer --}}
-        <div class="px-8 py-5 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
+        <div class="px-6 sm:px-8 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
             <button x-show="step > 1" @click="step--" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                 <i class="fa-solid fa-arrow-left mr-2"></i>Back
             </button>
@@ -435,3 +438,4 @@
         </div>
     </div>
 </div>
+</template>

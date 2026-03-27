@@ -379,6 +379,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::post('/admin/settings/update-password', [ProfileController::class, 'updatePassword'])->name('admin.settings.update-password');
     Route::post('/admin/settings/quotation', [ProfileController::class, 'updateQuotationSettings'])->name('admin.settings.update-quotation');
     Route::post('/admin/settings/company', [ProfileController::class, 'updateCompanySettings'])->name('admin.settings.update-company');
+    Route::post('/admin/settings/salary', [ProfileController::class, 'updateSalarySettings'])->name('admin.settings.update-salary');
 
     // Analytics dashboard for optimization metrics
     Route::get('/optimization-result', EmployeeAnalytics::class)->name('optimization.result');
@@ -580,6 +581,15 @@ Route::get('/api/company-settings', [App\Http\Controllers\Api\CompanySettingsCon
     ->middleware(['auth', 'terms.accepted'])
     ->name('api.company-settings');
 
+// Salary configuration API endpoint
+Route::get('/api/salary-settings', function () {
+    return response()->json([
+        'full-time' => App\Services\CompanySettingService::get('salary_full_time', 2500),
+        'part-time' => App\Services\CompanySettingService::get('salary_part_time', 1200),
+        'remote' => App\Services\CompanySettingService::get('salary_remote', 2000),
+    ]);
+})->middleware(['auth', 'terms.accepted'])->name('api.salary-settings');
+
 //ALL ROUTES FOR BUTTONS
 Route::get('/signup', function () {
     return view('auth.signup', ['cscApiKey' => env('CSC_API_KEY', '')]);
@@ -592,6 +602,7 @@ Route::post('/signup', [ClientRegistrationController::class, 'store'])
 
 Route::post('/signup/send-otp', [ClientRegistrationController::class, 'sendOtp'])->middleware('guest');
 Route::post('/signup/verify-otp', [ClientRegistrationController::class, 'verifyOtp'])->middleware('guest');
+Route::post('/signup/check-username', [ClientRegistrationController::class, 'checkUsername'])->middleware('guest');
 
 Route::get('/forgotpassword', [ForgotPasswordController::class, 'showForgotPasswordForm'])->name('forgot.password');
 Route::post('/forgotpassword/get-questions', [ForgotPasswordController::class, 'getSecurityQuestions'])->name('password.getQuestions');

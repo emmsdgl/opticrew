@@ -2314,6 +2314,11 @@
                 successButtonText: 'Back to Recruitment',
                 successRedirectUrl: '',
                 editingIndex: null,
+                salaryDefaults: {
+                    'full-time': 2500,
+                    'part-time': 1200,
+                    'remote': 2000
+                },
                 isSubmitting: false,
                 selectedJobIds: [],
                 showConfirm: false,
@@ -2371,7 +2376,7 @@
                     description: 'This role is responsible for maintaining cleanliness and sanitation across assigned areas. Duties include sweeping, mopping, vacuuming, dusting, disinfecting surfaces, and ensuring that facilities are hygienic and presentable. The role also involves proper waste disposal, restocking cleaning supplies, and following safety and sanitation standards.',
                     state: '',
                     city: '',
-                    salary: '',
+                    salary: 2500,
                     type: 'full-time',
                     typeBadge: 'Full-time Employee',
                     category: 'cleaning',
@@ -2383,6 +2388,26 @@
                     benefits: ['Occupational health care', 'Lodging benefits', 'Commuting benefits', 'Occupational accident insurance', 'Public Holidays', 'Annual paid leave']
                 },
                 jobPostings: dbJobPostings,
+
+                init() {
+                    // Fetch configured salary defaults from settings
+                    fetch('{{ route('api.salary-settings') }}')
+                        .then(res => res.json())
+                        .then(data => {
+                            this.salaryDefaults = {
+                                'full-time': data['full-time'] ?? 2500,
+                                'part-time': data['part-time'] ?? 1200,
+                                'remote': data['remote'] ?? 2000,
+                            };
+                            // Set initial salary for default type (full-time)
+                            if (!this.formData.salary) {
+                                this.formData.salary = this.salaryDefaults['full-time'];
+                            }
+                        })
+                        .catch(() => {
+                            // Fallback defaults already set
+                        });
+                },
 
                 viewJob(index) {
                     const job = this.jobPostings[index];
@@ -2507,7 +2532,7 @@
                         description: this.defaultDescriptionMap['cleaning'] || '',
                         state: '',
                         city: '',
-                        salary: '',
+                        salary: this.salaryDefaults['full-time'] || '',
                         type: 'full-time',
                         typeBadge: 'Full-time Employee',
                         category: 'cleaning',
@@ -2951,6 +2976,10 @@
                         'remote': 'Remote'
                     };
                     this.formData.typeBadge = badges[this.formData.type] || 'Full-time Employee';
+                    // Auto-populate salary from configured defaults
+                    if (this.salaryDefaults[this.formData.type] !== undefined) {
+                        this.formData.salary = this.salaryDefaults[this.formData.type];
+                    }
                 },
 
                 getCategoryLabel(value) {

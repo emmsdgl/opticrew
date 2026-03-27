@@ -98,7 +98,7 @@
     <div class="bg-white rounded-2xl shadow-lg max-w-3xl w-full p-8 md:p-12">
         <div class="text-center mb-8">
             <img src="{{ asset('/images/finnoys-text-logo-light.svg') }}" alt="Fin-noys" class="h-16 mx-auto mb-4">
-            <h1 class="text-3xl font-bold text-[#081032] font-sans">Welcome to OptiCrew</h1>
+            <h1 class="text-3xl font-bold text-[#081032] font-sans">Welcome to Castcrew</h1>
             <p class="text-[#07185788] text-sm mt-2">
                 Before you continue, please read and accept our Terms & Conditions and Privacy Policy.
             </p>
@@ -118,7 +118,7 @@
 
                     <h3 class="text-base font-bold text-gray-900 mt-4">1. Acceptance of Terms</h3>
                     <p class="text-sm leading-relaxed">
-                        By accessing or using the OptiCrew workforce management and scheduling platform (the "System"),
+                        By accessing or using the Castcrew workforce management and scheduling platform (the "System"),
                         you ("User") agree to comply with and be bound by these Terms and Conditions. These Terms govern
                         the automated allocation of tasks, scheduling, and employee management functions within the System.
                     </p>
@@ -130,7 +130,7 @@
 
                     <h4 class="text-sm font-semibold text-gray-900 mt-3">2.1 Workforce Allocation</h4>
                     <p class="text-sm leading-relaxed">
-                        OptiCrew automatically determines the optimal number of employees required for each task based on an analysis of:
+                        Castcrew automatically determines the optimal number of employees required for each task based on an analysis of:
                     </p>
                     <ul class="list-disc list-inside text-sm space-y-1 ml-4">
                         <li>Employee availability (excluding those on scheduled leave or days off).</li>
@@ -190,13 +190,13 @@
                     <h3 class="text-base font-bold text-gray-900 mt-4">3. System Authority and Finality</h3>
                     <p class="text-sm leading-relaxed">
                         You acknowledge that all task assignments and schedules are the outcome of automated, rule-based
-                        optimization performed by OptiCrew. The System's allocations are deemed final and binding for
+                        optimization performed by Castcrew. The System's allocations are deemed final and binding for
                         operational purposes, except in cases involving verified technical errors or the invocation of a "What-If" scenario.
                     </p>
 
                     <h3 class="text-base font-bold text-gray-900 mt-4">4. Modifications to System Rules</h3>
                     <p class="text-sm leading-relaxed">
-                        OptiCrew and its parent company, Fin-noys, reserve the right to modify or update these Terms and
+                        Castcrew and its parent company, Fin-noys, reserve the right to modify or update these Terms and
                         operational rules at any time to reflect evolving business or regulatory requirements. Continued
                         use of the System following any such updates constitutes your acceptance of the revised Terms.
                     </p>
@@ -206,8 +206,8 @@
                         For inquiries or clarifications regarding these Terms & Conditions, please contact:
                     </p>
                     <div class="bg-white p-4 rounded-lg mt-2 border">
-                        <p class="text-sm font-semibold text-gray-900">OptiCrew Support</p>
-                        <p class="text-sm text-gray-700 mt-1">opticrewhelpcenter@gmail.com</p>
+                        <p class="text-sm font-semibold text-gray-900">Castcrew Support</p>
+                        <p class="text-sm text-gray-700 mt-1">castcrewhelpcenter@gmail.com</p>
                         <p class="text-sm text-gray-700">Philippines, Makati City</p>
                     </div>
                 </div>

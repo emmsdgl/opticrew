@@ -233,7 +233,7 @@
                                name="username"
                                x-model="username"
                                placeholder="Enter username"
-                               class="w-full text-sm font-medium px-3 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 transition-colors">
+                               class="w-full text-sm font-normal px-3 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 transition-colors">
                         <div x-show="!editing" class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="username || 'Add a Username'"></div>
                     </div>
                 </div>

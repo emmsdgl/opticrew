@@ -289,7 +289,7 @@
                                  :class="taskForm.auto_assign ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/10' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'">
                                 <div>
                                     <p class="text-sm font-medium text-gray-900 dark:text-white">Auto-Assign (Recommended)</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">Use optimization algorithm to assign the best employees</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Automatically assign the best available employees</p>
                                 </div>
                                 <div class="w-11 h-6 rounded-full transition-colors relative"
                                      :class="taskForm.auto_assign ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'">
@@ -319,16 +319,6 @@
                                 </div>
                             </div>
 
-                            <!-- Auto-assign info box -->
-                            <div x-show="taskForm.auto_assign" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                                <p class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Optimization Rules Applied:</p>
-                                <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
-                                    <li>- Each team has at least 1 driver</li>
-                                    <li>- Fair task distribution across teams</li>
-                                    <li>- 12-hour daily maximum enforced</li>
-                                    <li>- Priority tasks assigned first</li>
-                                </ul>
-                            </div>
                         </div>
 
                         <!-- 8. Priority Toggle -->

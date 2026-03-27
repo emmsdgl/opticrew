@@ -33,16 +33,18 @@ class AttendanceController extends Controller
             ], 404);
         }
 
-        // Check if already clocked in today
+        // Check if already clocked in today (only one clock-in per day allowed)
         $today = Carbon::today();
         $existingAttendance = Attendance::where('employee_id', $employee->id)
             ->whereDate('clock_in', $today)
-            ->whereNull('clock_out')
             ->first();
 
         if ($existingAttendance) {
+            $message = $existingAttendance->clock_out
+                ? 'You have already clocked in and out today'
+                : 'You are already clocked in';
             return response()->json([
-                'message' => 'You are already clocked in',
+                'message' => $message,
                 'attendance' => $existingAttendance
             ], 400);
         }
