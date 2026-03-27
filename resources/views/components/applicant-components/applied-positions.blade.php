@@ -34,8 +34,6 @@
         icon="fa-solid fa-folder-plus"
         title="No applications"
         description="Get started by creating a new application."
-        buttonText="New Application"
-        buttonHref="#available-positions"
     />
     @endif
 
