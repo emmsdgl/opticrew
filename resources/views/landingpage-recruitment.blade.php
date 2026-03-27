@@ -862,7 +862,7 @@
         style="display: none;" x-data="{
             termsOpened: document.cookie.includes('finnoys_terms_accepted=1'),
             privacyOpened: document.cookie.includes('finnoys_policy_accepted=1'),
-            agreed: false,
+            agreed: document.cookie.includes('finnoys_terms_accepted=1') && document.cookie.includes('finnoys_policy_accepted=1'),
             openRecruitTermsModal() {
                 document.getElementById('recruit-terms-modal').style.display = 'flex';
                 lockScroll();
@@ -929,29 +929,36 @@
                     </div>
 
                     {{-- Terms and Conditions Checkbox --}}
-                    <div class="px-4 text-sm">
-                        <label class="flex items-start space-x-3 cursor-pointer">
+                    <div class="px-4 text-sm" x-show="!(termsOpened && privacyOpened && agreed)">
+                        <div class="flex items-start space-x-3">
                             <input type="checkbox" x-model="agreed" :disabled="!checkboxEnabled"
                                 class="mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 bg-transparent appearance-none cursor-pointer checked:bg-blue-600 checked:border-blue-600 disabled:opacity-40 disabled:cursor-not-allowed">
                             <span class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                                 By signing in, I agree to the
-                                <button type="button" @click.prevent="openRecruitTermsModal()"
+                                <button type="button" @click.stop="openRecruitTermsModal()"
                                     class="text-sm text-blue-600 hover:underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-xs inline">
                                     Terms & Conditions
                                 </button>
                                 <span x-show="termsOpened" class="text-green-500 text-[10px]"><i class="fas fa-check-circle"></i></span>
                                 and
-                                <button type="button" @click.prevent="openRecruitPrivacyModal()"
+                                <button type="button" @click.stop="openRecruitPrivacyModal()"
                                     class="text-sm text-blue-600 hover:underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-xs inline">
                                     Privacy Policy
                                 </button>
                                 <span x-show="privacyOpened" class="text-green-500 text-[10px]"><i class="fas fa-check-circle"></i></span>.
                             </span>
-                        </label>
+                        </div>
                         <p x-show="!checkboxEnabled" class="text-[10px] text-amber-600 dark:text-amber-400 mt-1.5 ml-7">
                             <i class="fas fa-info-circle mr-1"></i>
                             Please open and read both documents to enable the checkbox
                         </p>
+                    </div>
+                    {{-- Already accepted indicator --}}
+                    <div class="px-4 text-sm" x-show="termsOpened && privacyOpened && agreed" x-cloak>
+                        <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
+                            <i class="fas fa-check-circle text-sm"></i>
+                            <span class="text-sm">Terms & Conditions and Privacy Policy accepted</span>
+                        </div>
                     </div>
 
                     {{-- Sign in with Google to Apply --}}
