@@ -107,7 +107,7 @@
             border-radius: 25px;
             cursor: pointer;
             box-sizing: border-box;
-            font-size: 0.75rem;
+            font-size: 0.875rem;
         }
 
         #btn-login {
@@ -231,7 +231,7 @@
                 </div>
 
                 <div class="description-container flex flex-col justify-center items-center w-full my-3">
-                    <h1 id="header1" class="text-4xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
+                    <h1 id="header1" class="text-3xl sm:text-3xl lg:text-5xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
                         One-stop booking for
                         <span class="aurora-text font-sans italic font-extrabold" id="spotless_text">a spotless space</span>
                     </h1>
@@ -255,8 +255,8 @@
                         <img src="{{asset('/images/icons/finnoys-text-logo-light.svg')}}" alt="Fin-noys"
                             class="h-3 md:h-6 w-auto cursor-pointer block">
                     </a>
-                    <h1 id="login-header" class="font-sans font-bold text-4xl mb-3 text-blue-950">Log In</h1>
-                    <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm mb-3">Welcome to
+                    <h1 id="login-header" class="font-sans font-bold text-3xl sm:text-3xl lg:text-5xl mb-3 text-blue-950">Log In</h1>
+                    <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm sm:text-sm lg:text-base mb-3">Welcome to
                         Fin-noys</p>
                 </div>
 
@@ -308,18 +308,18 @@
                 @endif
 
                 <!-- LOGIN FIELD -->
-                <div class="input-group">
-                    <i class="fa-solid fa-envelope icon"></i>
-                    <input type="text" id="input-username" name="login" class="bg-gray-100" autocomplete="username">
+                <div class="input-group" style="margin-bottom: 0.5rem;">
+                    <span id="login-icon" class="icon" style="transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease; display: inline-flex; color: #0077FF;"><i class="fa-solid fa-envelope"></i></span>
+                    <input type="text" id="input-username" name="login" class="bg-gray-100 text-xs sm:text-xs lg:text-sm" autocomplete="username">
                     <label for="input-username" class="text-[#07185788] text-sm font-sans">Email / Username</label>
                 </div>
+                <div id="login-validation" class="text-sm h-5 flex items-center gap-1 ml-1 transition-all duration-200" style="display: none;"></div>
 
                 <!-- PASSWORD FIELD -->
-                <div class="input-group">
-                    <i class="fa-solid fa-key icon"></i>
-                    <input type="password" id="input-password" name="password" class="bg-gray-100 pr-10"
-                        autocomplete="current-password">
-
+                <div class="input-group relative group" style="margin-bottom: 0.5rem;" id="password-group">
+                    <span id="password-icon" class="icon" style="transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease; display: inline-flex; color: #0077FF;"><i class="fa-solid fa-key"></i></span>
+                    <input type="password" id="input-password" name="password" class="bg-gray-100 pr-10 text-xs sm:text-xs lg:text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                        autocomplete="current-password" disabled>
                     <label for="input-password" class="text-[#07185788] text-sm font-sans">Password</label>
 
                     <button type="button" id="togglePassword"
@@ -332,6 +332,7 @@
                         </svg>
                     </button>
                 </div>
+                <div id="password-validation" class="text-[11px] ml-1 h-5 flex items-center gap-1 transition-all duration-200" style="display: none;"></div>
 
                 {{-- <div id="container-2-layer" class="text-sm">
                     <label class="flex items-center space-x-2">
@@ -343,7 +344,7 @@
                 </div> --}}
 
                 <input type="submit" id="btn-login"
-                    class="text-xs py-3 px-4 border border-gray-300 rounded-full font-sans font-semibold hover:bg-blue-800 focus:outline-white" value="Login">
+                    class="text-sm py-3 px-4 border border-gray-300 rounded-full font-sans font-semibold hover:bg-blue-800 focus:outline-white" value="Login">
 
                 {{-- <div id="container-2-3" class="text-center p-3 text-sm">
                     <p id="donthaveacct" class="text-[#07185788]">
@@ -364,7 +365,7 @@
                         <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
                         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                     </svg>
-                    <span class="text-xs font-semibold text-gray-600">Sign in with Google</span>
+                    <span class="text-sm font-semibold text-gray-600">Sign in with Google</span>
                 </a>
 
                 <!-- Terms Agreement Checkbox -->
@@ -390,9 +391,9 @@
                         </div>
                     </div>
                     <div x-show="bothAccepted" x-cloak>
-                        <div class="flex flex-col items-center gap-1 text-center text-green-600">
-                            <i class="fas fa-check-circle text-sm"></i>
-                            <span class="text-xs">The
+                        <div class="flex items-start gap-2 text-green-600">
+                            <i class="fas fa-check-circle text-sm mt-0.5 flex-shrink-0"></i>
+                            <span class="text-xs sm:text-xs lg:text-sm">The
                                 <button type="button" id="terms-link-accepted" class="text-green-700 font-semibold underline hover:text-green-800 bg-transparent border-0 p-0 cursor-pointer text-xs inline">Terms & Conditions</button>
                                 and
                                 <button type="button" id="privacy-link-accepted" class="text-green-700 font-semibold underline hover:text-green-800 bg-transparent border-0 p-0 cursor-pointer text-xs inline">Privacy Policy</button>
@@ -632,6 +633,162 @@
 
     </script>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var loginInput = document.getElementById('input-username');
+        var passwordInput = document.getElementById('input-password');
+        var loginMsg = document.getElementById('login-validation');
+        var passwordMsg = document.getElementById('password-validation');
+        var vTimer = null, prevL = '', prevP = '', accountFound = false, cachedUserId = null, passwordValid = false;
+
+        function setMsg(el, type, text) {
+            if (!text) { el.style.display = 'none'; el.innerHTML = ''; return; }
+            var c = { error: 'text-red-500', 'error-noicon': 'text-red-500', success: 'text-green-600', 'success-noicon': 'text-green-600', loading: 'text-gray-400' };
+            var ic = { error: '<i class="fa-solid fa-circle-xmark"></i>', 'error-noicon': '', success: '<i class="fa-solid fa-circle-check"></i>', 'success-noicon': '', loading: '<i class="fa-solid fa-spinner fa-spin"></i>' };
+            el.className = 'text-[11px] h-5 flex items-center gap-1 ml-1 ' + (c[type] || '');
+            el.innerHTML = (ic[type] || '') + '<span>' + text + '</span>';
+            el.style.display = 'flex';
+        }
+
+        var loginLabel = document.querySelector('label[for="input-username"]');
+        var passwordLabel = document.querySelector('label[for="input-password"]');
+        var loginIcon = document.getElementById('login-icon');
+
+        var svgCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>';
+        var svgX = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';
+        var svgEnvelope = '<i class="fa-solid fa-envelope"></i>';
+        var svgKey = '<i class="fa-solid fa-key"></i>';
+
+        function morphIcon(iconEl, content, color) {
+            iconEl.style.opacity = '0';
+            iconEl.style.transform = 'translateY(-50%) scale(0.4)';
+            setTimeout(function() {
+                iconEl.innerHTML = content;
+                iconEl.style.color = color || '#0077FF';
+                iconEl.style.opacity = '1';
+                iconEl.style.transform = 'translateY(-50%) scale(1)';
+            }, 150);
+        }
+
+        var passwordIcon = document.getElementById('password-icon');
+
+        function setLoginStyle(state) {
+            loginInput.style.borderColor = '';
+            loginInput.style.backgroundColor = '';
+            loginInput.style.color = '';
+            loginLabel.style.color = '';
+            if (state === 'found') {
+                loginInput.style.borderColor = '#22c55e';
+                loginLabel.style.color = '#22c55e';
+                morphIcon(loginIcon, svgCheck, '#22c55e');
+            } else if (state === 'found-blur') {
+                loginInput.style.borderColor = '#3b82f6';
+                loginInput.style.backgroundColor = '#eff6ff';
+                loginInput.style.color = '#1e40af';
+                loginLabel.style.color = '#0077FF';
+                morphIcon(loginIcon, svgEnvelope, '#0077FF');
+            } else if (state === 'not-found') {
+                loginInput.style.borderColor = '#ef4444';
+                loginLabel.style.color = '#ef4444';
+                morphIcon(loginIcon, svgX, '#ef4444');
+            } else {
+                morphIcon(loginIcon, svgEnvelope, '#0077FF');
+            }
+        }
+
+        function setPasswordStyle(state) {
+            passwordInput.style.borderColor = '';
+            passwordInput.style.backgroundColor = '';
+            passwordInput.style.color = '';
+            passwordLabel.style.color = '';
+            if (state === 'valid') {
+                passwordInput.style.borderColor = '#22c55e';
+                passwordLabel.style.color = '#22c55e';
+                morphIcon(passwordIcon, svgCheck, '#22c55e');
+            } else if (state === 'valid-blur') {
+                passwordInput.style.borderColor = '#3b82f6';
+                passwordInput.style.backgroundColor = '#eff6ff';
+                passwordInput.style.color = '#1e40af';
+                passwordLabel.style.color = '#0077FF';
+                morphIcon(passwordIcon, svgKey, '#0077FF');
+            } else if (state === 'invalid') {
+                passwordInput.style.borderColor = '#ef4444';
+                passwordLabel.style.color = '#ef4444';
+                morphIcon(passwordIcon, svgX, '#ef4444');
+            } else {
+                morphIcon(passwordIcon, svgKey, '#0077FF');
+            }
+        }
+
+        function setPasswordEnabled(enabled) {
+            passwordInput.disabled = !enabled;
+            if (!enabled) { passwordInput.value = ''; setMsg(passwordMsg, null, ''); prevP = ''; setPasswordStyle('reset'); }
+        }
+
+        function checkLogin() {
+            var l = loginInput.value.trim();
+            if (!l) { setMsg(loginMsg, null, ''); setMsg(passwordMsg, null, ''); setPasswordEnabled(false); accountFound = false; prevL = ''; setLoginStyle('reset'); return; }
+            if (l === prevL) return;
+            prevL = l;
+            setMsg(loginMsg, 'loading', 'Checking...');
+            setLoginStyle('reset');
+            var csrfEl = document.querySelector('input[name="_token"]');
+            fetch('{{ route("auth.validate-login") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfEl.value, 'Accept': 'application/json' },
+                body: JSON.stringify({ login: l, password: '' })
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (loginInput.value.trim() !== l) return;
+                if (d.login_checked) {
+                    accountFound = d.login_exists;
+                    cachedUserId = d.user_id;
+                    if (d.login_exists) {
+                        setMsg(loginMsg, null, '');
+                        setLoginStyle(document.activeElement === loginInput ? 'found' : 'found-blur');
+                        setPasswordEnabled(true);
+                    } else {
+                        cachedUserId = null;
+                        setMsg(loginMsg, 'error-noicon', 'No account found with this email or username');
+                        setLoginStyle('not-found');
+                        setPasswordEnabled(false);
+                    }
+                }
+            }).catch(function() { setMsg(loginMsg, null, ''); setLoginStyle('reset'); });
+        }
+
+        function checkPassword() {
+            var l = loginInput.value.trim(), p = passwordInput.value;
+            if (!accountFound || !p) { setMsg(passwordMsg, null, ''); return; }
+            if (p === prevP) return;
+            prevP = p;
+            setMsg(passwordMsg, 'loading', 'Verifying...');
+            var csrfEl = document.querySelector('input[name="_token"]');
+            fetch('{{ route("auth.validate-login") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfEl.value, 'Accept': 'application/json' },
+                body: JSON.stringify({ user_id: cachedUserId, login: l, password: p })
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (passwordInput.value !== p) return;
+                if (d.password_checked) {
+                    passwordValid = d.password_valid;
+                    if (d.password_valid) { setMsg(passwordMsg, null, ''); setPasswordStyle(document.activeElement === passwordInput ? 'valid' : 'valid-blur'); }
+                    else { setMsg(passwordMsg, 'error-noicon', 'Incorrect password'); setPasswordStyle('invalid'); }
+                }
+            }).catch(function() { setMsg(passwordMsg, null, ''); setPasswordStyle('reset'); });
+        }
+
+        var pwTimer = null;
+        function debounceLogin() { clearTimeout(vTimer); vTimer = setTimeout(checkLogin, 300); }
+        function debouncePassword() { clearTimeout(pwTimer); pwTimer = setTimeout(checkPassword, 400); }
+        loginInput.addEventListener('input', function() { accountFound = false; cachedUserId = null; passwordValid = false; setPasswordEnabled(false); setMsg(passwordMsg, null, ''); prevP = ''; setLoginStyle('reset'); debounceLogin(); });
+        loginInput.addEventListener('focus', function() { if (accountFound) setLoginStyle('found'); });
+        loginInput.addEventListener('blur', function() { clearTimeout(vTimer); if (loginInput.value.trim()) { checkLogin(); if (accountFound) setLoginStyle('found-blur'); } });
+        passwordInput.addEventListener('input', function() { passwordValid = false; setPasswordStyle('reset'); setMsg(passwordMsg, null, ''); prevP = ''; if (accountFound && passwordInput.value) debouncePassword(); });
+        passwordInput.addEventListener('focus', function() { if (passwordValid) setPasswordStyle('valid'); });
+        passwordInput.addEventListener('blur', function() { clearTimeout(pwTimer); if (accountFound && passwordInput.value) checkPassword(); if (passwordValid) setPasswordStyle('valid-blur'); });
+
+    });
+    </script>
 
     <x-global-dialogs />
 </body>

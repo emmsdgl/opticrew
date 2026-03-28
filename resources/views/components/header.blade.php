@@ -162,11 +162,12 @@
                                 <span class="ml-3">Profile</span>
                             </a>
                         @else
-                            <a href="{{ route('admin.profile') }}"
-                                class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <button type="button"
+                                onclick="window.dispatchEvent(new CustomEvent('open-profile-modal')); document.getElementById('profile-dropdown').classList.add('invisible','opacity-0','scale-95'); document.getElementById('profile-dropdown').classList.remove('opacity-100','scale-100');"
+                                class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                 <i class="fa-regular fa-user w-5 text-gray-500 dark:text-gray-400"></i>
                                 <span class="ml-3">Profile</span>
-                            </a>
+                            </button>
                         @endif
                                                 
                         @if(auth()->user()->role !== 'applicant')

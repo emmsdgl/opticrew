@@ -2399,10 +2399,8 @@
                                 'part-time': data['part-time'] ?? 1200,
                                 'remote': data['remote'] ?? 2000,
                             };
-                            // Set initial salary for default type (full-time)
-                            if (!this.formData.salary) {
-                                this.formData.salary = this.salaryDefaults['full-time'];
-                            }
+                            // Update salary to match the configured default for current type
+                            this.formData.salary = this.salaryDefaults[this.formData.type] || this.salaryDefaults['full-time'];
                         })
                         .catch(() => {
                             // Fallback defaults already set
@@ -2813,7 +2811,7 @@
                         title: this.formData.title,
                         description: this.formData.description,
                         location: location,
-                        salary: this.formData.salary,
+                        salary: String(this.formData.salary),
                         type: this.formData.type,
                         type_badge: this.formData.typeBadge,
                         icon: this.formData.icon,
@@ -2913,7 +2911,7 @@
                         title: this.formData.title,
                         description: this.formData.description,
                         location: location,
-                        salary: this.formData.salary,
+                        salary: String(this.formData.salary),
                         type: this.formData.type,
                         type_badge: this.formData.typeBadge,
                         icon: this.formData.icon,
@@ -3076,7 +3074,7 @@
                         title: this.formData.title,
                         description: this.formData.description,
                         location: location,
-                        salary: this.formData.salary,
+                        salary: String(this.formData.salary),
                         type: this.formData.type,
                         type_badge: this.formData.typeBadge,
                         icon: this.formData.icon,
