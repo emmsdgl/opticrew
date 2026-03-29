@@ -231,7 +231,7 @@
                 </div>
 
                 <div class="description-container flex flex-col justify-center items-center w-full my-3">
-                    <h1 id="header1" class="text-3xl sm:text-3xl lg:text-5xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
+                    <h1 id="header1" class="text-3xl sm:text-3xl lg:text-4xl font-sans font-bold text-white mb-4 text-left w-2/3 relative z-10">
                         One-stop booking for
                         <span class="aurora-text font-sans italic font-extrabold" id="spotless_text">a spotless space</span>
                     </h1>
@@ -255,7 +255,7 @@
                         <img src="{{asset('/images/icons/finnoys-text-logo-light.svg')}}" alt="Fin-noys"
                             class="h-3 md:h-6 w-auto cursor-pointer block">
                     </a>
-                    <h1 id="login-header" class="font-sans font-bold text-3xl sm:text-3xl lg:text-5xl mb-3 text-blue-950">Log In</h1>
+                    <h1 id="login-header" class="font-sans font-bold text-3xl sm:text-3xl lg:text-4xl mb-3 text-blue-950">Log In</h1>
                     <p id="login-header2" class="text-[#07185788] font-sans font-normal text-sm sm:text-sm lg:text-base mb-3">Welcome to
                         Fin-noys</p>
                 </div>

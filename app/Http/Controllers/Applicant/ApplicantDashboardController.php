@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -47,6 +48,7 @@ class ApplicantDashboardController extends Controller
 
     public function updateProfile(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $hasPassword = !empty($user->password);
 
@@ -168,7 +170,13 @@ class ApplicantDashboardController extends Controller
     public function extractResume(Request $request)
     {
         $request->validate([
-            'resume' => 'required|file|mimes:docx,pdf|max:10240',
+            'resume' => ['required', 'file', 'mimes:docx,pdf', function ($attribute, $value, $fail) {
+                $ext = strtolower($value->getClientOriginalExtension());
+                $maxKb = $ext === 'pdf' ? 1024 : 10240;
+                if ($value->getSize() > $maxKb * 1024) {
+                    $fail($ext === 'pdf' ? 'PDF files must not exceed 1 MB.' : 'DOCX files must not exceed 10 MB.');
+                }
+            }],
         ]);
 
         $file     = $request->file('resume');
@@ -197,7 +205,7 @@ class ApplicantDashboardController extends Controller
                 $t      = $pdf->getText();
                 if (trim($t)) $candidates['pdfparser'] = $t;
             } catch (\Throwable $e) {
-                \Log::warning('PdfParser failed', ['error' => $e->getMessage()]);
+                Log::warning('PdfParser failed', ['error' => $e->getMessage()]);
             }
         }
 
@@ -220,7 +228,7 @@ class ApplicantDashboardController extends Controller
         foreach ($candidates as $method => $candidateText) {
             // Skip candidates with very poor text quality (garbled output)
             if (!$this->isTextReadable($candidateText)) {
-                \Log::debug("Resume extract: skipping '$method' — failed readability check");
+                Log::debug("Resume extract: skipping '$method' — failed readability check");
                 continue;
             }
 
@@ -248,16 +256,24 @@ class ApplicantDashboardController extends Controller
             $bestText   = $longestText;
         }
 
-        \Log::debug('Resume extract', [
+        Log::debug('Resume extract', [
             'ext'        => $ext,
             'method'     => $bestMethod,
             'candidates' => array_map('strlen', $candidates),
             'chars'      => strlen($bestText),
-            'text_preview' => mb_substr($bestText, 0, 1000),
+            'text_preview' => mb_substr($bestText, 0, 5000),
             'fields'     => $bestFields,
         ]);
 
         Storage::delete($tempPath);
+
+        // DOCX: do not populate location fields — only PDF extracts location
+        if ($ext === 'docx') {
+            $bestFields['home_address'] = '';
+            $bestFields['region'] = '';
+            $bestFields['city'] = '';
+            $bestFields['country'] = '';
+        }
 
         return response()->json(['success' => true, 'fields' => $bestFields]);
     }
@@ -272,7 +288,13 @@ class ApplicantDashboardController extends Controller
             'job_type'          => 'nullable|string|max:50',
             'email'             => 'required|email|max:255',
             'alternative_email' => 'required|email|max:255',
-            'resume'            => 'required|file|mimes:docx,pdf|max:10240',
+            'resume'            => ['required', 'file', 'mimes:docx,pdf', function ($attribute, $value, $fail) {
+                $ext = strtolower($value->getClientOriginalExtension());
+                $maxKb = $ext === 'pdf' ? 1024 : 10240;
+                if ($value->getSize() > $maxKb * 1024) {
+                    $fail($ext === 'pdf' ? 'PDF files must not exceed 1 MB.' : 'DOCX files must not exceed 10 MB.');
+                }
+            }],
         ]);
 
         // Block banned users from submitting
@@ -311,20 +333,21 @@ class ApplicantDashboardController extends Controller
         }
 
         $profile = [
-            'first_name'        => $request->first_name        ?? '',
-            'last_name'         => $request->last_name         ?? '',
-            'middle_initial'    => $request->middle_initial    ?? '',
-            'birthdate'         => $request->birthdate         ?? '',
-            'phone'             => $request->phone             ?? '',
-            'email'             => $request->email             ?? '',
-            'alternative_email' => $request->alternative_email ?? '',
-            'city'              => $request->city              ?? '',
-            'country'           => $request->country           ?? '',
-            'linkedin'          => $request->linkedin          ?? '',
-            'skills'            => $request->skills            ?? '',
-            'languages'         => $request->languages         ?? '',
+            'first_name'        => $request->input('first_name', ''),
+            'last_name'         => $request->input('last_name', ''),
+            'middle_initial'    => $request->input('middle_initial', ''),
+            'birthdate'         => $request->input('birthdate', ''),
+            'phone'             => $request->input('phone', ''),
+            'email'             => $request->input('email', ''),
+            'alternative_email' => $request->input('alternative_email', ''),
+            'city'              => $request->input('city', ''),
+            'country'           => $request->input('country', ''),
+            'linkedin'          => $request->input('linkedin', ''),
+            'skills'            => $request->input('skills', ''),
+            'languages'         => $request->input('languages', ''),
         ];
 
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
         if ($user) {
             $location = array_filter([$profile['city'], $profile['country']]);
@@ -366,7 +389,7 @@ class ApplicantDashboardController extends Controller
                 $notificationService->notifyApplicantApplicationSubmitted($application, $user);
             }
         } catch (\Exception $e) {
-            \Log::error('Post-submission notification error: ' . $e->getMessage());
+            Log::error('Post-submission notification error: ' . $e->getMessage());
         }
 
         // Scenario #6: Auto-response if submitted outside business hours (Mon-Fri 8AM-5PM)
@@ -392,7 +415,7 @@ class ApplicantDashboardController extends Controller
                 Mail::to($recipients)->send(new ApplicationReceivedAfterHours($application, $responseEta));
             }
         } catch (\Exception $e) {
-            \Log::error('Failed to send after-hours auto-response: ' . $e->getMessage());
+            Log::error('Failed to send after-hours auto-response: ' . $e->getMessage());
         }
 
         // Scenario #5: Duplicate detection by phone number
@@ -411,11 +434,11 @@ class ApplicantDashboardController extends Controller
                     });
 
                 if ($existingApp) {
-                    \Log::warning('Duplicate applicant detected: phone ' . $phone . ' matches application #' . $existingApp->id);
+                    Log::warning('Duplicate applicant detected: phone ' . $phone . ' matches application #' . $existingApp->id);
                 }
             }
         } catch (\Exception $e) {
-            \Log::error('Duplicate detection error: ' . $e->getMessage());
+            Log::error('Duplicate detection error: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -483,7 +506,7 @@ class ApplicantDashboardController extends Controller
             }
             Mail::to($recipients)->send(new ApplicationWithdrawnFarewell($application));
         } catch (\Exception $e) {
-            \Log::error('Failed to send withdrawal farewell email: ' . $e->getMessage());
+            Log::error('Failed to send withdrawal farewell email: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -506,6 +529,8 @@ class ApplicantDashboardController extends Controller
             'phone'             => '',
             'email'             => '',
             'alternative_email' => '',
+            'home_address'      => '',
+            'region'            => '',
             'city'              => '',
             'country'           => '',
             'linkedin'          => '',
@@ -672,14 +697,14 @@ class ApplicantDashboardController extends Controller
                 ]);
 
             if (!$response->successful()) {
-                \Log::warning('OCR.space HTTP error', ['status' => $response->status()]);
+                Log::warning('OCR.space HTTP error', ['status' => $response->status()]);
                 return '';
             }
 
             $data = $response->json();
 
             if (($data['IsErroredOnProcessing'] ?? false) || ($data['OCRExitCode'] ?? 1) !== 1) {
-                \Log::warning('OCR.space processing error', [
+                Log::warning('OCR.space processing error', [
                     'error'    => $data['ErrorMessage'] ?? $data['ErrorDetails'] ?? 'unknown',
                     'exitCode' => $data['OCRExitCode'] ?? null,
                 ]);
@@ -694,7 +719,7 @@ class ApplicantDashboardController extends Controller
 
             return trim($text);
         } catch (\Throwable $e) {
-            \Log::warning('OCR.space exception', ['error' => $e->getMessage()]);
+            Log::warning('OCR.space exception', ['error' => $e->getMessage()]);
             return '';
         }
     }
@@ -896,7 +921,7 @@ class ApplicantDashboardController extends Controller
         // ── Languages (extract BEFORE skills so we can exclude it from skills) ─
         // Use a dedicated regex: match "Languages" / "Languages Spoken" as a
         // line-start header, capture until the next section header line.
-        $langsSectionHeaders = 'skills?|education|experience|work|employment|references?|certif|awards?|projects?|interests?|summary|objective|portfolio|training|courses?|volunteer|achievements?|personal|contact|profile';
+        $langsSectionHeaders = 'skills?|education|academic background|experience|work|employment|references?|certif|awards?|projects?|interests?|summary|objective|portfolio|training|courses?|volunteer|achievements?|personal|contact|profile';
         if (preg_match(
             '/(?:^|\n)\s*(?:languages?\s+spoken|languages?|dialects?)[\s:•\-–—\n]+(.+?)(?=(?:^|\n)\s*(?:' . $langsSectionHeaders . ')\b|\n{2,}|\z)/is',
             $text,
@@ -938,6 +963,10 @@ class ApplicantDashboardController extends Controller
                     $lower = mb_strtolower($s);
                     if (in_array($lower, $skipLabels, true)) return false;
                     if (in_array($lower, $langItems, true)) return false;
+                    // Filter OCR noise: dates, months, "completed online", etc.
+                    if (preg_match('/^(january|february|march|april|may|june|july|august|september|october|november|december)\s*\d{0,4}$/i', $s)) return false;
+                    if (preg_match('/^(completed|completed online|online|present)$/i', $s)) return false;
+                    if (preg_match('/^\d{4}$/', $s)) return false;
                     return true;
                 }
             );
@@ -959,12 +988,53 @@ class ApplicantDashboardController extends Controller
             'Pakistan', 'Bangladesh', 'Sri Lanka', 'Nepal',
         ];
 
-        // 1. Try explicit labels
-        if (preg_match('/(?:city|municipality)[\s:]+([^\n,]+)/i', $text, $m)) {
+        // 1. Try explicit labels (must appear at start of line to avoid mid-sentence matches)
+        if (preg_match('/(?:^|\n)\s*(?:city|municipality)\s*[:\-]\s*([^\n,]+)/i', $text, $m)) {
             $fields['city'] = trim($m[1]);
         }
-        if (preg_match('/(?:country|nationality)[\s:]+([^\n,]+)/i', $text, $m)) {
+        if (preg_match('/(?:^|\n)\s*(?:country|nationality)\s*[:\-]\s*([^\n,]+)/i', $text, $m)) {
             $fields['country'] = trim($m[1]);
+        }
+        if (preg_match('/(?:^|\n)\s*(?:region|state|province)\s*[:\-]\s*([^\n,]+)/i', $text, $m)) {
+            $fields['region'] = trim($m[1]);
+        }
+        if (preg_match('/(?:^|\n)\s*(?:home\s*address|street\s*address|address)\s*[:\-]\s*([^\n]+)/i', $text, $m)) {
+            $candidate = trim($m[1]);
+            // Avoid matching "address change request" or similar non-address text
+            if (!preg_match('/\b(change|update|request|process|billing)\b/i', $candidate)) {
+                $fields['home_address'] = $candidate;
+            }
+        }
+
+        // 1b. Try to extract address from header lines (top 5 lines of resume)
+        // e.g., "9651 Kalayaan Avenue | Makati, 1212"
+        if (!$fields['home_address']) {
+            $topLines = array_slice(array_filter(explode("\n", $text), fn($l) => strlen(trim($l)) > 0), 0, 5);
+            foreach ($topLines as $line) {
+                $trimmed = trim($line);
+                // Skip lines with email addresses
+                if (str_contains($trimmed, '@')) continue;
+                // Match lines with street numbers or common address keywords
+                if (preg_match('/^\d+\s+[A-Za-z]/', $trimmed) || preg_match('/\b(?:street|st\.|avenue|ave\.|road|rd\.|blvd|boulevard|drive|dr\.|lane|ln\.|barangay|brgy)\b/i', $trimmed)) {
+                    // Clean up separators (pipes, bullets) — take the address portion
+                    $segments = preg_split('/[|•]/', $trimmed);
+                    $addressPart = trim($segments[0]);
+                    if (strlen($addressPart) > 5) {
+                        $fields['home_address'] = $addressPart;
+                        // Try extracting city from remaining segments
+                        if (!$fields['city'] && count($segments) > 1) {
+                            $afterAddress = trim($segments[1]);
+                            // e.g., "Makati, 1212" → city = "Makati"
+                            $cityCandidate = preg_replace('/[,\s]+\d{4,5}.*$/', '', $afterAddress);
+                            $cityCandidate = trim($cityCandidate);
+                            if (strlen($cityCandidate) > 2 && !preg_match('/^\d+$/', $cityCandidate) && !preg_match('/\b(present|current)\b/i', $cityCandidate)) {
+                                $fields['city'] = $cityCandidate;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
         }
 
         // 2. Fallback: scan for known country names in address lines or top lines
@@ -1005,6 +1075,17 @@ class ApplicantDashboardController extends Controller
                     if ($fields['city'] && $fields['country']) break 2;
                 }
             }
+        }
+
+        // Final validation: reject city/region/address values that look like dates or job text
+        if ($fields['city'] && $this->looksLikeJobLine($fields['city'])) {
+            $fields['city'] = '';
+        }
+        if ($fields['region'] && $this->looksLikeJobLine($fields['region'])) {
+            $fields['region'] = '';
+        }
+        if ($fields['home_address'] && preg_match('/\b(change|update|request|process|billing|inquir|complaint)\b/i', $fields['home_address'])) {
+            $fields['home_address'] = '';
         }
 
         return $fields;
@@ -1092,14 +1173,35 @@ class ApplicantDashboardController extends Controller
     private function findSectionHeaderPos(string $textLower, string $keyword, int $searchFrom = 0): ?int
     {
         $kwLower = mb_strtolower($keyword);
+        $kwLen   = mb_strlen($kwLower);
         $offset  = $searchFrom;
 
         while (($pos = mb_strpos($textLower, $kwLower, $offset)) !== false) {
             // Must be at start of text, or preceded by a newline (with optional whitespace)
-            if ($pos === 0) return $pos;
-            $before = mb_substr($textLower, 0, $pos);
-            if (preg_match('/(?:^|\n)\s*$/u', $before)) {
-                return $pos;
+            $atLineStart = ($pos === 0) || preg_match('/(?:^|\n)\s*$/u', mb_substr($textLower, 0, $pos));
+
+            if ($atLineStart) {
+                $afterPos = $pos + $kwLen;
+
+                // Get the rest of the line after the keyword
+                $nextNewline = mb_strpos($textLower, "\n", $afterPos);
+                $restOfLine = $nextNewline !== false
+                    ? trim(mb_substr($textLower, $afterPos, $nextNewline - $afterPos))
+                    : trim(mb_substr($textLower, $afterPos));
+
+                // A real section header has nothing after it, or only punctuation like ":" or "-"
+                // Reject if followed by regular sentence words (e.g., "expertise across various areas")
+                $isHeaderLine = ($restOfLine === '' || preg_match('/^[\s:;\-–—•|]*$/u', $restOfLine));
+
+                if ($isHeaderLine) {
+                    // Verify nothing meaningful before the keyword on the same line
+                    $lineStart = max(0, mb_strrpos(mb_substr($textLower, 0, $pos), "\n"));
+                    if ($lineStart > 0) $lineStart++;
+                    $textBeforeOnLine = trim(mb_substr($textLower, $lineStart, $pos - $lineStart));
+                    if ($textBeforeOnLine === '' || preg_match('/^[\d\.\)\]]+$/', $textBeforeOnLine)) {
+                        return $pos;
+                    }
+                }
             }
             $offset = $pos + 1;
         }
@@ -1110,11 +1212,11 @@ class ApplicantDashboardController extends Controller
     {
         // All known section headers that mark boundaries
         $sectionHeaders = [
-            'education', 'experience', 'work experience', 'employment',
+            'education', 'academic background', 'experience', 'work experience', 'employment',
             'skills', 'technical skills', 'core competencies', 'key skills',
             'professional skills', 'hard skills', 'soft skills', 'competencies', 'expertise',
-            'languages', 'languages spoken', 'dialects',
-            'references', 'certifications', 'certificates', 'awards',
+            'language', 'languages', 'languages spoken', 'dialects',
+            'references', 'certifications', 'certifications & licenses', 'certificates', 'awards',
             'projects', 'interests', 'hobbies', 'summary', 'objective',
             'portfolio', 'training', 'courses', 'volunteer', 'achievements',
             'personal information', 'contact', 'profile',

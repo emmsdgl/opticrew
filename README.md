@@ -1,6 +1,6 @@
-# OptiCrew - AI-Powered Workforce Optimization Platform
+# CastCrew - AI-Powered Workforce Optimization Platform
 
-**OptiCrew** (Fin-noys) is an intelligent workforce optimization and scheduling system designed for cleaning service management companies. The platform uses a **Genetic Algorithm** combined with rule-based optimization to automatically assign tasks to employees while respecting constraints like availability, skills, work hours, and budget limits.
+**CastCrew** (Fin-noys) is an intelligent workforce optimization and scheduling system designed for cleaning service management companies. The platform uses a **Genetic Algorithm** combined with rule-based optimization to automatically assign tasks to employees while respecting constraints like availability, skills, work hours, and budget limits.
 
 ---
 

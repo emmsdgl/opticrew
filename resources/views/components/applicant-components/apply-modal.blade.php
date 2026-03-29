@@ -379,9 +379,9 @@
 
                 country: this.pickField(fields, ['country', 'nationality', 'location_country']),
                 region: this.pickField(fields, ['region', 'state', 'province', 'maakunta']),
-                city: '',
+                city: this.pickField(fields, ['city', 'municipality', 'town', 'location_city']),
                 district: this.pickField(fields, ['district', 'area', 'neighborhood', 'kaupunginosa']),
-                street: this.pickField(fields, ['street', 'street_address', 'address', 'barangay']),
+                street: this.pickField(fields, ['street', 'street_address', 'address', 'home_address', 'barangay']),
                 linkedin: this.pickField(fields, ['linkedin', 'linkedin_url', 'linkedin_profile']),
             };
 
@@ -479,7 +479,7 @@
                     const fields = data.fields ?? data.data?.fields ?? {};
                     this.applyExtractedFields(fields);
 
-                    // Match extracted country to CSC countries
+                    // Match extracted country to CSC countries (verify, but keep extracted values if no match)
                     if (this.form.country && this.cscCountries.length) {
                         const extractedCountry = this.form.country.toLowerCase().trim();
                         const countryMatch = this.cscCountries.find(c => c.name.toLowerCase() === extractedCountry);
@@ -488,33 +488,39 @@
                             this.selectedCountryIso2 = countryMatch.iso2;
                             await this.loadStatesForCountry(countryMatch.iso2);
 
-                            // Match region
+                            // Match region (verify against API, keep extracted value if no exact match)
                             if (this.form.region && this.cscStates.length) {
                                 const extractedRegion = this.form.region.toLowerCase().trim();
-                                const regionMatch = this.cscStates.find(s => s.name.toLowerCase() === extractedRegion);
+                                const regionMatch = this.cscStates.find(s =>
+                                    s.name.toLowerCase() === extractedRegion ||
+                                    s.name.toLowerCase().includes(extractedRegion) ||
+                                    extractedRegion.includes(s.name.toLowerCase())
+                                );
                                 if (regionMatch) {
                                     this.form.region = regionMatch.name;
                                     await this.loadCitiesForState(regionMatch.iso2);
 
-                                    // Match city/municipality
+                                    // Match city (verify against API, keep extracted value if no exact match)
                                     if (this.form.city && this.cscCities.length) {
                                         const extractedCity = this.form.city.toLowerCase().trim();
-                                        const cityMatch = this.cscCities.find(c => c.name.toLowerCase() === extractedCity);
+                                        const cityMatch = this.cscCities.find(c =>
+                                            c.name.toLowerCase() === extractedCity ||
+                                            c.name.toLowerCase().includes(extractedCity) ||
+                                            extractedCity.includes(c.name.toLowerCase())
+                                        );
                                         if (cityMatch) {
                                             this.form.city = cityMatch.name;
                                             this.citySearch = cityMatch.name;
                                         } else {
-                                            this.form.city = '';
-                                            this.citySearch = '';
+                                            // Keep extracted city for manual review
+                                            this.citySearch = this.form.city;
                                         }
                                     }
-                                } else {
-                                    this.form.region = '';
                                 }
+                                // If no region match, keep extracted value for manual review
                             }
-                        } else {
-                            this.form.country = '';
                         }
+                        // If no country match, keep extracted value for manual review
                     }
                     if (this.form.city) this.citySearch = this.form.city;
                 }
@@ -711,7 +717,7 @@
                                             <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">
                                                 Drag & drop or <span class="text-blue-500 dark:text-blue-400">browse</span>
                                             </p>
-                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">DOCX or PDF — max 10 MB</p>
+                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">DOCX (max 10 MB) or PDF (max 1 MB)</p>
                                         </div>
 
                                         <div x-show="fileNames[index]" class="flex items-center justify-center gap-3">
