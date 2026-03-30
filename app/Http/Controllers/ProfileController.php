@@ -220,9 +220,15 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // Delete old profile picture if exists
-        if ($user->profile_picture) {
+        // Delete old profile picture if exists (skip external/Google URLs)
+        if ($user->profile_picture && !str_starts_with($user->profile_picture, 'http')) {
             $oldPath = public_path($user->profile_picture);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+        } elseif ($user->profile_picture && str_starts_with($user->profile_picture, url('uploads/profile_pictures'))) {
+            $relativePath = str_replace(url('/'), '', $user->profile_picture);
+            $oldPath = public_path(ltrim($relativePath, '/'));
             if (file_exists($oldPath)) {
                 unlink($oldPath);
             }
@@ -241,15 +247,16 @@ class ProfileController extends Controller
         // Move file to public/uploads/profile_pictures
         $file->move($uploadDir, $filename);
 
-        // Store relative path in database
+        // Store full URL so mobile app can display it directly
         $path = 'uploads/profile_pictures/' . $filename;
+        $fullUrl = url($path);
 
         // Update user record
-        $user->profile_picture = $path;
+        $user->profile_picture = $fullUrl;
         $user->save();
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Profile picture updated successfully!', 'path' => asset($path)]);
+            return response()->json(['success' => true, 'message' => 'Profile picture updated successfully!', 'path' => $fullUrl]);
         }
 
         // Redirect back to profile page based on role
