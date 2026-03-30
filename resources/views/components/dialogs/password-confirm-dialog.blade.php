@@ -76,8 +76,14 @@
             <input type="password" id="{{ $inputId }}"
                    x-model="{{ $passwordModel }}"
                    @keydown.enter.prevent="{{ $onConfirm }}"
-                   class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-800 dark:text-white"
+                   class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-800 dark:text-white transition-colors duration-200"
+                   :class="window.__pcvState === 'valid'
+                       ? 'border-green-500 focus:ring-green-500'
+                       : (window.__pcvState === 'invalid'
+                           ? 'border-red-500 focus:ring-red-500'
+                           : 'border-gray-300 dark:border-gray-600 focus:ring-red-500')"
                    placeholder="{{ $placeholder }}">
+            <div id="password-confirm-validation" class="mt-1.5 text-[11px] h-4 flex items-center gap-1" style="display: none;"></div>
             <p x-show="{{ $errorModel }}" x-text="{{ $errorModel }}"
                class="mt-1.5 text-[11px] text-red-600"></p>
         </div>

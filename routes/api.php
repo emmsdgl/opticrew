@@ -37,6 +37,50 @@ use App\Http\Controllers\Api\AdminFeedbackController;
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 Route::post('/google-login', [AuthController::class, 'googleLogin'])->name('api.google-login');
 
+// Real-time login validation (for mobile app)
+Route::post('/validate-login', function (Request $request) {
+    $login = $request->input('login', '');
+    $password = $request->input('password', '');
+    $userId = $request->input('user_id');
+    $result = ['login_exists' => false, 'password_valid' => false, 'login_checked' => false, 'password_checked' => false, 'user_id' => null];
+
+    if (!$login && !$userId) {
+        return response()->json($result);
+    }
+
+    // Fast path: password-only check with cached user_id
+    if ($userId && $password) {
+        $user = \App\Models\User::find($userId);
+        if ($user) {
+            $result['login_exists'] = true;
+            $result['login_checked'] = true;
+            $result['user_id'] = $user->id;
+            $result['password_valid'] = \Illuminate\Support\Facades\Hash::check($password, $user->password ?? '');
+            $result['password_checked'] = true;
+        }
+        return response()->json($result);
+    }
+
+    // Find user by email, alternative_email, username, or name
+    $user = null;
+    if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+        $user = \App\Models\User::where('email', $login)->orWhere('alternative_email', $login)->first();
+    } else {
+        $user = \App\Models\User::where('username', $login)->orWhere('name', $login)->first();
+    }
+
+    $result['login_exists'] = $user !== null;
+    $result['login_checked'] = true;
+    $result['user_id'] = $user ? $user->id : null;
+
+    if ($user && $password) {
+        $result['password_valid'] = \Illuminate\Support\Facades\Hash::check($password, $user->password ?? '');
+        $result['password_checked'] = true;
+    }
+
+    return response()->json($result);
+});
+
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     // Logout
