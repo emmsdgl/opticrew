@@ -16,6 +16,18 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
+     * Resolve a stored path (relative or absolute URL) to a full URL.
+     * The website stores cover_photo as a relative path (e.g. "uploads/cover_photos/file.jpg").
+     * The mobile app needs a full URL to render the image.
+     */
+    private function resolveUrl(?string $path): ?string
+    {
+        if (!$path) return null;
+        if (str_starts_with($path, 'http')) return $path;
+        return url($path);
+    }
+
+    /**
      * Login user and create token
      */
     public function login(Request $request)
@@ -82,7 +94,7 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'profile_picture' => $user->profile_picture,
-                'cover_photo' => $user->cover_photo,
+                'cover_photo' => $this->resolveUrl($user->cover_photo),
                 'employee_id' => $user->employee?->id,
                 'google_linked' => !empty($user->google_id),
             ],
@@ -193,7 +205,7 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'profile_picture' => $user->profile_picture,
-                'cover_photo' => $user->cover_photo,
+                'cover_photo' => $this->resolveUrl($user->cover_photo),
                 'employee_id' => $user->employee?->id,
                 'google_linked' => !empty($user->google_id),
             ],
@@ -230,7 +242,7 @@ class AuthController extends Controller
                 'phone' => $user->phone,
                 'location' => $user->location,
                 'profile_picture' => $user->profile_picture,
-                'cover_photo' => $user->cover_photo,
+                'cover_photo' => $this->resolveUrl($user->cover_photo),
                 'employee_id' => $user->employee?->id,
                 'google_linked' => !empty($user->google_id),
             ],
@@ -261,7 +273,7 @@ class AuthController extends Controller
                 'phone' => $user->phone,
                 'location' => $user->location,
                 'profile_picture' => $user->profile_picture,
-                'cover_photo' => $user->cover_photo,
+                'cover_photo' => $this->resolveUrl($user->cover_photo),
             ],
         ]);
     }
