@@ -285,7 +285,7 @@ class ProfileController extends Controller
     /**
      * Upload or update cover photo
      */
-    public function uploadCoverPhoto(Request $request): RedirectResponse
+    public function uploadCoverPhoto(Request $request)
     {
         $request->validate([
             'cover_photo' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],

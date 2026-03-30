@@ -258,7 +258,7 @@
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
-                        if (data.password_changed) { window.showSuccessDialog('Password Changed', 'Please log in again.'); setTimeout(() => { window.location.href = '/'; }, 2000); return; }
+                        if (data.password_changed) { window.showSuccessDialog('Password Changed', 'Your password has been changed. Please log in again.', 'OK', '{{ route("login") }}'); return; }
                         this.editing = false; this.original = { ...this.form };
                         this.form.current_password = ''; this.form.new_password = ''; this.form.new_password_confirmation = '';
                         window.dispatchEvent(new CustomEvent('profile-edit-toggled', { detail: { editing: false } }));

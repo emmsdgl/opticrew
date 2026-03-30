@@ -11,6 +11,7 @@
         $coverRoute = match($role) {
             'admin' => route('admin.profile.upload-cover', [], false),
             'employee' => route('employee.profile.upload-cover', [], false),
+            'company' => route('manager.profile.upload-cover', [], false),
             default => route('client.profile.upload-cover', [], false),
         };
     }
@@ -18,6 +19,7 @@
     $pictureRoute = match($user->role ?? 'client') {
         'admin' => route('admin.profile.upload-picture'),
         'employee' => route('employee.profile.upload-picture'),
+        'company' => route('manager.profile.upload-picture'),
         default => route('client.profile.upload-picture'),
     };
 
