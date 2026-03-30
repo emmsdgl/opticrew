@@ -214,6 +214,7 @@
                 this.showCurrentPw = false; this.showNewPw = false; this.showConfirmPw = false;
                 this.phoneError = ''; this.phoneDropOpen = false;
                 this.editing = false;
+                window.__pendingProfilePic = null;
                 window.dispatchEvent(new CustomEvent('profile-edit-toggled', { detail: { editing: false } }));
             },
 
@@ -230,6 +231,26 @@
                 try { await window.showConfirmDialog('Update Profile', 'Are you sure you want to save these changes?', 'Save', 'Cancel'); } catch { return; }
                 this.saving = true;
                 try {
+                    // Upload photo first if one was selected
+                    if (window.__pendingProfilePic) {
+                        const fd = new FormData();
+                        fd.append('profile_picture', window.__pendingProfilePic.file);
+                        const picRes = await fetch(window.__pendingProfilePic.route, {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                            body: fd,
+                        });
+                        const picData = await picRes.json();
+                        if (picRes.ok && picData.success) {
+                            window.dispatchEvent(new CustomEvent('profile-picture-updated', { detail: { url: picData.path } }));
+                            window.__pendingProfilePic = null;
+                        } else {
+                            window.showErrorDialog('Upload Failed', picData.message || 'Failed to upload photo.');
+                            this.saving = false;
+                            return;
+                        }
+                    }
+
                     const res = await fetch('{{ route("admin.profile.update") }}', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },

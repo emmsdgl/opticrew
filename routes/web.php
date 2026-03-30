@@ -617,6 +617,7 @@ Route::middleware(['auth', 'terms.accepted', 'manager'])->prefix('manager')->nam
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('profile.upload-picture');
+    Route::post('/profile/upload-cover', [ProfileController::class, 'uploadCoverPhoto'])->name('profile.upload-cover');
     Route::get('/settings', [ProfileController::class, 'settings'])->name('settings');
     Route::get('/help-center', [ProfileController::class, 'helpcenter'])->name('helpcenter');
     Route::post('/settings/update-password', [ProfileController::class, 'updatePassword'])->name('settings.update-password');

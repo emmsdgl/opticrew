@@ -25,9 +25,15 @@ class ProfileController extends Controller
         $user = $request->user();
         $role = $user->role;
 
-        // Client profile is now a modal in the layout — redirect to dashboard
+        // These roles use the profile modal in the layout — redirect to their dashboards
         if ($role === 'client' || $role === 'external_client') {
             return Redirect::route('client.dashboard');
+        }
+        if ($role === 'company') {
+            return Redirect::route('manager.dashboard');
+        }
+        if ($role === 'employee') {
+            return Redirect::route('employee.dashboard');
         }
 
         // Initialize task stats
@@ -98,17 +104,21 @@ class ProfileController extends Controller
     /**
      * Show the edit profile page based on user role
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): View|RedirectResponse
     {
         $user = $request->user();
         $role = $user->role;
 
+        // These roles use the profile modal — redirect to dashboard
+        if ($role === 'company') {
+            return Redirect::route('manager.dashboard');
+        }
+        if ($role === 'employee') {
+            return Redirect::route('employee.dashboard');
+        }
+
         if ($role === 'admin') {
             return view('admin.profile-edit', compact('user'));
-        } elseif ($role === 'company') {
-            return view('admin.profile-edit', compact('user'));
-        } elseif ($role === 'employee') {
-            return view('employee.profile-edit', compact('user'));
         } else {
             return view('client.profile-edit', compact('user'));
         }

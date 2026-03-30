@@ -33,6 +33,7 @@
          coverPreview: '{{ $coverUrl }}',
          coverFile: null,
          picPreview: '{{ $picUrl }}',
+         originalPicPreview: '{{ $picUrl }}',
          picFile: null,
 
          handleCoverSelect(e) {
@@ -52,11 +53,12 @@
              const reader = new FileReader();
              reader.onload = (ev) => { this.picPreview = ev.target.result; };
              reader.readAsDataURL(file);
-             this.$nextTick(() => document.getElementById('{{ $picFormId }}').submit());
+             // Store for upload on Save Changes — do NOT auto-submit
+             window.__pendingProfilePic = { file, route: '{{ $pictureRoute }}' };
          },
      }"
-     @profile-edit-toggled.window="editing = $event.detail.editing"
-     @profile-picture-updated.window="picPreview = $event.detail.url">
+     @profile-edit-toggled.window="if (!$event.detail.editing) { picPreview = originalPicPreview; window.__pendingProfilePic = null; } editing = $event.detail.editing"
+     @profile-picture-updated.window="picPreview = $event.detail.url; originalPicPreview = $event.detail.url">
 
     {{-- Cover Photo --}}
     <div class="h-36 bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-500 relative overflow-hidden">
