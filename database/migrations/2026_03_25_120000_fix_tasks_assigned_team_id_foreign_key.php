@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -13,8 +14,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            $table->dropForeign('tasks_assigned_team_id_foreign');
+        // Only drop the foreign key if it actually exists as a constraint (not just an index)
+        $fkExists = collect(DB::select(
+            "SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tasks'
+             AND CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_NAME = 'tasks_assigned_team_id_foreign'"
+        ))->isNotEmpty();
+
+        Schema::table('tasks', function (Blueprint $table) use ($fkExists) {
+            if ($fkExists) {
+                $table->dropForeign('tasks_assigned_team_id_foreign');
+            }
             $table->foreign('assigned_team_id')
                   ->references('id')
                   ->on('optimization_teams')

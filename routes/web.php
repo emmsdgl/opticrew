@@ -336,6 +336,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::post('/{id}/restore', [\App\Http\Controllers\Admin\JobPostingController::class, 'restore'])->name('restore');
         Route::delete('/{id}', [\App\Http\Controllers\Admin\JobPostingController::class, 'destroy'])->name('destroy');
         Route::post('/bulk-delete', [\App\Http\Controllers\Admin\JobPostingController::class, 'bulkDestroy'])->name('bulk-destroy');
+        Route::get('/{id}/rank-applicants', [\App\Http\Controllers\Admin\JobPostingController::class, 'rankApplicants'])->name('rank-applicants');
     });
 
     // --- ADMIN TRAINING VIDEO ROUTES ---

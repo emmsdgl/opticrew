@@ -491,3 +491,22 @@ The `documents` JSON field stores metadata for additional uploaded files (cover 
 | PDF (text-based) | Yes | smalot/pdfparser or PHP FlateDecode |
 | PDF (scanned/image) | Needs `OCR_SPACE_API_KEY` | OCR.space cloud API |
 | PDF (scanned, local) | Needs Python + Poppler | PaddleOCR + pdf2image |
+
+### 10.6 Ranking Applicants
+Fuzzy Keyword Matching is used 
+
+How does it work:
+This is a fuzzy substring match — e.g., required "Cleaning" matches applicant's "Deep Cleaning"
+
+Example: 
+Job requires: ["Surface Sanitization", "Deep Cleaning", "Waste Disposal"] (3 skills)
+Applicant has: "Deep Cleaning, Sanitization, Floor Mopping"
+"Surface Sanitization" matches "Sanitization" (substring)
+"Deep Cleaning" matches "Deep Cleaning" (exact)
+"Waste Disposal" — no match
+Score: 2/3 = 67%
+Since the calling is slow, we need to use the fuzzy word matching instead
+
+Create SBERT API (Python) -> Call it from Laravel -> Store Embeddings in DB -> Cosine Similarity Computation in PHP -> Semantic Scoring in Laravel and reflected in the applicant ranking per job posting to sort the applicants per job posting
+
+Use Sentence-BERT (SBERT) semantic matching

@@ -2407,12 +2407,54 @@
                         });
                 },
 
-                viewJob(index) {
+                async viewJob(index) {
                     const job = this.jobPostings[index];
                     this.viewingJob = job;
-                    this.rankedApplicants = this.calculateRanking(job);
+                    this.rankedApplicants = this.calculateRankingFuzzy(job);
                     this.showJobDrawer = true;
                     document.body.style.overflow = 'hidden';
+
+                    // Log fuzzy ranking
+                    console.log('[Applicant Ranking - Fuzzy]', {
+                        job: job.title,
+                        method: 'fuzzy',
+                        applicants: this.rankedApplicants.map(function(a) {
+                            return { email: a.email, score: a.score, matchedSkills: a.matchedSkills };
+                        })
+                    });
+
+                    // Upgrade to SBERT ranking in background
+                    if (job.id) {
+                        try {
+                            const res = await fetch('/admin/job-postings/' + job.id + '/rank-applicants', {
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                            });
+                            const data = await res.json();
+                            if (data.ranked && this.viewingJob && this.viewingJob.id === job.id) {
+                                this.rankedApplicants = data.ranked.map(function(r) {
+                                    const app = allApps.find(function(a) { return a.id === r.application_id; });
+                                    if (!app) return null;
+                                    return Object.assign({}, app, {
+                                        score: r.score,
+                                        matchedSkills: (r.matches || []).map(function(m) { return m.required; }),
+                                        semanticMatches: r.matches || [],
+                                        rankingMethod: r.method || 'sbert'
+                                    });
+                                }).filter(Boolean);
+
+                                // Log SBERT ranking
+                                console.log('[Applicant Ranking - ' + (data.ranked[0]?.method || 'API') + ']', {
+                                    job: job.title,
+                                    method: data.ranked[0]?.method || 'unknown',
+                                    applicants: data.ranked.map(function(r) {
+                                        return { id: r.application_id, score: r.score, matches: r.matches };
+                                    })
+                                });
+                            }
+                        } catch (e) {
+                            console.warn('[Applicant Ranking] SBERT unavailable, using fuzzy fallback', e);
+                        }
+                    }
                 },
 
                 closeJobDrawer() {
@@ -2422,16 +2464,14 @@
                     document.body.style.overflow = 'auto';
                 },
 
-                calculateRanking(job) {
+                calculateRankingFuzzy(job) {
                     const jobSkills = (job.requiredSkills || []).map(s => s.toLowerCase().trim());
                     if (jobSkills.length === 0) {
-                        // No required skills — return applicants with 0% score
                         return allApps
                             .filter(a => a.job_title === job.title)
                             .map(a => ({ ...a, score: 0, matchedSkills: [] }));
                     }
 
-                    // Get applicants for this job title
                     const applicants = allApps.filter(a => a.job_title === job.title);
 
                     return applicants.map(a => {
@@ -2439,12 +2479,10 @@
                         const matched = [];
 
                         jobSkills.forEach(reqSkill => {
-                            // Check if any applicant skill contains the required skill or vice versa
                             const found = applicantSkills.some(aSkill =>
                                 aSkill.includes(reqSkill) || reqSkill.includes(aSkill)
                             );
                             if (found) {
-                                // Use the original casing from job posting
                                 const origIdx = jobSkills.indexOf(reqSkill);
                                 matched.push(job.requiredSkills[origIdx]);
                             }
