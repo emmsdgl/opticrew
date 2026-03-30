@@ -115,13 +115,11 @@
                             <img id="global-header-profile-img" src="{{ $profileUrl }}?v={{ time() }}" alt="User"
                                 class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div id="global-header-profile-initials" class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-gray-200 dark:ring-gray-700 items-center justify-center" style="display:none;">
-                                <span class="text-white font-bold text-xs md:text-[10px]">{{ $headerInitials }}</span>
-                            </div>
+                            <img id="global-header-profile-initials" src="{{ asset('images/default-avatar.svg') }}" alt="User"
+                                class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="display:none;">
                         @else
-                            <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">
-                                <span class="text-white font-bold text-xs md:text-[10px]">{{ $headerInitials }}</span>
-                            </div>
+                            <img id="global-header-profile-img" src="{{ asset('images/default-avatar.svg') }}" alt="User"
+                                class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700">
                         @endif
                     @else
                         <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 ring-2 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">

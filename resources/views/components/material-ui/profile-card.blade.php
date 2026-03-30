@@ -107,9 +107,7 @@
                             x-on:error="picPreview = ''">
                     </template>
                     <template x-if="!picPreview">
-                        <div class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                            <span class="text-white font-bold text-2xl">{{ $pcInitials }}</span>
-                        </div>
+                        <img src="{{ asset('images/default-avatar.svg') }}" alt="Default Avatar" class="w-full h-full object-cover">
                     </template>
 
                     {{-- Avatar edit overlay --}}

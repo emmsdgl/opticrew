@@ -76,13 +76,8 @@
             
             <!-- Avatar -->
             <div id="profile-avatar" class="{{ $currentSize['avatar'] }} rounded-full bg-blue-100 dark:bg-blue-900/30 overflow-hidden shadow-xl relative">
-                @if($avatar)
-                    <img src="{{ $avatar }}" alt="{{ $name }}" class="w-full h-full object-cover">
-                @else
-                    <div class="w-full h-full flex items-center justify-center text-blue-600 dark:text-blue-400 text-5xl">
-                        {{ strtoupper(substr($name, 0, 1)) }}
-                    </div>
-                @endif
+                <img src="{{ $avatar ?: asset('images/default-avatar.svg') }}" alt="{{ $name }}" class="w-full h-full object-cover"
+                    onerror="this.src='{{ asset('images/default-avatar.svg') }}'">
             </div>
             
             <!-- Status Badge -->
