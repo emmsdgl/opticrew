@@ -83,6 +83,7 @@ class AuthController extends Controller
                 'phone' => $user->phone,
                 'profile_picture' => $user->profile_picture,
                 'employee_id' => $user->employee?->id,
+                'google_linked' => !empty($user->google_id),
             ],
         ]);
     }
@@ -192,6 +193,7 @@ class AuthController extends Controller
                 'phone' => $user->phone,
                 'profile_picture' => $user->profile_picture,
                 'employee_id' => $user->employee?->id,
+                'google_linked' => !empty($user->google_id),
             ],
         ]);
     }
@@ -227,6 +229,7 @@ class AuthController extends Controller
                 'location' => $user->location,
                 'profile_picture' => $user->profile_picture,
                 'employee_id' => $user->employee?->id,
+                'google_linked' => !empty($user->google_id),
             ],
         ]);
     }

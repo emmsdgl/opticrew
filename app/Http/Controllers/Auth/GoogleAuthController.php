@@ -12,6 +12,7 @@ use App\Mail\QuotationConfirmation;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
@@ -103,6 +104,14 @@ class GoogleAuthController extends Controller
 
         if ($purpose === 'mobile_login') {
             return $this->handleMobileLoginCallback($googleUser);
+        }
+
+        if ($purpose === 'mobile_link') {
+            return $this->handleMobileLinkCallback($googleUser);
+        }
+
+        if ($purpose === 'mobile_verify') {
+            return $this->handleMobileVerifyCallback($googleUser);
         }
 
         return $this->handleLoginCallback($googleUser);
@@ -544,14 +553,176 @@ class GoogleAuthController extends Controller
             'phone' => $user->phone,
             'profile_picture' => $user->profile_picture,
             'employee_id' => $user->employee?->id,
+            'google_linked' => !empty($user->google_id),
         ]);
 
         return redirect($callback . '?token=' . urlencode($token) . '&user=' . urlencode($userData));
     }
 
     /**
-     * Get dashboard URL based on user role.
+     * Redirect to Google OAuth for mobile app account linking.
+     * Requires user_id and token so we know which account to link.
      */
+    public function mobileLinkRedirect(Request $request)
+    {
+        $userId = $request->query('user_id');
+        $token = $request->query('token');
+        $callback = $request->query('callback', 'opticrew://google-link');
+
+        if (!$userId || !$token) {
+            return redirect($callback . '?error=' . urlencode('Missing authentication parameters.'));
+        }
+
+        // Verify the Sanctum token belongs to this user
+        $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+        if (!$personalAccessToken || $personalAccessToken->tokenable_id != $userId) {
+            return redirect($callback . '?error=' . urlencode('Invalid authentication. Please log in again.'));
+        }
+
+        session([
+            'google_auth_purpose' => 'mobile_link',
+            'mobile_callback' => $callback,
+            'mobile_link_user_id' => (int) $userId,
+        ]);
+
+        $host = $request->getHost();
+        if (str_contains($host, 'finnoys.com')) {
+            $callbackUrl = 'https://finnoys.com/auth/google/callback';
+        } elseif (str_contains($host, 'ngrok')) {
+            $callbackUrl = 'https://' . $host . '/opticrew/public/auth/google/callback';
+        } else {
+            $callbackUrl = 'http://127.0.0.1:8000/auth/google/callback';
+        }
+
+        return Socialite::driver('google')
+            ->redirectUrl($callbackUrl)
+            ->redirect();
+    }
+
+    /**
+     * Handle Google callback for mobile account linking.
+     */
+    private function handleMobileLinkCallback($googleUser)
+    {
+        $callback = session('mobile_callback', 'opticrew://google-link');
+        $userId = session('mobile_link_user_id');
+        session()->forget(['google_auth_purpose', 'mobile_callback', 'mobile_link_user_id']);
+
+        if (!$userId) {
+            return redirect($callback . '?error=' . urlencode('Session expired. Please try again.'));
+        }
+
+        $user = User::find($userId);
+        if (!$user) {
+            return redirect($callback . '?error=' . urlencode('User not found.'));
+        }
+
+        // Check if already linked
+        if ($user->google_id) {
+            return redirect($callback . '?success=' . urlencode('Your Google account is already linked.'));
+        }
+
+        // Check if this Google ID is already linked to another account
+        $existingUser = User::where('google_id', $googleUser->getId())
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($existingUser) {
+            return redirect($callback . '?error=' . urlencode('This Google account is already linked to another user. Please use a different Google account.'));
+        }
+
+        // Link the Google account
+        $user->update([
+            'google_id' => $googleUser->getId(),
+            'alternative_email' => $user->alternative_email ?: $googleUser->getEmail(),
+        ]);
+
+        if ($googleUser->getAvatar() && !$user->profile_picture) {
+            $user->update(['profile_picture' => $googleUser->getAvatar()]);
+        }
+
+        UserActivityLog::log($user->id, UserActivityLog::TYPE_LOGIN, 'Linked Google account (mobile)', null, request()->ip());
+
+        return redirect($callback . '?success=' . urlencode('Your Google account has been linked successfully.'));
+    }
+
+    /**
+     * Mobile: Initiate Google OAuth for password reset identity verification (3FA Step 2).
+     * Stores the email and callback, then redirects to Google.
+     */
+    public function mobileVerifyRedirect(Request $request)
+    {
+        $email = $request->query('email');
+        $callback = $request->query('callback', 'opticrew://forgot-password-verify');
+
+        session([
+            'google_auth_purpose' => 'mobile_verify',
+            'mobile_callback' => $callback,
+            'mobile_verify_email' => $email,
+        ]);
+
+        $host = $request->getHost();
+        if (str_contains($host, 'finnoys.com')) {
+            $callbackUrl = 'https://finnoys.com/auth/google/callback';
+        } elseif (str_contains($host, 'ngrok')) {
+            $callbackUrl = 'https://' . $host . '/opticrew/public/auth/google/callback';
+        } else {
+            $callbackUrl = 'http://127.0.0.1:8000/auth/google/callback';
+        }
+
+        return Socialite::driver('google')
+            ->redirectUrl($callbackUrl)
+            ->redirect();
+    }
+
+    /**
+     * Handle Google callback for mobile password reset verification.
+     * Verifies that the Google account matches the reset email, then sends OTP.
+     */
+    private function handleMobileVerifyCallback($googleUser)
+    {
+        $callback = session('mobile_callback', 'opticrew://forgot-password-verify');
+        $resetEmail = session('mobile_verify_email');
+        session()->forget(['google_auth_purpose', 'mobile_callback', 'mobile_verify_email']);
+
+        if (!$resetEmail) {
+            return redirect($callback . '?error=' . urlencode('Verification session expired. Please try again.'));
+        }
+
+        // Find user by the reset email
+        $user = User::where('email', $resetEmail)
+            ->orWhere('alternative_email', $resetEmail)
+            ->first();
+
+        if (!$user) {
+            return redirect($callback . '?error=' . urlencode('Account not found.'));
+        }
+
+        // Verify the Google account matches (by google_id, email, or alternative_email)
+        $googleEmail = $googleUser->getEmail();
+        $googleId = $googleUser->getId();
+
+        $matches = false;
+        if ($user->google_id && $user->google_id === $googleId) {
+            $matches = true;
+        } elseif ($user->email === $googleEmail || $user->alternative_email === $googleEmail) {
+            $matches = true;
+        }
+
+        if (!$matches) {
+            return redirect($callback . '?error=' . urlencode('The Google account does not match the account on file. Please use the correct Google account.'));
+        }
+
+        // Google verification passed — generate and send OTP (3FA Step 3)
+        $otp = random_int(100000, 999999);
+        Cache::put("pwd_reset_otp:{$user->id}", $otp, now()->addMinutes(5));
+
+        \Illuminate\Support\Facades\Mail::to($user->email)
+            ->send(new \App\Mail\EmailVerificationOtp($otp));
+
+        return redirect($callback . '?verified=true');
+    }
+
     private function dashboardUrl(string $role): string
     {
         return match ($role) {

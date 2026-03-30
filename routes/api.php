@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminAppointmentController;
 use App\Http\Controllers\Api\AdminFeedbackController;
+use App\Http\Controllers\Api\MobileForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +80,13 @@ Route::post('/validate-login', function (Request $request) {
     }
 
     return response()->json($result);
+});
+
+// Forgot Password (3FA - no authentication required)
+Route::prefix('forgot-password')->middleware('throttle:10,1')->group(function () {
+    Route::post('/request', [MobileForgotPasswordController::class, 'request']);
+    Route::post('/verify-otp', [MobileForgotPasswordController::class, 'verifyOtp']);
+    Route::post('/reset', [MobileForgotPasswordController::class, 'reset']);
 });
 
 // Protected routes (require authentication)
@@ -316,6 +324,19 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
 */
 
 Route::prefix('company')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    // Workforce settings (advance booking days, etc.)
+    Route::get('/workforce-settings', function () {
+        $settings = \Illuminate\Support\Facades\DB::table('company_settings')
+            ->whereIn('key', ['advance_booking_days', 'max_hours_per_day', 'min_team_size'])
+            ->pluck('value', 'key');
+
+        return response()->json([
+            'advance_booking_days' => (int) ($settings['advance_booking_days'] ?? 0),
+            'max_hours_per_day' => (int) ($settings['max_hours_per_day'] ?? 12),
+            'min_team_size' => (int) ($settings['min_team_size'] ?? 2),
+        ]);
+    })->name('api.company.workforce-settings');
+
     // Dashboard overview
     Route::get('/dashboard', [CompanyController::class, 'dashboard'])
         ->name('api.company.dashboard');

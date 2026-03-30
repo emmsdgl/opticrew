@@ -184,6 +184,8 @@ Route::post('/auth/validate-login', function (\Illuminate\Http\Request $request)
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 Route::get('/mobile/google-login', [GoogleAuthController::class, 'mobileRedirect'])->name('mobile.google.redirect');
+Route::get('/mobile/google-link', [GoogleAuthController::class, 'mobileLinkRedirect'])->name('mobile.google.link');
+Route::get('/mobile/google-verify', [GoogleAuthController::class, 'mobileVerifyRedirect'])->name('mobile.google.verify');
 Route::post('/auth/google/recruitment-apply', [GoogleAuthController::class, 'recruitmentApply'])->name('recruitment.google.apply');
 
 /*
