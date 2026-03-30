@@ -222,7 +222,7 @@ class ProfileController extends Controller
     /**
      * Upload or update profile picture
      */
-    public function uploadPicture(Request $request): RedirectResponse
+    public function uploadPicture(Request $request)
     {
         $request->validate([
             'profile_picture' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
