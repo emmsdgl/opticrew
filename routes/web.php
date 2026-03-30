@@ -184,6 +184,8 @@ Route::post('/auth/validate-login', function (\Illuminate\Http\Request $request)
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 Route::get('/mobile/google-login', [GoogleAuthController::class, 'mobileRedirect'])->name('mobile.google.redirect');
+Route::get('/mobile/google-link', [GoogleAuthController::class, 'mobileLinkRedirect'])->name('mobile.google.link');
+Route::get('/mobile/google-verify', [GoogleAuthController::class, 'mobileVerifyRedirect'])->name('mobile.google.verify');
 Route::post('/auth/google/recruitment-apply', [GoogleAuthController::class, 'recruitmentApply'])->name('recruitment.google.apply');
 
 /*
@@ -616,6 +618,7 @@ Route::middleware(['auth', 'terms.accepted', 'manager'])->prefix('manager')->nam
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('profile.upload-picture');
+    Route::post('/profile/upload-cover', [ProfileController::class, 'uploadCoverPhoto'])->name('profile.upload-cover');
     Route::get('/settings', [ProfileController::class, 'settings'])->name('settings');
     Route::get('/help-center', [ProfileController::class, 'helpcenter'])->name('helpcenter');
     Route::post('/settings/update-password', [ProfileController::class, 'updatePassword'])->name('settings.update-password');

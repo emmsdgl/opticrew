@@ -25,9 +25,15 @@ class ProfileController extends Controller
         $user = $request->user();
         $role = $user->role;
 
-        // Client profile is now a modal in the layout — redirect to dashboard
+        // These roles use the profile modal in the layout — redirect to their dashboards
         if ($role === 'client' || $role === 'external_client') {
             return Redirect::route('client.dashboard');
+        }
+        if ($role === 'company') {
+            return Redirect::route('manager.dashboard');
+        }
+        if ($role === 'employee') {
+            return Redirect::route('employee.dashboard');
         }
 
         // Initialize task stats
@@ -98,17 +104,21 @@ class ProfileController extends Controller
     /**
      * Show the edit profile page based on user role
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): View|RedirectResponse
     {
         $user = $request->user();
         $role = $user->role;
 
+        // These roles use the profile modal — redirect to dashboard
+        if ($role === 'company') {
+            return Redirect::route('manager.dashboard');
+        }
+        if ($role === 'employee') {
+            return Redirect::route('employee.dashboard');
+        }
+
         if ($role === 'admin') {
             return view('admin.profile-edit', compact('user'));
-        } elseif ($role === 'company') {
-            return view('admin.profile-edit', compact('user'));
-        } elseif ($role === 'employee') {
-            return view('employee.profile-edit', compact('user'));
         } else {
             return view('client.profile-edit', compact('user'));
         }
@@ -212,7 +222,7 @@ class ProfileController extends Controller
     /**
      * Upload or update profile picture
      */
-    public function uploadPicture(Request $request): RedirectResponse
+    public function uploadPicture(Request $request)
     {
         $request->validate([
             'profile_picture' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
@@ -220,9 +230,15 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // Delete old profile picture if exists
-        if ($user->profile_picture) {
+        // Delete old profile picture if exists (skip external/Google URLs)
+        if ($user->profile_picture && !str_starts_with($user->profile_picture, 'http')) {
             $oldPath = public_path($user->profile_picture);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+        } elseif ($user->profile_picture && str_starts_with($user->profile_picture, url('uploads/profile_pictures'))) {
+            $relativePath = str_replace(url('/'), '', $user->profile_picture);
+            $oldPath = public_path(ltrim($relativePath, '/'));
             if (file_exists($oldPath)) {
                 unlink($oldPath);
             }
@@ -241,15 +257,16 @@ class ProfileController extends Controller
         // Move file to public/uploads/profile_pictures
         $file->move($uploadDir, $filename);
 
-        // Store relative path in database
+        // Store full URL so mobile app can display it directly
         $path = 'uploads/profile_pictures/' . $filename;
+        $fullUrl = url($path);
 
         // Update user record
-        $user->profile_picture = $path;
+        $user->profile_picture = $fullUrl;
         $user->save();
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Profile picture updated successfully!', 'path' => asset($path)]);
+            return response()->json(['success' => true, 'message' => 'Profile picture updated successfully!', 'path' => $fullUrl]);
         }
 
         // Redirect back to profile page based on role
@@ -258,6 +275,8 @@ class ProfileController extends Controller
             return Redirect::route('admin.profile')->with('success', 'Profile picture updated successfully!');
         } elseif ($role === 'employee') {
             return Redirect::route('employee.profile')->with('success', 'Profile picture updated successfully!');
+        } elseif ($role === 'company') {
+            return Redirect::route('manager.profile')->with('success', 'Profile picture updated successfully!');
         } else {
             return Redirect::route('client.profile')->with('success', 'Profile picture updated successfully!');
         }
@@ -266,7 +285,7 @@ class ProfileController extends Controller
     /**
      * Upload or update cover photo
      */
-    public function uploadCoverPhoto(Request $request): RedirectResponse
+    public function uploadCoverPhoto(Request $request)
     {
         $request->validate([
             'cover_photo' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
@@ -311,6 +330,8 @@ class ProfileController extends Controller
             return Redirect::route('admin.profile')->with('success', 'Cover photo updated successfully!');
         } elseif ($role === 'employee') {
             return Redirect::route('employee.profile')->with('success', 'Cover photo updated successfully!');
+        } elseif ($role === 'company') {
+            return Redirect::route('manager.profile')->with('success', 'Cover photo updated successfully!');
         } else {
             return Redirect::route('client.profile')->with('success', 'Cover photo updated successfully!');
         }

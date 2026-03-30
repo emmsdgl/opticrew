@@ -187,11 +187,16 @@
     window.showPasswordConfirmDialog = function(title, message, confirmText, cancelText) {
         return new Promise((resolve, reject) => {
             window.__passwordConfirmReject = reject;
+            window.__pcvState = '';
             window.__passwordConfirmSubmit = function() {
                 const input = document.getElementById('global-password-confirm-input');
                 const password = input ? input.value : '';
                 if (!password) {
                     window.dispatchEvent(new CustomEvent('password-confirm-error', { detail: { error: 'Please enter your password.' } }));
+                    return;
+                }
+                if (window.__pcvState === 'invalid') {
+                    window.dispatchEvent(new CustomEvent('password-confirm-error', { detail: { error: 'Incorrect password.' } }));
                     return;
                 }
                 resolve(password);
@@ -202,4 +207,92 @@
             }));
         });
     };
+
+    // ── Real-time Password Validation for Password Confirm Dialog ──
+    (function() {
+        var pcvTimer = null;
+        var prevPcv = '';
+        var adminUserId = @json(auth()->id());
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+        function setPcvMsg(type, text) {
+            var el = document.getElementById('password-confirm-validation');
+            if (!el) return;
+            if (!text) { el.style.display = 'none'; el.innerHTML = ''; return; }
+            var colors = { loading: 'text-gray-400', valid: 'text-green-600', invalid: 'text-red-500' };
+            var icons = { loading: '<i class="fa-solid fa-spinner fa-spin"></i>', valid: '<i class="fa-solid fa-circle-check"></i>', invalid: '<i class="fa-solid fa-circle-xmark"></i>' };
+            el.className = 'mt-1.5 text-[11px] h-4 flex items-center gap-1 ' + (colors[type] || '');
+            el.innerHTML = (icons[type] || '') + '<span>' + text + '</span>';
+            el.style.display = 'flex';
+        }
+
+        function checkAdminPassword() {
+            var input = document.getElementById('global-password-confirm-input');
+            if (!input) return;
+            var pw = input.value;
+            if (!pw) { setPcvMsg(null, ''); window.__pcvState = ''; prevPcv = ''; updateInputStyle(input, ''); return; }
+            if (pw === prevPcv) return;
+            prevPcv = pw;
+            setPcvMsg('loading', 'Verifying...');
+            window.__pcvState = 'checking';
+            updateInputStyle(input, '');
+
+            fetch('{{ route("auth.validate-login") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: JSON.stringify({ user_id: adminUserId, login: '', password: pw })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (!input || input.value !== pw) return;
+                if (d.password_checked) {
+                    if (d.password_valid) {
+                        setPcvMsg('valid', 'Password verified');
+                        window.__pcvState = 'valid';
+                        updateInputStyle(input, 'valid');
+                    } else {
+                        setPcvMsg('invalid', 'Incorrect password');
+                        window.__pcvState = 'invalid';
+                        updateInputStyle(input, 'invalid');
+                    }
+                }
+            })
+            .catch(function() { setPcvMsg(null, ''); window.__pcvState = ''; updateInputStyle(input, ''); });
+        }
+
+        function updateInputStyle(input, state) {
+            input.style.borderColor = '';
+            if (state === 'valid') input.style.borderColor = '#22c55e';
+            else if (state === 'invalid') input.style.borderColor = '#ef4444';
+        }
+
+        document.addEventListener('input', function(e) {
+            if (e.target && e.target.id === 'global-password-confirm-input') {
+                window.__pcvState = '';
+                prevPcv = '';
+                updateInputStyle(e.target, '');
+                setPcvMsg(null, '');
+                clearTimeout(pcvTimer);
+                if (e.target.value) {
+                    pcvTimer = setTimeout(checkAdminPassword, 400);
+                }
+            }
+        });
+
+        // Reset state when dialog opens
+        window.addEventListener('show-password-confirm-dialog', function() {
+            prevPcv = '';
+            window.__pcvState = '';
+            setPcvMsg(null, '');
+            clearTimeout(pcvTimer);
+        });
+
+        // Reset state when dialog closes
+        window.addEventListener('close-password-confirm', function() {
+            prevPcv = '';
+            window.__pcvState = '';
+            setPcvMsg(null, '');
+            clearTimeout(pcvTimer);
+        });
+    })();
 </script>

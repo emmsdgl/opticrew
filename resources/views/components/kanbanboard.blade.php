@@ -83,19 +83,11 @@
                                                                  :title="member.name"
                                                                  class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm flex-shrink-0">
 
-                                                            <div x-show="!member.picture"
-                                                                 class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-sm relative overflow-hidden flex-shrink-0"
+                                                            <img x-show="!member.picture"
+                                                                 src="{{ asset('images/default-avatar.jpg') }}"
                                                                  :title="member.name"
-                                                                 x-data="{
-                                                                     getInitials(name) {
-                                                                         if (!name) return '??';
-                                                                         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                                                                     }
-                                                                 }">
-                                                                <span class="text-white text-[10px] font-semibold relative z-10 select-none leading-none"
-                                                                      style="text-shadow: 0 1px 2px rgba(0,0,0,0.25);"
-                                                                      x-text="getInitials(member.name)"></span>
-                                                            </div>
+                                                                 class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm flex-shrink-0"
+                                                                 alt="Avatar">
 
                                                             <!-- Tooltip -->
                                                             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover/avatar:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">

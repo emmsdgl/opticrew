@@ -82,4 +82,14 @@ class User extends Authenticatable
         'tours_completed' => 'array',
     ];
 
+    /**
+     * Computed attribute: whether user has a linked Google account.
+     * Used by mobile app for the Google Link Banner notification.
+     */
+    protected $appends = ['google_linked'];
+
+    public function getGoogleLinkedAttribute(): bool
+    {
+        return !empty($this->google_id);
+    }
 }

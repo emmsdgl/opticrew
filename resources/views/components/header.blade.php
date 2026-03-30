@@ -112,16 +112,14 @@
                                     ? asset('storage/' . $profilePic)
                                     : asset($profilePic);
                             @endphp
-                            <img src="{{ $profileUrl }}?v={{ time() }}" alt="User"
+                            <img id="global-header-profile-img" src="{{ $profileUrl }}?v={{ time() }}" alt="User"
                                 class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-gray-200 dark:ring-gray-700 items-center justify-center" style="display:none;">
-                                <span class="text-white font-bold text-xs md:text-[10px]">{{ $headerInitials }}</span>
-                            </div>
+                            <img id="global-header-profile-initials" src="{{ asset('images/default-avatar.jpg') }}" alt="User"
+                                class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="display:none;">
                         @else
-                            <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">
-                                <span class="text-white font-bold text-xs md:text-[10px]">{{ $headerInitials }}</span>
-                            </div>
+                            <img id="global-header-profile-img" src="{{ asset('images/default-avatar.jpg') }}" alt="User"
+                                class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700">
                         @endif
                     @else
                         <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 ring-2 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">
@@ -156,11 +154,12 @@
                                 <span class="ml-3">Profile</span>
                             </button>
                         @elseif(auth()->user()->role === 'company')
-                            <a href="{{ route('manager.profile') }}"
-                                class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <button type="button"
+                                onclick="window.dispatchEvent(new CustomEvent('open-profile-modal')); document.getElementById('profile-dropdown').classList.add('invisible','opacity-0','scale-95'); document.getElementById('profile-dropdown').classList.remove('opacity-100','scale-100');"
+                                class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                 <i class="fa-regular fa-user w-5 text-gray-500 dark:text-gray-400"></i>
                                 <span class="ml-3">Profile</span>
-                            </a>
+                            </button>
                         @else
                             <button type="button"
                                 onclick="window.dispatchEvent(new CustomEvent('open-profile-modal')); document.getElementById('profile-dropdown').classList.add('invisible','opacity-0','scale-95'); document.getElementById('profile-dropdown').classList.remove('opacity-100','scale-100');"
@@ -328,5 +327,17 @@ function notificationDropdown() {
         }
     };
 }
+
+// Update header profile picture in real-time after upload
+window.addEventListener('profile-picture-updated', function (e) {
+    const url = e.detail.url;
+    const img = document.getElementById('global-header-profile-img');
+    const initials = document.getElementById('global-header-profile-initials');
+    if (img) {
+        img.src = url + '?v=' + Date.now();
+        img.style.display = '';
+        if (initials) initials.style.display = 'none';
+    }
+});
 </script>
 @endonce

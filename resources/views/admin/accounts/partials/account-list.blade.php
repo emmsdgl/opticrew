@@ -33,9 +33,15 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                                    </div>
+                                    @php
+                                        $pic = $user->profile_picture;
+                                        $avatarUrl = $pic
+                                            ? (str_starts_with($pic, 'http') ? $pic : (str_starts_with($pic, 'profile_pictures/') ? asset('storage/'.$pic) : asset($pic)))
+                                            : asset('images/default-avatar.jpg');
+                                    @endphp
+                                    <img src="{{ $avatarUrl }}" alt="{{ $user->name }}"
+                                        class="h-10 w-10 rounded-full object-cover"
+                                        onerror="this.src='{{ asset('images/default-avatar.jpg') }}'">
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900 dark:text-white">
@@ -97,9 +103,9 @@
              data-email="{{ strtolower($user->email) }}">
             <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center">
-                    <div class="h-12 w-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-lg">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                    </div>
+                    <img src="{{ $avatarUrl ?? asset('images/default-avatar.jpg') }}" alt="{{ $user->name }}"
+                        class="h-12 w-12 rounded-full object-cover"
+                        onerror="this.src='{{ asset('images/default-avatar.jpg') }}'">
                     <div class="ml-3">
                         <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ $user->name }}</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400">@{{ $user->username }}</p>

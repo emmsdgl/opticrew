@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminAppointmentController;
 use App\Http\Controllers\Api\AdminFeedbackController;
+use App\Http\Controllers\Api\MobileForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,57 @@ use App\Http\Controllers\Api\AdminFeedbackController;
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 Route::post('/google-login', [AuthController::class, 'googleLogin'])->name('api.google-login');
 
+// Real-time login validation (for mobile app)
+Route::post('/validate-login', function (Request $request) {
+    $login = $request->input('login', '');
+    $password = $request->input('password', '');
+    $userId = $request->input('user_id');
+    $result = ['login_exists' => false, 'password_valid' => false, 'login_checked' => false, 'password_checked' => false, 'user_id' => null];
+
+    if (!$login && !$userId) {
+        return response()->json($result);
+    }
+
+    // Fast path: password-only check with cached user_id
+    if ($userId && $password) {
+        $user = \App\Models\User::find($userId);
+        if ($user) {
+            $result['login_exists'] = true;
+            $result['login_checked'] = true;
+            $result['user_id'] = $user->id;
+            $result['password_valid'] = \Illuminate\Support\Facades\Hash::check($password, $user->password ?? '');
+            $result['password_checked'] = true;
+        }
+        return response()->json($result);
+    }
+
+    // Find user by email, alternative_email, username, or name
+    $user = null;
+    if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+        $user = \App\Models\User::where('email', $login)->orWhere('alternative_email', $login)->first();
+    } else {
+        $user = \App\Models\User::where('username', $login)->orWhere('name', $login)->first();
+    }
+
+    $result['login_exists'] = $user !== null;
+    $result['login_checked'] = true;
+    $result['user_id'] = $user ? $user->id : null;
+
+    if ($user && $password) {
+        $result['password_valid'] = \Illuminate\Support\Facades\Hash::check($password, $user->password ?? '');
+        $result['password_checked'] = true;
+    }
+
+    return response()->json($result);
+});
+
+// Forgot Password (3FA - no authentication required)
+Route::prefix('forgot-password')->middleware('throttle:10,1')->group(function () {
+    Route::post('/request', [MobileForgotPasswordController::class, 'request']);
+    Route::post('/verify-otp', [MobileForgotPasswordController::class, 'verifyOtp']);
+    Route::post('/reset', [MobileForgotPasswordController::class, 'reset']);
+});
+
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     // Logout
@@ -47,6 +99,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Update profile
     Route::put('/user/profile', [AuthController::class, 'updateProfile'])->name('api.user.profile.update');
+
+    // Upload profile picture
+    Route::post('/user/profile-picture', [AuthController::class, 'updateProfilePicture'])->name('api.user.profile.picture');
 
     // Update password
     Route::post('/user/password', [AuthController::class, 'updatePassword'])->name('api.user.password.update');
@@ -272,6 +327,21 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
 */
 
 Route::prefix('company')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    // Workforce settings (advance booking days, etc.)
+    Route::get('/workforce-settings', function () {
+        // Keys match what the Admin saves via Workforce Configuration in the website.
+        // 'minimum_booking_notice_days' is the canonical key used by CompanySettingService.
+        $settings = \Illuminate\Support\Facades\DB::table('company_settings')
+            ->whereIn('key', ['minimum_booking_notice_days', 'overtime_threshold_hours', 'geofence_radius'])
+            ->pluck('value', 'key');
+
+        return response()->json([
+            'advance_booking_days' => (int) ($settings['minimum_booking_notice_days'] ?? 0),
+            'overtime_threshold_hours' => (int) ($settings['overtime_threshold_hours'] ?? 8),
+            'geofence_radius' => (int) ($settings['geofence_radius'] ?? 110),
+        ]);
+    })->name('api.company.workforce-settings');
+
     // Dashboard overview
     Route::get('/dashboard', [CompanyController::class, 'dashboard'])
         ->name('api.company.dashboard');

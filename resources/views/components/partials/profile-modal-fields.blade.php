@@ -127,12 +127,19 @@
                     <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Confirm Password</p>
                     <div class="relative">
                         <input :type="showConfirmPw ? 'text' : 'password'" x-model="form.new_password_confirmation" placeholder="Confirm new password"
-                            class="w-full text-sm font-normal text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                            class="w-full text-sm font-normal text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all"
+                            :class="form.new_password_confirmation && form.new_password ? (form.new_password === form.new_password_confirmation ? 'border-green-400 dark:border-green-500' : 'border-red-400 dark:border-red-500') : ''">
                         <button type="button" @click="showConfirmPw = !showConfirmPw" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                             <svg x-show="!showConfirmPw" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
                             <svg x-show="showConfirmPw" x-cloak xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
                         </button>
                     </div>
+                    <p x-show="form.new_password_confirmation && form.new_password" x-cloak
+                        class="mt-1 text-[10px] flex items-center gap-1 transition-colors"
+                        :class="form.new_password === form.new_password_confirmation ? 'text-green-500' : 'text-red-500'">
+                        <i class="fa-solid text-[8px]" :class="form.new_password === form.new_password_confirmation ? 'fa-check' : 'fa-xmark'"></i>
+                        <span x-text="form.new_password === form.new_password_confirmation ? 'Passwords match' : 'Passwords do not match'"></span>
+                    </p>
                 </div>
             </div>
             <x-material-ui.password-strength model="form.new_password" />

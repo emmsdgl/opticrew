@@ -181,6 +181,7 @@
                 this.showCurrentPw = false; this.showNewPw = false; this.showConfirmPw = false;
                 this.phoneError = ''; this.phoneDropOpen = false;
                 this.editing = false;
+                window.__pendingProfilePic = null;
                 window.dispatchEvent(new CustomEvent('profile-edit-toggled', { detail: { editing: false } }));
             },
 
@@ -204,6 +205,26 @@
                 this.saving = true;
 
                 try {
+                    // Upload photo first if one was selected
+                    if (window.__pendingProfilePic) {
+                        const fd = new FormData();
+                        fd.append('profile_picture', window.__pendingProfilePic.file);
+                        const picRes = await fetch(window.__pendingProfilePic.route, {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                            body: fd,
+                        });
+                        const picData = await picRes.json();
+                        if (picRes.ok && picData.success) {
+                            window.dispatchEvent(new CustomEvent('profile-picture-updated', { detail: { url: picData.path } }));
+                            window.__pendingProfilePic = null;
+                        } else {
+                            window.showErrorDialog('Upload Failed', picData.message || 'Failed to upload photo.');
+                            this.saving = false;
+                            return;
+                        }
+                    }
+
                     const res = await fetch('{{ route("employee.profile.update") }}', {
                         method: 'POST',
                         headers: {
@@ -217,11 +238,7 @@
                     const data = await res.json();
 
                     if (res.ok && data.success) {
-                        if (data.password_changed) {
-                            await window.showSuccessDialog('Password Changed', 'Your password has been changed. Please log in again.', 'OK');
-                            window.location.href = '{{ route("login") }}';
-                            return;
-                        }
+                        if (data.password_changed) { window.showSuccessDialog('Password Changed', 'Your password has been changed. Please log in again.', 'OK', '{{ route("login") }}'); return; }
                         this.editing = false;
                         this.original = { ...this.form };
                         this.form.current_password = '';

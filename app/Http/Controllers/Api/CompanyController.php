@@ -8,6 +8,7 @@ use App\Models\ContractedClient;
 use App\Models\Location;
 use App\Models\Task;
 use App\Models\Employee;
+use App\Models\OptimizationRun;
 use App\Models\OptimizationTeam;
 use App\Models\OptimizationTeamMember;
 use App\Models\CompanyChecklist;
@@ -133,78 +134,87 @@ class CompanyController extends Controller
      */
     public function getTasks(Request $request)
     {
-        $contractedClient = $this->getContractedClient($request);
+        try {
+            $contractedClient = $this->getContractedClient($request);
 
-        if (!$contractedClient) {
-            return response()->json([
-                'message' => 'No contracted client found for this user'
-            ], 404);
-        }
+            if (!$contractedClient) {
+                return response()->json([
+                    'message' => 'No contracted client found for this user'
+                ], 404);
+            }
 
-        $locationIds = $contractedClient->locations()->pluck('id');
+            $locationIds = $contractedClient->locations()->pluck('id');
 
-        $query = Task::whereIn('location_id', $locationIds)
-            ->with(['location:id,location_name,location_type', 'optimizationTeam.members.employee.user:id,name', 'review:id,task_id']);
+            $query = Task::whereIn('location_id', $locationIds)
+                ->with(['location', 'optimizationTeam.members.employee.user', 'review']);
 
-        // Filter by date
-        if ($request->has('date')) {
-            $query->whereDate('scheduled_date', $request->date);
-        } elseif ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('scheduled_date', [$request->start_date, $request->end_date]);
-        }
+            // Filter by date
+            if ($request->has('date')) {
+                $query->whereDate('scheduled_date', $request->date);
+            } elseif ($request->has('start_date') && $request->has('end_date')) {
+                $query->whereBetween('scheduled_date', [$request->start_date, $request->end_date]);
+            }
 
-        // Filter by status
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
+            // Filter by status
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
 
-        // Filter by location
-        if ($request->has('location_id')) {
-            $query->where('location_id', $request->location_id);
-        }
+            // Filter by location
+            if ($request->has('location_id')) {
+                $query->where('location_id', $request->location_id);
+            }
 
-        $tasks = $query->orderBy('scheduled_date', 'desc')
-            ->orderBy('scheduled_time', 'asc')
-            ->get()
-            ->map(function ($task) {
-                // Get assigned employees
-                $employees = [];
-                if ($task->optimizationTeam && $task->optimizationTeam->members) {
-                    foreach ($task->optimizationTeam->members as $member) {
-                        if ($member->employee && $member->employee->user) {
-                            $employees[] = [
-                                'id' => $member->employee->id,
-                                'name' => $member->employee->user->name,
-                            ];
+            $tasks = $query->orderBy('scheduled_date', 'desc')
+                ->orderBy('scheduled_time', 'asc')
+                ->get()
+                ->map(function ($task) {
+                    // Get assigned employees
+                    $employees = [];
+                    if ($task->optimizationTeam && $task->optimizationTeam->members) {
+                        foreach ($task->optimizationTeam->members as $member) {
+                            if ($member->employee && $member->employee->user) {
+                                $employees[] = [
+                                    'id' => $member->employee->id,
+                                    'name' => $member->employee->user->name,
+                                ];
+                            }
                         }
                     }
-                }
 
-                return [
-                    'id' => $task->id,
-                    'location_id' => $task->location_id,
-                    'location_name' => $task->location->location_name ?? 'Unknown',
-                    'location_type' => $task->location->location_type ?? null,
-                    'task_description' => $task->task_description,
-                    'scheduled_date' => $task->scheduled_date->format('Y-m-d'),
-                    'scheduled_time' => $task->scheduled_time,
-                    'status' => $task->status,
-                    'rate_type' => $task->rate_type,
-                    'estimated_duration' => $task->estimated_duration_minutes ?? $task->duration,
-                    'arrival_status' => $task->arrival_status,
-                    'started_at' => $task->started_at?->format('H:i'),
-                    'completed_at' => $task->completed_at?->format('H:i'),
-                    'on_hold_reason' => $task->on_hold_reason,
-                    'assigned_employees' => $employees,
-                    'employee_count' => count($employees),
-                    'has_review' => $task->review !== null,
-                ];
-            });
+                    return [
+                        'id' => $task->id,
+                        'location_id' => $task->location_id,
+                        'location_name' => $task->location->location_name ?? 'Unknown',
+                        'location_type' => $task->location->location_type ?? null,
+                        'task_description' => $task->task_description,
+                        'scheduled_date' => $task->scheduled_date?->format('Y-m-d'),
+                        'scheduled_time' => $task->scheduled_time,
+                        'status' => $task->status,
+                        'rate_type' => $task->rate_type,
+                        'estimated_duration' => $task->estimated_duration_minutes ?? $task->duration,
+                        'arrival_status' => $task->arrival_status,
+                        'started_at' => $task->started_at?->format('H:i'),
+                        'completed_at' => $task->completed_at?->format('H:i'),
+                        'on_hold_reason' => $task->on_hold_reason,
+                        'assigned_employees' => $employees,
+                        'employee_count' => count($employees),
+                        'has_review' => $task->review !== null,
+                    ];
+                });
 
-        return response()->json([
-            'tasks' => $tasks,
-            'count' => $tasks->count(),
-        ]);
+            return response()->json([
+                'tasks' => $tasks,
+                'count' => $tasks->count(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('getTasks error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return response()->json(['message' => 'Failed to load tasks. Please try again.'], 500);
+        }
     }
 
     /**
@@ -523,27 +533,41 @@ class CompanyController extends Controller
             }
         } elseif ($request->has('employee_ids') && !empty($request->employee_ids)) {
             // ✅ MANUAL ASSIGN: Use provided employee IDs
+            // optimization_teams requires optimization_run_id (NOT NULL FK), team_index, and service_date.
+            // Create a minimal "manual" run record to satisfy the constraint.
+            $employeeCount = count($request->employee_ids);
+            $run = OptimizationRun::create([
+                'service_date'          => $request->scheduled_date,
+                'triggered_by_task_id'  => $task->id,
+                'status'                => 'completed',
+                'total_tasks'           => 1,
+                'total_teams'           => 1,
+                'total_employees'       => $employeeCount,
+            ]);
+
             $team = OptimizationTeam::create([
-                'optimization_run_id' => null,
-                'car_id' => null,
+                'optimization_run_id' => $run->id,
+                'team_index'          => 1,
+                'service_date'        => $request->scheduled_date,
+                'car_id'              => null,
             ]);
 
             foreach ($request->employee_ids as $employeeId) {
                 OptimizationTeamMember::create([
                     'optimization_team_id' => $team->id,
-                    'employee_id' => $employeeId,
+                    'employee_id'          => $employeeId,
                 ]);
 
                 $employee = Employee::with('user:id,name')->find($employeeId);
                 if ($employee && $employee->user) {
                     $assignedEmployees[] = [
-                        'id' => $employee->id,
+                        'id'   => $employee->id,
                         'name' => $employee->user->name,
                     ];
                 }
             }
 
-            $task->update(['assigned_team_id' => $team->id]);
+            $task->update(['assigned_team_id' => $team->id, 'status' => 'Scheduled']);
         }
 
         return response()->json([

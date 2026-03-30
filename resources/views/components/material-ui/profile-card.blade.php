@@ -11,6 +11,7 @@
         $coverRoute = match($role) {
             'admin' => route('admin.profile.upload-cover', [], false),
             'employee' => route('employee.profile.upload-cover', [], false),
+            'company' => route('manager.profile.upload-cover', [], false),
             default => route('client.profile.upload-cover', [], false),
         };
     }
@@ -18,6 +19,7 @@
     $pictureRoute = match($user->role ?? 'client') {
         'admin' => route('admin.profile.upload-picture'),
         'employee' => route('employee.profile.upload-picture'),
+        'company' => route('manager.profile.upload-picture'),
         default => route('client.profile.upload-picture'),
     };
 
@@ -33,6 +35,7 @@
          coverPreview: '{{ $coverUrl }}',
          coverFile: null,
          picPreview: '{{ $picUrl }}',
+         originalPicPreview: '{{ $picUrl }}',
          picFile: null,
 
          handleCoverSelect(e) {
@@ -52,10 +55,12 @@
              const reader = new FileReader();
              reader.onload = (ev) => { this.picPreview = ev.target.result; };
              reader.readAsDataURL(file);
-             this.$nextTick(() => document.getElementById('{{ $picFormId }}').submit());
+             // Store for upload on Save Changes — do NOT auto-submit
+             window.__pendingProfilePic = { file, route: '{{ $pictureRoute }}' };
          },
      }"
-     @profile-edit-toggled.window="editing = $event.detail.editing">
+     @profile-edit-toggled.window="if (!$event.detail.editing) { picPreview = originalPicPreview; window.__pendingProfilePic = null; } editing = $event.detail.editing"
+     @profile-picture-updated.window="picPreview = $event.detail.url; originalPicPreview = $event.detail.url">
 
     {{-- Cover Photo --}}
     <div class="h-36 bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-500 relative overflow-hidden">
@@ -102,9 +107,7 @@
                             x-on:error="picPreview = ''">
                     </template>
                     <template x-if="!picPreview">
-                        <div class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                            <span class="text-white font-bold text-2xl">{{ $pcInitials }}</span>
-                        </div>
+                        <img src="{{ asset('images/default-avatar.jpg') }}" alt="Default Avatar" class="w-full h-full object-cover">
                     </template>
 
                     {{-- Avatar edit overlay --}}

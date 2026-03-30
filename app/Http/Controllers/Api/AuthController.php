@@ -16,6 +16,18 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
+     * Resolve a stored path (relative or absolute URL) to a full URL.
+     * The website stores cover_photo as a relative path (e.g. "uploads/cover_photos/file.jpg").
+     * The mobile app needs a full URL to render the image.
+     */
+    private function resolveUrl(?string $path): ?string
+    {
+        if (!$path) return null;
+        if (str_starts_with($path, 'http')) return $path;
+        return url($path);
+    }
+
+    /**
      * Login user and create token
      */
     public function login(Request $request)
@@ -82,7 +94,9 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'profile_picture' => $user->profile_picture,
+                'cover_photo' => $this->resolveUrl($user->cover_photo),
                 'employee_id' => $user->employee?->id,
+                'google_linked' => !empty($user->google_id),
             ],
         ]);
     }
@@ -191,7 +205,9 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'profile_picture' => $user->profile_picture,
+                'cover_photo' => $this->resolveUrl($user->cover_photo),
                 'employee_id' => $user->employee?->id,
+                'google_linked' => !empty($user->google_id),
             ],
         ]);
     }
@@ -226,7 +242,9 @@ class AuthController extends Controller
                 'phone' => $user->phone,
                 'location' => $user->location,
                 'profile_picture' => $user->profile_picture,
+                'cover_photo' => $this->resolveUrl($user->cover_photo),
                 'employee_id' => $user->employee?->id,
+                'google_linked' => !empty($user->google_id),
             ],
         ]);
     }
@@ -255,7 +273,49 @@ class AuthController extends Controller
                 'phone' => $user->phone,
                 'location' => $user->location,
                 'profile_picture' => $user->profile_picture,
+                'cover_photo' => $this->resolveUrl($user->cover_photo),
             ],
+        ]);
+    }
+
+    /**
+     * Upload or update profile picture (mobile)
+     */
+    public function updateProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+        ]);
+
+        $user = $request->user();
+
+        // Delete old picture if it's a locally stored file (not a Google/external URL)
+        if ($user->profile_picture && !str_starts_with($user->profile_picture, 'http')) {
+            $oldPath = public_path($user->profile_picture);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+
+        // Create uploads directory if it doesn't exist
+        $uploadDir = public_path('uploads/profile_pictures');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        // Generate unique filename and save the file
+        $file = $request->file('profile_picture');
+        $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $file->move($uploadDir, $filename);
+
+        // Store the full public URL so the mobile app can display it directly
+        $fullUrl = url('uploads/profile_pictures/' . $filename);
+        $user->profile_picture = $fullUrl;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile picture updated successfully.',
+            'profile_picture' => $fullUrl,
         ]);
     }
 
