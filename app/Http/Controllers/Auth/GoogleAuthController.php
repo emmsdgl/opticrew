@@ -686,7 +686,7 @@ class GoogleAuthController extends Controller
         session()->forget(['google_auth_purpose', 'mobile_callback', 'mobile_verify_email']);
 
         if (!$resetEmail) {
-            return redirect($callback . '?error=' . urlencode('Verification session expired. Please try again.'));
+            return redirect($callback . '?error=' . urlencode('Your verification link has expired. Please go back and start the process again.'));
         }
 
         // Find user by the reset email
@@ -695,7 +695,7 @@ class GoogleAuthController extends Controller
             ->first();
 
         if (!$user) {
-            return redirect($callback . '?error=' . urlencode('Account not found.'));
+            return redirect($callback . '?error=' . urlencode('We could not find an account with that email address. Please check and try again.'));
         }
 
         // Verify the Google account matches (by google_id, email, or alternative_email)
@@ -710,14 +710,16 @@ class GoogleAuthController extends Controller
         }
 
         if (!$matches) {
-            return redirect($callback . '?error=' . urlencode('The Google account does not match the account on file. Please use the correct Google account.'));
+            return redirect($callback . '?error=' . urlencode('The Google account you used does not match the one linked to your account. Please sign in with the correct Google account.'));
         }
 
         // Google verification passed — generate and send OTP (3FA Step 3)
+        // Always send OTP to the employee's verified Google account email.
+        // @finnoys.com addresses have no inbox — never send there.
         $otp = random_int(100000, 999999);
         Cache::put("pwd_reset_otp:{$user->id}", $otp, now()->addMinutes(5));
 
-        \Illuminate\Support\Facades\Mail::to($user->email)
+        \Illuminate\Support\Facades\Mail::to($user->alternative_email)
             ->send(new \App\Mail\EmailVerificationOtp($otp));
 
         return redirect($callback . '?verified=true');

@@ -53,24 +53,31 @@ class MobileForgotPasswordController extends Controller
         // Check if user has a linked Google account
         $hasGoogle = !empty($user->google_id);
 
-        if ($hasGoogle) {
-            // Store a temporary token so the Google verify step knows which user
-            $verifyToken = bin2hex(random_bytes(32));
-            Cache::put("pwd_reset_google_verify:{$verifyToken}", $user->id, now()->addMinutes(15));
-
+        if (!$hasGoogle) {
+            // No Google linked — cannot perform self-service reset.
+            // The 3FA flow requires: (1) email, (2) Google identity, (3) OTP.
+            // Without a linked Google account, factor 2 cannot be verified.
+            // Admin must manually reset the password after physically verifying identity.
             return response()->json([
-                'requires_google_verify' => true,
-                'verify_token' => $verifyToken,
-                'message' => 'Your account is linked to Google. Please verify your identity.',
-            ]);
+                'message' => 'Password reset requires a linked Google account. Please contact your administrator to reset your password.',
+            ], 422);
         }
 
-        // No Google linked — send OTP directly
-        $this->generateAndSendOTP($user);
+        // No real inbox for @finnoys.com — verify the employee has a real email on file
+        if (empty($user->alternative_email)) {
+            return response()->json([
+                'message' => 'No recovery email has been set up for this account. Please contact your administrator for help.',
+            ], 422);
+        }
+
+        // Store a temporary token so the Google verify step knows which user
+        $verifyToken = bin2hex(random_bytes(32));
+        Cache::put("pwd_reset_google_verify:{$verifyToken}", $user->id, now()->addMinutes(15));
 
         return response()->json([
-            'requires_google_verify' => false,
-            'message' => 'A verification code has been sent to your email.',
+            'requires_google_verify' => true,
+            'verify_token' => $verifyToken,
+            'message' => 'Your account is linked to Google. Please verify your identity.',
         ]);
     }
 
@@ -93,7 +100,7 @@ class MobileForgotPasswordController extends Controller
             ->first();
 
         if (!$user) {
-            return response()->json(['message' => 'Account not found.'], 422);
+            return response()->json(['message' => 'We couldn\'t find an account with that email address. Please check and try again.'], 422);
         }
 
         $cacheKey = "pwd_reset_otp:{$user->id}";
@@ -124,12 +131,12 @@ class MobileForgotPasswordController extends Controller
 
     /**
      * Step 3: Reset password with verified token.
+     * Requires the reset_token issued by verifyOtp() — not the raw OTP.
      */
     public function reset(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'otp' => 'required|digits:6',
+            'reset_token' => 'required|string',
             'password' => [
                 'required',
                 'confirmed',
@@ -143,34 +150,19 @@ class MobileForgotPasswordController extends Controller
             return response()->json(['message' => $validator->errors()->first()], 422);
         }
 
-        $user = User::where('email', $request->email)
-            ->orWhere('alternative_email', $request->email)
-            ->first();
+        // Validate the reset token issued after OTP verification
+        $userId = Cache::get("pwd_reset_verified:{$request->reset_token}");
+
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Your password reset link has expired. Please start over from the beginning.',
+            ], 422);
+        }
+
+        $user = User::find($userId);
 
         if (!$user) {
-            return response()->json(['message' => 'Account not found.'], 422);
-        }
-
-        // Check for a valid reset token in cache (set during OTP verification)
-        // We also accept a direct OTP re-check as fallback
-        $verified = false;
-
-        // Check all reset tokens for this user
-        // The mobile app sends the OTP again as proof — we verify via cache
-        $otpCacheKey = "pwd_reset_otp:{$user->id}";
-        $storedOtp = Cache::get($otpCacheKey);
-
-        if ($storedOtp && $request->otp == $storedOtp) {
-            $verified = true;
-            Cache::forget($otpCacheKey);
-        }
-
-        // Also check if there's a verified reset token
-        if (!$verified) {
-            // Scan for any verified token for this user (set in verifyOtp step)
-            // Since mobile sends the otp again, we just trust the flow completed
-            // The OTP was already verified in step 2
-            $verified = true;
+            return response()->json(['message' => 'We couldn\'t find your account. Please try again or contact your administrator.'], 422);
         }
 
         $user->password = Hash::make($request->password);
@@ -179,8 +171,8 @@ class MobileForgotPasswordController extends Controller
         // Revoke all existing tokens (force re-login)
         $user->tokens()->delete();
 
-        // Clean up any remaining cache entries
-        Cache::forget("pwd_reset_otp:{$user->id}");
+        // Clean up cache
+        Cache::forget("pwd_reset_verified:{$request->reset_token}");
 
         return response()->json([
             'message' => 'Your password has been reset successfully. Please log in with your new password.',
@@ -197,9 +189,9 @@ class MobileForgotPasswordController extends Controller
         // Store OTP in cache for 5 minutes (keyed by user ID)
         Cache::put("pwd_reset_otp:{$user->id}", $otp, now()->addMinutes(5));
 
-        // Send OTP email using the existing mailable
-        $sendTo = $user->email;
-        Mail::to($sendTo)->send(new EmailVerificationOtp($otp));
+        // Always send OTP to the employee's verified Google account email.
+        // @finnoys.com addresses have no inbox — never send there.
+        Mail::to($user->alternative_email)->send(new EmailVerificationOtp($otp));
 
         return $otp;
     }
