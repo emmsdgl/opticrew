@@ -107,7 +107,7 @@
                             x-on:error="picPreview = ''">
                     </template>
                     <template x-if="!picPreview">
-                        <img src="{{ asset('images/default-avatar.svg') }}" alt="Default Avatar" class="w-full h-full object-cover">
+                        <img src="{{ asset('images/default-avatar.jpg') }}" alt="Default Avatar" class="w-full h-full object-cover">
                     </template>
 
                     {{-- Avatar edit overlay --}}

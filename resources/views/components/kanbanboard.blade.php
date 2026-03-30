@@ -84,7 +84,7 @@
                                                                  class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm flex-shrink-0">
 
                                                             <img x-show="!member.picture"
-                                                                 src="{{ asset('images/default-avatar.svg') }}"
+                                                                 src="{{ asset('images/default-avatar.jpg') }}"
                                                                  :title="member.name"
                                                                  class="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm flex-shrink-0"
                                                                  alt="Avatar">

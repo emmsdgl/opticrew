@@ -76,8 +76,8 @@
             
             <!-- Avatar -->
             <div id="profile-avatar" class="{{ $currentSize['avatar'] }} rounded-full bg-blue-100 dark:bg-blue-900/30 overflow-hidden shadow-xl relative">
-                <img src="{{ $avatar ?: asset('images/default-avatar.svg') }}" alt="{{ $name }}" class="w-full h-full object-cover"
-                    onerror="this.src='{{ asset('images/default-avatar.svg') }}'">
+                <img src="{{ $avatar ?: asset('images/default-avatar.jpg') }}" alt="{{ $name }}" class="w-full h-full object-cover"
+                    onerror="this.src='{{ asset('images/default-avatar.jpg') }}'">
             </div>
             
             <!-- Status Badge -->

@@ -71,9 +71,9 @@
                         @foreach(array_slice($teamMembers, 0, 3) as $index => $member)
                             <div class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800 bg-gray-300 dark:bg-gray-600 flex items-center justify-center overflow-hidden"
                                  title="{{ $member['name'] ?? '' }}">
-                                <img src="{{ isset($member['avatar']) && $member['avatar'] ? $member['avatar'] : asset('images/default-avatar.svg') }}"
+                                <img src="{{ isset($member['avatar']) && $member['avatar'] ? $member['avatar'] : asset('images/default-avatar.jpg') }}"
                                     alt="{{ $member['name'] ?? '' }}" class="w-full h-full object-cover"
-                                    onerror="this.src='{{ asset('images/default-avatar.svg') }}'">
+                                    onerror="this.src='{{ asset('images/default-avatar.jpg') }}'">
                             </div>
                         @endforeach
                         

@@ -115,10 +115,10 @@
                             <img id="global-header-profile-img" src="{{ $profileUrl }}?v={{ time() }}" alt="User"
                                 class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <img id="global-header-profile-initials" src="{{ asset('images/default-avatar.svg') }}" alt="User"
+                            <img id="global-header-profile-initials" src="{{ asset('images/default-avatar.jpg') }}" alt="User"
                                 class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="display:none;">
                         @else
-                            <img id="global-header-profile-img" src="{{ asset('images/default-avatar.svg') }}" alt="User"
+                            <img id="global-header-profile-img" src="{{ asset('images/default-avatar.jpg') }}" alt="User"
                                 class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700">
                         @endif
                     @else
