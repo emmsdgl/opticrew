@@ -329,14 +329,16 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
 Route::prefix('company')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // Workforce settings (advance booking days, etc.)
     Route::get('/workforce-settings', function () {
+        // Keys match what the Admin saves via Workforce Configuration in the website.
+        // 'minimum_booking_notice_days' is the canonical key used by CompanySettingService.
         $settings = \Illuminate\Support\Facades\DB::table('company_settings')
-            ->whereIn('key', ['advance_booking_days', 'max_hours_per_day', 'min_team_size'])
+            ->whereIn('key', ['minimum_booking_notice_days', 'overtime_threshold_hours', 'geofence_radius'])
             ->pluck('value', 'key');
 
         return response()->json([
-            'advance_booking_days' => (int) ($settings['advance_booking_days'] ?? 0),
-            'max_hours_per_day' => (int) ($settings['max_hours_per_day'] ?? 12),
-            'min_team_size' => (int) ($settings['min_team_size'] ?? 2),
+            'advance_booking_days' => (int) ($settings['minimum_booking_notice_days'] ?? 0),
+            'overtime_threshold_hours' => (int) ($settings['overtime_threshold_hours'] ?? 8),
+            'geofence_radius' => (int) ($settings['geofence_radius'] ?? 110),
         ]);
     })->name('api.company.workforce-settings');
 
