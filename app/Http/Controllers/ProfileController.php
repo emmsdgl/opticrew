@@ -258,6 +258,8 @@ class ProfileController extends Controller
             return Redirect::route('admin.profile')->with('success', 'Profile picture updated successfully!');
         } elseif ($role === 'employee') {
             return Redirect::route('employee.profile')->with('success', 'Profile picture updated successfully!');
+        } elseif ($role === 'company') {
+            return Redirect::route('manager.profile')->with('success', 'Profile picture updated successfully!');
         } else {
             return Redirect::route('client.profile')->with('success', 'Profile picture updated successfully!');
         }
@@ -311,6 +313,8 @@ class ProfileController extends Controller
             return Redirect::route('admin.profile')->with('success', 'Cover photo updated successfully!');
         } elseif ($role === 'employee') {
             return Redirect::route('employee.profile')->with('success', 'Cover photo updated successfully!');
+        } elseif ($role === 'company') {
+            return Redirect::route('manager.profile')->with('success', 'Cover photo updated successfully!');
         } else {
             return Redirect::route('client.profile')->with('success', 'Cover photo updated successfully!');
         }
