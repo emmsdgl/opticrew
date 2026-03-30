@@ -82,6 +82,7 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'profile_picture' => $user->profile_picture,
+                'cover_photo' => $user->cover_photo,
                 'employee_id' => $user->employee?->id,
                 'google_linked' => !empty($user->google_id),
             ],
@@ -192,6 +193,7 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'profile_picture' => $user->profile_picture,
+                'cover_photo' => $user->cover_photo,
                 'employee_id' => $user->employee?->id,
                 'google_linked' => !empty($user->google_id),
             ],
@@ -228,6 +230,7 @@ class AuthController extends Controller
                 'phone' => $user->phone,
                 'location' => $user->location,
                 'profile_picture' => $user->profile_picture,
+                'cover_photo' => $user->cover_photo,
                 'employee_id' => $user->employee?->id,
                 'google_linked' => !empty($user->google_id),
             ],
@@ -258,6 +261,7 @@ class AuthController extends Controller
                 'phone' => $user->phone,
                 'location' => $user->location,
                 'profile_picture' => $user->profile_picture,
+                'cover_photo' => $user->cover_photo,
             ],
         ]);
     }
