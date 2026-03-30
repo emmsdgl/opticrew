@@ -100,6 +100,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Update profile
     Route::put('/user/profile', [AuthController::class, 'updateProfile'])->name('api.user.profile.update');
 
+    // Upload profile picture
+    Route::post('/user/profile-picture', [AuthController::class, 'updateProfilePicture'])->name('api.user.profile.picture');
+
     // Update password
     Route::post('/user/password', [AuthController::class, 'updatePassword'])->name('api.user.password.update');
 

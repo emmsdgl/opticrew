@@ -8,6 +8,7 @@ use App\Models\ContractedClient;
 use App\Models\Location;
 use App\Models\Task;
 use App\Models\Employee;
+use App\Models\OptimizationRun;
 use App\Models\OptimizationTeam;
 use App\Models\OptimizationTeamMember;
 use App\Models\CompanyChecklist;
@@ -523,27 +524,41 @@ class CompanyController extends Controller
             }
         } elseif ($request->has('employee_ids') && !empty($request->employee_ids)) {
             // ✅ MANUAL ASSIGN: Use provided employee IDs
+            // optimization_teams requires optimization_run_id (NOT NULL FK), team_index, and service_date.
+            // Create a minimal "manual" run record to satisfy the constraint.
+            $employeeCount = count($request->employee_ids);
+            $run = OptimizationRun::create([
+                'service_date'          => $request->scheduled_date,
+                'triggered_by_task_id'  => $task->id,
+                'status'                => 'completed',
+                'total_tasks'           => 1,
+                'total_teams'           => 1,
+                'total_employees'       => $employeeCount,
+            ]);
+
             $team = OptimizationTeam::create([
-                'optimization_run_id' => null,
-                'car_id' => null,
+                'optimization_run_id' => $run->id,
+                'team_index'          => 1,
+                'service_date'        => $request->scheduled_date,
+                'car_id'              => null,
             ]);
 
             foreach ($request->employee_ids as $employeeId) {
                 OptimizationTeamMember::create([
                     'optimization_team_id' => $team->id,
-                    'employee_id' => $employeeId,
+                    'employee_id'          => $employeeId,
                 ]);
 
                 $employee = Employee::with('user:id,name')->find($employeeId);
                 if ($employee && $employee->user) {
                     $assignedEmployees[] = [
-                        'id' => $employee->id,
+                        'id'   => $employee->id,
                         'name' => $employee->user->name,
                     ];
                 }
             }
 
-            $task->update(['assigned_team_id' => $team->id]);
+            $task->update(['assigned_team_id' => $team->id, 'status' => 'Scheduled']);
         }
 
         return response()->json([

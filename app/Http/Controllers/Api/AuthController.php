@@ -263,6 +263,47 @@ class AuthController extends Controller
     }
 
     /**
+     * Upload or update profile picture (mobile)
+     */
+    public function updateProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+        ]);
+
+        $user = $request->user();
+
+        // Delete old picture if it's a locally stored file (not a Google/external URL)
+        if ($user->profile_picture && !str_starts_with($user->profile_picture, 'http')) {
+            $oldPath = public_path($user->profile_picture);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+
+        // Create uploads directory if it doesn't exist
+        $uploadDir = public_path('uploads/profile_pictures');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        // Generate unique filename and save the file
+        $file = $request->file('profile_picture');
+        $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $file->move($uploadDir, $filename);
+
+        // Store the full public URL so the mobile app can display it directly
+        $fullUrl = url('uploads/profile_pictures/' . $filename);
+        $user->profile_picture = $fullUrl;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile picture updated successfully.',
+            'profile_picture' => $fullUrl,
+        ]);
+    }
+
+    /**
      * Update user password
      */
     public function updatePassword(Request $request)
