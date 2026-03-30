@@ -333,6 +333,7 @@
                 if (response.ok && data.success) {
                     if (data.path) {
                         document.getElementById('profilePicturePreview').src = data.path;
+                        window.dispatchEvent(new CustomEvent('profile-picture-updated', { detail: { url: data.path } }));
                     }
                     fileInput.value = '';
                     window.showSuccessDialog('Picture Updated', data.message || 'Your profile picture has been updated successfully.');

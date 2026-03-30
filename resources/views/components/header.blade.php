@@ -112,10 +112,10 @@
                                     ? asset('storage/' . $profilePic)
                                     : asset($profilePic);
                             @endphp
-                            <img src="{{ $profileUrl }}?v={{ time() }}" alt="User"
+                            <img id="global-header-profile-img" src="{{ $profileUrl }}?v={{ time() }}" alt="User"
                                 class="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" style="aspect-ratio: 1/1;"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-gray-200 dark:ring-gray-700 items-center justify-center" style="display:none;">
+                            <div id="global-header-profile-initials" class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-gray-200 dark:ring-gray-700 items-center justify-center" style="display:none;">
                                 <span class="text-white font-bold text-xs md:text-[10px]">{{ $headerInitials }}</span>
                             </div>
                         @else
@@ -328,5 +328,17 @@ function notificationDropdown() {
         }
     };
 }
+
+// Update header profile picture in real-time after upload
+window.addEventListener('profile-picture-updated', function (e) {
+    const url = e.detail.url;
+    const img = document.getElementById('global-header-profile-img');
+    const initials = document.getElementById('global-header-profile-initials');
+    if (img) {
+        img.src = url + '?v=' + Date.now();
+        img.style.display = '';
+        if (initials) initials.style.display = 'none';
+    }
+});
 </script>
 @endonce

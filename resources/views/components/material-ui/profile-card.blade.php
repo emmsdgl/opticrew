@@ -55,7 +55,8 @@
              this.$nextTick(() => document.getElementById('{{ $picFormId }}').submit());
          },
      }"
-     @profile-edit-toggled.window="editing = $event.detail.editing">
+     @profile-edit-toggled.window="editing = $event.detail.editing"
+     @profile-picture-updated.window="picPreview = $event.detail.url">
 
     {{-- Cover Photo --}}
     <div class="h-36 bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-500 relative overflow-hidden">
