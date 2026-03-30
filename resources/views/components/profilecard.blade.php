@@ -23,10 +23,18 @@
 
     // Get user role for routing
     $userRole = auth()->user()->role;
-    $updateRoute = $userRole === 'admin' ? route('admin.profile.update') :
-                   ($userRole === 'employee' ? route('employee.profile.update') : route('client.profile.update'));
-    $uploadRoute = $userRole === 'admin' ? route('admin.profile.upload-picture') :
-                   ($userRole === 'employee' ? route('employee.profile.upload-picture') : route('client.profile.upload-picture'));
+    $updateRoute = match($userRole) {
+        'admin'    => route('admin.profile.update'),
+        'employee' => route('employee.profile.update'),
+        'company'  => route('manager.profile.update'),
+        default    => route('client.profile.update'),
+    };
+    $uploadRoute = match($userRole) {
+        'admin'    => route('admin.profile.upload-picture'),
+        'employee' => route('employee.profile.upload-picture'),
+        'company'  => route('manager.profile.upload-picture'),
+        default    => route('client.profile.upload-picture'),
+    };
 @endphp
 
 <div class="w-full {{ $currentSize['card'] }} mx-auto rounded-3xl transition-all duration-300 p-4"
