@@ -494,6 +494,19 @@ class ProfileController extends Controller
     }
 
     /**
+     * Check if the provided password matches the current user's password.
+     */
+    public function checkPassword(Request $request)
+    {
+        $password = $request->input('password', '');
+        if (!$password) {
+            return response()->json(['valid' => false]);
+        }
+        $valid = Hash::check($password, $request->user()->password);
+        return response()->json(['valid' => $valid]);
+    }
+
+    /**
      * Update password
      */
     public function updatePassword(Request $request)

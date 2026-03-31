@@ -34,6 +34,24 @@
                  x-data="{
                     showCurrent: false, showNew: false, showConfirm: false,
                     submittingPw: false,
+                    pwCheckStatus: '',
+                    pwCheckTimer: null,
+                    checkCurrentPassword() {
+                        clearTimeout(this.pwCheckTimer);
+                        if (!this.currentPassword) { this.pwCheckStatus = ''; return; }
+                        this.pwCheckStatus = 'checking';
+                        this.pwCheckTimer = setTimeout(async () => {
+                            try {
+                                const res = await fetch('{{ route("settings.check-password") }}', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                    body: JSON.stringify({ password: this.currentPassword })
+                                });
+                                const data = await res.json();
+                                this.pwCheckStatus = data.valid ? 'correct' : 'incorrect';
+                            } catch (e) { this.pwCheckStatus = ''; }
+                        }, 500);
+                    },
                     async submitPassword() {
                         if (!this.currentPassword || !this.newPassword || !this.confirmPassword) {
                             window.showErrorDialog('Missing Information', 'Please fill in all password fields.');
@@ -77,20 +95,25 @@
 
                 <div class="space-y-4">
                     {{-- Current Password --}}
-                    <div class="relative" x-ref="currentPwWrap">
-                        <x-material-ui.input-field
-                            label="Current Password"
-                            :type="'password'"
-                            model="currentPassword"
-                            icon="fi fi-rr-lock"
-                            placeholder="Enter current password"
-                            required
-                        />
-                        <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
-                            <i class="fa-solid fa-eye text-sm" x-show="!showCurrent"></i>
-                            <i class="fa-solid fa-eye-slash text-sm" x-show="showCurrent" style="display:none"></i>
-                        </button>
+                    <div>
+                        <div class="relative" x-ref="currentPwWrap" @input="checkCurrentPassword()">
+                            <x-material-ui.input-field
+                                label="Current Password"
+                                :type="'password'"
+                                model="currentPassword"
+                                icon="fi fi-rr-lock"
+                                placeholder="Enter current password"
+                                required
+                            />
+                            <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
+                                <i class="fa-solid fa-eye text-sm" x-show="!showCurrent"></i>
+                                <i class="fa-solid fa-eye-slash text-sm" x-show="showCurrent" style="display:none"></i>
+                            </button>
+                        </div>
+                        <p x-show="pwCheckStatus === 'checking'" x-cloak class="text-xs text-gray-400 mt-1"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Checking...</p>
+                        <p x-show="pwCheckStatus === 'correct'" x-cloak class="text-xs text-green-500 mt-1"><i class="fa-solid fa-check-circle mr-1"></i>Current password is correct</p>
+                        <p x-show="pwCheckStatus === 'incorrect'" x-cloak class="text-xs text-red-500 mt-1"><i class="fa-solid fa-times-circle mr-1"></i>Current password is incorrect</p>
                     </div>
 
                     {{-- New Password --}}
