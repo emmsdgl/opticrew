@@ -72,6 +72,7 @@
     <div class="flex flex-row justify-between items-center mb-4 w-full">
         <h2 class="text-base justify-start font-bold font-sans text-gray-800 dark:text-gray-100" x-text="monthYear"></h2>
         <div class="flex flex-row gap-6">
+            @if(auth()->user()->role !== 'admin')
             <div class="flex flex-row gap-3">
                 <button @click="saveSchedule()"
                     class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-full transition inline-flex items-center gap-2"
@@ -81,6 +82,7 @@
                     <span x-text="hasUnsavedSchedule ? 'Save Schedule' : 'No Unsaved Schedule'"></span>
                 </button>
             </div>
+            @endif
 
             <div class="flex flex-row items-center gap-2">
                 <button @click="prevMonth"
