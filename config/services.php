@@ -41,6 +41,12 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'sbert' => [
+        'driver'   => env('SBERT_DRIVER', 'local'),        // 'local' or 'huggingface'
+        'url'      => env('SBERT_API_URL', 'http://127.0.0.1:5050'),  // for local Flask API
+        'hf_token' => env('HUGGINGFACE_TOKEN'),             // for huggingface driver
+    ],
+
     'ocr_space' => [
         'api_key' => env('OCR_SPACE_API_KEY', ''),
     ],

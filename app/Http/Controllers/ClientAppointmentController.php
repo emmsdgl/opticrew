@@ -611,6 +611,26 @@ class ClientAppointmentController extends Controller
             ];
             $deepCleaningHourlyRate = 48.00;
 
+            // Hourly rates for other service types (VAT inclusive)
+            $hourlyRates = [
+                'Daily Cleaning'   => 35.00,
+                'Snowout Cleaning' => 55.00,
+                'General Cleaning' => 40.00,
+                'Hotel Cleaning'   => 42.00,
+            ];
+
+            // Estimated hours per unit size for hourly-based services
+            $standardCleaningEstimates = [
+                '20-50'   => 1.5,
+                '51-70'   => 2,
+                '71-90'   => 2.5,
+                '91-120'  => 3,
+                '121-140' => 3.5,
+                '141-160' => 4,
+                '161-180' => 4.5,
+                '181-220' => 5.5,
+            ];
+
             $isSunday = $request->is_sunday ?? false;
             $isHoliday = $request->is_holiday ?? false;
             $serviceType = $request->service_type;
@@ -639,6 +659,12 @@ class ClientAppointmentController extends Controller
                         $basePrice = $hours * $deepCleaningHourlyRate;
                         $ratePerUnit = ($isSunday || $isHoliday) ? ($basePrice * 2) : $basePrice;
                         $quotation += $ratePerUnit;
+                    } else if (isset($hourlyRates[$serviceType])) {
+                        // Daily, Snowout, General, Hotel — hourly-based
+                        $hours = $standardCleaningEstimates[$unitSize] ?? 0;
+                        $basePrice = $hours * $hourlyRates[$serviceType];
+                        $ratePerUnit = ($isSunday || $isHoliday) ? ($basePrice * 2) : $basePrice;
+                        $quotation += $ratePerUnit;
                     }
                 }
             } else {
@@ -652,6 +678,11 @@ class ClientAppointmentController extends Controller
                 } else if ($serviceType === 'Deep Cleaning') {
                     $hours = $deepCleaningEstimates[$unitSize] ?? 0;
                     $basePrice = $hours * $deepCleaningHourlyRate;
+                    $ratePerUnit = ($isSunday || $isHoliday) ? ($basePrice * 2) : $basePrice;
+                    $quotation = $request->units * $ratePerUnit;
+                } else if (isset($hourlyRates[$serviceType])) {
+                    $hours = $standardCleaningEstimates[$unitSize] ?? 0;
+                    $basePrice = $hours * $hourlyRates[$serviceType];
                     $ratePerUnit = ($isSunday || $isHoliday) ? ($basePrice * 2) : $basePrice;
                     $quotation = $request->units * $ratePerUnit;
                 }

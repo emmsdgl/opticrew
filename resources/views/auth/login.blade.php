@@ -445,7 +445,7 @@
                 </div>
             </div>
             <div class="p-4 border-t border-gray-200 dark:border-gray-700" x-data="{ alreadyAccepted: document.cookie.includes('finnoys_terms_accepted=1') }">
-                <button x-show="!alreadyAccepted" type="button" onclick="markTermsRead()" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
+                <button x-show="!alreadyAccepted" type="button" @click="markTermsRead(); alreadyAccepted = true;" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
                     I have read the Terms & Conditions
                 </button>
                 <button x-show="alreadyAccepted" x-cloak type="button" disabled class="w-full py-2.5 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-semibold rounded-full cursor-not-allowed">
@@ -486,7 +486,7 @@
                 </div>
             </div>
             <div class="p-4 border-t border-gray-200 dark:border-gray-700" x-data="{ alreadyAccepted: document.cookie.includes('finnoys_policy_accepted=1') }">
-                <button x-show="!alreadyAccepted" type="button" onclick="markPrivacyRead()" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
+                <button x-show="!alreadyAccepted" type="button" @click="markPrivacyRead(); alreadyAccepted = true;" class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
                     I have read the Privacy Policy
                 </button>
                 <button x-show="alreadyAccepted" x-cloak type="button" disabled class="w-full py-2.5 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-semibold rounded-full cursor-not-allowed">
@@ -575,11 +575,9 @@
                 }
             }
 
-            // Restore state on load
-            updateCheckboxState();
+            // Restore state on load — if both already accepted, enable Google button directly
             if (termsOpened && privacyOpened) {
-                googleCheckbox.checked = true;
-                updateGoogleBtn();
+                enableGoogleBtn();
             }
 
             termsLink.addEventListener('click', (e) => {
@@ -612,19 +610,36 @@
                 });
             }
 
+            // Enable the Google button directly (skip checkbox dependency)
+            function enableGoogleBtn() {
+                googleBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                googleBtn.classList.add('hover:bg-gray-50');
+                googleBtn.setAttribute('aria-disabled', 'false');
+            }
+
             // Called from "I have read" buttons in modals
             window.markTermsRead = function() {
                 termsOpened = true;
                 document.cookie = 'finnoys_terms_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
-                updateCheckboxState();
                 document.getElementById('terms-modal').style.display = 'none';
+                // Sync Alpine x-data so x-show directives update
+                const termsDiv = document.querySelector('#terms-label')?.closest('[x-data]');
+                if (termsDiv && termsDiv._x_dataStack) {
+                    termsDiv._x_dataStack[0].termsOpened = true;
+                }
+                if (termsOpened && privacyOpened) enableGoogleBtn();
                 if (window.showSuccessDialog) window.showSuccessDialog('Terms Accepted', 'You have read and accepted the Terms & Conditions.');
             };
             window.markPrivacyRead = function() {
                 privacyOpened = true;
                 document.cookie = 'finnoys_policy_accepted=1; path=/; max-age=' + (30 * 24 * 60 * 60);
-                updateCheckboxState();
                 document.getElementById('privacy-modal').style.display = 'none';
+                // Sync Alpine x-data so x-show directives update
+                const termsDiv = document.querySelector('#terms-label')?.closest('[x-data]');
+                if (termsDiv && termsDiv._x_dataStack) {
+                    termsDiv._x_dataStack[0].privacyOpened = true;
+                }
+                if (termsOpened && privacyOpened) enableGoogleBtn();
                 if (window.showSuccessDialog) window.showSuccessDialog('Privacy Policy Accepted', 'You have read and accepted the Privacy Policy.');
             };
 

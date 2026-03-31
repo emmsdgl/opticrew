@@ -707,12 +707,6 @@
                                                 <span class="text-sm font-medium text-gray-900 dark:text-white"
                                                     x-text="'€' + apt.pricing.subtotal"></span>
                                             </div>
-                                            <div
-                                                class="flex justify-between items-center py-2.5 border-b border-gray-100 dark:border-gray-700">
-                                                <span class="text-sm text-gray-500 dark:text-gray-400">VAT (24%)</span>
-                                                <span class="text-sm font-medium text-gray-900 dark:text-white"
-                                                    x-text="'€' + apt.pricing.vat"></span>
-                                            </div>
                                             <div class="flex justify-between items-center py-2.5">
                                                 <span
                                                     class="text-sm font-semibold text-gray-900 dark:text-white">Total</span>

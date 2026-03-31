@@ -378,7 +378,7 @@
                                         <h4
                                             class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                             <i class="fa-solid fa-file-lines text-gray-600 dark:text-gray-400"></i>
-                                            Resume / Documents
+                                            Resume
                                         </h4>
                                         {{-- Primary resume --}}
                                         <div
@@ -404,23 +404,6 @@
                                                 </a>
                                             </div>
                                         </div>
-                                        {{-- Additional documents (Cover Letter, etc.) --}}
-                                        <template x-for="(doc, idx) in (selectedApp.documents || [])" :key="idx">
-                                            <div class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between mt-2">
-                                                <div class="flex items-center gap-3">
-                                                    <i :class="doc.original_name?.endsWith('.pdf') ? 'fa-solid fa-file-pdf text-red-500 text-xl' : 'fa-solid fa-file-word text-blue-500 text-xl'"></i>
-                                                    <div>
-                                                        <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="doc.original_name"></p>
-                                                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="doc.label"></p>
-                                                    </div>
-                                                </div>
-                                                <a :href="'/storage/' + doc.path"
-                                                    class="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                                    title="Download" download>
-                                                    <i class="fa-solid fa-download"></i>
-                                                </a>
-                                            </div>
-                                        </template>
                                     </div>
 
                                     {{-- Scenario #5: Duplicate Applicant Alert --}}
@@ -2407,12 +2390,54 @@
                         });
                 },
 
-                viewJob(index) {
+                async viewJob(index) {
                     const job = this.jobPostings[index];
                     this.viewingJob = job;
-                    this.rankedApplicants = this.calculateRanking(job);
+                    this.rankedApplicants = this.calculateRankingFuzzy(job);
                     this.showJobDrawer = true;
                     document.body.style.overflow = 'hidden';
+
+                    // Log fuzzy ranking
+                    console.log('[Applicant Ranking - Fuzzy]', {
+                        job: job.title,
+                        method: 'fuzzy',
+                        applicants: this.rankedApplicants.map(function(a) {
+                            return { email: a.email, score: a.score, matchedSkills: a.matchedSkills };
+                        })
+                    });
+
+                    // Upgrade to SBERT ranking in background
+                    if (job.id) {
+                        try {
+                            const res = await fetch('/admin/job-postings/' + job.id + '/rank-applicants', {
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                            });
+                            const data = await res.json();
+                            if (data.ranked && this.viewingJob && this.viewingJob.id === job.id) {
+                                this.rankedApplicants = data.ranked.map(function(r) {
+                                    const app = allApps.find(function(a) { return a.id === r.application_id; });
+                                    if (!app) return null;
+                                    return Object.assign({}, app, {
+                                        score: r.score,
+                                        matchedSkills: (r.matches || []).map(function(m) { return m.required; }),
+                                        semanticMatches: r.matches || [],
+                                        rankingMethod: r.method || 'sbert'
+                                    });
+                                }).filter(Boolean);
+
+                                // Log SBERT ranking
+                                console.log('[Applicant Ranking - ' + (data.ranked[0]?.method || 'API') + ']', {
+                                    job: job.title,
+                                    method: data.ranked[0]?.method || 'unknown',
+                                    applicants: data.ranked.map(function(r) {
+                                        return { id: r.application_id, score: r.score, matches: r.matches };
+                                    })
+                                });
+                            }
+                        } catch (e) {
+                            console.warn('[Applicant Ranking] SBERT unavailable, using fuzzy fallback', e);
+                        }
+                    }
                 },
 
                 closeJobDrawer() {
@@ -2422,16 +2447,14 @@
                     document.body.style.overflow = 'auto';
                 },
 
-                calculateRanking(job) {
+                calculateRankingFuzzy(job) {
                     const jobSkills = (job.requiredSkills || []).map(s => s.toLowerCase().trim());
                     if (jobSkills.length === 0) {
-                        // No required skills — return applicants with 0% score
                         return allApps
                             .filter(a => a.job_title === job.title)
                             .map(a => ({ ...a, score: 0, matchedSkills: [] }));
                     }
 
-                    // Get applicants for this job title
                     const applicants = allApps.filter(a => a.job_title === job.title);
 
                     return applicants.map(a => {
@@ -2439,12 +2462,10 @@
                         const matched = [];
 
                         jobSkills.forEach(reqSkill => {
-                            // Check if any applicant skill contains the required skill or vice versa
                             const found = applicantSkills.some(aSkill =>
                                 aSkill.includes(reqSkill) || reqSkill.includes(aSkill)
                             );
                             if (found) {
-                                // Use the original casing from job posting
                                 const origIdx = jobSkills.indexOf(reqSkill);
                                 matched.push(job.requiredSkills[origIdx]);
                             }

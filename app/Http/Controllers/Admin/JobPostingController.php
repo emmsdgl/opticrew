@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\JobApplication;
 use App\Models\JobPosting;
+use App\Services\Embedding\EmbeddingService;
 use Illuminate\Http\Request;
 
 class JobPostingController extends Controller
@@ -211,5 +213,102 @@ class JobPostingController extends Controller
             'success' => true,
             'data' => $jobPostings
         ]);
+    }
+
+    /**
+     * Rank applicants for a job posting using SBERT semantic matching.
+     * Falls back to fuzzy substring matching if SBERT API is unavailable.
+     */
+    public function rankApplicants($id)
+    {
+        $job = JobPosting::findOrFail($id);
+        $requiredSkills = $job->required_skills ?? [];
+        $applications = JobApplication::where('job_title', $job->title)->get();
+
+        if (empty($requiredSkills) || $applications->isEmpty()) {
+            return response()->json([
+                'ranked' => $applications->map(fn($a) => [
+                    'application_id' => $a->id,
+                    'score' => 0,
+                    'matches' => [],
+                    'method' => 'none',
+                ])->toArray(),
+            ]);
+        }
+
+        $embeddingService = new EmbeddingService();
+        $useSbert = $embeddingService->isAvailable();
+
+        if ($useSbert) {
+            // Build applicants array for batch scoring
+            $applicantsData = [];
+            foreach ($applications as $app) {
+                $profile = is_string($app->applicant_profile)
+                    ? json_decode($app->applicant_profile, true)
+                    : ($app->applicant_profile ?? []);
+                $skills = array_filter(
+                    array_map('trim', explode(',', $profile['skills'] ?? '')),
+                    fn($s) => strlen($s) > 0
+                );
+                $applicantsData[] = [
+                    'id'     => $app->id,
+                    'skills' => array_values($skills),
+                ];
+            }
+
+            $results = $embeddingService->batchScore($requiredSkills, $applicantsData);
+
+            return response()->json([
+                'ranked' => array_map(fn($r) => [
+                    'application_id' => $r['id'],
+                    'score'          => $r['score'],
+                    'matches'        => $r['matches'] ?? [],
+                    'method'         => 'sbert',
+                ], $results),
+            ]);
+        }
+
+        // Fallback: fuzzy substring matching (current behavior)
+        $ranked = [];
+        foreach ($applications as $app) {
+            $profile = is_string($app->applicant_profile)
+                ? json_decode($app->applicant_profile, true)
+                : ($app->applicant_profile ?? []);
+            $applicantSkills = array_filter(
+                array_map('trim', explode(',', $profile['skills'] ?? '')),
+                fn($s) => strlen($s) > 0
+            );
+
+            $matched = [];
+            foreach ($requiredSkills as $reqSkill) {
+                $reqLower = strtolower($reqSkill);
+                foreach ($applicantSkills as $appSkill) {
+                    $appLower = strtolower($appSkill);
+                    if (str_contains($appLower, $reqLower) || str_contains($reqLower, $appLower)) {
+                        $matched[] = [
+                            'required'   => $reqSkill,
+                            'matched'    => $appSkill,
+                            'similarity' => 1.0,
+                        ];
+                        break;
+                    }
+                }
+            }
+
+            $score = count($requiredSkills) > 0
+                ? (int) round((count($matched) / count($requiredSkills)) * 100)
+                : 0;
+
+            $ranked[] = [
+                'application_id' => $app->id,
+                'score'          => $score,
+                'matches'        => $matched,
+                'method'         => 'fuzzy',
+            ];
+        }
+
+        usort($ranked, fn($a, $b) => $b['score'] - $a['score']);
+
+        return response()->json(['ranked' => $ranked]);
     }
 }
