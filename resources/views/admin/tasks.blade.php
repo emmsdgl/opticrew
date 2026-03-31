@@ -27,7 +27,7 @@
             <!-- Templates Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <template x-for="template in templates" :key="template.id">
-                    <div class="relative bg-gray-800 dark:bg-gray-800 rounded-lg flex border-l-4 hover:bg-gray-750 dark:hover:bg-gray-750 transition-colors cursor-pointer h-16 group"
+                    <div class="relative bg-white dark:bg-gray-800 rounded-lg flex border-l-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors cursor-pointer h-16 group shadow-sm"
                          :style="'border-left-color: ' + template.color"
                          x-data="{ showTip: false }"
                          @mouseenter="showTip = true" @mouseleave="showTip = false">
@@ -70,14 +70,14 @@
                         <!-- Content -->
                         <div class="flex-1 flex items-center justify-between px-4 py-3">
                             <div>
-                                <h3 class="text-sm font-semibold text-white line-clamp-1" x-text="template.name"></h3>
-                                <p class="text-xs text-gray-400" x-text="template.itemCount + ' Items'"></p>
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1" x-text="template.name"></h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="template.itemCount + ' Items'"></p>
                             </div>
 
                             <!-- 3-dot Menu -->
                             <div class="relative" x-data="{ menuOpen: false }">
                                 <button @click.stop="menuOpen = !menuOpen"
-                                        class="p-1.5 text-gray-400 hover:text-white rounded transition-colors">
+                                        class="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded transition-colors">
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                 </button>
 
@@ -90,14 +90,14 @@
                                      x-transition:leave="transition ease-in duration-75"
                                      x-transition:leave-start="opacity-100 scale-100"
                                      x-transition:leave-end="opacity-0 scale-95"
-                                     class="absolute right-0 top-full mt-1 w-36 bg-gray-700 dark:bg-gray-700 rounded-lg shadow-lg border border-gray-600 dark:border-gray-600 z-50">
+                                     class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50">
                                     <button @click="editTemplate(template); menuOpen = false"
-                                            class="w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-gray-600 flex items-center gap-2">
+                                            class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2">
                                         <i class="fa-solid fa-pen text-xs"></i>
                                         Edit
                                     </button>
                                     <button @click="deleteTemplate(template.id); menuOpen = false"
-                                            class="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-600 flex items-center gap-2">
+                                            class="w-full px-4 py-2 text-left text-sm text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2">
                                         <i class="fa-solid fa-trash text-xs"></i>
                                         Delete
                                     </button>
@@ -109,7 +109,7 @@
 
                 <!-- Empty State -->
                 <div x-show="templates.length === 0"
-                     class="col-span-full p-8 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-600 rounded-lg">
+                     class="col-span-full p-8 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                     <i class="fa-solid fa-clipboard-list text-3xl mb-3 opacity-50"></i>
                     <p class="font-semibold">No checklist templates</p>
                     <p class="text-sm">Create templates to standardize task checklists.</p>
@@ -367,7 +367,7 @@
                     })->toArray();
                 @endphp
 
-                <div class="max-h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+                <div>
                     @if(count($todoTasksFormatted) > 0)
                         <x-employee-components.task-overview-list
                             :items="$todoTasksFormatted"
@@ -376,7 +376,7 @@
                             emptyTitle="No pending tasks"
                             emptyMessage="All tasks are either in progress or completed." />
                     @else
-                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                        <div class="p-8 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                             <i class="fas fa-check-circle text-3xl mb-3 opacity-50"></i>
                             <p class="font-semibold">No pending tasks</p>
                             <p class="text-sm">All tasks are either in progress or completed.</p>
@@ -415,7 +415,7 @@
                     })->toArray();
                 @endphp
 
-                <div class="max-h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+                <div>
                     @if(count($inProgressTasksFormatted) > 0)
                         <x-employee-components.task-overview-list
                             :items="$inProgressTasksFormatted"
@@ -424,7 +424,7 @@
                             emptyTitle="No tasks in progress"
                             emptyMessage="Start working on pending tasks to see them here." />
                     @else
-                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                        <div class="p-8 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                             <i class="fas fa-tasks text-4xl mb-3 opacity-50"></i>
                             <p class="font-semibold">No tasks in progress</p>
                             <p class="text-sm">Start working on pending tasks to see them here.</p>
@@ -463,7 +463,7 @@
                     })->toArray();
                 @endphp
 
-                <div class="max-h-96 overflow-y-auto border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
+                <div>
                     @if(count($completedTasksFormatted) > 0)
                         <x-employee-components.task-overview-list
                             :items="$completedTasksFormatted"
@@ -472,7 +472,7 @@
                             emptyTitle="No completed tasks"
                             emptyMessage="Completed tasks will appear here." />
                     @else
-                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                        <div class="p-8 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-400 dark:border-gray-700 rounded-lg">
                             <i class="fas fa-clipboard-check text-4xl mb-3 opacity-50"></i>
                             <p class="font-semibold">No completed tasks</p>
                             <p class="text-sm">Completed tasks will appear here.</p>

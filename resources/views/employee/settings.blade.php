@@ -214,11 +214,11 @@
                             const data = await res.json();
                             if (data.success) {
                                 window.showSuccessDialog('Password Updated', data.message);
-                                setTimeout(() => { window.location.href = data.redirect || '/'; }, 2000);
+                                setTimeout(() => { window.location.href = data.redirect || '{{ route("login") }}'; }, 1500);
                             } else {
                                 window.showErrorDialog('Update Failed', data.message || 'Failed to update password.');
                             }
-                        } catch (e) { window.showErrorDialog('Error', 'An error occurred. Please try again.'); }
+                        } catch (e) { window.location.href = '{{ route("login") }}'; return; }
                         finally { this.submittingPw = false; }
                     }
                 }">
