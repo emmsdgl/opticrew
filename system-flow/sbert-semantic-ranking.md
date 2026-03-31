@@ -2,6 +2,8 @@
 
 This document outlines the implementation plan for replacing the current fuzzy substring matching with Sentence-BERT (SBERT) semantic matching for ranking job applicants against job posting requirements.
 
+## In summary, we use the SBERT originally when matching the skills, however. Since the SBERT is slow in processing, the system falls back into fuzzy substring matching which matches the skills substring by substring.
+
 ---
 
 ## 1. Problem with Current Approach

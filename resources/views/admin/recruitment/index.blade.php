@@ -378,7 +378,7 @@
                                         <h4
                                             class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                             <i class="fa-solid fa-file-lines text-gray-600 dark:text-gray-400"></i>
-                                            Resume / Documents
+                                            Resume
                                         </h4>
                                         {{-- Primary resume --}}
                                         <div
@@ -404,23 +404,6 @@
                                                 </a>
                                             </div>
                                         </div>
-                                        {{-- Additional documents (Cover Letter, etc.) --}}
-                                        <template x-for="(doc, idx) in (selectedApp.documents || [])" :key="idx">
-                                            <div class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between mt-2">
-                                                <div class="flex items-center gap-3">
-                                                    <i :class="doc.original_name?.endsWith('.pdf') ? 'fa-solid fa-file-pdf text-red-500 text-xl' : 'fa-solid fa-file-word text-blue-500 text-xl'"></i>
-                                                    <div>
-                                                        <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="doc.original_name"></p>
-                                                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="doc.label"></p>
-                                                    </div>
-                                                </div>
-                                                <a :href="'/storage/' + doc.path"
-                                                    class="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                                    title="Download" download>
-                                                    <i class="fa-solid fa-download"></i>
-                                                </a>
-                                            </div>
-                                        </template>
                                     </div>
 
                                     {{-- Scenario #5: Duplicate Applicant Alert --}}

@@ -250,8 +250,8 @@
                 </a>
             </div>
 
-            <img id="web-screenshot" width="2432" height="1442" src="/images/backgrounds/large_screenshot.svg"
-                alt="Booking Page Screenshot"
+            <img id="web-screenshot" width="2432" height="1442" src="/images/backgrounds/large_screenshot.png"
+                alt="Client Dashboard Screenshot"
                 class="mt-16 w-[90%] md:w-[70%] lg:w-[60%] xl:w-[100%] max-w-7xl rounded-xl soft-glow mx-auto" />
             <div class="absolute hidden lg:block w-72 p-6 rounded-2xl shadow-xl frosted-card text-center"
                 style="top: 45%; left: -15%;">
