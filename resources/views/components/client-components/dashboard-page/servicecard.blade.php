@@ -72,6 +72,8 @@
                         {{ $service['rating'] }}
                     </span>
                 </div>
+            @else
+                <span class="text-xs font-medium text-gray-400 dark:text-gray-500 italic">New</span>
             @endif
         </div>
 
@@ -158,17 +160,24 @@
 
                 <!-- Rating (dynamic stars based on actual average) -->
                 <div class="flex items-center gap-1.5 mb-4">
-                    <div class="flex items-center gap-0.5">
-                        <template x-for="star in 5" :key="star">
-                            <i class="text-xs"
-                               :class="star <= Math.floor(parseFloat(serviceData.rating) || 0)
-                                   ? 'fa-solid fa-star text-yellow-400'
-                                   : star === Math.ceil(parseFloat(serviceData.rating) || 0) && (parseFloat(serviceData.rating) || 0) % 1 >= 0.25
-                                       ? 'fa-solid fa-star-half-stroke text-yellow-400'
-                                       : 'fa-regular fa-star text-gray-300 dark:text-gray-600'"></i>
-                        </template>
-                    </div>
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="serviceData.rating"></span>
+                    <template x-if="serviceData.rating">
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex items-center gap-0.5">
+                                <template x-for="star in 5" :key="star">
+                                    <i class="text-xs"
+                                       :class="star <= Math.floor(parseFloat(serviceData.rating) || 0)
+                                           ? 'fa-solid fa-star text-yellow-400'
+                                           : star === Math.ceil(parseFloat(serviceData.rating) || 0) && (parseFloat(serviceData.rating) || 0) % 1 >= 0.25
+                                               ? 'fa-solid fa-star-half-stroke text-yellow-400'
+                                               : 'fa-regular fa-star text-gray-300 dark:text-gray-600'"></i>
+                                </template>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="serviceData.rating"></span>
+                        </div>
+                    </template>
+                    <template x-if="!serviceData.rating">
+                        <span class="text-sm text-gray-400 dark:text-gray-500 italic">No ratings yet</span>
+                    </template>
                 </div>
 
                 <!-- Description -->

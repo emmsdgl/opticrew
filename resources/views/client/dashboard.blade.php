@@ -396,28 +396,44 @@
                         ];
 
                         $topRated = $topRatedServices ?? collect([]);
-                        $services = $topRated->take(3)->map(function ($svc) use ($serviceMeta) {
-                            $baseType = $svc->service_type;
-                            // Match base service type (e.g. "Final Cleaning - Demo Room" → "Final Cleaning")
-                            $matchedMeta = $serviceMeta[$baseType] ?? null;
-                            if (!$matchedMeta) {
-                                foreach ($serviceMeta as $key => $meta) {
-                                    if (str_starts_with($baseType, $key)) {
-                                        $matchedMeta = $meta;
-                                        break;
+
+                        if ($topRated->isNotEmpty()) {
+                            // Use top-rated services from feedback data
+                            $services = $topRated->take(3)->map(function ($svc) use ($serviceMeta) {
+                                $baseType = $svc->service_type;
+                                $matchedMeta = $serviceMeta[$baseType] ?? null;
+                                if (!$matchedMeta) {
+                                    foreach ($serviceMeta as $key => $meta) {
+                                        if (str_starts_with($baseType, $key)) {
+                                            $matchedMeta = $meta;
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            $matchedMeta = $matchedMeta ?? ['badge' => 'Service', 'price' => 'Contact Us', 'description' => 'Professional cleaning service tailored to your needs.'];
+                                $matchedMeta = $matchedMeta ?? ['badge' => 'Service', 'price' => 'Contact Us', 'description' => 'Professional cleaning service tailored to your needs.'];
 
-                            return [
-                                'title' => $svc->service_type,
-                                'badge' => $matchedMeta['badge'],
-                                'rating' => number_format($svc->avg_rating, 1),
-                                'price' => $matchedMeta['price'],
-                                'description' => $matchedMeta['description'],
-                            ];
-                        })->toArray();
+                                return [
+                                    'title' => $svc->service_type,
+                                    'badge' => $matchedMeta['badge'],
+                                    'rating' => number_format($svc->avg_rating, 1),
+                                    'price' => $matchedMeta['price'],
+                                    'description' => $matchedMeta['description'],
+                                ];
+                            })->toArray();
+                        } else {
+                            // No feedback yet — show default services with "Must Try" badge
+                            $defaultOrder = ['Final Cleaning', 'Deep Cleaning', 'Daily Room Cleaning'];
+                            $services = collect($defaultOrder)->map(function ($name) use ($serviceMeta) {
+                                $meta = $serviceMeta[$name];
+                                return [
+                                    'title' => $name,
+                                    'badge' => 'Must Try',
+                                    'rating' => null,
+                                    'price' => $meta['price'],
+                                    'description' => $meta['description'],
+                                ];
+                            })->toArray();
+                        }
                     @endphp
 
                     @foreach($services as $service)
