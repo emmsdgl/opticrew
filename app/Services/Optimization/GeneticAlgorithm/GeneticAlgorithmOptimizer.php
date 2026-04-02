@@ -157,6 +157,10 @@ class GeneticAlgorithmOptimizer
             $crossoverCount = 0; // Debug: track crossovers performed
             $improvementGenerations = []; // Debug: generations where fitness improved
 
+            Log::info("┌─────────────────────────────────────────────────────────────────");
+            Log::info("│ 🧬 GA EVOLUTION START | Client: {$clientId} | Tasks: {$clientTasks->count()} | Teams: {$teams->count()} | Pop: {$this->populationSize}");
+            Log::info("├─────────────────────────────────────────────────────────────────");
+
             for ($generation = 1; $generation <= $maxGenerations; $generation++) {
                 $population->evaluateFitness($this->fitnessCalculator, $teamEfficiencies, $clientTasks->count());
 
@@ -171,8 +175,17 @@ class GeneticAlgorithmOptimizer
                         'fitness' => round($bestFitness, 6),
                         'improvement' => round($bestFitness - $previousBest, 6),
                     ];
+
+                    // Debug: Print improvement to terminal
+                    $gain = round($bestFitness - $previousBest, 6);
+                    Log::info("│ Gen {$generation}/{$maxGenerations} | fitness: " . round($bestFitness, 6) . " ▲ +{$gain} | IMPROVED");
                 } else {
                     $generationsWithoutImprovement++;
+
+                    // Debug: Print stagnation every 10 generations to avoid noise
+                    if ($generation % 10 === 0) {
+                        Log::info("│ Gen {$generation}/{$maxGenerations} | fitness: " . round($bestFitness, 6) . " ── stagnant ({$generationsWithoutImprovement}/{$this->patience})");
+                    }
                 }
 
                 // Debug: log every generation's best fitness
@@ -184,12 +197,7 @@ class GeneticAlgorithmOptimizer
                 ];
 
                 if ($generationsWithoutImprovement >= $this->patience) {
-                    Log::info("⏹ Early stopping triggered", [
-                        'client_id' => $clientId,
-                        'generation' => $generation,
-                        'patience' => $this->patience,
-                        'best_fitness' => round($bestFitness, 6),
-                    ]);
+                    Log::info("│ Gen {$generation}/{$maxGenerations} | ⏹ EARLY STOP — no improvement for {$this->patience} generations");
                     break;
                 }
 
@@ -260,11 +268,38 @@ class GeneticAlgorithmOptimizer
                 ],
             ]);
 
+            // Terminal-friendly summary
+            $earlyStopped = $generationsWithoutImprovement >= $this->patience;
+            $stopReason = $earlyStopped ? "early stop (patience={$this->patience})" : "max generations reached";
+            $fitnessPercent = round($bestSchedule->getFitness() * 100, 2);
+            $initialFitness = $generationLog[0]['best_fitness'] ?? 0;
+            $fitnessGain = round($bestSchedule->getFitness() - $initialFitness, 6);
+
+            Log::info("├─────────────────────────────────────────────────────────────────");
+            Log::info("│ 🏁 RESULT | Generations: {$generation}/{$maxGenerations} ({$stopReason})");
+            Log::info("│    Fitness: " . round($bestSchedule->getFitness(), 6) . " ({$fitnessPercent}%) | Gain: +{$fitnessGain} from initial {$initialFitness}");
+            Log::info("│    Breakdown: base=" . $bestFitnessBreakdown['base_fitness']
+                . " × completion=" . $bestFitnessBreakdown['completion_multiplier']
+                . " × task_balance=" . $bestFitnessBreakdown['task_balance']);
+            Log::info("│    Workload σ=" . $bestFitnessBreakdown['workload_std_dev']
+                . " | Task σ=" . $bestFitnessBreakdown['task_std_dev']
+                . " | Assigned: " . $bestFitnessBreakdown['assigned_tasks'] . "/" . $bestFitnessBreakdown['total_tasks']);
+            Log::info("│    Operators: crossovers={$crossoverCount} mutations={$mutationCount} elitism={$elitismCount}");
+            Log::info("│    Improvements: " . count($improvementGenerations) . " across {$generation} generations");
+
+            // Per-team summary
+            foreach ($bestFitnessBreakdown['teams'] as $team) {
+                $flag = $team['over_12h'] ? ' ⚠ >12h' : '';
+                Log::info("│    Team {$team['team']}: {$team['tasks']} tasks | {$team['hours']}h | workload={$team['workload_min']}min | eff={$team['efficiency']}{$flag}");
+            }
+
+            Log::info("└─────────────────────────────────────────────────────────────────");
+
             Log::info("🧬 GA Optimization complete", [
                 'client_id' => $clientId,
+                'generations_to_solution' => $generation,
                 'final_fitness' => round($bestSchedule->getFitness(), 6),
-                'generations' => $generation,
-                'early_stopped' => $generationsWithoutImprovement >= $this->patience,
+                'early_stopped' => $earlyStopped,
                 'crossovers' => $crossoverCount,
                 'mutations' => $mutationCount,
                 'elitism_preservations' => $elitismCount,

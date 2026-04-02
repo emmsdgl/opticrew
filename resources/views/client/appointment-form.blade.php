@@ -553,171 +553,146 @@
         <div x-show="currentStep === 3" x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 transform translate-x-4"
             x-transition:enter-end="opacity-100 transform translate-x-0" x-cloak>
-            <div class="rounded-xl p-8 md:p-8">
-                <h2
-                    class="text-2xl font-sans font-bold italic w-full items-center text-center mb-2 mt-8 text-gray-900 dark:text-white">
-                    Review Your Appointment
-                </h2>
+            <div class="max-w-2xl mx-auto px-4 py-8">
 
-                <div class="px-48 pt-3 mt-6">
-                    <!-- Appointment Summary -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
-                        <!-- Client Details -->
-                        <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-6">Client Details</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400 mb-3">Name</div>
-                                    <div class="font-medium text-gray-900 dark:text-white"
-                                        x-text="(formData.first_name + ' ' + formData.last_name) || '-'"></div>
-                                </div>
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400 mb-3">Email</div>
-                                    <div class="font-medium text-gray-900 dark:text-white"
-                                        x-text="formData.email || '-'">
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400 mb-3">Mobile Number</div>
-                                    <div class="font-medium text-gray-900 dark:text-white"
-                                        x-text="(formData.country_code + ' ' + formData.mobile_number) || '-'"></div>
-                                </div>
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400 mb-3">Address</div>
-                                    <div class="font-medium text-gray-900 dark:text-white"
-                                        x-text="formData.street_address || '-'"></div>
-                                </div>
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400 mb-3">Region & City</div>
-                                    <div class="font-medium text-gray-900 dark:text-white"
-                                        x-text="[formData.postal_code, formData.city, formData.state].filter(Boolean).join(', ') || '-'"></div>
-                                </div>
-                                <div>
-                                    <div class="text-gray-500 dark:text-gray-400 mb-3">District</div>
-                                    <div class="font-medium text-gray-900 dark:text-white"
-                                        x-text="formData.district || '-'"></div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Header -->
+                <div class="mb-6">
+                    <p class="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Almost there!</p>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Review Your Appointment</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Please confirm the details below before submitting.</p>
+                </div>
 
-                        <!-- Appointment Details -->
-                        <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Appointment Details</h4>
-                            <div class="space-y-3 text-sm">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500 dark:text-gray-400">Service Type</span>
-                                    <span class="font-medium text-gray-900 dark:text-white"
-                                        x-text="formData.service_type || '-'"></span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500 dark:text-gray-400">Service Date</span>
-                                    <span class="font-medium text-gray-900 dark:text-white">
-                                        <span x-text="formData.service_date || '-'"></span>
-                                        <span x-show="formData.is_sunday && !formData.is_holiday" class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Sunday - 2x)</span>
-                                        <span x-show="formData.is_holiday && !formData.is_sunday" class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Holiday - 2x)</span>
-                                        <span x-show="formData.is_sunday && formData.is_holiday" class="ml-2 text-xs text-orange-600 dark:text-orange-400 font-semibold">(Sunday & Holiday - 2x)</span>
-                                        <span x-show="formData.is_priority" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Priority Clean</span>
-                                    </span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500 dark:text-gray-400">Service Time</span>
-                                    <span class="font-medium text-gray-900 dark:text-white"
-                                        x-text="formData.service_time || '-'"></span>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Reference Number -->
+                <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Reference number</p>
+                    <p class="text-sm font-bold text-blue-600 dark:text-blue-400" x-show="referencePreview" x-text="referencePreview"></p>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 italic" x-show="!referencePreview">Generating...</p>
+                </div>
 
-                        <!-- Unit Details -->
-                        <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Unit Details</h4>
-                            <div class="space-y-3">
-                                <template x-for="(unit, index) in unitData" :key="index">
-                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                        <div class="flex justify-between items-start mb-3">
-                                            <div className = "flex flex-col gap-1">
-                                                <div class="text-sm font-semibold text-gray-900 dark:text-white"
-                                                     x-text="unit.name || ('Unit ' + (index + 1))"></div>
-                                                <div class="text-sm text-gray-400 dark:text-gray-500" x-text="unit.size ? unit.size + ' m²' : ''"></div>
-                                            </div>
-                                            <div class="text-right">
-                                                <!-- Hourly Calculation (single line) -->
-                                                <div x-show="formData.service_type !== 'Final Cleaning'" class="text-xs text-gray-500 dark:text-gray-400">
-                                                    <span x-text="unit.hours || '0'"></span>h × €<span x-text="(() => { const rates = {'Deep Cleaning': deepCleaningHourlyRate, 'Daily Cleaning': dailyCleaningHourlyRate, 'Snowout Cleaning': snowoutCleaningHourlyRate, 'General Cleaning': generalCleaningHourlyRate, 'Hotel Cleaning': hotelCleaningHourlyRate}; return (rates[formData.service_type] || 0).toFixed(0); })()"></span><span x-show="formData.is_sunday || formData.is_holiday" class="text-orange-500 font-semibold"> × 2</span>
-                                                </div>
-                                                <!-- Price -->
-                                                <div class="text-base font-bold text-blue-600 dark:text-blue-400">
-                                                    €<span x-text="unit.price ? unit.price.toFixed(2) : '0.00'"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{-- <div class="grid grid-cols-2 gap-3 text-sm">
-                                            <div>
-                                                <span class="text-gray-600 dark:text-gray-400">Name:</span>
-                                                <span class="font-medium text-gray-900 dark:text-white ml-1" x-text="unit.name || '-'"></span>
-                                            </div>
-                                            <div>
-                                                <span class="text-gray-600 dark:text-gray-400">Size:</span>
-                                                <span class="font-medium text-gray-900 dark:text-white ml-1" x-text="unit.size ? unit.size + ' m²' : '-'"></span>
-                                            </div>
-                                        </div> --}}
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- Special Requests -->
-                        <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
-                            x-show="formData.special_requests">
-                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Special Requests
-                            </h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400" x-text="formData.special_requests"></p>
-                        </div>
-
-                        <!-- Pricing Notice -->
-                        <div class="mb-6 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                            <p class="text-xs text-yellow-800 dark:text-yellow-200">
-                                <i class="fi fi-rr-info mr-1"></i>
-                                Sundays and holidays will be charged double the price. All rates are inclusive of VAT and prices are subject to change.
-                            </p>
-                        </div>
-
-                        <!-- Total -->
-                        <div
-                            class="flex justify-between items-center pt-4 border-t-2 border-gray-300 dark:border-gray-700 mb-2">
-                            <div>
-                                <div class="text-lg font-bold text-gray-900 dark:text-white">Total Amount</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">VAT Inclusive</div>
-                            </div>
-                            <span class="text-2xl font-bold text-blue-600 dark:text-blue-400"
-                                x-text="quotation > 0 ? '€' + quotation.toFixed(2) : '-'"></span>
-                        </div>
-
-                        <div class="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-6 text-right">
-                            Payment Amount: <span x-text="quotation > 0 ? '€' + quotation.toFixed(2) : '-'"></span>
-                        </div>
-
-                        <!-- Confirm Button -->
-                        <button type="button"
-                            @click="window.showConfirmDialog('Confirm Appointment', 'Are you sure you want to submit this appointment? Please review all details before proceeding.', 'Submit', 'Review Again').then(() => submitForm()).catch(() => {})"
-                            :disabled="submitting"
-                            :class="{'opacity-50 cursor-not-allowed': submitting}"
-                            class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors">
-                            <span x-show="!submitting" class="text-sm">Confirm Appointment</span>
-                            <span x-show="submitting">Processing...</span>
-                        </button>
+                <!-- Service Info -->
+                <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white" x-text="formData.service_type || '-'"></h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <span x-text="formData.service_date || '-'"></span>
+                        <span class="mx-1">|</span>
+                        <span x-text="formData.service_time ? (() => { const [h,m] = formData.service_time.split(':'); const hr = +h > 12 ? +h-12 : (+h||12); return hr+':'+m+' '+(+h>=12?'PM':'AM'); })() : '-'"></span>
+                        <span class="text-gray-400 dark:text-gray-500" x-text="'(Estimated ' + (unitData.reduce((sum, u) => sum + (parseFloat(u.hours) || 0), 0)) + 'hr duration)'"></span>
+                    </p>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                        <span x-show="formData.is_sunday && !formData.is_holiday" class="text-sm text-orange-600 dark:text-orange-400 font-semibold">(Sunday - 2x rate)</span>
+                        <span x-show="formData.is_holiday && !formData.is_sunday" class="text-sm text-orange-600 dark:text-orange-400 font-semibold">(Holiday - 2x rate)</span>
+                        <span x-show="formData.is_sunday && formData.is_holiday" class="text-sm text-orange-600 dark:text-orange-400 font-semibold">(Sunday & Holiday - 2x rate)</span>
+                        <span x-show="formData.is_priority" class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Priority Clean</span>
                     </div>
 
-                    <!-- Navigation -->
-                    <div
-                        class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button type="button" @click="prevStep()" class="px-6 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full
-                        hover:bg-gray-300 transition-colors">
-                            <i class="fi fi-rr-angle-left mr-2"></i>Back
-                        </button>
+                    <!-- Unit list -->
+                    <div class="mt-4 space-y-2">
+                        <template x-for="(unit, index) in unitData" :key="index">
+                            <div class="flex justify-between items-center text-sm">
+                                <div>
+                                    <span class="font-medium text-gray-900 dark:text-white" x-text="unit.name || ('Unit ' + (index + 1))"></span>
+                                    <span class="text-gray-400 dark:text-gray-500 ml-1" x-text="unit.size ? '(' + unit.size + ' m²)' : ''"></span>
+                                </div>
+                                <div class="text-right">
+                                    <span x-show="formData.service_type !== 'Final Cleaning'" class="text-gray-400 dark:text-gray-500 mr-2">
+                                        <span x-text="unit.hours || '0'"></span>h × €<span x-text="(() => { const rates = {'Deep Cleaning': deepCleaningHourlyRate, 'Daily Cleaning': dailyCleaningHourlyRate, 'Snowout Cleaning': snowoutCleaningHourlyRate, 'General Cleaning': generalCleaningHourlyRate, 'Hotel Cleaning': hotelCleaningHourlyRate}; return (rates[formData.service_type] || 0).toFixed(0); })()"></span><span x-show="formData.is_sunday || formData.is_holiday" class="text-orange-500 font-semibold"> × 2</span>
+                                    </span>
+                                    <span class="font-bold text-gray-900 dark:text-white">€<span x-text="unit.price ? unit.price.toFixed(2) : '0.00'"></span></span>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
-            </div>
 
+                <!-- Client & Service Address (side by side) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <!-- Client Details -->
+                    <div>
+                        <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Client details</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="(formData.first_name + ' ' + formData.last_name) || '-'"></p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="formData.email || '-'"></p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="(formData.country_code + ' ' + formData.mobile_number) || '-'"></p>
+                    </div>
+
+                    <!-- Service Address -->
+                    <div>
+                        <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Service address</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="formData.state || '-'"></p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="formData.city || '-'"></p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="[formData.postal_code, formData.district].filter(Boolean).join(', ') || '-'"></p>
+                    </div>
+                </div>
+
+                <!-- Special Requests -->
+                <div x-show="formData.special_requests" class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Special requests</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400" x-text="formData.special_requests"></p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="mb-8">
+                    <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">Appointment status after submission</p>
+                    <div class="relative">
+                        <!-- Progress bar background -->
+                        <div class="h-1 bg-gray-200 dark:bg-gray-700 rounded-full">
+                            <div class="h-1 bg-blue-600 dark:bg-blue-500 rounded-full w-1/4"></div>
+                        </div>
+                        <!-- Step labels -->
+                        <div class="flex justify-between mt-2">
+                            <span class="text-sm font-semibold text-blue-600 dark:text-blue-400">To Submit</span>
+                            <span class="text-sm text-gray-400 dark:text-gray-500">Pending</span>
+                            <span class="text-sm text-gray-400 dark:text-gray-500">Approved</span>
+                            <span class="text-sm text-gray-400 dark:text-gray-500">Completed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Table (receipt-style) -->
+                <div class="bg-transparent dark:bg-gray-800/50 rounded-xl p-6 mb-6">
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500 dark:text-gray-400">Subtotal</span>
+                            <span class="text-gray-900 dark:text-white font-medium" x-text="quotation > 0 ? '€' + quotation.toFixed(2) : '-'"></span>
+                        </div>
+                        <div x-show="formData.is_sunday || formData.is_holiday" class="flex justify-between text-sm">
+                            <span class="text-gray-500 dark:text-gray-400">Rate multiplier</span>
+                            <span class="text-orange-600 dark:text-orange-400 font-medium">2x (Sunday/Holiday)</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500 dark:text-gray-400">VAT</span>
+                            <span class="text-gray-900 dark:text-white font-medium">Included</span>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between">
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">Total amount</span>
+                            <span class="text-sm font-bold text-blue-600 dark:text-blue-400" x-text="quotation > 0 ? '€' + quotation.toFixed(2) : '-'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Notice -->
+                <div class="mb-6 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <p class="text-xs text-yellow-800 dark:text-yellow-200">
+                        <i class="fi fi-rr-info mr-1"></i>
+                        Sundays and holidays will be charged double the price. All rates are inclusive of VAT and prices are subject to change.
+                    </p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3">
+                    <button type="button" @click="prevStep()"
+                        class="px-6 py-3 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors text-sm font-medium">
+                        <i class="fi fi-rr-angle-left mr-2"></i>Back
+                    </button>
+                    <button type="button"
+                        @click="window.showConfirmDialog('Confirm Appointment', 'Are you sure you want to submit this appointment? Please review all details before proceeding.', 'Submit', 'Review Again').then(() => submitForm()).catch(() => {})"
+                        :disabled="submitting"
+                        :class="{'opacity-50 cursor-not-allowed': submitting}"
+                        class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition-colors text-sm">
+                        <span x-show="!submitting">Confirm Appointment</span>
+                        <span x-show="submitting">Processing...</span>
+                    </button>
+                </div>
+            </div>
         </div>
 </x-layouts.general-stepper-form>
 
@@ -734,6 +709,7 @@
             districtOpen: false,
             districtSearch: '',
             quotation: 0,
+            referencePreview: '',
             dateNotice: '',        // 'blocked' = tomorrow (cannot book), 'priority' = 2 days (needs Priority Clean)
             dateNoticeMessage: '',
             postalLoading: false,
@@ -847,6 +823,7 @@
                 units: 1,                // Default to 1 unit
                 special_requests: ''
             },
+
 
             init() {
                 // Initialize filtered districts
@@ -1293,6 +1270,20 @@
                 }
             },
 
+            async fetchReferencePreview() {
+                this.referencePreview = '';
+                try {
+                    const response = await fetch('{{ route("client.appointment.reference-preview") }}?service_type=' + encodeURIComponent(this.formData.service_type), {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    const data = await response.json();
+                    this.referencePreview = data.reference_number || '-';
+                } catch (e) {
+                    console.error('Failed to fetch reference preview:', e);
+                    this.referencePreview = '-';
+                }
+            },
+
             async fetchBookedSlots() {
                 if (!this.formData.service_date) { this.bookedSlots = []; return; }
                 this.loadingSlots = true;
@@ -1512,6 +1503,11 @@
                     this.currentStep++;
                     this.updateStepperUI();
 
+                    // Fetch reference number preview when entering step 3
+                    if (this.currentStep === 3) {
+                        this.fetchReferencePreview();
+                    }
+
                     // Scroll to top when changing steps
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
@@ -1519,6 +1515,11 @@
 
             prevStep() {
                 if (this.currentStep > 1) {
+                    // Discard reference preview when leaving step 3
+                    if (this.currentStep === 3) {
+                        this.referencePreview = '';
+                    }
+
                     this.currentStep--;
                     this.updateStepperUI();
 
@@ -1568,7 +1569,8 @@
                         unit_size: firstUnit.size,  // From first unit (for backward compatibility)
                         room_identifier: firstUnit.name,  // From first unit (for backward compatibility)
                         unit_details: this.unitData,  // Send all unit details
-                        special_requests: this.formData.special_requests || ''
+                        special_requests: this.formData.special_requests || '',
+                        reference_number: this.referencePreview || ''
                     };
 
                     console.log('Submitting data:', submissionData);

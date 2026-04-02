@@ -11,6 +11,7 @@ class ClientAppointment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'reference_number',
         'client_id',
         'is_company_inquiry',
         'booking_type',
@@ -47,6 +48,36 @@ class ClientAppointment extends Model
     ];
 
     protected $appends = ['formatted_service_time'];
+
+    /**
+     * Get the service type initials for reference number generation.
+     */
+    public static function getServiceInitials(string $serviceType): string
+    {
+        $map = [
+            'Final Cleaning' => 'FC',
+            'Deep Cleaning' => 'DC',
+            'Daily Cleaning' => 'DLC',
+            'Snowout Cleaning' => 'SC',
+            'General Cleaning' => 'GC',
+            'Hotel Cleaning' => 'HC',
+        ];
+
+        return $map[$serviceType] ?? 'OC';
+    }
+
+    /**
+     * Generate a reference number: [ServiceInitials][Year]-[QueueNumber]
+     * Queue number = total appointments of that service type + 1
+     */
+    public static function generateReferenceNumber(string $serviceType, int $clientId): string
+    {
+        $initials = self::getServiceInitials($serviceType);
+        $year = date('Y');
+        $queueNumber = self::where('service_type', $serviceType)->count() + 1;
+
+        return $initials . $year . '-' . str_pad($queueNumber, 3, '0', STR_PAD_LEFT);
+    }
 
     protected $casts = [
         'service_date' => 'date',

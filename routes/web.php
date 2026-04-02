@@ -532,6 +532,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     // Client Appointment/Booking Routes
     Route::get('/client/book-service', [ClientAppointmentController::class, 'create'])->name('client.appointment.create');
     Route::get('/client/book-service/booked-slots', [ClientAppointmentController::class, 'bookedSlots'])->name('client.appointment.booked-slots');
+    Route::get('/client/book-service/reference-preview', [ClientAppointmentController::class, 'referencePreview'])->name('client.appointment.reference-preview');
     Route::post('/client/book-service', [ClientAppointmentController::class, 'store'])->name('client.appointment.store');
     Route::get('/client/appointments', [ClientAppointmentController::class, 'index'])->name('client.appointments');
     Route::post('/client/appointments/{id}/cancel', [ClientAppointmentController::class, 'cancel'])->name('client.appointment.cancel');

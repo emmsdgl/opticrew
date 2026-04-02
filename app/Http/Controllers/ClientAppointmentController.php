@@ -338,6 +338,22 @@ class ClientAppointmentController extends Controller
      * Takes into account the duration of existing bookings and the
      * estimated duration of the service being booked.
      */
+    public function referencePreview(Request $request)
+    {
+        $request->validate(['service_type' => 'required|string']);
+
+        $user = Auth::user();
+        $client = $user ? $user->client : null;
+
+        if (!$client) {
+            return response()->json(['reference_number' => '-']);
+        }
+
+        $ref = ClientAppointment::generateReferenceNumber($request->service_type, $client->id);
+
+        return response()->json(['reference_number' => $ref]);
+    }
+
     public function bookedSlots(Request $request)
     {
         $request->validate(['date' => 'required|date']);
@@ -702,7 +718,14 @@ class ClientAppointmentController extends Controller
             }
 
             // Create appointment (NOT task yet - waits for admin approval)
+            // Use the previewed reference number if provided; generate new one as fallback
+            $referenceNumber = $request->reference_number;
+            if (empty($referenceNumber) || ClientAppointment::where('reference_number', $referenceNumber)->exists()) {
+                $referenceNumber = ClientAppointment::generateReferenceNumber($request->service_type, $client->id);
+            }
+
             $appointment = ClientAppointment::create([
+                'reference_number' => $referenceNumber,
                 'client_id' => $client->id,
                 'booking_type' => $request->booking_type,
                 'service_type' => $request->service_type,
@@ -742,6 +765,7 @@ class ClientAppointmentController extends Controller
                 'success' => true,
                 'message' => 'Appointment request submitted successfully! Waiting for admin approval.',
                 'appointment_id' => $appointment->id,
+                'reference_number' => $appointment->reference_number,
                 'client_id' => $client->id,
                 'redirect_url' => route('client.dashboard')
             ]);
