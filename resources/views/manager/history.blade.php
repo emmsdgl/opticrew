@@ -113,11 +113,18 @@
                     </div>
                 </div>
             @empty
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-                    <div class="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-clock-rotate-left text-2xl text-gray-400"></i>
+                <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+                    <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                        <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                             alt="No service history"
+                             class="w-full h-full object-contain opacity-80 dark:opacity-60">
                     </div>
-                    <p class="text-gray-500 dark:text-gray-400">No service history yet</p>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                        No service history yet
+                    </h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                        Your service history will appear here.
+                    </p>
                 </div>
             @endforelse
         </div>

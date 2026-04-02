@@ -375,6 +375,9 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
 
         // Course Progress Reports
         Route::get('/course-progress', [ReportController::class, 'courseProgress'])->name('course-progress');
+
+        // Attendance Summary Report
+        Route::get('/attendance', [ReportController::class, 'attendanceSummary'])->name('attendance');
     });
 
     // --- ADMIN ACCOUNT ROUTES ---

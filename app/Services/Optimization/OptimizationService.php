@@ -864,7 +864,16 @@ class OptimizationService
     {
         $totalTasks = $preprocessResult['valid_tasks']->count();
         $totalEmployees = collect($preprocessResult['employee_allocations'])->flatten(1)->count();
-        
+
+        // Collect GA debug data from each schedule's metadata
+        $gaDebug = [];
+        foreach ($schedules as $clientId => $schedule) {
+            $metadata = $schedule->getMetadata();
+            if (isset($metadata['ga_debug'])) {
+                $gaDebug[$clientId] = $metadata['ga_debug'];
+            }
+        }
+
         return [
             'total_tasks' => $totalTasks,
             'total_employees' => $totalEmployees,
@@ -872,6 +881,7 @@ class OptimizationService
             'invalid_tasks_count' => $preprocessResult['invalid_tasks']->count(),
             'average_fitness' => collect($schedules)->avg(fn($s) => $s->getFitness()),
             'optimization_date' => now()->toDateTimeString(),
+            'ga_debug' => $gaDebug,
         ];
     }
 }

@@ -863,6 +863,12 @@
                 // Initialize unit data array based on default units
                 this.initializeUnitData();
 
+                // Pre-fill from URL query params (e.g. ?date=2026-04-05)
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('date')) {
+                    this.formData.service_date = urlParams.get('date');
+                }
+
                 // Watch for date/service changes to refresh booked time slots
                 this.$watch('formData.service_date', (val) => { console.log('[Watch] service_date changed:', val); if (val) this.fetchBookedSlots(); else this.bookedSlots = []; });
                 this.$watch('formData.service_type', () => { console.log('[Watch] service_type changed'); if (this.formData.service_date) this.fetchBookedSlots(); });

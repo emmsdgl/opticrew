@@ -9,18 +9,13 @@
 
                 {{-- Activity List --}}
                 <div class="space-y-8">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div
-                            class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                            <i class="fa-solid fa-clock-rotate-left text-blue-600 dark:text-blue-400 text-xl"></i>
-                        </div>
-                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                            Activity History
-                        </h1>
+                    <div class="flex flex-col gap-1 w-full px-8 py-3">
+                        <p class="text-base font-bold text-blue-950 dark:text-white">Activity History</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-500">View and track past appointments and activities.</p>
                     </div>
 
-                    {{-- Tabs Navigation --}}
-                    <div class="">
+                    {{-- Tabs Navigation & Sort --}}
+                    <div class="flex items-center justify-between px-8">
                         <nav class="flex space-x-8">
                             <button @click="activeTab = 'all'; currentPage = 1"
                                 class="relative pb-4 text-sm font-medium transition-colors duration-200"
@@ -46,10 +41,8 @@
                                     class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></span>
                             </button>
                         </nav>
-                    </div>
 
-                    {{-- Sort Dropdown --}}
-                    <div class="flex justify-end items-center">
+                        {{-- Sort Dropdown --}}
                         <x-dropdown
                             :label="'Sort:'"
                             :default="'Most Recent'"
@@ -65,62 +58,47 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(activity, index) in paginatedActivities()" :key="activeTab + '-' + index">
-                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                    <div class="flex items-start gap-4">
-                                        <!-- Icon -->
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
                                         </div>
-
-                                        <!-- Content -->
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="activity.title"></h3>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" x-text="activity.date"></p>
-
-                                            <!-- Actions -->
-                                            <div class="flex flex-wrap gap-6">
-                                                <template x-if="activity.status === 'Completed' || activity.needsRating">
-                                                    <div class="flex gap-4">
-                                                        <a href="#" @click.prevent="
-                                                            const fb = activity.employeeRating?.feedbacks?.[0];
-                                                            openFeedbackViewer({
-                                                                type: 'employee',
-                                                                rating: fb?.rating || activity.employeeRating?.averageRating || 0,
-                                                                tags: fb?.tags || activity.employeeRating?.tags || [],
-                                                                comment: fb?.comment || '',
-                                                                submittedBy: fb?.employeeName || 'Employee',
-                                                                submittedAt: fb?.submittedAt || 'N/A'
-                                                            });"
-                                                            class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                            Employee Rate →
-                                                        </a>
-                                                        <a href="#" @click.prevent="
-                                                            openFeedbackViewer({
-                                                                type: 'client',
-                                                                rating: activity.clientRating?.rating || 0,
-                                                                tags: activity.clientRating?.tags || [],
-                                                                comment: activity.clientRating?.comment || '',
-                                                                submittedBy: activity.clientRating?.clientName || 'Client',
-                                                                submittedAt: activity.clientRating?.submittedAt || 'N/A'
-                                                            });"
-                                                            class="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium">
-                                                            Client Rate →
-                                                        </a>
-                                                    </div>
-                                                </template>
-                                                <template x-if="activity.status !== 'Completed' && !activity.needsRating">
-                                                    <a href="#" @click.prevent="selectActivity(activities.indexOf(activity), 'details')"
-                                                        class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                        Review →
-                                                    </a>
-                                                </template>
-                                            </div>
+                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title"></h3>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
                                         </div>
-
-                                        <!-- Meta -->
-                                        <div class="flex-shrink-0 text-right">
-                                            <div class="text-lg font-bold text-gray-900 dark:text-white mb-1" x-text="activity.price"></div>
-                                            <div class="text-sm font-medium"
+                                        <div class="flex items-center gap-3">
+                                            <template x-if="activity.status === 'Completed' || activity.needsRating">
+                                                <div class="flex gap-2">
+                                                    <a href="#" @click.prevent="
+                                                        const fb = activity.employeeRating?.feedbacks?.[0];
+                                                        openFeedbackViewer({
+                                                            type: 'employee',
+                                                            rating: fb?.rating || activity.employeeRating?.averageRating || 0,
+                                                            tags: fb?.tags || activity.employeeRating?.tags || [],
+                                                            comment: fb?.comment || '',
+                                                            submittedBy: fb?.employeeName || 'Employee',
+                                                            submittedAt: fb?.submittedAt || 'N/A'
+                                                        });"
+                                                        class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+                                                        Employee
+                                                    </a>
+                                                    <a href="#" @click.prevent="
+                                                        openFeedbackViewer({
+                                                            type: 'client',
+                                                            rating: activity.clientRating?.rating || 0,
+                                                            tags: activity.clientRating?.tags || [],
+                                                            comment: activity.clientRating?.comment || '',
+                                                            submittedBy: activity.clientRating?.clientName || 'Client',
+                                                            submittedAt: activity.clientRating?.submittedAt || 'N/A'
+                                                        });"
+                                                        class="text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium">
+                                                        Client
+                                                    </a>
+                                                </div>
+                                            </template>
+                                            <div class="text-xs font-bold text-gray-900 dark:text-white" x-text="activity.price"></div>
+                                            <div class="text-xs font-medium"
                                                 :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
                                                         activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
                                                         activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
@@ -131,10 +109,19 @@
                                 </div>
                             </template>
 
-                            <template x-if="activities.filter(a => a.needsRating).length === 0">
-                                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                                    <i class="fa-regular fa-star text-4xl mb-3"></i>
-                                    <p>No activities to rate</p>
+                            <template x-if="filteredActivities().length === 0">
+                                <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+                                    <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                        <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                             alt="No activities found"
+                                             class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                                    </div>
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                        No activities found
+                                    </h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                                        Activity history will appear here.
+                                    </p>
                                 </div>
                             </template>
                         </div>

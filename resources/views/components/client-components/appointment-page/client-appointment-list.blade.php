@@ -86,7 +86,7 @@
          }
      }">
     <!-- Table Header -->
-    @if($showHeader)
+    @if($showHeader && count($appointments) > 0)
     <div class="hidden md:grid md:grid-cols-[1fr_1.2fr_1.2fr_1fr_1fr_1fr] gap-4 px-6 py-4
                 border-b border-gray-200 dark:border-gray-700 rounded-t-lg w-full">
         <div class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
@@ -207,15 +207,18 @@
 
     <!-- Empty State -->
     @if(count($appointments) === 0)
-    <div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 rounded-b-lg">
-        <i class="fa-regular fa-calendar-xmark text-4xl mb-4"></i>
-        <p class="text-sm font-medium">No appointments found</p>
-        <p class="text-xs mt-2">Book a new appointment to get started</p>
-        <a href="{{ route('client.appointment.create') }}"
-           class="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            <i class="fi fi-rr-plus mr-2"></i>
-            Book Appointment
-        </a>
+    <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+        <div class="w-48 h-48 mb-6 flex items-center justify-center">
+            <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                 alt="No appointments"
+                 class="w-full h-full object-contain opacity-80 dark:opacity-60">
+        </div>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+            No appointments found
+        </h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+            Book a new appointment to get started.
+        </p>
     </div>
     @endif
 

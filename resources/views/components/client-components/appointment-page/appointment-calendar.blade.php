@@ -173,7 +173,7 @@
 
             <!-- Calendar Days -->
             <template x-for="day in monthDays" :key="day.date">
-                <div class="min-h-[110px] p-3 border border-gray-200 dark:border-gray-700 rounded-lg transition-all hover:shadow-md"
+                <div class="group/cell relative min-h-[110px] p-3 border border-gray-200 dark:border-gray-700 rounded-lg transition-all hover:shadow-md"
                      :class="day.isCurrentMonth ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900 opacity-60'">
                     <div class="text-sm font-black mb-2"
                          :class="day.isToday ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 w-7 h-7 rounded-full flex items-center justify-center' : 'text-gray-900 dark:text-white'"
@@ -191,6 +191,14 @@
                              class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors pl-1"
                              x-text="`+${getEventsForDay(day.date).length - 3} more`"></div>
                     </div>
+
+                    <!-- Add Appointment Button (shows on hover when no events) -->
+                    <a x-show="getEventsForDay(day.date).length === 0 && day.isCurrentMonth"
+                       :href="`{{ route('client.appointment.create') }}?date=${day.date}`"
+                       class="absolute bottom-1.5 right-1.5 w-5 h-5 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-all duration-200 shadow-md hover:scale-110"
+                       title="Book appointment">
+                        <i class="fi fi-rr-plus" style="font-size: 0.5rem;"></i>
+                    </a>
                 </div>
             </template>
         </div>

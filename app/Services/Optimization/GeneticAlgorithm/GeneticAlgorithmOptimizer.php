@@ -151,19 +151,45 @@ class GeneticAlgorithmOptimizer
             $bestFitness = 0;
             $generationsWithoutImprovement = 0;
             $generation = 0;
+            $generationLog = []; // Debug: track fitness per generation
+            $elitismCount = 0;   // Debug: track how many times elitism preserved the best
+            $mutationCount = 0;  // Debug: track mutations applied
+            $crossoverCount = 0; // Debug: track crossovers performed
+            $improvementGenerations = []; // Debug: generations where fitness improved
 
             for ($generation = 1; $generation <= $maxGenerations; $generation++) {
                 $population->evaluateFitness($this->fitnessCalculator, $teamEfficiencies, $clientTasks->count());
 
                 $currentBest = $population->getBest();
+                $previousBest = $bestFitness;
+
                 if ($currentBest->getFitness() > $bestFitness) {
                     $bestFitness = $currentBest->getFitness();
                     $generationsWithoutImprovement = 0;
+                    $improvementGenerations[] = [
+                        'generation' => $generation,
+                        'fitness' => round($bestFitness, 6),
+                        'improvement' => round($bestFitness - $previousBest, 6),
+                    ];
                 } else {
                     $generationsWithoutImprovement++;
                 }
 
+                // Debug: log every generation's best fitness
+                $generationLog[] = [
+                    'gen' => $generation,
+                    'best_fitness' => round($currentBest->getFitness(), 6),
+                    'global_best' => round($bestFitness, 6),
+                    'stagnation' => $generationsWithoutImprovement,
+                ];
+
                 if ($generationsWithoutImprovement >= $this->patience) {
+                    Log::info("⏹ Early stopping triggered", [
+                        'client_id' => $clientId,
+                        'generation' => $generation,
+                        'patience' => $this->patience,
+                        'best_fitness' => round($bestFitness, 6),
+                    ]);
                     break;
                 }
 
@@ -171,15 +197,21 @@ class GeneticAlgorithmOptimizer
 
                 // ✅ ELITISM: Preserve best solution from previous generation
                 $newPopulation->addIndividual($currentBest);
+                $elitismCount++;
+
+                $genMutations = 0;
+                $genCrossovers = 0;
 
                 while ($newPopulation->size() < $this->populationSize) {
                     $parentA = $this->tournamentSelection($population);
                     $parentB = $this->tournamentSelection($population);
 
                     $child = $this->crossover->crossover($parentA, $parentB);
+                    $genCrossovers++;
 
                     if (rand(0, 100) / 100 < 0.1) {
                         $child = $this->mutation->mutate($child);
+                        $genMutations++;
                     }
 
                     // ✅ CRITICAL: Restore original teams after crossover/mutation
@@ -188,20 +220,56 @@ class GeneticAlgorithmOptimizer
                     $newPopulation->addIndividual($child);
                 }
 
+                $mutationCount += $genMutations;
+                $crossoverCount += $genCrossovers;
+
                 $population = $newPopulation;
             }
 
+            // Final evaluation
+            $population->evaluateFitness($this->fitnessCalculator, $teamEfficiencies, $clientTasks->count());
             $bestSchedule = $population->getBest();
+
+            // Calculate fitness breakdown for best schedule
+            $bestFitnessBreakdown = $this->calculateFitnessBreakdown(
+                $bestSchedule, $teamEfficiencies, $clientTasks->count()
+            );
 
             $bestSchedule->setMetadata([
                 'generations_run' => $generation,
-                'final_fitness' => $bestSchedule->getFitness()
+                'final_fitness' => round($bestSchedule->getFitness(), 6),
+                'ga_debug' => [
+                    'population_size' => $this->populationSize,
+                    'max_generations' => $maxGenerations,
+                    'patience' => $this->patience,
+                    'generations_run' => $generation,
+                    'early_stopped' => $generationsWithoutImprovement >= $this->patience,
+                    'total_crossovers' => $crossoverCount,
+                    'total_mutations' => $mutationCount,
+                    'mutation_rate' => '10%',
+                    'elitism_preservations' => $elitismCount,
+                    'fitness_improvements' => count($improvementGenerations),
+                    'improvement_history' => $improvementGenerations,
+                    'initial_fitness' => $generationLog[0]['best_fitness'] ?? 0,
+                    'final_fitness' => round($bestSchedule->getFitness(), 6),
+                    'fitness_gain' => round(
+                        ($bestSchedule->getFitness() - ($generationLog[0]['best_fitness'] ?? 0)), 6
+                    ),
+                    'fitness_breakdown' => $bestFitnessBreakdown,
+                    'generation_log' => $generationLog,
+                ],
             ]);
-            
-            Log::info("Optimization complete for client", [
+
+            Log::info("🧬 GA Optimization complete", [
                 'client_id' => $clientId,
-                'final_fitness' => $bestSchedule->getFitness(),
-                'generations' => $generation
+                'final_fitness' => round($bestSchedule->getFitness(), 6),
+                'generations' => $generation,
+                'early_stopped' => $generationsWithoutImprovement >= $this->patience,
+                'crossovers' => $crossoverCount,
+                'mutations' => $mutationCount,
+                'elitism_preservations' => $elitismCount,
+                'improvements' => count($improvementGenerations),
+                'fitness_breakdown' => $bestFitnessBreakdown,
             ]);
 
             $allOptimalSchedules[$clientId] = $bestSchedule;
@@ -335,6 +403,78 @@ class GeneticAlgorithmOptimizer
     
     //     return $allOptimalSchedules;
     // }
+
+    /**
+     * Calculate detailed fitness breakdown for debug display
+     */
+    protected function calculateFitnessBreakdown(
+        Individual $individual,
+        array $teamEfficiencies,
+        int $totalTaskCount
+    ): array {
+        $schedule = $individual->getSchedule();
+        $workloads = [];
+        $taskCounts = [];
+        $teamDetails = [];
+
+        foreach ($schedule as $teamIndex => $teamSchedule) {
+            $efficiency = $teamEfficiencies[$teamIndex];
+            $totalWorkload = 0;
+            $totalHours = 0;
+            $taskCount = count($teamSchedule['tasks']);
+
+            $travelTimeMinutes = 0;
+            if ($taskCount > 0) {
+                $firstTask = $teamSchedule['tasks'][0];
+                if ($firstTask->location && $firstTask->location->contracted_client_id) {
+                    $travelTimeMinutes = ($firstTask->location->contracted_client_id == 1) ? 30 : 15;
+                }
+            }
+
+            foreach ($teamSchedule['tasks'] as $task) {
+                $totalWorkload += $task->duration / $efficiency;
+                $totalHours += $task->duration / 60;
+            }
+            $totalHours += $travelTimeMinutes / 60;
+
+            $workloads[] = $totalWorkload;
+            $taskCounts[] = $taskCount;
+            $teamDetails[] = [
+                'team' => $teamIndex + 1,
+                'members' => collect($teamSchedule['team'])->pluck('id')->count(),
+                'tasks' => $taskCount,
+                'workload_min' => round($totalWorkload, 1),
+                'hours' => round($totalHours, 2),
+                'efficiency' => round($efficiency, 3),
+                'over_12h' => $totalHours > 12,
+            ];
+        }
+
+        $mean = count($workloads) > 0 ? array_sum($workloads) / count($workloads) : 0;
+        $variance = 0;
+        foreach ($workloads as $w) { $variance += pow($w - $mean, 2); }
+        $stdDev = count($workloads) > 0 ? sqrt($variance / count($workloads)) : 0;
+
+        $taskMean = count($taskCounts) > 0 ? array_sum($taskCounts) / count($taskCounts) : 0;
+        $taskVariance = 0;
+        foreach ($taskCounts as $c) { $taskVariance += pow($c - $taskMean, 2); }
+        $taskStdDev = count($taskCounts) > 0 ? sqrt($taskVariance / count($taskCounts)) : 0;
+
+        $assignedTasks = array_sum($taskCounts);
+        $completionRate = $totalTaskCount > 0 ? $assignedTasks / $totalTaskCount : 1;
+
+        return [
+            'base_fitness' => round(1 / (1 + $stdDev), 4),
+            'task_balance' => round(1 / (1 + $taskStdDev * 5.0), 4),
+            'completion_rate' => round($completionRate, 4),
+            'completion_multiplier' => round(pow($completionRate, 4), 4),
+            'workload_std_dev' => round($stdDev, 2),
+            'task_std_dev' => round($taskStdDev, 2),
+            'total_tasks' => $totalTaskCount,
+            'assigned_tasks' => $assignedTasks,
+            'teams' => $teamDetails,
+        ];
+    }
 
     protected function tournamentSelection(Population $population, int $tournamentSize = 5): Individual
     {

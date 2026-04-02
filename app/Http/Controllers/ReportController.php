@@ -943,4 +943,110 @@ class ReportController extends Controller
             'overallCompletionRate'
         ));
     }
+
+    /**
+     * Attendance Summary Report - Absences and approved leave requests
+     */
+    public function attendanceSummary(Request $request)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
+
+        $employees = Employee::with('user')->get();
+
+        // Get all scheduled task dates per employee in the range
+        $scheduledDates = Task::whereBetween('scheduled_date', [$startDate, $endDate])
+            ->whereNull('deleted_at')
+            ->select('assigned_team_id', 'scheduled_date')
+            ->get();
+
+        // Get attendance records in range
+        $attendances = Attendance::whereBetween(DB::raw('DATE(clock_in)'), [$startDate, $endDate])
+            ->get()
+            ->groupBy('employee_id');
+
+        // Get approved leave requests in range
+        $approvedLeaves = \App\Models\DayOff::where('status', 'approved')
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('date', [$startDate, $endDate])
+                  ->orWhere(function ($q2) use ($startDate, $endDate) {
+                      $q2->whereNotNull('end_date')
+                         ->where('date', '<=', $endDate)
+                         ->where('end_date', '>=', $startDate);
+                  });
+            })
+            ->get();
+
+        // Build leave records list
+        $leaveRecords = $approvedLeaves->map(function ($leave) use ($employees) {
+            $employee = $employees->firstWhere('id', $leave->employee_id);
+            return [
+                'employee_name' => $employee?->user?->name ?? 'Unknown',
+                'employee_email' => $employee?->user?->email ?? '',
+                'type' => ucfirst($leave->type ?? 'leave'),
+                'start_date' => $leave->date->format('M d, Y'),
+                'end_date' => $leave->end_date ? $leave->end_date->format('M d, Y') : $leave->date->format('M d, Y'),
+                'duration' => $leave->duration_days,
+                'reason' => $leave->reason ?? '-',
+                'status' => 'Approved',
+            ];
+        });
+
+        // Build absence records: employees with attendance clock_in on work days but no clock_out,
+        // or employees scheduled but not clocked in at all
+        $absenceRecords = collect();
+        foreach ($employees as $employee) {
+            $empAttendances = $attendances->get($employee->id, collect());
+            $clockedDates = $empAttendances->map(fn($a) => Carbon::parse($a->clock_in)->toDateString())->unique();
+
+            // Check each date in range for missing attendance (simple: weekdays without clock-in)
+            $period = Carbon::parse($startDate)->toPeriod(Carbon::parse($endDate));
+            foreach ($period as $date) {
+                if ($date->isWeekend()) continue;
+
+                $dateStr = $date->toDateString();
+
+                // Skip if employee has approved leave for this date
+                $onLeave = $approvedLeaves->first(function ($leave) use ($employee, $date) {
+                    if ($leave->employee_id !== $employee->id) return false;
+                    $start = $leave->date;
+                    $end = $leave->end_date ?? $leave->date;
+                    return $date->between($start, $end);
+                });
+                if ($onLeave) continue;
+
+                // If not clocked in on this date, count as absent
+                if (!$clockedDates->contains($dateStr) && $date->lte(Carbon::today())) {
+                    $absenceRecords->push([
+                        'employee_name' => $employee->user->name ?? 'Unknown',
+                        'employee_email' => $employee->user->email ?? '',
+                        'date' => $date->format('M d, Y'),
+                        'date_raw' => $dateStr,
+                        'day' => $date->format('l'),
+                        'type' => 'Absent',
+                    ]);
+                }
+            }
+        }
+
+        $totalAbsences = $absenceRecords->count();
+        $totalLeaves = $leaveRecords->count();
+        $totalLeaveDays = $leaveRecords->sum('duration');
+        $totalEmployees = $employees->count();
+
+        // Employee names for filter dropdown
+        $employeeNames = $employees->map(fn($e) => $e->user->name ?? 'Unknown')->unique()->sort()->values();
+
+        return view('admin.reports.attendance-summary', compact(
+            'startDate',
+            'endDate',
+            'absenceRecords',
+            'leaveRecords',
+            'totalAbsences',
+            'totalLeaves',
+            'totalLeaveDays',
+            'totalEmployees',
+            'employeeNames'
+        ));
+    }
 }

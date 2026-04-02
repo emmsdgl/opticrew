@@ -9,18 +9,13 @@
 
                 {{-- Activity List --}}
                 <div class="space-y-8">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div
-                            class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                            <i class="fa-solid fa-clock-rotate-left text-blue-600 dark:text-blue-400 text-xl"></i>
-                        </div>
-                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                            Activity History
-                        </h1>
+                    <div class="flex flex-col gap-1 w-full px-8 py-3">
+                        <p class="text-base font-bold text-blue-950 dark:text-white">Activity History</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-500">View and track your past appointments and activities.</p>
                     </div>
 
-                    {{-- Tabs Navigation --}}
-                    <div class="">
+                    {{-- Tabs Navigation & Sort --}}
+                    <div class="flex items-center justify-between px-8">
                         <nav class="flex space-x-8">
                             <button @click="activeTab = 'all'"
                                 class="relative pb-4 text-sm font-medium transition-colors duration-200"
@@ -62,10 +57,8 @@
                                     class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></span>
                             </button>
                         </nav>
-                    </div>
 
-                    {{-- Sort Dropdown --}}
-                    <div class="flex justify-end items-center">
+                        {{-- Sort Dropdown --}}
                         <x-dropdown
                             :label="'Sort:'"
                             :default="'Most Recent'"
@@ -83,40 +76,19 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(activity, index) in activities" :key="index">
-                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                    <div class="flex items-start gap-4">
-                                        <!-- Icon -->
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
+                                    @click="selectActivity(index)">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
                                         </div>
-
-                                        <!-- Content -->
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="activity.title"></h3>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" x-text="activity.date"></p>
-
-                                            <!-- Actions -->
-                                            <div class="flex flex-wrap gap-6">
-                                                <a href="#" @click.prevent="selectActivity(index)"
-                                                    class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                    Review →
-                                                </a>
-                                                <a href="#" x-show="activity.status === 'Completed'"
-                                                    class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                    Rebook →
-                                                </a>
-                                                <a href="#" @click.prevent="openRateModal(index)"
-                                                    x-show="activity.needsRating"
-                                                    class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                    Rate →
-                                                </a>
-                                            </div>
+                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title"></h3>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
                                         </div>
-
-                                        <!-- Meta -->
-                                        <div class="flex-shrink-0 text-right">
-                                            <div class="text-lg font-bold text-gray-900 dark:text-white mb-1" x-text="activity.price"></div>
-                                            <div class="text-sm font-medium"
+                                        <div class="flex items-center gap-3">
+                                            <div class="text-xs font-bold text-gray-900 dark:text-white" x-text="activity.price"></div>
+                                            <div class="text-xs font-medium"
                                                 :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
                                                         activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
                                                         activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
@@ -124,6 +96,22 @@
                                                 x-text="activity.status"></div>
                                         </div>
                                     </div>
+                                </div>
+                            </template>
+
+                            <template x-if="activities.length === 0">
+                                <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+                                    <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                        <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                             alt="No activities"
+                                             class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                                    </div>
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                        No activities found
+                                    </h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                                        Your activity history will appear here.
+                                    </p>
                                 </div>
                             </template>
                         </div>
@@ -134,28 +122,19 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(activity, index) in activities.filter(a => a.type === 'service')" :key="'service-' + index">
-                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                    <div class="flex items-start gap-4">
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
+                                    @click="selectActivity(activities.indexOf(activity))">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="activity.title"></h3>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" x-text="activity.date"></p>
-                                            <div class="flex flex-wrap gap-6">
-                                                <a href="#" @click.prevent="selectActivity(activities.indexOf(activity))"
-                                                    class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                    Review →
-                                                </a>
-                                                <a href="#" x-show="activity.status === 'Completed'"
-                                                    class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                    Rebook →
-                                                </a>
-                                            </div>
+                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title"></h3>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
                                         </div>
-                                        <div class="flex-shrink-0 text-right">
-                                            <div class="text-lg font-bold text-gray-900 dark:text-white mb-1" x-text="activity.price"></div>
-                                            <div class="text-sm font-medium"
+                                        <div class="flex items-center gap-3">
+                                            <div class="text-xs font-bold text-gray-900 dark:text-white" x-text="activity.price"></div>
+                                            <div class="text-xs font-medium"
                                                 :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
                                                         activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
                                                         activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
@@ -163,6 +142,22 @@
                                                 x-text="activity.status"></div>
                                         </div>
                                     </div>
+                                </div>
+                            </template>
+
+                            <template x-if="activities.filter(a => a.type === 'service').length === 0">
+                                <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+                                    <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                        <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                             alt="No services"
+                                             class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                                    </div>
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                        No services found
+                                    </h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                                        Your completed services will appear here.
+                                    </p>
                                 </div>
                             </template>
                         </div>
@@ -173,28 +168,19 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(activity, index) in activities.filter(a => a.needsRating)" :key="'rate-' + index">
-                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                    <div class="flex items-start gap-4">
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="activity.icon" alt="Service Icon" class="w-6 h-6">
+                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
+                                    @click="openRateModal(activities.indexOf(activity))">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="activity.title"></h3>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3" x-text="activity.date"></p>
-                                            <div class="flex flex-wrap gap-6">
-                                                <a href="#" @click.prevent="selectActivity(activities.indexOf(activity))"
-                                                    class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                    Review →
-                                                </a>
-                                                <a href="#" @click.prevent="openRateModal(activities.indexOf(activity))"
-                                                    class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                                                    Rate →
-                                                </a>
-                                            </div>
+                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title"></h3>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
                                         </div>
-                                        <div class="flex-shrink-0 text-right">
-                                            <div class="text-lg font-bold text-gray-900 dark:text-white mb-1" x-text="activity.price"></div>
-                                            <div class="text-sm font-medium text-green-600 dark:text-green-400"
+                                        <div class="flex items-center gap-3">
+                                            <div class="text-xs font-bold text-gray-900 dark:text-white" x-text="activity.price"></div>
+                                            <div class="text-xs font-medium text-green-600 dark:text-green-400"
                                                 x-text="activity.status"></div>
                                         </div>
                                     </div>
@@ -202,9 +188,18 @@
                             </template>
 
                             <template x-if="activities.filter(a => a.needsRating).length === 0">
-                                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                                    <i class="fa-regular fa-star text-4xl mb-3"></i>
-                                    <p>No services to rate</p>
+                                <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+                                    <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                        <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                             alt="No services to rate"
+                                             class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                                    </div>
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                        No services to rate
+                                    </h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                                        You don't have any completed services to rate at the moment.
+                                    </p>
                                 </div>
                             </template>
                         </div>
@@ -215,54 +210,41 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(rating, index) in ratings" :key="'rating-' + index">
-                                <div class="rounded-lg p-3 hover:shadow-lg dark:hover:shadow-gray-900/50 transition-shadow duration-200">
-                                    <div class="flex items-start gap-4">
-                                        <!-- Icon -->
-                                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="rating.icon" alt="Service Icon" class="w-6 h-6">
+                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <img :src="rating.icon" alt="Service Icon" class="w-4 h-4">
                                         </div>
-
-                                        <!-- Content -->
                                         <div class="flex-1 min-w-0">
-                                            <div class = "flex flex-row justify-between my-1">
-                                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1" x-text="rating.serviceName + ' - ' + rating.location"></h3>
-                                                <!-- Rating Stars -->
-                                                <div class="flex items-center gap-1">
-                                                    <template x-for="star in 5" :key="star">
-                                                        <svg :class="star <= rating.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
-                                                            class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                        </svg>
-                                                    </template>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400 ml-2" x-text="rating.rating + '/5'"></span>
-                                                </div>
-                                            </div>
-                                            <p class="text-sm text-gray-400 dark:text-gray-500 mb-3" x-text="rating.submitted_at"></p>
-
-
-                                            <!-- Keywords -->
-                                            <template x-if="rating.keywords && rating.keywords.length > 0">
-                                                <div class="flex flex-wrap gap-1 mb-3">
-                                                    <template x-for="keyword in rating.keywords" :key="keyword">
-                                                        <span class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full"
-                                                            x-text="keyword"></span>
-                                                    </template>
-                                                </div>
+                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="rating.serviceName + ' - ' + rating.location"></h3>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="rating.submitted_at"></p>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <template x-for="star in 5" :key="star">
+                                                <svg :class="star <= rating.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                                                    class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                </svg>
                                             </template>
-
-                                            <!-- Feedback Text -->
-                                            <template x-if="rating.feedback_text">
-                                                <p class="text-sm text-gray-600 dark:text-gray-400 italic" x-text="rating.feedback_text"></p>
-                                            </template>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-1" x-text="rating.rating + '/5'"></span>
                                         </div>
                                     </div>
                                 </div>
                             </template>
 
                             <template x-if="ratings.length === 0">
-                                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                                    <i class="fa-regular fa-star text-4xl mb-3"></i>
-                                    <p>No ratings submitted yet</p>
+                                <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+                                    <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                        <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                             alt="No ratings"
+                                             class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                                    </div>
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                        No ratings submitted yet
+                                    </h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                                        Your submitted ratings and feedback will appear here.
+                                    </p>
                                 </div>
                             </template>
                         </div>
@@ -273,57 +255,61 @@
                             x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4">
 
                             <template x-for="(log, index) in accountLogs" :key="'log-' + index">
-                                <div class="bg-none dark:bg-none border-b border-gray-200 dark:border-gray-700 p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
-                                    <div class="flex items-start gap-4">
+                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                                    <div class="flex items-center gap-3">
                                         <!-- Icon -->
-                                        <div class="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center"
+                                        <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
                                              :class="log.type === 'login' ? 'bg-green-100 dark:bg-green-900/30' :
                                                      log.type === 'logout' ? 'bg-red-100 dark:bg-red-900/30' :
                                                      'bg-blue-100 dark:bg-blue-900/30'">
-                                            <i class="text-xl"
-                                               :class="log.type === 'login' ? 'fa-solid fa-right-to-bracket text-green-600 dark:text-green-400' :
-                                                       log.type === 'logout' ? 'fa-solid fa-right-from-bracket text-red-600 dark:text-red-400' :
-                                                       'fa-solid fa-user-pen text-blue-600 dark:text-blue-400'"></i>
+                                            <template x-if="log.type === 'login'">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600 dark:text-green-400"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg>
+                                            </template>
+                                            <template x-if="log.type === 'logout'">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600 dark:text-red-400"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+                                            </template>
+                                            <template x-if="log.type !== 'login' && log.type !== 'logout'">
+                                                <i class="fa-solid fa-user-pen text-sm text-blue-600 dark:text-blue-400"></i>
+                                            </template>
                                         </div>
 
                                         <!-- Content -->
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1"
+                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white"
                                                 x-text="log.type === 'login' ? 'Logged In' :
                                                         log.type === 'logout' ? 'Logged Out' :
                                                         'Profile Updated'"></h3>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1" x-text="log.description"></p>
-                                            <template x-if="log.data && log.data.changed_fields && log.data.changed_fields.length > 0">
-                                                <p class="text-xs text-gray-400 dark:text-gray-500">
-                                                    Changed: <span x-text="log.data.changed_fields.join(', ')"></span>
-                                                </p>
-                                            </template>
-                                            <template x-if="log.ip_address">
-                                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                                    IP: <span x-text="log.ip_address"></span>
-                                                </p>
-                                            </template>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="log.description"></p>
                                         </div>
 
                                         <!-- Timestamp & Status -->
                                         <div class="flex-shrink-0 text-right">
-                                            <div class="text-sm font-medium"
+                                            <div class="text-xs font-medium"
                                                  :class="log.type === 'login' ? 'text-green-600 dark:text-green-400' :
                                                          log.type === 'logout' ? 'text-red-600 dark:text-red-400' :
                                                          'text-blue-600 dark:text-blue-400'"
                                                  x-text="log.type === 'login' ? 'Login' :
                                                          log.type === 'logout' ? 'Logout' :
                                                          'Edited'"></div>
-                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1" x-text="log.created_at"></p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500" x-text="log.created_at"></p>
                                         </div>
                                     </div>
                                 </div>
                             </template>
 
                             <template x-if="accountLogs.length === 0">
-                                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                                    <i class="fa-regular fa-clock text-4xl mb-3"></i>
-                                    <p>No account activity yet</p>
+                                <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
+                                    <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                        <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                             alt="No account activity"
+                                             class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                                    </div>
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                        No account activity yet
+                                    </h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                                        Your account activity logs will appear here.
+                                    </p>
                                 </div>
                             </template>
                         </div>

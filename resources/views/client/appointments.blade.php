@@ -62,7 +62,14 @@
         <div
             class="flex flex-col gap-6 w-full rounded-lg px-8 py-6">
 
-            <x-labelwithvalue label="Availed Services Overview" count="" />
+            <div class="flex flex-row justify-between w-full items-center">
+                <x-labelwithvalue label="Availed Services Overview" count="" />
+                <a href="{{ route('client.appointment.create') }}"
+                    class="px-4 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-xs lg:text-xs">
+                    <i class="fi fi-rr-plus mr-2"></i>
+                    Book New Appointment
+                </a>
+            </div>
             <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                 <x-employee-components.kpi-stat-card
                     label="Total Appointments"
@@ -563,15 +570,10 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('client.appointment.create') }}"
-                        class="px-4 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm">
-                        <i class="fi fi-rr-plus mr-2"></i>
-                        Book New Appointment
-                    </a>
                 </div>
             </div>
 
-            <div id="appointments-list" class="h-64 overflow-y-auto">
+            <div id="appointments-list" class="{{ $appointments->count() > 0 ? 'h-64 overflow-y-auto' : '' }}">
                 <x-client-components.appointment-page.client-appointment-list :appointments="$appointments"
                     :show-header="true" />
             </div>
