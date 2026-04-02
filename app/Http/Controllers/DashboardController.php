@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Holiday;
+use App\Models\PerformanceEvaluation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
@@ -117,6 +118,23 @@ class DashboardController extends Controller
             ];
         });
 
+        // === TOP PERFORMERS (last completed evaluation month) ===
+        $lastEvaluation = PerformanceEvaluation::where('status', 'completed')
+            ->orderBy('evaluation_period_start', 'desc')
+            ->first();
+
+        $topPerformers = collect();
+        $evalMonth = null;
+        if ($lastEvaluation) {
+            $evalMonth = $lastEvaluation->evaluation_period_start;
+            $topPerformers = PerformanceEvaluation::with('employee.user')
+                ->where('evaluation_period_start', $evalMonth->toDateString())
+                ->where('status', 'completed')
+                ->orderByDesc('overall_rating')
+                ->take(5)
+                ->get();
+        }
+
         // === PASS ALL DATA TO THE VIEW ===
         return view('admin.dashboard', [
             'totalEmployees' => $totalEmployees,
@@ -127,7 +145,9 @@ class DashboardController extends Controller
             'taskCount' => $taskCount,
             'admin' => $admin,
             'recentArrivals' => $recentArrivals,
-            'holidays' => $holidays // Pass holidays to the view
+            'holidays' => $holidays, // Pass holidays to the view
+            'topPerformers' => $topPerformers,
+            'evalMonth' => $evalMonth,
         ]);
     }
 }

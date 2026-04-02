@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Task;
 use App\Models\Attendance;
 use App\Models\DayOff;
+use App\Models\PerformanceEvaluation;
+use App\Models\PerformanceImprovementPlan;
 use App\Models\UserCourseProgress;
 use App\Models\TrainingVideo;
 use Carbon\Carbon;
@@ -123,6 +125,17 @@ class EmployeePerformanceController extends Controller
         // --- Performance Chart Data (Hours Worked) ---
         $performanceData = $this->getPerformanceChartData($employee->id, $period);
 
+        // --- Performance Evaluations & PIPs ---
+        $latestEvaluation = PerformanceEvaluation::where('employee_id', $employee->id)
+            ->where('status', 'completed')
+            ->orderByDesc('evaluation_period_start')
+            ->first();
+
+        $activePips = PerformanceImprovementPlan::where('employee_id', $employee->id)
+            ->where('status', 'active')
+            ->orderByDesc('created_at')
+            ->get();
+
         return view('employee.performance', [
             'employee' => $employee,
             'period' => $period,
@@ -132,6 +145,8 @@ class EmployeePerformanceController extends Controller
             'recentlyCompletedTasks' => $recentlyCompletedTasks,
             'attendanceData' => $attendanceData,
             'performanceData' => $performanceData,
+            'latestEvaluation' => $latestEvaluation,
+            'activePips' => $activePips,
         ]);
     }
     /**

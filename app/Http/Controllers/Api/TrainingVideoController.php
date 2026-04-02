@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\TrainingVideo;
+use App\Models\UserCourseProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -30,8 +31,14 @@ class TrainingVideoController extends Controller
             ->pluck('training_video_id')
             ->toArray();
 
-        // Format videos with watched status
-        $formattedVideos = $videos->map(function ($video) use ($watchedVideoIds) {
+        // Get course progress for current user
+        $courseProgress = UserCourseProgress::where('user_id', $user->id)
+            ->get()
+            ->keyBy('course_id');
+
+        // Format videos with watched status and progress
+        $formattedVideos = $videos->map(function ($video) use ($watchedVideoIds, $courseProgress) {
+            $progress = $courseProgress->get($video->id);
             return [
                 'id' => $video->id,
                 'category' => $video->category,
@@ -45,6 +52,9 @@ class TrainingVideoController extends Controller
                 'required' => $video->required,
                 'thumbnailUrl' => $video->thumbnail,
                 'isWatched' => in_array($video->id, $watchedVideoIds),
+                'progress' => $progress ? $progress->progress : 0,
+                'lastPosition' => $progress ? $progress->last_position : 0,
+                'status' => $progress ? $progress->status : (in_array($video->id, $watchedVideoIds) ? 'completed' : 'pending'),
             ];
         });
 
@@ -215,6 +225,81 @@ class TrainingVideoController extends Controller
 
         return response()->json([
             'watchedVideoIds' => $watchedVideoIds,
+        ]);
+    }
+
+    /**
+     * Save course progress (progress %, last position, status)
+     */
+    public function saveProgress(Request $request)
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|exists:training_videos,id',
+            'progress' => 'required|integer|min:0|max:100',
+            'last_position' => 'required|integer|min:0',
+        ]);
+
+        $user = $request->user();
+        $progress = $validated['progress'];
+        $status = $progress >= 90 ? 'completed' : ($progress > 0 ? 'in_progress' : 'pending');
+
+        UserCourseProgress::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'course_id' => $validated['course_id'],
+            ],
+            [
+                'progress' => $progress,
+                'last_position' => $validated['last_position'],
+                'status' => $status,
+            ]
+        );
+
+        // Mark as watched in employee_watched_videos when completed
+        if ($status === 'completed') {
+            $exists = DB::table('employee_watched_videos')
+                ->where('user_id', $user->id)
+                ->where('training_video_id', $validated['course_id'])
+                ->exists();
+
+            if (!$exists) {
+                DB::table('employee_watched_videos')->insert([
+                    'user_id' => $user->id,
+                    'training_video_id' => $validated['course_id'],
+                    'watched_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'progress' => $progress,
+            'status' => $status,
+        ]);
+    }
+
+    /**
+     * Get course progress for current user
+     */
+    public function getCourseProgress(Request $request)
+    {
+        $user = $request->user();
+
+        $progress = UserCourseProgress::where('user_id', $user->id)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'courseId' => $item->course_id,
+                    'progress' => $item->progress,
+                    'lastPosition' => $item->last_position,
+                    'status' => $item->status,
+                ];
+            });
+
+        return response()->json([
+            'courseProgress' => $progress,
         ]);
     }
 
