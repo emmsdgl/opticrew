@@ -365,7 +365,7 @@
 
                 <!-- Checklist Tab -->
                 <div id="task-content-checklist" class="task-tab-content hidden">
-                    <div class="p-6 shadow-sm">
+                    <div class="p-6 shadow-sm bg-white dark:bg-transparent rounded-lg">
                         <!-- Header -->
                         <div class="mb-6">
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">

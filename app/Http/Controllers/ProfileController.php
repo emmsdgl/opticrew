@@ -494,6 +494,19 @@ class ProfileController extends Controller
     }
 
     /**
+     * Check if the provided password matches the current user's password.
+     */
+    public function checkPassword(Request $request)
+    {
+        $password = $request->input('password', '');
+        if (!$password) {
+            return response()->json(['valid' => false]);
+        }
+        $valid = Hash::check($password, $request->user()->password);
+        return response()->json(['valid' => $valid]);
+    }
+
+    /**
      * Update password
      */
     public function updatePassword(Request $request)
@@ -517,18 +530,22 @@ class ProfileController extends Controller
         $user->password = bcrypt($request->password);
         $user->save();
 
-        // Log out the user after password change
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
         if ($request->expectsJson()) {
+            // Log out after saving password but build response first
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Password updated successfully! You will be redirected to log in again.',
-                'redirect' => url('/'),
+                'redirect' => route('login'),
             ]);
         }
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return Redirect::to('/')->with('success', 'Password updated successfully! Please log in again.');
     }
@@ -565,18 +582,21 @@ class ProfileController extends Controller
         $user->password = bcrypt($request->password);
         $user->save();
 
-        // Log out the user after setting password
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
         if ($request->expectsJson()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Password set successfully! You can now log in with your email and password.',
-                'redirect' => url('/'),
+                'redirect' => route('login'),
             ]);
         }
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return Redirect::to('/')->with('success', 'Password set successfully! Please log in again.');
     }

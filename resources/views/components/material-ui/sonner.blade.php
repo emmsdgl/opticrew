@@ -2,19 +2,39 @@
 {{-- Polls for new notifications and shows toast popups with a bell chime --}}
 
 <div id="sonner-container"
-     class="fixed bottom-4 right-4 z-[9999] flex flex-col-reverse gap-3 pointer-events-none max-w-sm w-full"
+     class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col pointer-events-none max-w-sm w-full"
      x-data="sonnerToast()"
-     x-init="startPolling()">
+     x-init="startPolling()"
+     @mouseenter="hovered = true"
+     @mouseleave="hovered = false">
 
-    <template x-for="toast in toasts" :key="toast.id">
-        <div class="pointer-events-auto w-full transform transition-all duration-300 ease-out"
+    <template x-for="(toast, index) in toasts" :key="toast.id">
+        <div class="pointer-events-auto w-full transition-all duration-300 ease-out absolute left-0 right-0"
              x-show="toast.visible"
+             :style="(() => {
+                 const visibleToasts = toasts.filter(t => t.visible);
+                 const i = visibleToasts.indexOf(toast);
+                 const total = visibleToasts.length;
+                 const pos = total - 1 - i;
+                 if (hovered) {
+                     return 'position: relative; transform: scale(1) translateY(0); opacity: 1; z-index: ' + (total - pos) + ';'
+                         + (pos > 0 ? 'margin-top: 10px;' : '');
+                 }
+                 const scale = Math.max(0.92, 1 - pos * 0.04);
+                 const translateY = pos * 8;
+                 const opacity = Math.max(0, 1 - pos * 0.15);
+                 return 'position: ' + (pos === 0 ? 'relative' : 'absolute') + ';'
+                     + 'transform: scale(' + scale + ') translateY(' + translateY + 'px);'
+                     + 'opacity: ' + opacity + ';'
+                     + 'z-index: ' + (total - pos) + ';'
+                     + (pos >= 3 ? 'visibility: hidden;' : '');
+             })()"
              x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="translate-y-4 opacity-0 scale-95"
+             x-transition:enter-start="-translate-y-4 opacity-0 scale-95"
              x-transition:enter-end="translate-y-0 opacity-100 scale-100"
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="translate-y-0 opacity-100 scale-100"
-             x-transition:leave-end="translate-y-4 opacity-0 scale-95">
+             x-transition:leave-end="-translate-y-4 opacity-0 scale-95">
 
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
                  :class="{ 'ring-1 ring-blue-200 dark:ring-blue-800': toast.type !== 'error' }">
@@ -130,6 +150,7 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('sonnerToast', () => ({
         toasts: [],
+        hovered: false,
         lastCheck: null,
         pollInterval: null,
         maxToasts: 5,

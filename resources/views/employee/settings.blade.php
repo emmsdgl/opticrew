@@ -186,6 +186,24 @@
                     currentPassword: '', newPassword: '', confirmPassword: '',
                     showCurrent: false, showNew: false, showConfirm: false,
                     submittingPw: false,
+                    pwCheckStatus: '',
+                    pwCheckTimer: null,
+                    checkCurrentPassword() {
+                        clearTimeout(this.pwCheckTimer);
+                        if (!this.currentPassword) { this.pwCheckStatus = ''; return; }
+                        this.pwCheckStatus = 'checking';
+                        this.pwCheckTimer = setTimeout(async () => {
+                            try {
+                                const res = await fetch('{{ route("employee.settings.check-password") }}', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                    body: JSON.stringify({ password: this.currentPassword })
+                                });
+                                const data = await res.json();
+                                this.pwCheckStatus = data.valid ? 'correct' : 'incorrect';
+                            } catch (e) { this.pwCheckStatus = ''; }
+                        }, 500);
+                    },
                     async submitPassword() {
                         if (!this.currentPassword || !this.newPassword || !this.confirmPassword) {
                             window.showErrorDialog('Missing Information', 'Please fill in all password fields.'); return;
@@ -214,23 +232,28 @@
                             const data = await res.json();
                             if (data.success) {
                                 window.showSuccessDialog('Password Updated', data.message);
-                                setTimeout(() => { window.location.href = data.redirect || '/'; }, 2000);
+                                setTimeout(() => { window.location.href = data.redirect || '{{ route("login") }}'; }, 1500);
                             } else {
                                 window.showErrorDialog('Update Failed', data.message || 'Failed to update password.');
                             }
-                        } catch (e) { window.showErrorDialog('Error', 'An error occurred. Please try again.'); }
+                        } catch (e) { window.location.href = '{{ route("login") }}'; return; }
                         finally { this.submittingPw = false; }
                     }
                 }">
                     <div class="space-y-6 mt-0 md:mt-6">
                         {{-- Current Password --}}
-                        <div class="relative" x-ref="currentPwWrap">
-                            <x-material-ui.input-field label="Current Password" :type="'password'" model="currentPassword" icon="fi fi-rr-lock" placeholder="Enter current password" required />
-                            <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
-                                <svg x-show="!showCurrent" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
-                                <svg x-show="showCurrent" x-cloak xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
-                            </button>
+                        <div>
+                            <div class="relative" x-ref="currentPwWrap" @input="checkCurrentPassword()">
+                                <x-material-ui.input-field label="Current Password" :type="'password'" model="currentPassword" icon="fi fi-rr-lock" placeholder="Enter current password" required />
+                                <button type="button" @click="showCurrent = !showCurrent; $refs.currentPwWrap.querySelector('input').type = showCurrent ? 'text' : 'password'"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10">
+                                    <svg x-show="!showCurrent" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg x-show="showCurrent" x-cloak xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
+                                </button>
+                            </div>
+                            <p x-show="pwCheckStatus === 'checking'" x-cloak class="text-xs text-gray-400 mt-1"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Checking...</p>
+                            <p x-show="pwCheckStatus === 'correct'" x-cloak class="text-xs text-green-500 mt-1"><i class="fa-solid fa-check-circle mr-1"></i>Current password is correct</p>
+                            <p x-show="pwCheckStatus === 'incorrect'" x-cloak class="text-xs text-red-500 mt-1"><i class="fa-solid fa-times-circle mr-1"></i>Current password is incorrect</p>
                         </div>
 
                         {{-- New Password --}}

@@ -441,6 +441,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::get('/admin/settings', [ProfileController::class, 'settings'])->name('admin.settings');
     Route::get('/admin/help-center', [ProfileController::class, 'helpcenter'])->name('admin.helpcenter');
     Route::post('/admin/settings/update-password', [ProfileController::class, 'updatePassword'])->name('admin.settings.update-password');
+    Route::post('/admin/settings/check-password', [ProfileController::class, 'checkPassword'])->name('admin.settings.check-password');
     Route::post('/admin/settings/quotation', [ProfileController::class, 'updateQuotationSettings'])->name('admin.settings.update-quotation');
     Route::post('/admin/settings/company', [ProfileController::class, 'updateCompanySettings'])->name('admin.settings.update-company');
     Route::post('/admin/settings/salary', [ProfileController::class, 'updateSalarySettings'])->name('admin.settings.update-salary');
@@ -528,6 +529,7 @@ Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
     Route::get('/employee/settings', [ProfileController::class, 'settings'])->name('employee.settings');
     Route::get('/employee/help-center', [ProfileController::class, 'helpcenter'])->name('employee.helpcenter');
     Route::post('/employee/settings/update-password', [ProfileController::class, 'updatePassword'])->name('employee.settings.update-password');
+    Route::post('/employee/settings/check-password', [ProfileController::class, 'checkPassword'])->name('employee.settings.check-password');
     Route::get('/employee/history', [App\Http\Controllers\Employee\HistoryController::class, 'index'])->name('employee.history');
     Route::post('/employee/history/feedback', [App\Http\Controllers\Employee\HistoryController::class, 'storeFeedback'])->name('employee.history.feedback');
     // Coming Soon Pages
@@ -571,6 +573,7 @@ Route::middleware(['auth', 'terms.accepted', 'client'])->group(function () {
     Route::get('/client/settings', [ProfileController::class, 'settings'])->name('client.settings');
     Route::get('/client/help-center', [ProfileController::class, 'helpcenter'])->name('client.helpcenter');
     Route::post('/client/settings/update-password', [ProfileController::class, 'updatePassword'])->name('client.settings.update-password');
+    Route::post('/client/settings/check-password', [ProfileController::class, 'checkPassword'])->name('client.settings.check-password');
     Route::post('/client/settings/set-password', [ProfileController::class, 'setPassword'])->name('client.settings.set-password');
 });
 
@@ -639,6 +642,7 @@ Route::middleware(['auth', 'terms.accepted', 'manager'])->prefix('manager')->nam
     Route::get('/settings', [ProfileController::class, 'settings'])->name('settings');
     Route::get('/help-center', [ProfileController::class, 'helpcenter'])->name('helpcenter');
     Route::post('/settings/update-password', [ProfileController::class, 'updatePassword'])->name('settings.update-password');
+    Route::post('/settings/check-password', [ProfileController::class, 'checkPassword'])->name('settings.check-password');
 });
 
 // Geofencing API endpoint (needs web session authentication)
