@@ -103,7 +103,6 @@ function loadTasks($scheduledDate, $limit = null) {
             LEFT JOIN locations l ON l.id = t.location_id
             WHERE t.scheduled_date = ?
               AND t.deleted_at IS NULL
-              AND t.status IN ('Pending', 'Scheduled')
             ORDER BY t.arrival_status DESC, t.id ASC";
     if ($limit) $sql .= " LIMIT " . (int)$limit;
     $stmt = $db->prepare($sql);
@@ -167,11 +166,9 @@ function loadAvailableDates() {
         SELECT DISTINCT scheduled_date, COUNT(*) as task_count
         FROM tasks
         WHERE deleted_at IS NULL
-          AND status IN ('Pending', 'Scheduled')
-          AND scheduled_date >= CURDATE()
         GROUP BY scheduled_date
         ORDER BY scheduled_date ASC
-        LIMIT 30
+        LIMIT 200
     ")->fetchAll();
 }
 
@@ -327,9 +324,19 @@ function validateScheduleAccuracy($schedule, $tasks, $teams, $employees, $maxWor
         $taskMap[$task['id']] = $task;
     }
 
+    // Use composite key (team_id + client_id) because the preprocessor
+    // duplicates each physical team for every client with the SAME team_id.
+    // Using team_id alone causes the last client to overwrite earlier ones,
+    // resulting in false "Client mismatch" violations.
     $teamMap = [];
     foreach ($teams as $team) {
-        $teamMap[$team['team_id']] = $team;
+        $key = $team['team_id'] . '_' . ($team['client_id'] ?? '');
+        $teamMap[$key] = $team;
+    }
+    // Also keep a simple team_id map for driver/size checks when no client_id in assignment
+    $teamByIdMap = [];
+    foreach ($teams as $team) {
+        $teamByIdMap[$team['team_id']] = $team;
     }
 
     $teamWorkloads = [];
@@ -341,8 +348,12 @@ function validateScheduleAccuracy($schedule, $tasks, $teams, $employees, $maxWor
     foreach ($schedule as $assignment) {
         $taskId = $assignment['task_id'];
         $teamId = $assignment['team_id'];
+        $assignmentClientId = $assignment['client_id'] ?? null;
         $task = $taskMap[$taskId] ?? null;
-        $team = $teamMap[$teamId] ?? null;
+
+        // Look up team using composite key first, fall back to simple team_id
+        $teamKey = $teamId . '_' . ($assignmentClientId ?? ($task['client_id'] ?? ''));
+        $team = $teamMap[$teamKey] ?? $teamByIdMap[$teamId] ?? null;
 
         if (!$task) {
             $invalidCount++;

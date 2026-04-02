@@ -158,6 +158,16 @@ class PerformanceEvaluationController extends Controller
             $validated
         );
 
+        // If PIP was unchecked, remove any existing PIP for this evaluation
+        if (!$validated['requires_pip']) {
+            $existingPip = PerformanceImprovementPlan::where('evaluation_id', $evaluation->id)->first();
+            if ($existingPip) {
+                // Notify employee that PIP was cancelled
+                $this->notifyEmployeePipStatusChanged($existingPip->load('employee'), 'cancelled');
+                $existingPip->delete();
+            }
+        }
+
         // If completed with PIP required, auto-generate and redirect to PIP form for review
         if ($validated['status'] === 'completed' && !empty($validated['requires_pip'])) {
             $existingPip = PerformanceImprovementPlan::where('evaluation_id', $evaluation->id)->first();

@@ -91,8 +91,15 @@ class PerformanceManagementService
 
     protected function getFeedbackMetrics(Employee $employee, Carbon $start, Carbon $end): array
     {
-        $feedbacks = Feedback::where('employee_id', $employee->id)
-            ->whereBetween('created_at', [$start, $end])
+        // Get client feedback for tasks this employee worked on
+        $taskIds = Task::where('status', 'Completed')
+            ->whereBetween('completed_at', [$start, $end])
+            ->whereHas('assignedEmployees', fn($q) => $q->where('employees.id', $employee->id))
+            ->pluck('id');
+
+        $feedbacks = Feedback::where('user_type', 'client')
+            ->whereIn('task_id', $taskIds)
+            ->whereBetween('created_at', [$start, $end->copy()->addDays(7)])
             ->get();
 
         return [

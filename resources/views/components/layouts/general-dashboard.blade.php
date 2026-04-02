@@ -399,6 +399,64 @@
         <x-material-ui.sonner />
     @endauth
     @stack('modals')
+
+    <!-- Dev Time Panel: PH & Finland time -->
+    <div x-data="{
+        open: false,
+        phTime: '',
+        fiTime: '',
+        phDate: '',
+        fiDate: '',
+        init() {
+            this.updateTime();
+            setInterval(() => this.updateTime(), 1000);
+        },
+        updateTime() {
+            const now = new Date();
+            const phOpts = { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const fiOpts = { timeZone: 'Europe/Helsinki', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const dateOpts = { timeZone: 'Asia/Manila', weekday: 'short', month: 'short', day: 'numeric' };
+            const fiDateOpts = { timeZone: 'Europe/Helsinki', weekday: 'short', month: 'short', day: 'numeric' };
+            this.phTime = now.toLocaleTimeString('en-US', phOpts);
+            this.fiTime = now.toLocaleTimeString('en-US', fiOpts);
+            this.phDate = now.toLocaleDateString('en-US', dateOpts);
+            this.fiDate = now.toLocaleDateString('en-US', fiDateOpts);
+        }
+    }" class="fixed bottom-4 right-0 z-[9999]">
+        <!-- Toggle button -->
+        <button @click="open = !open"
+            class="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-900/90 text-white px-1.5 py-3 rounded-l-lg text-xs border border-r-0 border-gray-700 hover:bg-gray-800 transition-all"
+            :class="open ? 'translate-x-0' : 'translate-x-0'"
+            style="writing-mode: vertical-lr; letter-spacing: 1px;">
+            <span x-text="open ? '>' : 'T'" class="font-mono font-bold text-[10px]"></span>
+        </button>
+
+        <!-- Panel -->
+        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-x-full opacity-0" x-transition:enter-end="translate-x-0 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-x-0 opacity-100" x-transition:leave-end="translate-x-full opacity-0"
+            class="bg-gray-900/95 backdrop-blur-sm text-white rounded-l-xl shadow-2xl border border-r-0 border-gray-700 p-3 mr-0"
+            style="min-width: 180px; display: none;">
+            <p class="text-[9px] text-gray-500 uppercase tracking-wider mb-2 font-semibold">Dev Time Zone</p>
+            <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">PH</span>
+                    <div>
+                        <p class="text-sm font-mono font-bold leading-none" x-text="phTime"></p>
+                        <p class="text-[10px] text-gray-400" x-text="phDate"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] bg-green-600 text-white px-1.5 py-0.5 rounded font-bold">FI</span>
+                    <div>
+                        <p class="text-sm font-mono font-bold leading-none" x-text="fiTime"></p>
+                        <p class="text-[10px] text-gray-400" x-text="fiDate"></p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 pt-1.5 mt-1.5">
+                    <p class="text-[10px] text-gray-500">PH is 5h ahead of Finland</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
