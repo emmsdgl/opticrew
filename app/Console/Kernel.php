@@ -35,6 +35,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('opticrew:process-task-grace-periods')
             ->everyFiveMinutes()
             ->withoutOverlapping();
+
+        // Performance Management: Monthly evaluation reminder on the 1st of each month at 9:00 AM
+        $schedule->command('opticrew:monthly-evaluation-reminder')
+            ->monthlyOn(1, '09:00')
+            ->withoutOverlapping();
     }
 
     /**

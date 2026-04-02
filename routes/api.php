@@ -171,6 +171,16 @@ Route::prefix('employee')->middleware(['auth:sanctum', 'throttle:60,1'])->group(
             ->name('api.employee.leave-requests.cancel');
     });
 
+    // Performance & PIPs (Employee)
+    Route::prefix('performance')->group(function () {
+        Route::get('/pips', [\App\Http\Controllers\Api\PerformanceController::class, 'getActivePips'])
+            ->name('api.employee.performance.pips');
+        Route::get('/pips/{pipId}', [\App\Http\Controllers\Api\PerformanceController::class, 'getPipDetails'])
+            ->name('api.employee.performance.pip-details');
+        Route::get('/latest-evaluation', [\App\Http\Controllers\Api\PerformanceController::class, 'getLatestEvaluation'])
+            ->name('api.employee.performance.latest-evaluation');
+    });
+
     // Notifications (Employee)
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])
@@ -220,6 +230,14 @@ Route::prefix('training-videos')->middleware(['auth:sanctum', 'throttle:60,1'])-
     // Get completion stats
     Route::get('/stats', [TrainingVideoController::class, 'getStats'])
         ->name('api.training-videos.stats');
+
+    // Save course progress (progress %, last position)
+    Route::post('/save-progress', [TrainingVideoController::class, 'saveProgress'])
+        ->name('api.training-videos.save-progress');
+
+    // Get course progress for all videos
+    Route::get('/progress', [TrainingVideoController::class, 'getCourseProgress'])
+        ->name('api.training-videos.progress');
 });
 
 // Task Status Management (Employee App)

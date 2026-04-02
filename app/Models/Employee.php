@@ -67,6 +67,11 @@ class Employee extends Model
         return $this->user ? $this->user->name : 'Unknown Employee';
     }
 
+    public function performanceEvaluations()
+    {
+        return $this->hasMany(PerformanceEvaluation::class);
+    }
+
     /**
      * Get tasks assigned to this employee through optimization teams
      */

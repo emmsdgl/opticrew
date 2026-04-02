@@ -47,9 +47,9 @@
             </div>
 
             @if($clientFeedback->count() > 0)
-                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 max-h-[500px] overflow-y-auto">
                     <table class="w-full">
-                        <thead>
+                        <thead class="sticky top-0 bg-white dark:bg-gray-800 z-10">
                             <tr class="border-b border-gray-200 dark:border-gray-700">
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Client</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Service Type</th>
@@ -119,9 +119,9 @@
             </div>
 
             @if($employeeFeedback->count() > 0)
-                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 max-h-[500px] overflow-y-auto">
                     <table class="w-full">
-                        <thead>
+                        <thead class="sticky top-0 bg-white dark:bg-gray-800 z-10">
                             <tr class="border-b border-gray-200 dark:border-gray-700">
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Employee</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Task</th>

@@ -65,6 +65,11 @@ class Notification extends Model
     const TYPE_OVERTIME_ALERT = 'overtime_alert';
     const TYPE_DUPLICATE_APPLICANT = 'duplicate_applicant';
 
+    // Performance management notification types
+    const TYPE_MONTHLY_EVALUATION_REMINDER = 'monthly_evaluation_reminder';
+    const TYPE_PIP_ASSIGNED = 'pip_assigned';
+    const TYPE_PIP_STATUS_UPDATED = 'pip_status_updated';
+
     protected $fillable = [
         'user_id',
         'type',

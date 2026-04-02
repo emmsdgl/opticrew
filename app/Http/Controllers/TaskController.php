@@ -27,12 +27,16 @@ class TaskController extends Controller
     /**
      * Display the calendar view with clients and existing tasks.
      */
-    public function index()
+    public function index(Request $request)
     {
         // --- 1. FETCH TASKS WITH CLIENT RELATIONSHIPS (OPTIMIZED) ---
-        // Only load tasks within a reasonable date range for calendar view (3 months back, 3 months forward)
-        $startDate = now()->subMonths(3)->startOfDay();
-        $endDate = now()->addMonths(3)->endOfDay();
+        // Support date range filtering via query params (defaults to current month ± 1 month)
+        $startDate = $request->has('start_date')
+            ? Carbon::parse($request->input('start_date'))->startOfDay()
+            : now()->subMonth()->startOfDay();
+        $endDate = $request->has('end_date')
+            ? Carbon::parse($request->input('end_date'))->endOfDay()
+            : now()->addMonth()->endOfDay();
 
         // Eager load ALL relationships to avoid N+1 queries
         $rawTasks = Task::with([
@@ -192,37 +196,29 @@ class TaskController extends Controller
                 }
             }
 
-            // Get team members for this task
+            // Get team members from already eager-loaded relationship (NO extra queries)
             $teamMembers = [];
             $teamName = null;
-            if ($task->assigned_team_id) {
-                $optimizationTeam = \App\Models\OptimizationTeam::with('members.employee.user')
-                    ->find($task->assigned_team_id);
+            if ($task->optimizationTeam) {
+                $teamName = $task->optimizationTeam->team_name;
+                $teamMembers = $task->optimizationTeam->members
+                    ->map(function($member) {
+                        $profilePicture = null;
+                        $userName = 'Unknown';
 
-                if ($optimizationTeam) {
-                    $teamName = $optimizationTeam->team_name;
-                    $teamMembers = $optimizationTeam->members()
-                        ->with('employee.user')
-                        ->get()
-                        ->map(function($member) {
-                            // Get profile picture and name from user
-                            $profilePicture = null;
-                            $userName = 'Unknown';
+                        if ($member->employee && $member->employee->user) {
+                            $userName = $member->employee->user->name;
+                            $profilePicture = $member->employee->user->profile_picture;
+                        }
 
-                            if ($member->employee && $member->employee->user) {
-                                $userName = $member->employee->user->name;
-                                $profilePicture = $member->employee->user->profile_picture;
-                            }
-
-                            return [
-                                'id' => $member->employee->id,
-                                'name' => $userName,
-                                'role' => $member->employee->role ?? 'employee',
-                                'picture' => $profilePicture
-                            ];
-                        })
-                        ->toArray();
-                }
+                        return [
+                            'id' => $member->employee->id ?? 0,
+                            'name' => $userName,
+                            'role' => $member->employee->role ?? 'employee',
+                            'picture' => $profilePicture
+                        ];
+                    })
+                    ->toArray();
             }
 
             // Determine priority based on arrival_status and scheduled date
@@ -310,7 +306,9 @@ class TaskController extends Controller
             'clients' => $allClients,
             'events' => $events,
             'bookedLocationsByDate' => $bookedLocationsByDate,
-            'holidays' => $holidays // Pass holidays data
+            'holidays' => $holidays,
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
         ]);
     }
 

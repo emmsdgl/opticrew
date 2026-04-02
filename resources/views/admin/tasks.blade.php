@@ -329,15 +329,51 @@
         <!-- Divider -->
         <hr class="my-6 border-gray-300 dark:border-gray-700">
 
+        <!-- Date Range Filter -->
+        <div class="flex flex-col gap-4 w-full rounded-lg p-4">
+            <div class="flex flex-wrap items-end gap-4">
+                <h2 class="text-base font-bold text-gray-900 dark:text-white mr-auto">All Tasks</h2>
+                <form method="GET" action="{{ route('admin.tasks') }}" class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">From</label>
+                        <input type="date" name="start_date" value="{{ $startDate }}"
+                               class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">To</label>
+                        <input type="date" name="end_date" value="{{ $endDate }}"
+                               class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit"
+                            class="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                        <i class="fa-solid fa-filter mr-1"></i> Filter
+                    </button>
+                    @if(request()->has('start_date') || request()->has('end_date'))
+                        <a href="{{ route('admin.tasks') }}"
+                           class="px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                            <i class="fa-solid fa-times mr-1"></i> Reset
+                        </a>
+                    @endif
+                </form>
+            </div>
+            <p class="text-xs text-gray-400 dark:text-gray-500">
+                Showing tasks from {{ \Carbon\Carbon::parse($startDate)->format('M j, Y') }} to {{ \Carbon\Carbon::parse($endDate)->format('M j, Y') }}
+            </p>
+        </div>
+
         <!-- Tasks List Sections -->
         <div class="flex flex-col gap-6 w-full rounded-lg p-4">
-            <h2 class="text-base font-bold text-gray-900 dark:text-white">All Tasks</h2>
 
             @php
                 // Group tasks by status and sort by most recent first
                 $todoTasks = $tasks->where('status', 'todo')->sortByDesc('scheduled_date')->values();
                 $inProgressTasks = $tasks->where('status', 'inprogress')->sortByDesc('scheduled_date')->values();
-                $completedTasks = $tasks->where('status', 'completed')->sortByDesc('scheduled_date')->values();
+                // Limit completed tasks to last 7 days to keep the page light
+                $sevenDaysAgo = now()->subDays(7)->format('Y-m-d');
+                $completedTasks = $tasks->where('status', 'completed')->filter(function($task) use ($sevenDaysAgo) {
+                    return ($task['scheduled_date'] ?? '') >= $sevenDaysAgo;
+                })->sortByDesc('scheduled_date')->values();
+                $totalCompleted = $tasks->where('status', 'completed')->count();
             @endphp
 
             <!-- To Do Tasks Section -->
@@ -442,7 +478,7 @@
                     <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
                         <span class="w-3 h-3 rounded-full bg-green-500"></span>
                         Completed
-                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{ $completedTasks->count() }})</span>
+                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{ $completedTasks->count() }} of {{ $totalCompleted }} — last 7 days)</span>
                     </h3>
                 </div>
 

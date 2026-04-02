@@ -376,6 +376,23 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         // Course Progress Reports
         Route::get('/course-progress', [ReportController::class, 'courseProgress'])->name('course-progress');
 
+        // Performance Management
+        Route::prefix('performance')->name('performance.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\PerformanceEvaluationController::class, 'index'])->name('index');
+            Route::get('/evaluate/{employeeId}', [\App\Http\Controllers\PerformanceEvaluationController::class, 'create'])->name('evaluate');
+            Route::post('/store', [\App\Http\Controllers\PerformanceEvaluationController::class, 'store'])->name('store');
+            Route::get('/show/{id}', [\App\Http\Controllers\PerformanceEvaluationController::class, 'show'])->name('show');
+            Route::get('/auto-fill/{employeeId}', [\App\Http\Controllers\PerformanceEvaluationController::class, 'autoFill'])->name('auto-fill');
+            Route::post('/auto-fill-all', [\App\Http\Controllers\PerformanceEvaluationController::class, 'autoFillAll'])->name('auto-fill-all');
+            Route::post('/complete-all', [\App\Http\Controllers\PerformanceEvaluationController::class, 'completeAll'])->name('complete-all');
+
+            // PIP routes
+            Route::get('/pip/create/{evaluationId}', [\App\Http\Controllers\PerformanceEvaluationController::class, 'createPip'])->name('pip.create');
+            Route::post('/pip/store', [\App\Http\Controllers\PerformanceEvaluationController::class, 'storePip'])->name('pip.store');
+            Route::get('/pip/{id}', [\App\Http\Controllers\PerformanceEvaluationController::class, 'showPip'])->name('pip.show');
+            Route::put('/pip/{id}/status', [\App\Http\Controllers\PerformanceEvaluationController::class, 'updatePipStatus'])->name('pip.update-status');
+        });
+
         // Attendance Summary Report
         Route::get('/attendance', [ReportController::class, 'attendanceSummary'])->name('attendance');
     });
