@@ -195,7 +195,8 @@
                             auth()->user()->role === 'admin' ? route('admin.helpcenter') :
                             (auth()->user()->role === 'company' ? route('manager.helpcenter') :
                             (auth()->user()->role === 'employee' ? route('employee.helpcenter') :
-                            route('client.helpcenter')))
+                            (auth()->user()->role === 'applicant' ? route('applicant.helpcenter') :
+                            route('client.helpcenter'))))
                         }}"
                             class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <i class="fa-regular fa-circle-question w-5 text-gray-500 dark:text-gray-400"></i>

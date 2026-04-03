@@ -142,7 +142,7 @@
                 </li>
                 <li>
                     <div class="flex items-center gap-x-6">
-                        <img src="/images/people/Balona.svg" alt=""
+                        <img src="/images/people/Esteban.svg" alt=""
                             class="size-16 object-cover scale-125 rounded-full ring-2 ring-gray-200 dark:ring-white/10" />
                         <div>
                             <h3 class="text-base/7 font-semibold tracking-tight text-gray-900 dark:text-white">Sushmita E.

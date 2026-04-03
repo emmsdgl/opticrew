@@ -21,7 +21,11 @@
     @if($total > 0)
     <div class="avp-scroll flex flex-nowrap gap-4 overflow-x-auto pb-1 w-full max-w-full">
         @foreach($available as $job)
-        <div class="flex-shrink-0 w-[calc(33.333%-0.67rem)]">
+        @php
+            $catMap = ['fa-broom'=>'Cleaning','fa-user-tie'=>'Management','fa-dolly'=>'Logistics','fa-clipboard-check'=>'Quality Assurance','fa-headset'=>'Customer Service','fa-briefcase'=>'Operations','fa-wrench'=>'Maintenance'];
+            $jobCategory = $catMap[$job->icon] ?? 'General';
+        @endphp
+        <div class="flex-shrink-0 w-[calc(33.333%-0.67rem)]" data-job-card data-job-category="{{ $jobCategory }}" data-job-type="{{ $job->type }}" data-job-location="{{ $job->location }}" data-job-salary="{{ $job->salary ?? 0 }}">
             <x-applicant-components.job-card
                 :job="$job"
                 :alreadyApplied="false"

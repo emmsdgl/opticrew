@@ -488,6 +488,8 @@ class ProfileController extends Controller
             return view('manager.help-center', compact('user'));
         } elseif ($role === 'employee') {
             return view('employee.help-center', compact('user'));
+        } elseif ($role === 'applicant') {
+            return view('applicant.help-center', compact('user'));
         } else {
             return view('client.help-center', compact('user'));
         }

@@ -18,7 +18,7 @@
 @section('content')
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-        <div class="grid lg:grid-cols-2 gap-8 items-stretch">
+        <div class="grid lg:grid-cols-2 gap-8 items-start">
 
             <!-- Left Side - Contact Information -->
             <div class="rounded-3xl p-12 text-blue-950 dark:text-white dark:bg-gradient-to-br dark:from-violet-900 dark:to-violet-800 flex flex-col justify-between">
@@ -119,7 +119,7 @@
                     this.form = { name: '', email: '', service: '', message: '' };
                 }
             }">
-                <form @submit.prevent="submitContact()" class="space-y-6">
+                <form @submit.prevent="submitContact()" class="space-y-6 pt-8">
                     <!-- Name -->
                     <x-material-ui.input-field
                         label="Name"
@@ -140,32 +140,44 @@
                         required
                     />
 
-                    <!-- Industry/Service Type -->
-                    <div class="relative" x-data="{ focused: false, filled: false }" x-init="$watch('form.service', v => filled = !!v)">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 z-[1] text-blue-600 dark:text-blue-600">
-                            <i class="fa-solid fa-briefcase text-sm"></i>
-                        </span>
-                        <select x-model="form.service"
-                            @focus="focused = true"
-                            @blur="focused = false"
-                            class="mui-input peer w-full pl-10 pr-4 pt-5 pb-2 text-sm
+                    <!-- Industry/Service Type (Custom Dropdown) -->
+                    <div class="relative" x-data="{ serviceOpen: false }" @click.away="serviceOpen = false">
+                        <button type="button" @click="serviceOpen = !serviceOpen"
+                            class="w-full pl-10 pr-4 py-4 text-sm text-left relative
                                    border border-gray-400 dark:border-gray-700 rounded-xl
-                                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                   bg-white dark:bg-gray-800
                                    transition-all duration-200
                                    focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
-                                   focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]"
-                            :class="!form.service ? 'text-transparent' : ''">
-                            <option value="">Select a service</option>
-                            <option value="residential">Residential Cleaning</option>
-                            <option value="commercial">Commercial Cleaning</option>
-                            <option value="industrial">Industrial Cleaning</option>
-                            <option value="specialized">Specialized Services</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <label class="absolute left-10 pointer-events-none transition-all duration-200 origin-left text-gray-400 dark:text-gray-500"
-                            :class="(focused || filled || form.service) ? 'top-1.5 translate-y-0 text-[11px] ' + (focused ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500') : 'top-1/2 -translate-y-1/2 text-sm'">
-                            Service Type <span class="text-red-500">*</span>
-                        </label>
+                                   focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)]
+                                   flex items-center justify-between">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-600 dark:text-blue-600">
+                                <i class="fa-solid fa-briefcase text-sm"></i>
+                            </span>
+                            <span :class="form.service ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"
+                                  x-text="form.service ? {'residential':'Residential Cleaning','commercial':'Commercial Cleaning','industrial':'Industrial Cleaning','specialized':'Specialized Services','other':'Other'}[form.service] : 'Service Type *'"></span>
+                            <svg class="w-2.5 h-2.5 transition-transform duration-300 text-gray-500 dark:text-gray-400"
+                                 :class="{ 'rotate-180': serviceOpen }"
+                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+                            </svg>
+                        </button>
+                        <div x-show="serviceOpen"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute left-0 right-0 top-full mt-2 z-10 bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden"
+                             style="display: none;">
+                            <ul class="py-2 text-sm text-gray-700 dark:text-white">
+                                <li><button type="button" @click="form.service = 'residential'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'residential' ? 'bg-gray-100 dark:bg-gray-600' : ''">Residential Cleaning</button></li>
+                                <li><button type="button" @click="form.service = 'commercial'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'commercial' ? 'bg-gray-100 dark:bg-gray-600' : ''">Commercial Cleaning</button></li>
+                                <li><button type="button" @click="form.service = 'industrial'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'industrial' ? 'bg-gray-100 dark:bg-gray-600' : ''">Industrial Cleaning</button></li>
+                                <li><button type="button" @click="form.service = 'specialized'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'specialized' ? 'bg-gray-100 dark:bg-gray-600' : ''">Specialized Services</button></li>
+                                <li><button type="button" @click="form.service = 'other'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'other' ? 'bg-gray-100 dark:bg-gray-600' : ''">Other</button></li>
+                            </ul>
+                        </div>
                     </div>
 
                     <!-- Message -->

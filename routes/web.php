@@ -592,6 +592,7 @@ Route::middleware(['auth', 'terms.accepted', 'applicant'])->prefix('applicant')-
     Route::post('/apply/submit', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'submitApplication'])->name('apply.submit');
     Route::post('/profile/update', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'updateProfile'])->name('profile.update');
     Route::post('/applications/{id}/withdraw', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'withdrawApplication'])->name('applications.withdraw');
+    Route::get('/help-center', [App\Http\Controllers\ProfileController::class, 'helpcenter'])->name('helpcenter');
 });
 
 // --- MANAGER (CONTRACTED CLIENT) ROUTES ---

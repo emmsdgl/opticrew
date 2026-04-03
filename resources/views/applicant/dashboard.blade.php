@@ -272,10 +272,18 @@
 
     {{-- Row 2: My Applications --}}
     <div>
-        <x-labelwithvalue
-            label="My Applications"
-            count="{{ $myApplications->count() }}"
-        />
+        <div class="flex items-center justify-between">
+            <x-labelwithvalue
+                label="My Applications"
+                count="{{ $myApplications->count() }}"
+            />
+            <x-dropdown
+                :label="'Filter:'"
+                :default="'All'"
+                :options="['All', 'Pending', 'Interview', 'Hired']"
+                :id="'app-status-filter'"
+            />
+        </div>
         <div class="mt-3">
             <x-applicant-components.applied-positions :applications="$myApplications" :jobPostings="$allJobPostings" />
         </div>
@@ -285,12 +293,28 @@
     @php
         $appliedTitles = $myApplications->pluck('job_title')->map(fn($t) => strtolower(trim($t)))->toArray();
         $availableCount = $jobPostings->filter(fn($job) => !in_array(strtolower(trim($job->title)), $appliedTitles))->count();
+        $jobCategories = $jobPostings->map(function($job) {
+            $categoryMap = [
+                'fa-broom' => 'Cleaning', 'fa-user-tie' => 'Management', 'fa-dolly' => 'Logistics',
+                'fa-clipboard-check' => 'Quality Assurance', 'fa-headset' => 'Customer Service',
+                'fa-briefcase' => 'Operations', 'fa-wrench' => 'Maintenance',
+            ];
+            return $categoryMap[$job->icon] ?? 'General';
+        })->unique()->sort()->values()->toArray();
     @endphp
     <div>
-        <x-labelwithvalue
-            label="Available Job Positions"
-            count="{{ $availableCount }}"
-        />
+        <div class="flex items-center justify-between">
+            <x-labelwithvalue
+                label="Available Job Positions"
+                count="{{ $availableCount }}"
+            />
+            <x-dropdown
+                :label="'Category:'"
+                :default="'All'"
+                :options="array_merge(['All'], $jobCategories)"
+                :id="'job-category-filter'"
+            />
+        </div>
         <div class="mt-3">
             <x-applicant-components.available-positions :jobPostings="$jobPostings" :applications="$myApplications" :savedJobIds="$savedJobIds ?? []" />
         </div>
@@ -360,6 +384,12 @@
 
             init() {
                 this.visibleCount = document.querySelectorAll('.avp-scroll > div').length;
+                window._activeCategoryFilter = 'All';
+
+                // Listen for category dropdown changes to re-apply combined filters
+                window.addEventListener('reapply-job-filters', () => {
+                    this.applyFilters();
+                });
             },
 
             thumbPercent(val) {
@@ -413,18 +443,22 @@
             },
 
             applyFilters() {
+                const activeCategory = window._activeCategoryFilter || 'All';
+
                 const cards = document.querySelectorAll('[data-job-card]');
                 let visible = 0;
                 cards.forEach(card => {
                     const type = card.dataset.jobType || '';
                     const loc = card.dataset.jobLocation || '';
                     const sal = parseFloat(card.dataset.jobSalary || 0);
+                    const cat = card.dataset.jobCategory || '';
 
                     const typeOk = this.selectedTypes.length === 0 || this.selectedTypes.includes(type);
                     const locOk = this.selectedLocations.length === 0 || this.selectedLocations.includes(loc);
                     const salOk = sal >= this.salaryMin && sal <= this.salaryMax;
+                    const catOk = activeCategory === 'All' || cat === activeCategory;
 
-                    if (typeOk && locOk && salOk) {
+                    if (typeOk && locOk && salOk && catOk) {
                         card.style.display = '';
                         visible++;
                     } else {
@@ -437,6 +471,32 @@
             },
         };
     }
+    // ── Dropdown Filter Listeners ──
+    window.addEventListener('dropdown-change', function(e) {
+        const { id, value } = e.detail;
+
+        if (id === 'app-status-filter') {
+            const statusMap = {
+                'Pending': ['pending'],
+                'Interview': ['interview_scheduled'],
+                'Hired': ['hired'],
+            };
+            document.querySelectorAll('[data-app-card]').forEach(card => {
+                if (value === 'All') {
+                    card.style.display = '';
+                } else {
+                    const allowed = statusMap[value] || [];
+                    card.style.display = allowed.includes(card.dataset.appStatus) ? '' : 'none';
+                }
+            });
+        }
+
+        if (id === 'job-category-filter') {
+            // Filter job cards by category, respecting sidebar filters too
+            window._activeCategoryFilter = value;
+            window.dispatchEvent(new CustomEvent('reapply-job-filters'));
+        }
+    });
     </script>
     @endpush
 

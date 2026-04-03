@@ -91,6 +91,17 @@
             {{ $job->description }}
         </p>
         @endif
+
+        {{-- Withdrawal Reason & Details (shown for withdrawn applications) --}}
+        @if($application->status === 'withdrawn' && $application->withdraw_reason)
+        <div class="mt-2 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40">
+            <p class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 mb-1">Reason for Withdrawal</p>
+            <p class="text-xs text-gray-600 dark:text-gray-300 font-medium">{{ $application->withdraw_reason }}</p>
+            @if($application->withdraw_details)
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 leading-relaxed">{{ $application->withdraw_details }}</p>
+            @endif
+        </div>
+        @endif
     </div>
 
     {{-- ── Pinned footer: applied date + View ── --}}

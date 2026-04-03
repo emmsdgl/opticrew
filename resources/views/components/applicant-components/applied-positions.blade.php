@@ -21,7 +21,7 @@
             @php
                 $matchedJob = $jobPostings->firstWhere('title', $application->job_title);
             @endphp
-            <div class="flex-shrink-0 w-[calc(33.333%-0.67rem)]">
+            <div class="flex-shrink-0 w-[calc(33.333%-0.67rem)]" data-app-card data-app-status="{{ $application->status }}">
                 <x-applicant-components.applied-job-card
                     :application="$application"
                     :job="$matchedJob"
