@@ -442,12 +442,16 @@
                     </div>
                 </div>
 
-                <!-- Special Requests -->
+                <!-- Extra Tasks -->
                 <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
-                    x-show="selectedAppointment && selectedAppointment.special_requests">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Special Requests</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-400"
-                        x-text="selectedAppointment?.special_requests || '-'"></p>
+                    x-show="selectedAppointment && selectedAppointment.special_requests?.length > 0">
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Extra Tasks</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="(task, idx) in (selectedAppointment?.special_requests || [])" :key="'client-task-' + idx">
+                            <span class="inline-flex items-center pl-3 pr-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium"
+                                x-text="task"></span>
+                        </template>
+                    </div>
                 </div>
 
                 <!-- Pricing Notice -->

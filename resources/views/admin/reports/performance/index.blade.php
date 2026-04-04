@@ -105,7 +105,7 @@
         </div>
 
         <!-- Employee Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden" x-data="{ page: 1, perPage: 5, total: {{ $employees->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
@@ -120,7 +120,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse ($employees as $employee)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         @php
@@ -208,6 +208,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="px-4 pb-4">
+                @include('components.report-pagination')
             </div>
         </div>
     </section>

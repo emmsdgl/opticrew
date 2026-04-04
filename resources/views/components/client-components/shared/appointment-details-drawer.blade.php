@@ -151,11 +151,15 @@
                         </div>
                     </div>
 
-                    <!-- Special Requests Section -->
-                    <div class="mb-5" x-show="getDrawerData('special_requests')">
-                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Special Requests</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg"
-                            x-text="getDrawerData('special_requests') || '-'"></p>
+                    <!-- Special Requests (Extra Tasks) Section -->
+                    <div class="mb-5" x-show="getDrawerData('special_requests')?.length > 0">
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Extra Tasks</h4>
+                        <div class="flex flex-wrap gap-2 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                            <template x-for="(task, idx) in (getDrawerData('special_requests') || [])" :key="'drawer-task-' + idx">
+                                <span class="inline-flex items-center pl-3 pr-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium"
+                                    x-text="task"></span>
+                            </template>
+                        </div>
                     </div>
 
                     @if($showTeam)

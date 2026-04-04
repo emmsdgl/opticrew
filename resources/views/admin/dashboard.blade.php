@@ -150,7 +150,8 @@
                         <div class="h-72 overflow-y-auto w-full rounded-lg my-3 bg-white shadow-sm dark:bg-gray-800/40">
                             <x-employee-components.task-overview-list :items="$tasks" fixedHeight="18rem"
                                 maxHeight="24rem" emptyTitle="No tasks this month"
-                                emptyMessage="There are no tasks scheduled for this month." />
+                                emptyMessage="There are no tasks scheduled for this month."
+                                bgClass="bg-white dark:bg-transparent" />
                         </div>
                     </div>
 
@@ -494,7 +495,9 @@
 
                 {{-- LIVEWIRE RECENT ARRIVALS - AUTO REFRESHES --}}
                 <x-labelwithvalue label="Recent Arrivals" :count="'(' . $recentArrivals->count() . ')'" />
-                @livewire('admin.recent-arrivals')
+                <div class="h-72 overflow-y-auto w-full rounded-lg my-3 bg-white shadow-sm dark:bg-gray-800/40">
+                    @livewire('admin.recent-arrivals')
+                </div>
 
                 {{-- TOP PERFORMERS WIDGET --}}
                 @if ($topPerformers->count() > 0)

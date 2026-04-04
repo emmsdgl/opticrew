@@ -463,7 +463,8 @@ class ClientAppointmentController extends Controller
             'units' => 'required|integer|min:1|max:20',
             'unit_size' => 'required|string|in:20-50,51-70,71-90,91-120,121-140,141-160,161-180,181-220',
             'room_identifier' => 'required|string|max:255',
-            'special_requests' => 'nullable|string|max:1000'
+            'special_requests' => 'nullable|array',
+            'special_requests.*' => 'string|max:255'
         ]);
 
         // SCENARIO #1: Minimum booking notice requirement
@@ -702,6 +703,13 @@ class ClientAppointmentController extends Controller
                     $ratePerUnit = ($isSunday || $isHoliday) ? ($basePrice * 2) : $basePrice;
                     $quotation = $request->units * $ratePerUnit;
                 }
+            }
+
+            // Add extra tasks pricing (€35 per task)
+            $extraTaskPrice = 35.00;
+            $specialRequests = $request->special_requests ?? [];
+            if (is_array($specialRequests) && count($specialRequests) > 0) {
+                $quotation += count($specialRequests) * $extraTaskPrice;
             }
 
             // Prices are already VAT inclusive

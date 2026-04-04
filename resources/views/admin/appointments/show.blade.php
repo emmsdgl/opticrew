@@ -224,11 +224,13 @@
                             @endif
                         </div>
 
-                        @if($appointment->special_requests)
+                        @if($appointment->special_requests && count($appointment->special_requests) > 0)
                         <div class="mt-6">
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Special Requests</p>
-                            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $appointment->special_requests }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Extra Tasks</p>
+                            <div class="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                @foreach($appointment->special_requests as $task)
+                                    <span class="inline-flex items-center pl-3 pr-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">{{ $task }}</span>
+                                @endforeach
                             </div>
                         </div>
                         @endif

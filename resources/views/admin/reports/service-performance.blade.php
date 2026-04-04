@@ -42,14 +42,15 @@
         <!-- Client Feedback Table -->
         <div class="flex flex-col gap-4">
             <div>
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Client Feedback</h2>
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Client Feedback</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Feedback submitted by clients ({{ $clientFeedback->count() }})</p>
             </div>
 
             @if($clientFeedback->count() > 0)
-                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 max-h-[500px] overflow-y-auto">
+                <div x-data="{ page: 1, perPage: 5, total: {{ $clientFeedback->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
+                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <table class="w-full">
-                        <thead class="sticky top-0 bg-white dark:bg-gray-800 z-10">
+                        <thead class="bg-white dark:bg-gray-800">
                             <tr class="border-b border-gray-200 dark:border-gray-700">
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Client</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Service Type</th>
@@ -61,7 +62,7 @@
                         </thead>
                         <tbody>
                             @foreach($clientFeedback as $feedback)
-                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $feedback->client?->full_name ?? 'Unknown Client' }}</div>
                                     </td>
@@ -102,6 +103,8 @@
                         </tbody>
                     </table>
                 </div>
+                @include('components.report-pagination')
+                </div>
             @else
                 <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
                     <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
@@ -114,14 +117,15 @@
         <!-- Employee Feedback Table -->
         <div class="flex flex-col gap-4">
             <div>
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Employee Feedback</h2>
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Employee Feedback</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Feedback submitted by employees ({{ $employeeFeedback->count() }})</p>
             </div>
 
             @if($employeeFeedback->count() > 0)
-                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 max-h-[500px] overflow-y-auto">
+                <div x-data="{ page: 1, perPage: 5, total: {{ $employeeFeedback->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
+                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <table class="w-full">
-                        <thead class="sticky top-0 bg-white dark:bg-gray-800 z-10">
+                        <thead class="bg-white dark:bg-gray-800">
                             <tr class="border-b border-gray-200 dark:border-gray-700">
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Employee</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Task</th>
@@ -133,7 +137,7 @@
                         </thead>
                         <tbody>
                             @foreach($employeeFeedback as $feedback)
-                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $feedback->employee?->fullName ?? 'Unknown Employee' }}</div>
                                     </td>
@@ -175,6 +179,8 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+                @include('components.report-pagination')
                 </div>
             @else
                 <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">

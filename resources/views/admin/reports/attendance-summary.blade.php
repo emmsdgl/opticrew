@@ -105,7 +105,7 @@
 
         <!-- Approved Leave Requests Table -->
         <div class="flex flex-col gap-4">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
                 Approved Leave Requests
                 <span class="text-sm font-normal text-gray-500 dark:text-gray-400" x-text="'(' + filteredLeaves().length + ')'"></span>
             </h2>
@@ -202,7 +202,7 @@
 
         <!-- Absences Table -->
         <div class="flex flex-col gap-4">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
                 Absences
                 <span class="text-sm font-normal text-gray-500 dark:text-gray-400" x-text="'(' + filteredAbsences().length + ')'"></span>
             </h2>
@@ -236,7 +236,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                                    <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white" colspan="3">TOTAL ABSENCES</td>
+                                    <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white" colspan="3">Total Absences</td>
                                     <td class="px-6 py-4 text-sm font-semibold text-red-600 dark:text-red-400" x-text="filteredAbsences().length"></td>
                                 </tr>
                             </tfoot>
@@ -280,6 +280,31 @@
         </div>
     </section>
 
+    @php
+        $leavesJson = $leaveRecords->map(function($l) {
+            return [
+                'name' => $l['employee_name'],
+                'email' => $l['employee_email'],
+                'type' => $l['type'],
+                'start_date' => $l['start_date'],
+                'end_date' => $l['end_date'],
+                'date_raw' => \Carbon\Carbon::parse($l['start_date'])->toDateString(),
+                'duration' => $l['duration'],
+                'reason' => $l['reason'],
+            ];
+        })->values();
+
+        $absencesJson = $absenceRecords->sortBy('date_raw')->map(function($a) {
+            return [
+                'name' => $a['employee_name'],
+                'email' => $a['employee_email'],
+                'date' => $a['date'],
+                'date_raw' => $a['date_raw'],
+                'day' => $a['day'],
+            ];
+        })->values();
+    @endphp
+
     <script>
         function attendanceReport() {
             return {
@@ -288,27 +313,12 @@
                 dateSort: 'newest',
                 leavePage: 1,
                 absencePage: 1,
-                perPage: 10,
+                perPage: 5,
                 today: new Date().toISOString().split('T')[0],
 
-                leaves: @json($leaveRecords->map(fn($l) => [
-                    'name' => $l['employee_name'],
-                    'email' => $l['employee_email'],
-                    'type' => $l['type'],
-                    'start_date' => $l['start_date'],
-                    'end_date' => $l['end_date'],
-                    'date_raw' => \Carbon\Carbon::parse($l['start_date'])->toDateString(),
-                    'duration' => $l['duration'],
-                    'reason' => $l['reason'],
-                ])->values()),
+                leaves: @json($leavesJson),
 
-                absences: @json($absenceRecords->sortBy('date_raw')->map(fn($a) => [
-                    'name' => $a['employee_name'],
-                    'email' => $a['employee_email'],
-                    'date' => $a['date'],
-                    'date_raw' => $a['date_raw'],
-                    'day' => $a['day'],
-                ])->values()),
+                absences: @json($absencesJson),
 
                 resetPages() {
                     this.leavePage = 1;

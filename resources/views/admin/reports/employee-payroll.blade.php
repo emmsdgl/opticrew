@@ -47,9 +47,10 @@
 
         <!-- Employee Payroll Table -->
         <div class="flex flex-col gap-4">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Employee Payroll Details</h2>
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Employee Payroll Details</h2>
 
             @if($employees->count() > 0)
+                <div x-data="{ page: 1, perPage: 5, total: {{ $employees->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
                 <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <table class="w-full">
                         <thead>
@@ -66,7 +67,7 @@
                         </thead>
                         <tbody>
                             @foreach($employees as $employee)
-                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $employee->name }}</div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400">{{ $employee->email }}</div>
@@ -114,6 +115,8 @@
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+                @include('components.report-pagination')
                 </div>
             @else
                 <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">

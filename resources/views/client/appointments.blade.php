@@ -653,8 +653,8 @@
                             'service_date' => $appointment->service_date->format('M d, Y'),
                             'service_time' => \Carbon\Carbon::parse($appointment->service_time)->format('g:i A'),
                             'raw_date' => $appointment->service_date->format('Y-m-d'),
-                            'description' => $appointment->special_requests
-                                ? $appointment->special_requests
+                            'description' => $appointment->special_requests && count($appointment->special_requests) > 0
+                                ? implode(', ', $appointment->special_requests)
                                 : 'Cleaning service for ' . $appointment->number_of_units . ' unit(s) at ' . $appointment->cabin_name . ' (' . $appointment->unit_size . ' m²)',
                             'cabin_name' => $appointment->cabin_name,
                             'unit_size' => $appointment->unit_size,

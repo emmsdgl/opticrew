@@ -292,7 +292,7 @@ class AdminAppointmentController extends Controller
                 'cabin_name' => $appointment->cabin_name ?? '',
                 'unit_size' => $appointment->unit_size ?? '',
                 'unit_details' => $appointment->unit_details ?? [],
-                'special_requests' => $appointment->special_requests ?? '',
+                'special_requests' => $appointment->special_requests ?? [],
                 'other_concerns' => $appointment->other_concerns ?? '',
             ],
             'pricing' => [
@@ -565,7 +565,7 @@ class AdminAppointmentController extends Controller
             'travel_time' => 30,
             'status' => 'Pending',
             'arrival_status' => false,
-            'notes' => $appointment->special_requests,
+            'notes' => is_array($appointment->special_requests) ? implode(', ', $appointment->special_requests) : $appointment->special_requests,
             'assigned_team_id' => null,
         ]);
 

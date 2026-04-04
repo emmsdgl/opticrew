@@ -677,16 +677,20 @@
                                                 </div>
                                             </template>
 
-                                            <!-- Special Requests -->
-                                            <template x-if="apt.service.special_requests">
+                                            <!-- Extra Tasks -->
+                                            <template x-if="apt.service.special_requests?.length > 0">
                                                 <div
                                                     class="flex flex-col mt-3 py-2.5 border-b border-gray-100 dark:border-gray-700">
                                                     <p
                                                         class="text-sm text-gray-500 dark:text-white mb-3 flex items-center gap-2">
-                                                        <i class="fas fa-comment-dots text-gray-400"></i> Special
-                                                        Requests</p>
-                                                    <p class="text-sm text-gray-900 dark:text-gray-400 mb-2"
-                                                        x-text="apt.service.special_requests"></p>
+                                                        <i class="fas fa-comment-dots text-gray-400"></i> Extra
+                                                        Tasks</p>
+                                                    <div class="flex flex-wrap gap-2 mb-2">
+                                                        <template x-for="(task, idx) in apt.service.special_requests" :key="'admin-task-' + idx">
+                                                            <span class="inline-flex items-center pl-3 pr-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium"
+                                                                x-text="task"></span>
+                                                        </template>
+                                                    </div>
                                                 </div>
                                             </template>
                                         </div>

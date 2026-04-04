@@ -34,12 +34,13 @@
         </div>
 
         <!-- Employee Progress Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Employee Progress Overview</h2>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 overflow-hidden">
+            <div class="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Employee Progress Overview</h2>
             </div>
 
             @if($employeeProgress->count() > 0)
+                <div x-data="{ page: 1, perPage: 5, total: {{ $employeeProgress->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -52,7 +53,7 @@
                             </tr>
                         </thead>
                         @foreach($employeeProgress as $ep)
-                            <tbody x-data="{ open: false }" class="border-b border-gray-200 dark:border-gray-700">
+                            <tbody x-data="{ open: false }" class="border-b border-gray-200 dark:border-gray-700" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" @click="open = !open">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-3">
@@ -124,6 +125,8 @@
                             </tbody>
                         @endforeach
                     </table>
+                </div>
+                @include('components.report-pagination')
                 </div>
             @else
                 <div class="w-full px-6 py-24 text-center">

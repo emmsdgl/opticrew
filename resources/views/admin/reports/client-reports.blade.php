@@ -45,9 +45,10 @@
 
         <!-- Service Type Breakdown -->
         <div class="flex flex-col gap-4">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Service Type Breakdown</h2>
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Service Type Breakdown</h2>
 
             @if ($serviceBreakdown->count() > 0)
+                <div x-data="{ page: 1, perPage: 5, total: {{ $serviceBreakdown->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
                 <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <table class="w-full">
                         <thead>
@@ -62,7 +63,7 @@
                         </thead>
                         <tbody>
                             @foreach ($serviceBreakdown as $service)
-                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-semibold text-gray-900 dark:text-white">
                                             {{ $service->service_type }}</div>
@@ -80,6 +81,8 @@
                         </tbody>
                     </table>
                 </div>
+                @include('components.report-pagination')
+                </div>
             @else
                 <div
                     class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
@@ -93,9 +96,10 @@
 
         <!-- Client Details -->
         <div class="flex flex-col gap-4">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Client Details</h2>
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Client Details</h2>
 
             @if ($clients->count() > 0)
+                <div x-data="{ page: 1, perPage: 5, total: {{ $clients->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
                 <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <table class="w-full">
                         <thead>
@@ -118,7 +122,7 @@
                         </thead>
                         <tbody>
                             @foreach ($clients as $client)
-                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-semibold text-gray-900 dark:text-white">
                                             {{ $client->company_name ?: $client->full_name ?? 'N/A' }}</div>
@@ -178,6 +182,8 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+                @include('components.report-pagination')
                 </div>
             @else
                 <div

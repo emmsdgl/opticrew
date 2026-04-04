@@ -119,7 +119,7 @@ class AppointmentController extends Controller
                 'unit_details' => $appointment->unit_details ?? [],
                 'company_service_types' => $this->parseServiceTypes($appointment->company_service_types),
                 'other_concerns' => $appointment->other_concerns ?? '',
-                'special_requests' => $appointment->special_requests ?? '',
+                'special_requests' => $appointment->special_requests ?? [],
             ],
             'pricing' => [
                 'subtotal' => $appointment->quotation ? number_format($appointment->quotation, 2) : '0.00',
@@ -845,7 +845,7 @@ class AppointmentController extends Controller
             'travel_time' => 30, // Default 30 minutes
             'status' => 'Pending',
             'arrival_status' => false,
-            'notes' => $appointment->special_requests,
+            'notes' => is_array($appointment->special_requests) ? implode(', ', $appointment->special_requests) : $appointment->special_requests,
             'assigned_team_id' => null
         ]);
 

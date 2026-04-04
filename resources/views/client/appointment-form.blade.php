@@ -496,6 +496,57 @@
                         </x-material-ui.accordion>
                     </div>
 
+                    <!-- Special Requests - Revised: Extra Tasks (Tag Chips) -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Extra Tasks</label>
+                        <div class="flex flex-wrap gap-1.5 mb-3">
+                            <template x-for="suggestion in ['Oven Cleaning', 'Fridge Cleaning', 'Window Washing', 'Balcony Cleaning', 'Laundry Service']" :key="suggestion">
+                                <button type="button"
+                                    @click="if(!formData.special_requests.includes(suggestion)) { formData.special_requests.push(suggestion); } else { formData.special_requests.splice(formData.special_requests.indexOf(suggestion), 1); }"
+                                    :class="formData.special_requests.includes(suggestion)
+                                        ? 'border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                        : 'border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
+                                    class="inline-flex items-center px-3 py-1 rounded-full border text-xs font-medium transition-colors cursor-pointer">
+                                    <span x-text="suggestion"></span>
+                                    <span class="ml-1 opacity-60">€35</span>
+                                    <svg x-show="formData.special_requests.includes(suggestion)" class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-3" x-show="formData.special_requests.length > 0">
+                            <template x-for="(task, idx) in formData.special_requests" :key="'task-' + idx">
+                                <span
+                                    class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
+                                    <span x-text="task"></span>
+                                    <span class="opacity-60">€35</span>
+                                    <button type="button" @click="formData.special_requests.splice(idx, 1)"
+                                        class="w-4 h-4 inline-flex items-center justify-center rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 transition-colors">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </template>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" x-ref="extraTaskInput"
+                                class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm
+                                       bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Type an extra task and press Enter..."
+                                @keydown.enter.prevent="if($refs.extraTaskInput.value.trim()) { formData.special_requests.push($refs.extraTaskInput.value.trim()); $refs.extraTaskInput.value = ''; }">
+                            <button type="button"
+                                @click="if($refs.extraTaskInput.value.trim()) { formData.special_requests.push($refs.extraTaskInput.value.trim()); $refs.extraTaskInput.value = ''; }"
+                                class="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg font-medium">
+                                <i class="fa-solid fa-plus mr-1"></i>Add
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Quotation Summary -->
                     <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800" x-show="quotation > 0">
                         <div class="flex justify-between items-center">
@@ -503,6 +554,7 @@
                                 <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Total Estimated Quotation</div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     <span x-text="formData.units"></span> unit(s)
+                                    <span x-show="formData.special_requests.length > 0"> + <span x-text="formData.special_requests.length"></span> extra task(s)</span>
                                     <span x-show="formData.is_sunday || formData.is_holiday" class="text-orange-600 dark:text-orange-400 font-semibold"> - Double rate applied</span>
                                 </div>
                             </div>
@@ -513,6 +565,13 @@
                                 <div class="text-xs text-gray-500 dark:text-gray-400">VAT Inclusive</div>
                             </div>
                         </div>
+                        <!-- Extra tasks breakdown -->
+                        <div x-show="formData.special_requests.length > 0" class="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                                <span>Extra tasks (<span x-text="formData.special_requests.length"></span> × €<span x-text="extraTaskPrice.toFixed(2)"></span>)</span>
+                                <span class="font-medium text-gray-700 dark:text-gray-300">€<span x-text="(formData.special_requests.length * extraTaskPrice).toFixed(2)"></span></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Pricing Disclaimer -->
@@ -521,16 +580,6 @@
                             <i class="fi fi-rr-info mr-1"></i>
                             Sundays and holidays will be charged double the price. All rates are inclusive of VAT and prices are subject to change.
                         </p>
-                    </div>
-
-                    <!-- Special Requests -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Special
-                            Requests</label>
-                        <textarea x-model="formData.special_requests" rows="4" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm
-                                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Type in special requests (eg. &quot;Extra cleaning for kitchen&quot;, &quot;Pet-friendly cleaning supplies&quot;)"></textarea>
                     </div>
 
                     <!-- Navigation -->
@@ -623,10 +672,21 @@
                     </div>
                 </div>
 
-                <!-- Special Requests -->
-                <div x-show="formData.special_requests" class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                    <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Special requests</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400" x-text="formData.special_requests"></p>
+                <!-- Special Requests (Extra Tasks) -->
+                <div x-show="formData.special_requests.length > 0" class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Extra Tasks</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">€<span x-text="extraTaskPrice.toFixed(2)"></span> each</p>
+                    </div>
+                    <div class="space-y-2">
+                        <template x-for="(task, idx) in formData.special_requests" :key="'confirm-task-' + idx">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="inline-flex items-center pl-3 pr-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium"
+                                    x-text="task"></span>
+                                <span class="font-bold text-gray-900 dark:text-white">€<span x-text="extraTaskPrice.toFixed(2)"></span></span>
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
                 <!-- Progress Steps -->
@@ -651,8 +711,12 @@
                 <div class="bg-transparent dark:bg-gray-800/50 rounded-xl p-6 mb-6">
                     <div class="space-y-3">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500 dark:text-gray-400">Subtotal</span>
-                            <span class="text-gray-900 dark:text-white font-medium" x-text="quotation > 0 ? '€' + quotation.toFixed(2) : '-'"></span>
+                            <span class="text-gray-500 dark:text-gray-400">Service subtotal</span>
+                            <span class="text-gray-900 dark:text-white font-medium" x-text="unitData.length > 0 ? '€' + unitData.reduce((t, u) => t + (u.price || 0), 0).toFixed(2) : '-'"></span>
+                        </div>
+                        <div x-show="formData.special_requests.length > 0" class="flex justify-between text-sm">
+                            <span class="text-gray-500 dark:text-gray-400">Extra tasks (<span x-text="formData.special_requests.length"></span> × €<span x-text="extraTaskPrice.toFixed(2)"></span>)</span>
+                            <span class="text-gray-900 dark:text-white font-medium" x-text="'€' + (formData.special_requests.length * extraTaskPrice).toFixed(2)"></span>
                         </div>
                         <div x-show="formData.is_sunday || formData.is_holiday" class="flex justify-between text-sm">
                             <span class="text-gray-500 dark:text-gray-400">Rate multiplier</span>
@@ -783,6 +847,7 @@
             snowoutCleaningHourlyRate: 55.00, // €55/hour (specialized)
             generalCleaningHourlyRate: 40.00, // €40/hour
             hotelCleaningHourlyRate: 42.00, // €42/hour
+            extraTaskPrice: 35.00, // €35 per extra task
 
             // Hour estimates per size range for other services
             standardCleaningEstimates: {
@@ -821,7 +886,7 @@
                 is_holiday: false,       // To be flagged by admin later
                 is_priority: false,      // Priority Clean - allows 2-day advance booking
                 units: 1,                // Default to 1 unit
-                special_requests: ''
+                special_requests: []
             },
 
 
@@ -868,6 +933,11 @@
                             this.calculateUnitPrice(index);
                         }
                     });
+                    this.calculateQuotation();
+                });
+
+                // Recalculate quotation when extra tasks change
+                this.$watch('formData.special_requests', () => {
                     this.calculateQuotation();
                 });
             },
@@ -1380,9 +1450,14 @@
                 }
 
                 // Sum all unit prices (units are already calculated individually)
-                this.quotation = this.unitData.reduce((total, unit) => {
+                let unitTotal = this.unitData.reduce((total, unit) => {
                     return total + (unit.price || 0);
                 }, 0);
+
+                // Add extra tasks pricing (€35 per task)
+                let extraTasksTotal = this.formData.special_requests.length * this.extraTaskPrice;
+
+                this.quotation = unitTotal + extraTasksTotal;
 
                 console.log('Quotation calculated:', {
                     service: this.formData.service_type,
@@ -1390,6 +1465,8 @@
                     isSunday: this.formData.is_sunday,
                     isHoliday: this.formData.is_holiday,
                     unitData: this.unitData,
+                    extraTasks: this.formData.special_requests.length,
+                    extraTasksTotal: extraTasksTotal,
                     total: this.quotation
                 });
             },

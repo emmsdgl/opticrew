@@ -86,6 +86,7 @@ class ClientAppointment extends Model
         'is_holiday' => 'boolean',
         'is_company_inquiry' => 'boolean',
         'company_service_types' => 'array',
+        'special_requests' => 'array',
         'unit_details' => 'array',
         'quotation' => 'decimal:2',
         'vat_amount' => 'decimal:2',
