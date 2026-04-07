@@ -114,6 +114,10 @@ class GoogleAuthController extends Controller
             return $this->handleMobileVerifyCallback($googleUser);
         }
 
+        if ($purpose === 'web_forgot_password_verify') {
+            return $this->handleWebForgotPasswordVerifyCallback($googleUser);
+        }
+
         return $this->handleLoginCallback($googleUser);
     }
 
@@ -770,6 +774,95 @@ class GoogleAuthController extends Controller
             ->send(new \App\Mail\EmailVerificationOtp($otp));
 
         return redirect($callback . '?verified=true');
+    }
+
+    /**
+     * Web (Livewire) forgot-password 3FA Step 2: redirect to Google OAuth.
+     * Mirrors mobileVerifyRedirect() but stores web-specific session keys and redirects
+     * back to the website (not a deep link).
+     */
+    public function webForgotPasswordVerifyRedirect(Request $request)
+    {
+        $email = $request->query('email');
+
+        if (!$email) {
+            return redirect()->route('forgot.password.new')
+                ->with('web_forgot_password_error', 'Missing email. Please start over from the beginning.');
+        }
+
+        session([
+            'google_auth_purpose' => 'web_forgot_password_verify',
+            'web_forgot_password_email' => $email,
+        ]);
+
+        $host = $request->getHost();
+        if (str_contains($host, 'finnoys.com')) {
+            $callbackUrl = 'https://finnoys.com/auth/google/callback';
+        } elseif (str_contains($host, 'ngrok')) {
+            $callbackUrl = 'https://' . $host . '/opticrew/public/auth/google/callback';
+        } else {
+            $callbackUrl = 'http://127.0.0.1:8000/auth/google/callback';
+        }
+
+        return Socialite::driver('google')
+            ->redirectUrl($callbackUrl)
+            ->redirect();
+    }
+
+    /**
+     * Handle Google callback for the web (Livewire) forgot-password verification.
+     * Verifies the Google account matches the reset email, sends an OTP, and redirects
+     * the user back to the Livewire page with a session flash so the wizard can advance
+     * to the OTP step automatically.
+     */
+    private function handleWebForgotPasswordVerifyCallback($googleUser)
+    {
+        $resetEmail = session('web_forgot_password_email');
+        session()->forget(['google_auth_purpose', 'web_forgot_password_email']);
+
+        if (!$resetEmail) {
+            return redirect()->route('forgot.password.new')
+                ->with('web_forgot_password_error', 'Your verification link has expired. Please go back and start the process again.');
+        }
+
+        $user = User::where('email', $resetEmail)
+            ->orWhere('alternative_email', $resetEmail)
+            ->first();
+
+        if (!$user) {
+            return redirect()->route('forgot.password.new')
+                ->with('web_forgot_password_error', 'We could not find an account with that email address. Please check and try again.')
+                ->with('web_forgot_password_email', $resetEmail);
+        }
+
+        // Verify the Google account matches (by google_id, email, or alternative_email)
+        $googleEmail = $googleUser->getEmail();
+        $googleId = $googleUser->getId();
+
+        $matches = false;
+        if ($user->google_id && $user->google_id === $googleId) {
+            $matches = true;
+        } elseif ($user->email === $googleEmail || $user->alternative_email === $googleEmail) {
+            $matches = true;
+        }
+
+        if (!$matches) {
+            return redirect()->route('forgot.password.new')
+                ->with('web_forgot_password_error', 'The Google account you used does not match the one linked to your account. Please sign in with the correct Google account.')
+                ->with('web_forgot_password_email', $resetEmail);
+        }
+
+        // Google verification passed — generate and send OTP (3FA Step 3).
+        // Always send OTP to the employee's verified Google account email; @finnoys.com
+        // addresses have no inbox so we never send there.
+        $otp = random_int(100000, 999999);
+        Cache::put("web_pwd_reset_otp:{$user->id}", $otp, now()->addMinutes(5));
+
+        Mail::to($user->alternative_email)
+            ->send(new \App\Mail\EmailVerificationOtp($otp));
+
+        return redirect()->route('forgot.password.new')
+            ->with('web_forgot_password_verified_email', $resetEmail);
     }
 
     private function dashboardUrl(string $role): string

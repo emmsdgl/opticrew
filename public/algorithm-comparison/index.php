@@ -12,6 +12,7 @@ session_start();
 require_once __DIR__ . '/algorithms/RuleBasedPreprocessor.php';
 require_once __DIR__ . '/algorithms/HybridGA.php';
 require_once __DIR__ . '/algorithms/TraditionalGA.php';
+require_once __DIR__ . '/algorithms/EnhancedHybridGA.php';
 
 // ─── Database Connection (reads from Laravel .env) ───
 function getDB() {
@@ -204,8 +205,10 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
 
     $hybridResults = [];
     $traditionalResults = [];
+    $enhancedResults = [];
     $hybridValidation = null;
     $traditionalValidation = null;
+    $enhancedValidation = null;
 
     // Run Hybrid (Rule-Based + GA with Elitism)
     $hybridTeams = [];
@@ -271,14 +274,54 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
         }
     }
 
+    // Run Enhanced Hybrid (Multi-Objective GA)
+    $enhancedTeams = [];
+    for ($i = 0; $i < $runs; $i++) {
+        $startTime = microtime(true);
+
+        $preprocessor = new RuleBasedPreprocessor();
+        $preprocessed = $preprocessor->preprocess($tasks, $employees, $clients);
+
+        if (empty($preprocessed['valid_tasks'])) {
+            $enhancedResults[] = ['fitness' => 0, 'generations' => 0, 'time_ms' => 0];
+            continue;
+        }
+
+        $enhancedGA = new EnhancedHybridGA($gaConfig);
+        $result = $enhancedGA->optimize(
+            $preprocessed['valid_tasks'],
+            $preprocessed['employee_allocations'],
+            $preprocessed['teams']
+        );
+
+        $elapsed = (microtime(true) - $startTime) * 1000;
+
+        $enhancedResults[] = [
+            'fitness' => $result['best_fitness'],
+            'generations' => $result['generations'],
+            'convergence' => $result['convergence_generation'],
+            'time_ms' => $elapsed,
+        ];
+
+        if ($i === 0 && !empty($result['best_schedule'])) {
+            $enhancedValidation = validateScheduleAccuracy(
+                $result['best_schedule'], $tasks, $preprocessed['teams'], $employees
+            );
+            $enhancedTeams = $preprocessed['teams'];
+        }
+    }
+
     // Aggregate results
     return [
         'hybrid' => aggregateResults($hybridResults),
         'traditional' => aggregateResults($traditionalResults),
+        'enhanced' => aggregateResults($enhancedResults),
         'raw_hybrid' => $hybridResults,
         'raw_traditional' => $traditionalResults,
+        'raw_enhanced' => $enhancedResults,
         'hybrid_validation' => $hybridValidation,
         'traditional_validation' => $traditionalValidation,
+        'enhanced_validation' => $enhancedValidation,
         'meta' => [
             'employees_used' => count($employees),
             'tasks_used' => count($tasks),
@@ -812,7 +855,7 @@ try {
     <!-- Header -->
     <div class="header">
         <h1>Algorithm Comparison <span class="badge">LOCAL ONLY</span></h1>
-        <p>Rule-Based + Genetic Algorithm (Hybrid) vs Traditional Genetic Algorithm &mdash; For thesis defense demonstration</p>
+        <p>Traditional GA vs Hybrid GA vs Enhanced Hybrid GA (Multi-Objective) &mdash; For thesis defense demonstration</p>
     </div>
 
     <?php if (isset($dbError)): ?>
@@ -963,17 +1006,22 @@ async function runAllSetups() {
 function renderComparisonTable(data, tableNum, label, setup) {
     const h = data.hybrid;
     const t = data.traditional;
+    const e = data.enhanced;
     const meta = data.meta;
 
-    // Determine winners
-    const fitWinner = h.avg_fitness >= t.avg_fitness ? 'hybrid' : 'traditional';
-    const convWinner = h.avg_convergence <= t.avg_convergence ? 'hybrid' : 'traditional';
-    const timeWinner = h.avg_time_ms <= t.avg_time_ms ? 'hybrid' : 'traditional';
+    // Determine winners (3-way)
+    const fitValues = { hybrid: h.avg_fitness, traditional: t.avg_fitness, enhanced: e.avg_fitness };
+    const convValues = { hybrid: h.avg_convergence, traditional: t.avg_convergence, enhanced: e.avg_convergence };
+    const timeValues = { hybrid: h.avg_time_ms, traditional: t.avg_time_ms, enhanced: e.avg_time_ms };
+
+    const fitWinner = Object.keys(fitValues).reduce((a, b) => fitValues[a] >= fitValues[b] ? a : b);
+    const convWinner = Object.keys(convValues).reduce((a, b) => convValues[a] <= convValues[b] ? a : b);
+    const timeWinner = Object.keys(timeValues).reduce((a, b) => timeValues[a] <= timeValues[b] ? a : b);
 
     let html = `
     <div class="results-section">
         <table class="comparison-table">
-            <caption>Table ${tableNum}: ${label} Setup: Rule-Based + Genetic Algorithm vs Traditional Genetic Algorithm</caption>
+            <caption>Table ${tableNum}: ${label} Setup: Traditional GA vs Hybrid GA vs Enhanced Hybrid GA (Multi-Objective)</caption>
             <thead>
                 <tr>
                     <th></th>
@@ -986,14 +1034,6 @@ function renderComparisonTable(data, tableNum, label, setup) {
             </thead>
             <tbody>
                 <tr>
-                    <td>Rule-Based Algorithm + Genetic Algorithm</td>
-                    <td>${meta.employees_used}</td>
-                    <td>${meta.tasks_used}</td>
-                    <td class="${fitWinner === 'hybrid' ? 'winner' : 'loser'}">${h.avg_fitness.toFixed(4)}</td>
-                    <td class="${convWinner === 'hybrid' ? 'winner' : 'loser'}">${Math.round(h.avg_convergence)} generations</td>
-                    <td class="${timeWinner === 'hybrid' ? 'winner' : 'loser'}">${h.avg_time_ms.toFixed(2)} ms</td>
-                </tr>
-                <tr>
                     <td>Traditional Genetic Algorithm</td>
                     <td>${meta.employees_used}</td>
                     <td>${meta.tasks_used}</td>
@@ -1001,27 +1041,90 @@ function renderComparisonTable(data, tableNum, label, setup) {
                     <td class="${convWinner === 'traditional' ? 'winner' : 'loser'}">${Math.round(t.avg_convergence)} generations</td>
                     <td class="${timeWinner === 'traditional' ? 'winner' : 'loser'}">${t.avg_time_ms.toFixed(2)} ms</td>
                 </tr>
+                <tr>
+                    <td>Rule-Based + Genetic Algorithm (Hybrid)</td>
+                    <td>${meta.employees_used}</td>
+                    <td>${meta.tasks_used}</td>
+                    <td class="${fitWinner === 'hybrid' ? 'winner' : 'loser'}">${h.avg_fitness.toFixed(4)}</td>
+                    <td class="${convWinner === 'hybrid' ? 'winner' : 'loser'}">${Math.round(h.avg_convergence)} generations</td>
+                    <td class="${timeWinner === 'hybrid' ? 'winner' : 'loser'}">${h.avg_time_ms.toFixed(2)} ms</td>
+                </tr>
+                <tr style="background: #f0fdf4;">
+                    <td>Enhanced Hybrid GA (Multi-Objective)</td>
+                    <td>${meta.employees_used}</td>
+                    <td>${meta.tasks_used}</td>
+                    <td class="${fitWinner === 'enhanced' ? 'winner' : 'loser'}">${e.avg_fitness.toFixed(4)}</td>
+                    <td class="${convWinner === 'enhanced' ? 'winner' : 'loser'}">${Math.round(e.avg_convergence)} generations</td>
+                    <td class="${timeWinner === 'enhanced' ? 'winner' : 'loser'}">${e.avg_time_ms.toFixed(2)} ms</td>
+                </tr>
             </tbody>
         </table>
     </div>
     `;
 
-    // Add Accuracy Validation Breakdown
-    if (data.hybrid_validation && data.traditional_validation) {
-        html += renderAccuracyBreakdown(data.hybrid_validation, data.traditional_validation, tableNum);
+    // Add Accuracy Validation Breakdown (3-way)
+    if (data.hybrid_validation && data.traditional_validation && data.enhanced_validation) {
+        html += renderAccuracyBreakdown3Way(data.hybrid_validation, data.traditional_validation, data.enhanced_validation, tableNum);
+    } else if (data.hybrid_validation && data.traditional_validation) {
+        html += renderAccuracyBreakdown3Way(data.hybrid_validation, data.traditional_validation, null, tableNum);
     }
 
     return html;
 }
 
-function renderAccuracyBreakdown(hybridVal, traditionalVal, tableNum) {
+function renderAccuracyBreakdown3Way(hybridVal, traditionalVal, enhancedVal, tableNum) {
     const hTrueAcc = hybridVal.true_accuracy;
     const tTrueAcc = traditionalVal.true_accuracy;
-    const winner = hTrueAcc >= tTrueAcc ? 'Hybrid' : 'Traditional';
-    const winnerPct = Math.max(hTrueAcc, tTrueAcc);
-    const loserPct = Math.min(hTrueAcc, tTrueAcc);
+    const eTrueAcc = enhancedVal ? enhancedVal.true_accuracy : 0;
 
-    return `
+    const accValues = { 'Traditional': tTrueAcc, 'Hybrid': hTrueAcc };
+    if (enhancedVal) accValues['Enhanced Hybrid'] = eTrueAcc;
+    const winner = Object.keys(accValues).reduce((a, b) => accValues[a] >= accValues[b] ? a : b);
+    const winnerPct = accValues[winner];
+
+    function renderAccuracyCard(val, title, cssClass) {
+        return `
+            <div class="accuracy-card ${cssClass}">
+                <h4>${title}</h4>
+                <div class="task-grid">
+                    ${renderTaskIcons(val)}
+                </div>
+                <div class="accuracy-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">Total Tasks:</span>
+                        <span class="stat-value">${val.total_tasks}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label"><span class="stat-icon valid">&#10003;</span> Valid:</span>
+                        <span class="stat-value green">${val.valid}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label"><span class="stat-icon invalid">&#10007;</span> Invalid:</span>
+                        <span class="stat-value red">${val.invalid}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label"><span class="stat-icon unscheduled">&#9675;</span> Unscheduled:</span>
+                        <span class="stat-value gray">${val.unscheduled}</span>
+                    </div>
+                    <div class="accuracy-rates">
+                        <div class="rate-row">
+                            <span>RAW Accuracy:</span>
+                            <span class="rate-value orange">${val.raw_accuracy.toFixed(2)}%</span>
+                        </div>
+                        <div class="rate-row">
+                            <span>TRUE Accuracy:</span>
+                            <span class="rate-value green">${val.true_accuracy.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                    ${renderViolations(val.violations)}
+                </div>
+            </div>
+        `;
+    }
+
+    let gridStyle = enhancedVal ? 'grid-template-columns: 1fr 1fr 1fr;' : 'grid-template-columns: 1fr 1fr;';
+
+    let html = `
     <div class="accuracy-section">
         <h3>Accuracy Validation Breakdown</h3>
 
@@ -1029,91 +1132,23 @@ function renderAccuracyBreakdown(hybridVal, traditionalVal, tableNum) {
             <strong>Understanding the Difference:</strong><br>
             <span class="label-raw">RAW Accuracy</span> = Tasks scheduled (ignoring validity)<br>
             <span class="label-true">TRUE Accuracy</span> = Tasks scheduled WITH valid constraints (driver required, correct team size, client match)<br><br>
-            <strong>Why This Matters:</strong> Traditional GA can assign tasks freely, achieving high numbers but creating impossible schedules
-            (teams without drivers, wrong skills, etc.). Hybrid only creates valid, production-ready schedules.
+            <strong>Why This Matters:</strong> Traditional GA can assign tasks freely, achieving high numbers but creating impossible schedules.
+            Both Hybrid algorithms use rule-based preprocessing to ensure valid, production-ready schedules.
         </div>
 
-        <div class="accuracy-grid">
-            <!-- Traditional GA Card -->
-            <div class="accuracy-card traditional">
-                <h4>Traditional GA "Accuracy"</h4>
-                <div class="task-grid">
-                    ${renderTaskIcons(traditionalVal)}
-                </div>
-                <div class="accuracy-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Total Tasks:</span>
-                        <span class="stat-value">${traditionalVal.total_tasks}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label"><span class="stat-icon valid">&#10003;</span> Valid Schedules:</span>
-                        <span class="stat-value green">${traditionalVal.valid}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label"><span class="stat-icon invalid">&#10007;</span> Invalid (No Driver/Skills):</span>
-                        <span class="stat-value red">${traditionalVal.invalid}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label"><span class="stat-icon unscheduled">&#9675;</span> Not Scheduled:</span>
-                        <span class="stat-value gray">${traditionalVal.unscheduled}</span>
-                    </div>
-                    <div class="accuracy-rates">
-                        <div class="rate-row">
-                            <span>RAW Accuracy:</span>
-                            <span class="rate-value orange">${traditionalVal.raw_accuracy.toFixed(2)}%</span>
-                        </div>
-                        <div class="rate-row">
-                            <span>TRUE Accuracy:</span>
-                            <span class="rate-value green">${traditionalVal.true_accuracy.toFixed(2)}%</span>
-                        </div>
-                    </div>
-                    ${renderViolations(traditionalVal.violations)}
-                </div>
-            </div>
-
-            <!-- Hybrid GA Card -->
-            <div class="accuracy-card hybrid">
-                <h4>Hybrid GA Accuracy</h4>
-                <div class="task-grid">
-                    ${renderTaskIcons(hybridVal)}
-                </div>
-                <div class="accuracy-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Total Tasks:</span>
-                        <span class="stat-value">${hybridVal.total_tasks}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label"><span class="stat-icon valid">&#10003;</span> Valid Schedules:</span>
-                        <span class="stat-value green">${hybridVal.valid}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label"><span class="stat-icon invalid">&#10007;</span> Invalid:</span>
-                        <span class="stat-value red">${hybridVal.invalid}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label"><span class="stat-icon unscheduled">&#9675;</span> Can't Schedule (No Valid Team):</span>
-                        <span class="stat-value gray">${hybridVal.unscheduled}</span>
-                    </div>
-                    <div class="accuracy-rates">
-                        <div class="rate-row">
-                            <span>RAW Accuracy:</span>
-                            <span class="rate-value orange">${hybridVal.raw_accuracy.toFixed(2)}%</span>
-                        </div>
-                        <div class="rate-row">
-                            <span>TRUE Accuracy:</span>
-                            <span class="rate-value green">${hybridVal.true_accuracy.toFixed(2)}%</span>
-                        </div>
-                    </div>
-                    ${renderViolations(hybridVal.violations)}
-                </div>
-            </div>
+        <div class="accuracy-grid" style="${gridStyle}">
+            ${renderAccuracyCard(traditionalVal, 'Traditional GA', 'traditional')}
+            ${renderAccuracyCard(hybridVal, 'Hybrid GA', 'hybrid')}
+            ${enhancedVal ? renderAccuracyCard(enhancedVal, 'Enhanced Hybrid GA', 'hybrid') : ''}
         </div>
 
         <div class="accuracy-winner">
-            ${winner} Wins: ${winnerPct.toFixed(2)}% > ${loserPct.toFixed(2)}%!
+            ${winner} Wins with ${winnerPct.toFixed(2)}% TRUE Accuracy
         </div>
     </div>
     `;
+
+    return html;
 }
 
 function renderTaskIcons(validation) {
@@ -1149,67 +1184,82 @@ function renderViolations(violations) {
 }
 
 function renderSummary(allResults) {
-    let hybridFitnessWins = 0;
     let traditionalFitnessWins = 0;
-    let hybridAccuracyWins = 0;
-    let traditionalAccuracyWins = 0;
-    let avgHybridTrueAcc = 0;
+    let hybridFitnessWins = 0;
+    let enhancedFitnessWins = 0;
     let avgTraditionalTrueAcc = 0;
+    let avgHybridTrueAcc = 0;
+    let avgEnhancedTrueAcc = 0;
+    let avgTraditionalFitness = 0;
+    let avgHybridFitness = 0;
+    let avgEnhancedFitness = 0;
     let accCount = 0;
 
     allResults.forEach(r => {
-        if (r.data.hybrid.avg_fitness >= r.data.traditional.avg_fitness) hybridFitnessWins++;
+        const tFit = r.data.traditional.avg_fitness;
+        const hFit = r.data.hybrid.avg_fitness;
+        const eFit = r.data.enhanced.avg_fitness;
+        avgTraditionalFitness += tFit;
+        avgHybridFitness += hFit;
+        avgEnhancedFitness += eFit;
+
+        const maxFit = Math.max(tFit, hFit, eFit);
+        if (eFit === maxFit) enhancedFitnessWins++;
+        else if (hFit === maxFit) hybridFitnessWins++;
         else traditionalFitnessWins++;
 
-        if (r.data.hybrid_validation && r.data.traditional_validation) {
-            const hAcc = r.data.hybrid_validation.true_accuracy;
-            const tAcc = r.data.traditional_validation.true_accuracy;
-            avgHybridTrueAcc += hAcc;
-            avgTraditionalTrueAcc += tAcc;
+        if (r.data.hybrid_validation && r.data.traditional_validation && r.data.enhanced_validation) {
+            avgHybridTrueAcc += r.data.hybrid_validation.true_accuracy;
+            avgTraditionalTrueAcc += r.data.traditional_validation.true_accuracy;
+            avgEnhancedTrueAcc += r.data.enhanced_validation.true_accuracy;
             accCount++;
-            if (hAcc >= tAcc) hybridAccuracyWins++;
-            else traditionalAccuracyWins++;
         }
     });
 
+    const total = allResults.length;
+    avgTraditionalFitness /= total;
+    avgHybridFitness /= total;
+    avgEnhancedFitness /= total;
     if (accCount > 0) {
-        avgHybridTrueAcc /= accCount;
         avgTraditionalTrueAcc /= accCount;
+        avgHybridTrueAcc /= accCount;
+        avgEnhancedTrueAcc /= accCount;
     }
 
     return `
     <div class="results-section">
         <h2>Overall Summary</h2>
-        <div class="summary-grid">
+        <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr);">
             <div class="summary-card">
-                <h4>Hybrid - Fitness Wins</h4>
-                <div class="value hybrid-color">${hybridFitnessWins} / ${allResults.length}</div>
-                <div class="label">setups where Hybrid had higher fitness</div>
+                <h4>Traditional GA</h4>
+                <div class="value traditional-color">${traditionalFitnessWins} / ${total}</div>
+                <div class="label">fitness wins &mdash; avg fitness: ${avgTraditionalFitness.toFixed(4)}</div>
+                <div class="label" style="margin-top:6px;">avg TRUE accuracy: <strong style="color:#dc2626;">${avgTraditionalTrueAcc.toFixed(1)}%</strong></div>
             </div>
             <div class="summary-card">
-                <h4>Traditional - Fitness Wins</h4>
-                <div class="value traditional-color">${traditionalFitnessWins} / ${allResults.length}</div>
-                <div class="label">setups where Traditional had higher fitness</div>
+                <h4>Hybrid GA (Current)</h4>
+                <div class="value hybrid-color">${hybridFitnessWins} / ${total}</div>
+                <div class="label">fitness wins &mdash; avg fitness: ${avgHybridFitness.toFixed(4)}</div>
+                <div class="label" style="margin-top:6px;">avg TRUE accuracy: <strong style="color:#16a34a;">${avgHybridTrueAcc.toFixed(1)}%</strong></div>
             </div>
-            <div class="summary-card">
-                <h4>Hybrid - Avg TRUE Accuracy</h4>
-                <div class="value" style="color:#16a34a;">${avgHybridTrueAcc.toFixed(1)}%</div>
-                <div class="label">average across ${accCount} setups (all valid, production-ready)</div>
-            </div>
-            <div class="summary-card">
-                <h4>Traditional - Avg TRUE Accuracy</h4>
-                <div class="value" style="color:#dc2626;">${avgTraditionalTrueAcc.toFixed(1)}%</div>
-                <div class="label">average across ${accCount} setups (many invalid assignments)</div>
+            <div class="summary-card" style="border: 2px solid #16a34a;">
+                <h4>Enhanced Hybrid GA</h4>
+                <div class="value" style="color:#059669;">${enhancedFitnessWins} / ${total}</div>
+                <div class="label">fitness wins &mdash; avg fitness: ${avgEnhancedFitness.toFixed(4)}</div>
+                <div class="label" style="margin-top:6px;">avg TRUE accuracy: <strong style="color:#16a34a;">${avgEnhancedTrueAcc.toFixed(1)}%</strong></div>
             </div>
         </div>
         <div class="info-banner">
-            <strong>Conclusion:</strong> While Traditional GA may achieve comparable or higher <em>raw fitness</em> in small setups,
-            its schedules contain <strong style="color:#dc2626;">${(100 - avgTraditionalTrueAcc).toFixed(1)}% invalid assignments</strong>
-            (teams without drivers, wrong client matches, etc.).
-            The <strong class="hybrid-color">Hybrid (Rule-Based + GA)</strong> achieves
-            <strong style="color:#16a34a;">${avgHybridTrueAcc.toFixed(1)}% TRUE accuracy</strong> &mdash;
-            every scheduled task is valid and production-ready. This demonstrates that rule-based preprocessing
-            is essential for real-world workforce optimization.
+            <strong>Key Findings:</strong><br>
+            &bull; <strong class="traditional-color">Traditional GA</strong> achieves raw fitness but
+            <strong style="color:#dc2626;">${(100 - avgTraditionalTrueAcc).toFixed(1)}% of assignments are invalid</strong>
+            (no drivers, wrong clients).<br>
+            &bull; <strong class="hybrid-color">Hybrid GA</strong> uses rule-based preprocessing for
+            <strong style="color:#16a34a;">${avgHybridTrueAcc.toFixed(1)}% TRUE accuracy</strong>, but optimizes only workload balance (single objective).<br>
+            &bull; <strong style="color:#059669;">Enhanced Hybrid GA</strong> adds 3 more objectives
+            (task sequencing, makespan, idle time reduction) for a multi-objective fitness of
+            <strong style="color:#059669;">${avgEnhancedFitness.toFixed(4)}</strong>
+            &mdash; giving the GA a genuinely complex search space to optimize.
         </div>
     </div>
     `;

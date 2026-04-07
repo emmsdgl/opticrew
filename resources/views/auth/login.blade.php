@@ -408,14 +408,9 @@
                     class="text-[11px] ml-1 h-5 flex items-center gap-1 transition-all duration-200"
                     style="display: none;"></div>
 
-                {{-- <div id="container-2-layer" class="text-sm">
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" class="border border-gray-300" name="remember">
-                        <span class="text-gray-500 font-sans text-sm">Remember Me</span>
-                    </label>
-                    <a href="{{ route('forgot.password') }}" class="text-blue-600 hover:underline text-sm">Forgot
-                        Password?</a>
-                </div> --}}
+                <div class="text-right text-sm">
+                    <a href="{{ route('forgot.password.new') }}" class="text-blue-600 hover:underline text-sm">Forgot Password?</a>
+                </div>
 
                 <input type="submit" id="btn-login"
                     class="text-sm py-3 px-4 border border-gray-300 rounded-full font-sans font-semibold hover:bg-blue-800 focus:outline-white"

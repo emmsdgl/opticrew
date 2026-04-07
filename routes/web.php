@@ -688,6 +688,14 @@ Route::post('/signup/send-otp', [ClientRegistrationController::class, 'sendOtp']
 Route::post('/signup/verify-otp', [ClientRegistrationController::class, 'verifyOtp'])->middleware('guest');
 Route::post('/signup/check-username', [ClientRegistrationController::class, 'checkUsername'])->middleware('guest');
 
+// Mobile-style 4-step forgot password flow (Livewire). Fully separate from the legacy
+// /forgotpassword routes below — those remain in place but unused as dead code.
+Route::get('/forgot-password-new', function () {
+    return view('auth.forgot-password-new');
+})->name('forgot.password.new');
+Route::get('/forgot-password-new/google-verify', [GoogleAuthController::class, 'webForgotPasswordVerifyRedirect'])
+    ->name('forgot.password.new.google');
+
 Route::get('/forgotpassword', [ForgotPasswordController::class, 'showForgotPasswordForm'])->name('forgot.password');
 Route::post('/forgotpassword/get-questions', [ForgotPasswordController::class, 'getSecurityQuestions'])->name('password.getQuestions');
 Route::post('/forgotpassword/verify-account', [ForgotPasswordController::class, 'verifyAccountAndSendOtp'])->name('password.verifyAccount');

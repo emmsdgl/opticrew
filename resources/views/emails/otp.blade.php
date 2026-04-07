@@ -14,7 +14,6 @@
             margin: 0;
             padding: 0;
             font-family: 'Familjen Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-image:{{ asset('images/backgrounds/otp-bg.svg') }};
 
         }
 
@@ -117,8 +116,9 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="{{ asset('images/finnoys-text-logo.svg') }}"
-                class="h-20 flex flex-col justify-center w-full sidebar-logo" alt="logo">
+            <img src="{{ $message->embed(public_path('images/finnoys-text-logo-light.png')) }}"
+                width="180" alt="Fin-noys"
+                style="display:block;margin:0 auto;max-width:180px;height:auto;">
 
         </div>
 
