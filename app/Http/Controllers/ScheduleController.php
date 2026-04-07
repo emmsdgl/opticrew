@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\Optimization\OptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class ScheduleController extends Controller
 {
@@ -34,8 +35,12 @@ class ScheduleController extends Controller
                 $validated['triggered_by_task_id'] ?? null
             );
 
+            // Optimization writes to DB → invalidate cached reads for this date
+            Cache::forget("schedule:{$validated['service_date']}:all");
+            Cache::forget("stats:{$validated['service_date']}");
+
             return response()->json($result);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -54,13 +59,18 @@ class ScheduleController extends Controller
             'client_id' => 'nullable|integer|exists:clients,id',
         ]);
 
-        $query = \App\Models\OptimizationResult::whereDate('service_date', $validated['service_date']);
+        $clientKey = $validated['client_id'] ?? 'all';
+        $cacheKey = "schedule:{$validated['service_date']}:{$clientKey}";
 
-        if (isset($validated['client_id'])) {
-            $query->where('client_id', $validated['client_id']);
-        }
+        $results = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($validated) {
+            $query = \App\Models\OptimizationResult::whereDate('service_date', $validated['service_date']);
 
-        $results = $query->with('client')->get();
+            if (isset($validated['client_id'])) {
+                $query->where('client_id', $validated['client_id']);
+            }
+
+            return $query->with('client')->get();
+        });
 
         return response()->json([
             'status' => 'success',
@@ -77,21 +87,25 @@ class ScheduleController extends Controller
             'service_date' => 'required|date',
         ]);
 
-        $results = \App\Models\OptimizationResult::whereDate('service_date', $validated['service_date'])
-            ->get();
+        $cacheKey = "stats:{$validated['service_date']}";
 
-        $statistics = [
-            'total_clients' => $results->count(),
-            'average_fitness' => $results->avg('fitness_score'),
-            'total_tasks' => $results->sum(function ($result) {
-                $schedule = json_decode($result->schedule, true);
-                $taskCount = 0;
-                foreach ($schedule as $teamSchedule) {
-                    $taskCount += count($teamSchedule['tasks'] ?? []);
-                }
-                return $taskCount;
-            }),
-        ];
+        $statistics = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($validated) {
+            $results = \App\Models\OptimizationResult::whereDate('service_date', $validated['service_date'])
+                ->get();
+
+            return [
+                'total_clients' => $results->count(),
+                'average_fitness' => $results->avg('fitness_score'),
+                'total_tasks' => $results->sum(function ($result) {
+                    $schedule = json_decode($result->schedule, true);
+                    $taskCount = 0;
+                    foreach ($schedule as $teamSchedule) {
+                        $taskCount += count($teamSchedule['tasks'] ?? []);
+                    }
+                    return $taskCount;
+                }),
+            ];
+        });
 
         return response()->json([
             'status' => 'success',

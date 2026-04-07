@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\JobPosting;
+use App\Models\Task;
+use App\Observers\JobPostingCacheObserver;
+use App\Observers\TaskCacheObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Task::observe(TaskCacheObserver::class);
+        JobPosting::observe(JobPostingCacheObserver::class);
     }
 }

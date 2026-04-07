@@ -112,7 +112,13 @@ Route::get('/privacypolicy', function () {
 
 // Careers in Fin-noys
 Route::get('/recruitment', function () {
-    $jobPostings = \App\Models\JobPosting::active()->orderBy('created_at', 'desc')->get();
+    $jobPostings = \Illuminate\Support\Facades\Cache::remember(
+        'job_postings:active',
+        now()->addMinutes(15),
+        function () {
+            return \App\Models\JobPosting::active()->orderBy('created_at', 'desc')->get();
+        }
+    );
     return view('landingpage-recruitment', compact('jobPostings'));
 })->name('recruitment');
 

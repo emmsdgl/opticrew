@@ -133,7 +133,8 @@
             <div
                 class="aspect-[16/10] bg-gradient-to-br from-blue-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-600 flex items-center justify-center transition-colors">
                     <img src="{{ asset('images/backgrounds/large_screenshot.svg') }}" alt="Dashboard Preview"
-                        class="w-full h-full object-cover rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-600">
+                        class="w-full h-full object-cover rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-600"
+                        loading="lazy">
             </div>
         </div>
 
@@ -358,61 +359,61 @@
                     {
                         title: 'Surface Sanitizing',
                         num: '01',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/1.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/1.webp") }}',
                         description: 'Thorough surface sanitizing with professional-grade disinfectants to keep your spaces safe and germ-free.'
                     },
                     {
                         title: 'Spray & Disinfect',
                         num: '02',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/2.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/2.webp") }}',
                         description: 'Precision spray treatment targeting high-touch areas for maximum hygiene protection.'
                     },
                     {
                         title: 'Detail Wiping',
                         num: '03',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/3.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/3.webp") }}',
                         description: 'Careful hand-wiping of delicate surfaces and hard-to-reach areas for a spotless finish.'
                     },
                     {
                         title: 'Window Cleaning',
                         num: '04',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/4.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/4.webp") }}',
                         description: 'Crystal-clear window and glass cleaning using professional tools and streak-free solutions.'
                     },
                     {
                         title: 'Full Team Service',
                         num: '05',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/5.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/5.webp") }}',
                         description: 'Our dedicated crew works together to deep clean your entire space efficiently and thoroughly.'
                     },
                     {
                         title: 'Bathroom Care',
                         num: '06',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/6.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/6.webp") }}',
                         description: 'Complete bathroom sanitation from sinks to fixtures, leaving every surface sparkling clean.'
                     },
                     {
                         title: 'Office Maintenance',
                         num: '07',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/7.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/7.webp") }}',
                         description: 'Regular office cleaning and maintenance to create a productive and welcoming work environment.'
                     },
                     {
                         title: 'Fixture Polishing',
                         num: '08',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/8.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/8.webp") }}',
                         description: 'Detailed cleaning and polishing of faucets, handles, and chrome fixtures to a mirror shine.'
                     },
                     {
                         title: 'Deep Scrubbing',
                         num: '09',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/9.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/9.webp") }}',
                         description: 'Intensive scrubbing for built-up grime and residue, restoring surfaces to their original condition.'
                     },
                     {
                         title: 'Kitchen Degreasing',
                         num: '10',
-                        imageUrl: '{{ asset("images/backgrounds/card-sliders/10.png") }}',
+                        imageUrl: '{{ asset("images/backgrounds/card-sliders/10.webp") }}',
                         description: 'Professional kitchen counter and surface degreasing for a hygienic cooking environment.'
                     },
                 ],

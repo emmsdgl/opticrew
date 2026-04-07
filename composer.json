@@ -13,6 +13,7 @@
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.7",
         "livewire/livewire": "^2.12",
+        "predis/predis": "^3.4",
         "smalot/pdfparser": "^2.12"
     },
     "require-dev": {
