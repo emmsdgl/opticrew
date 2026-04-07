@@ -133,25 +133,25 @@
             </div>
 
             @if ($applications->count() > 0)
-                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                    <table class="w-full min-w-[1000px]">
+                <div class="w-full rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full table-fixed">
                         <thead>
                             <tr class="border-b border-gray-200 dark:border-gray-700">
-                                <th class="px-4 py-4 w-10">
+                                <th class="px-3 py-4 w-10">
                                     <input type="checkbox" @change="toggleAllApps($event)" :checked="allAppsSelected"
                                         class="appearance-none w-4 h-4 rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 checked:bg-blue-600 checked:border-blue-600 checked:bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-colors">
                                 </th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                <th class="px-3 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 w-[28%]">
                                     Applicant</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                <th class="px-3 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 w-[20%]">
                                     Position</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                <th class="px-3 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 w-[16%]">
                                     Resume</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                <th class="px-3 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 w-[14%]">
                                     Applied</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                <th class="px-3 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 w-[12%]">
                                     Status</th>
-                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                <th class="px-3 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 w-[10%]">
                                     Action</th>
                             </tr>
                         </thead>
@@ -163,7 +163,7 @@
                                     data-status="{{ $application->status }}"
                                     data-date="{{ $application->created_at->timestamp }}">
                                     <!-- Checkbox -->
-                                    <td class="px-4 py-4 w-10">
+                                    <td class="px-3 py-4 w-10">
                                         <input type="checkbox" value="{{ $application->id }}"
                                             @change="toggleApp({{ $application->id }})"
                                             :checked="selectedAppIds.includes({{ $application->id }})"
@@ -171,7 +171,7 @@
                                     </td>
 
                                     <!-- Applicant -->
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-3 py-4">
                                         <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                             {{ $application->email }}</div>
                                         @if ($application->alternative_email)
@@ -181,26 +181,26 @@
                                     </td>
 
                                     <!-- Position -->
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 dark:text-gray-200">
+                                    <td class="px-3 py-4">
+                                        <div class="text-sm text-gray-900 dark:text-gray-200 truncate">
                                             {{ $application->job_title }}</div>
                                         @if ($application->job_type)
-                                            <div class="text-xs text-blue-600 dark:text-blue-400">
+                                            <div class="text-xs text-blue-600 dark:text-blue-400 truncate">
                                                 {{ ucfirst(str_replace('-', ' ', $application->job_type)) }}</div>
                                         @endif
                                     </td>
 
                                     <!-- Resume -->
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-3 py-4">
                                         <a href="{{ route('admin.recruitment.download', $application->id) }}"
-                                            class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs">
-                                            <i class="fa-solid fa-download mr-2"></i>
-                                            {{ Str::limit($application->resume_original_name, 15) }}
+                                            class="inline-flex items-center px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs max-w-full">
+                                            <i class="fa-solid fa-download mr-1.5 shrink-0"></i>
+                                            <span class="truncate">{{ Str::limit($application->resume_original_name, 12) }}</span>
                                         </a>
                                     </td>
 
                                     <!-- Applied Date -->
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-3 py-4">
                                         <div class="text-sm text-gray-900 dark:text-gray-200">
                                             {{ $application->created_at->format('M d, Y') }}</div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -208,7 +208,7 @@
                                     </td>
 
                                     <!-- Status -->
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-3 py-4">
                                         @switch($application->status)
                                             @case('pending')
                                                 <span
@@ -242,7 +242,7 @@
                                     </td>
 
                                     <!-- Action -->
-                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <td class="px-3 py-4 text-right">
                                         <button @click="openDrawer({{ $application->id }})"
                                             class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
                                             <i class="fa-regular fa-eye mr-1 text-xs"></i> View

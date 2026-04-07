@@ -363,6 +363,7 @@ class ProfileController extends Controller
                 'unstaffed_escalation_timeout_minutes' => CompanySettingService::get('unstaffed_escalation_timeout_minutes', 60),
                 'overtime_threshold_hours' => CompanySettingService::get('overtime_threshold_hours', 8),
                 'geofence_radius' => CompanySettingService::get('geofence_radius', 110),
+                'max_absences_allowed' => CompanySettingService::get('max_absences_allowed', 5),
             ];
             $salarySettings = [
                 'salary_full_time' => CompanySettingService::get('salary_full_time', 2500),
@@ -444,6 +445,29 @@ class ProfileController extends Controller
         }
 
         return Redirect::route('admin.settings')->with('success', 'Workforce configuration updated successfully!');
+    }
+
+    /**
+     * Update absences configuration
+     */
+    public function updateAbsencesSettings(Request $request)
+    {
+        $request->validate([
+            'max_absences_allowed' => 'required|integer|min:1|max:365',
+        ]);
+
+        CompanySettingService::set(
+            'max_absences_allowed',
+            $request->input('max_absences_allowed'),
+            'integer',
+            'Maximum number of absences before an employee is flagged'
+        );
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Absences configuration updated successfully!']);
+        }
+
+        return Redirect::route('admin.settings')->with('success', 'Absences configuration updated successfully!');
     }
 
     /**

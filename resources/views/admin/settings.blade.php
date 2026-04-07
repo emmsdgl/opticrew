@@ -487,6 +487,73 @@
                 </div>
             </div>
 
+            <!-- Absences Configuration -->
+            <div id="absences-config" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6"
+                 x-data="{
+                    savingAbsences: false,
+                    absencesConfig: {
+                        max_absences_allowed: {{ $companySettings['max_absences_allowed'] }},
+                    },
+                    async saveAbsencesConfig() {
+                        try {
+                            await window.showConfirmDialog('Save Configuration?', 'Are you sure you want to update the absences configuration? Employees who exceed this limit will be flagged.', 'Save', 'Cancel');
+                        } catch (e) { return; }
+                        this.savingAbsences = true;
+                        try {
+                            const res = await fetch('{{ route('admin.settings.update-absences') }}', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                body: JSON.stringify(this.absencesConfig)
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                window.showSuccessDialog('Configuration Saved', data.message);
+                            } else {
+                                let errorMsg = data.message || 'Failed to save configuration.';
+                                if (data.errors) {
+                                    errorMsg = Object.values(data.errors).flat().join('\n');
+                                }
+                                window.showErrorDialog('Save Failed', errorMsg);
+                            }
+                        } catch (e) {
+                            window.showErrorDialog('Error', 'An error occurred. Please try again.');
+                        } finally { this.savingAbsences = false; }
+                    }
+                 }">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fa-solid fa-user-clock mr-2 text-blue-500"></i>
+                    Absences Configuration
+                </h2>
+
+                <div class="space-y-3">
+                    <!-- Max Absences Allowed -->
+                    <div class="flex items-center justify-between py-3 border-b dark:border-gray-700/50 border-gray-500">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-calendar-xmark text-blue-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Maximum Absences Allowed</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Employees exceeding this number will be flagged as 'Exceeded Max Absences'</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" x-model.number="absencesConfig.max_absences_allowed" min="1" max="365"
+                                   class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">days</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <button type="button" @click="saveAbsencesConfig()" :disabled="savingAbsences"
+                            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50">
+                        <span x-show="!savingAbsences">Save Configuration</span>
+                        <span x-show="savingAbsences"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving...</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Job Posting Salary Configuration -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6"
                  x-data="{

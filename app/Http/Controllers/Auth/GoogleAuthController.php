@@ -122,6 +122,15 @@ class GoogleAuthController extends Controller
      */
     private function handleLoginCallback($googleUser)
     {
+        // 0. Check if account was deleted by admin (soft-deleted) — by google_id or email
+        $trashedUser = User::onlyTrashed()
+            ->where(fn($q) => $q->where('google_id', $googleUser->getId())->orWhere('email', $googleUser->getEmail()))
+            ->first();
+        if ($trashedUser) {
+            return redirect()->route('login')->with('error',
+                'This account has been removed by the administrator. Please contact the admin for more information regarding your account termination.');
+        }
+
         // 1. Try to find user by google_id
         $user = User::where('google_id', $googleUser->getId())->first();
 
@@ -140,8 +149,15 @@ class GoogleAuthController extends Controller
                     // Link Google ID to the employee account found by alternative email
                     $user->update(['google_id' => $googleUser->getId()]);
                 } else {
-                    // 4. No match — create new external_client account
+                    // 4. No match — create new external_client account (or find if race condition)
                     $user = DB::transaction(function () use ($googleUser) {
+                        // Re-check inside transaction to handle race conditions
+                        $existing = User::where('email', $googleUser->getEmail())->first();
+                        if ($existing) {
+                            $existing->update(['google_id' => $googleUser->getId()]);
+                            return $existing;
+                        }
+
                         $nameParts = explode(' ', $googleUser->getName(), 2);
                         $firstName = $nameParts[0];
                         $lastName = $nameParts[1] ?? '';
@@ -201,6 +217,16 @@ class GoogleAuthController extends Controller
             return redirect()->route('recruitment')->with('error', 'Application data was lost. Please try again.');
         }
 
+        // Check if account was deleted by admin (soft-deleted)
+        $trashedUser = User::onlyTrashed()
+            ->where(fn($q) => $q->where('google_id', $googleUser->getId())->orWhere('email', $googleUser->getEmail()))
+            ->first();
+        if ($trashedUser) {
+            session()->forget(['google_auth_purpose', 'recruitment_data']);
+            return redirect()->route('recruitment')->with('error',
+                'This account has been removed by the administrator. Please contact the admin for more information regarding your account termination.');
+        }
+
         // Find or create user with applicant role
         $user = User::where('google_id', $googleUser->getId())->first();
 
@@ -223,16 +249,22 @@ class GoogleAuthController extends Controller
                 }
                 $user->update(['google_id' => $googleUser->getId()]);
             } else {
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'profile_picture' => $googleUser->getAvatar(),
-                    'email_verified_at' => now(),
-                    'role' => 'applicant',
-                    'terms_accepted_at' => now(),
-                    'is_active' => true,
-                ]);
+                // Re-check to handle race conditions
+                $user = User::where('email', $googleUser->getEmail())->first();
+                if ($user) {
+                    $user->update(['google_id' => $googleUser->getId()]);
+                } else {
+                    $user = User::create([
+                        'name' => $googleUser->getName(),
+                        'email' => $googleUser->getEmail(),
+                        'google_id' => $googleUser->getId(),
+                        'profile_picture' => $googleUser->getAvatar(),
+                        'email_verified_at' => now(),
+                        'role' => 'applicant',
+                        'terms_accepted_at' => now(),
+                        'is_active' => true,
+                    ]);
+                }
             }
         }
 
@@ -485,6 +517,14 @@ class GoogleAuthController extends Controller
         $callback = session('mobile_callback', 'opticrew://auth');
         session()->forget(['google_auth_purpose', 'mobile_callback']);
 
+        // Check if account was deleted by admin (soft-deleted)
+        $trashedUser = User::onlyTrashed()
+            ->where(fn($q) => $q->where('google_id', $googleUser->getId())->orWhere('email', $googleUser->getEmail()))
+            ->first();
+        if ($trashedUser) {
+            return redirect($callback . '?error=' . urlencode('This account has been removed by the administrator. Please contact the admin for more information regarding your account termination.'));
+        }
+
         // Find user: by google_id, then email, then alternative_email
         $user = User::where('google_id', $googleUser->getId())->first();
 
@@ -500,6 +540,13 @@ class GoogleAuthController extends Controller
                     $user->update(['google_id' => $googleUser->getId()]);
                 } else {
                     $user = DB::transaction(function () use ($googleUser) {
+                        // Re-check inside transaction to handle race conditions
+                        $existing = User::where('email', $googleUser->getEmail())->first();
+                        if ($existing) {
+                            $existing->update(['google_id' => $googleUser->getId()]);
+                            return $existing;
+                        }
+
                         $nameParts = explode(' ', $googleUser->getName(), 2);
 
                         $user = User::create([

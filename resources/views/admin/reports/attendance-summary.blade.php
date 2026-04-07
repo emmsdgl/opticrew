@@ -37,8 +37,26 @@
                 ['label' => 'Approved Leaves', 'value' => $totalLeaves],
                 ['label' => 'Total Leave Days', 'value' => $totalLeaveDays],
                 ['label' => 'Total Employees', 'value' => $totalEmployees],
+                ['label' => 'Flagged Employees', 'value' => count($flaggedEmployees), 'icon' => 'fi fi-rr-triangle-warning', 'iconColor' => '#ef4444'],
             ]" />
         </div>
+
+        <!-- Flagged Employees Alert -->
+        @if(count($flaggedEmployees) > 0)
+        <div class="flex items-start gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700">
+            <i class="fa-solid fa-triangle-exclamation text-red-500 mt-0.5"></i>
+            <div>
+                <p class="text-sm font-semibold text-red-700 dark:text-red-300">Exceeded Max Absences ({{ $maxAbsencesAllowed }} days)</p>
+                <p class="text-xs text-red-600 dark:text-red-400 mt-1">
+                    @foreach($flaggedEmployees as $name)
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-medium mr-1 mb-1">
+                            {{ $name }} ({{ $absenceCountsByEmployee[$name] }})
+                        </span>
+                    @endforeach
+                </p>
+            </div>
+        </div>
+        @endif
 
         <!-- Search & Sort Controls -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -223,8 +241,16 @@
                                 <template x-for="(absence, idx) in paginatedAbsences()" :key="idx">
                                     <tr :class="idx % 2 === 1 ? 'bg-gray-50 dark:bg-gray-800/50' : ''">
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-semibold text-gray-900 dark:text-white" x-text="absence.name"></div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400" x-text="absence.email"></div>
+                                            <div class="flex items-center gap-2">
+                                                <div>
+                                                    <div class="text-sm font-semibold text-gray-900 dark:text-white" x-text="absence.name"></div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400" x-text="absence.email"></div>
+                                                </div>
+                                                <span x-show="flaggedEmployees.includes(absence.name)"
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 whitespace-nowrap">
+                                                    <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> Exceeded Max Absences
+                                                </span>
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200" x-text="absence.date"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400" x-text="absence.day"></td>
@@ -319,6 +345,10 @@
                 leaves: @json($leavesJson),
 
                 absences: @json($absencesJson),
+
+                maxAbsencesAllowed: {{ $maxAbsencesAllowed }},
+                flaggedEmployees: @json($flaggedEmployees),
+                absenceCounts: @json($absenceCountsByEmployee),
 
                 resetPages() {
                     this.leavePage = 1;

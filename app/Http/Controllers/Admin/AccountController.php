@@ -323,7 +323,7 @@ class AccountController extends Controller
     /**
      * Remove the specified account from storage.
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
@@ -407,7 +407,7 @@ class AccountController extends Controller
     /**
      * Restore a soft-deleted account.
      */
-    public function restore($id)
+    public function restore(Request $request, $id)
     {
         $user = User::onlyTrashed()->findOrFail($id);
 
@@ -428,6 +428,10 @@ class AccountController extends Controller
             $user->client()->restore();
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Account restored successfully.']);
+        }
+
         return redirect()->route('admin.accounts.archived')
             ->with('success', 'Account restored successfully.');
     }
@@ -435,7 +439,7 @@ class AccountController extends Controller
     /**
      * Permanently delete a soft-deleted account.
      */
-    public function forceDelete($id)
+    public function forceDelete(Request $request, $id)
     {
         $user = User::onlyTrashed()->findOrFail($id);
 
@@ -445,6 +449,10 @@ class AccountController extends Controller
         }
 
         $user->forceDelete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Account permanently deleted.']);
+        }
 
         return redirect()->route('admin.accounts.archived')
             ->with('success', 'Account permanently deleted.');

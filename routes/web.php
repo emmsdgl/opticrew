@@ -448,6 +448,7 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::post('/admin/settings/quotation', [ProfileController::class, 'updateQuotationSettings'])->name('admin.settings.update-quotation');
     Route::post('/admin/settings/company', [ProfileController::class, 'updateCompanySettings'])->name('admin.settings.update-company');
     Route::post('/admin/settings/salary', [ProfileController::class, 'updateSalarySettings'])->name('admin.settings.update-salary');
+    Route::post('/admin/settings/absences', [ProfileController::class, 'updateAbsencesSettings'])->name('admin.settings.update-absences');
 
     // Analytics dashboard for optimization metrics
     Route::get('/optimization-result', EmployeeAnalytics::class)->name('optimization.result');
@@ -591,6 +592,8 @@ Route::middleware(['auth', 'terms.accepted', 'applicant'])->prefix('applicant')-
     Route::post('/apply/extract', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'extractResume'])->name('apply.extract');
     Route::post('/apply/submit', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'submitApplication'])->name('apply.submit');
     Route::post('/profile/update', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/upload-picture', [ProfileController::class, 'uploadPicture'])->name('profile.upload-picture');
+    Route::post('/profile/upload-cover', [ProfileController::class, 'uploadCoverPhoto'])->name('profile.upload-cover');
     Route::post('/applications/{id}/withdraw', [\App\Http\Controllers\Applicant\ApplicantDashboardController::class, 'withdrawApplication'])->name('applications.withdraw');
     Route::get('/help-center', [App\Http\Controllers\ProfileController::class, 'helpcenter'])->name('helpcenter');
 });

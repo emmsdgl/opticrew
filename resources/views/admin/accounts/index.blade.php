@@ -155,7 +155,7 @@
                                             <div class="flex items-center gap-2">
                                                 <span class="text-sm font-semibold {{ !$user->is_active ? 'text-red-500 line-through dark:text-red-400' : 'text-gray-900 dark:text-white' }}">{{ $user->name }}</span>
                                                 @if(!$user->is_active)
-                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">BANNED</span>
+                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Banned</span>
                                                 @endif
                                             </div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->email }}</div>
@@ -244,12 +244,12 @@
                     </tbody>
                 </table>
 
-                @if($users->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                        <x-pagination :paginator="$users" />
-                    </div>
-                @endif
             </div>
+            @if($users->hasPages())
+                <div class="mt-4">
+                    <x-pagination :paginator="$users" />
+                </div>
+            @endif
         @else
             <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
                 <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
@@ -308,7 +308,7 @@
                                             <div class="flex items-center gap-2">
                                                 <span class="text-sm font-semibold {{ !$client->is_active ? 'text-red-500 line-through dark:text-red-400' : 'text-gray-900 dark:text-white' }}">{{ $client->name }}</span>
                                                 @if(!$client->is_active)
-                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">BANNED</span>
+                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Banned</span>
                                                 @endif
                                             </div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400">{{ $client->email }}</div>
@@ -390,12 +390,12 @@
                     </tbody>
                 </table>
 
-                @if($personalClients->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                        <x-pagination :paginator="$personalClients" />
-                    </div>
-                @endif
             </div>
+            @if($personalClients->hasPages())
+                <div class="mt-4">
+                    <x-pagination :paginator="$personalClients" />
+                </div>
+            @endif
         @else
             <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-16 text-center">
                 <i class="fa-solid fa-user text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
@@ -458,7 +458,7 @@
                                             <div class="flex items-center gap-2">
                                                 <span class="text-sm font-semibold {{ !$applicant->is_active ? 'text-red-500 line-through dark:text-red-400' : 'text-gray-900 dark:text-white' }}">{{ $applicant->name }}</span>
                                                 @if(!$applicant->is_active)
-                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">BANNED</span>
+                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Banned</span>
                                                 @endif
                                             </div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400">{{ $applicant->email }}</div>
@@ -548,12 +548,12 @@
                     </tbody>
                 </table>
 
-                @if($applicants->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                        <x-pagination :paginator="$applicants" />
-                    </div>
-                @endif
             </div>
+            @if($applicants->hasPages())
+                <div class="mt-4">
+                    <x-pagination :paginator="$applicants" />
+                </div>
+            @endif
         @else
             <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-16 text-center">
                 <i class="fa-solid fa-user-plus text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Task;
 use App\Models\Location;
 use Illuminate\Support\Facades\DB;
+use App\Services\CompanySettingService;
 use Carbon\Carbon;
 
 class ReportController extends Controller
@@ -1034,6 +1035,13 @@ class ReportController extends Controller
         $totalLeaveDays = $leaveRecords->sum('duration');
         $totalEmployees = $employees->count();
 
+        // Max absences configuration
+        $maxAbsencesAllowed = CompanySettingService::get('max_absences_allowed', 5);
+
+        // Per-employee absence counts for flagging
+        $absenceCountsByEmployee = $absenceRecords->groupBy('employee_name')->map->count();
+        $flaggedEmployees = $absenceCountsByEmployee->filter(fn($count) => $count >= $maxAbsencesAllowed)->keys()->toArray();
+
         // Employee names for filter dropdown
         $employeeNames = $employees->map(fn($e) => $e->user->name ?? 'Unknown')->unique()->sort()->values();
 
@@ -1046,7 +1054,10 @@ class ReportController extends Controller
             'totalLeaves',
             'totalLeaveDays',
             'totalEmployees',
-            'employeeNames'
+            'employeeNames',
+            'maxAbsencesAllowed',
+            'flaggedEmployees',
+            'absenceCountsByEmployee'
         ));
     }
 }
