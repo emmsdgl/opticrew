@@ -451,15 +451,18 @@
 
 <body class="bg-gray-50 font-sans">
     <main id="page-wrapper">
-        <!-- Logo -->
-        <header id="logo-container" class="w-full flex justify-start py-3 px-2">
-            <a href="/" class="-m-1.5 p-1.5">
-                <img src="{{ asset('/images/finnoys-text-logo-light.svg') }}" alt="Fin-noys Logo" class="h-16 sm:h-20">
+        <!-- Stepper with Logo on the upper-left -->
+        <nav id="header-container" class="relative w-full py-6 px-4" aria-label="Registration progress">
+            {{-- Logo: small, upper-left corner, vertically aligned with stepper top --}}
+            <a href="/" class="absolute left-[-12rem] top-14">
+                {{-- Light mode logo --}}
+                <img src="{{ asset('images/icons/finnoys-text-logo-light.svg') }}"
+                     alt="Fin-noys Logo" class="h-6 sm:h-5 w-auto block dark:hidden">
+                {{-- Dark mode logo --}}
+                <img src="{{ asset('images/icons/finnoys-text-logo-ondark.svg') }}"
+                     alt="Fin-noys Logo" class="h-6 sm:h-5 w-auto hidden dark:block">
             </a>
-        </header>
 
-        <!-- Stepper -->
-        <nav id="header-container" class="w-full py-6 px-4" aria-label="Registration progress">
             <div id="stepper-container" class="w-full max-w-xl mx-auto">
                 <div class="stepper-wrapper">
                     <!-- Step 1 -->
@@ -1979,11 +1982,52 @@
                     console.log('Status: Incomplete');
                 }
 
+                // --- Build a list of specific missing/invalid fields per step ---
+                const form1Errors = [];
+                if (!isFNameComplete) form1Errors.push('First Name');
+                if (!isLNameComplete) form1Errors.push('Last Name');
+                if (!isBDateComplete) form1Errors.push('Birthdate');
+                else if (!isAgeValid) form1Errors.push('Birthdate (must be 18 or older / on or before Dec 31, 2008)');
+                if (!isEmailValid) {
+                    if (email && email.value.trim() === '') form1Errors.push('Email Address');
+                    else form1Errors.push('Email Address (invalid format)');
+                }
+                if (!isPhoneValid) {
+                    if (phone && phone.value.trim() === '') form1Errors.push('Phone Number');
+                    else form1Errors.push('Phone Number (invalid format)');
+                }
+                if (!isStreetComplete) form1Errors.push('Street Address');
+                if (!isStateComplete) form1Errors.push('State / Region');
+                if (!isCityComplete) form1Errors.push('City');
+
+                const form3Errors = [];
+                if (!isSecQues1Selected) form3Errors.push('Security Question 1');
+                if (!isSecAns1Complete) form3Errors.push('Security Answer 1');
+                if (!isSecQues2Selected) form3Errors.push('Security Question 2');
+                if (!isSecAns2Complete) form3Errors.push('Security Answer 2');
+                if (!isUsernameComplete) {
+                    if (username && username.value.trim() === '') form3Errors.push('Username');
+                    else if (username && (username.value.trim().length < 6 || username.value.trim().length > 8))
+                        form3Errors.push('Username (must be 6–8 characters)');
+                    else if (!isUsernameAvailable) form3Errors.push('Username (already taken)');
+                    else form3Errors.push('Username');
+                }
+                if (!isPasswordValid) {
+                    if (password && password.value === '') form3Errors.push('Password');
+                    else form3Errors.push('Password (must be at least 8 characters)');
+                }
+                if (!isConfirmed) {
+                    if (confirmPassword && confirmPassword.value === '') form3Errors.push('Confirm Password');
+                    else form3Errors.push('Confirm Password (does not match)');
+                }
+
                 // Return the aggregate status for the event handlers
                 return {
                     isForm1Complete,
                     isOTPComplete,
-                    isForm3Complete
+                    isForm3Complete,
+                    form1Errors,
+                    form3Errors
                 };
             }
 
@@ -2151,7 +2195,8 @@
             document.getElementById('next-1').addEventListener('click', (e) => {
                 e.preventDefault();
                 const {
-                    isForm1Complete
+                    isForm1Complete,
+                    form1Errors
                 } = checkFormCompletion();
 
                 if (isForm1Complete) {
@@ -2210,7 +2255,13 @@
                         });
 
                 } else {
-                    window.showErrorDialog('Incomplete Form', 'Please complete all required fields for Basic Details correctly.');
+                    const list = (form1Errors && form1Errors.length)
+                        ? '\n\nMissing or invalid fields:\n• ' + form1Errors.join('\n• ')
+                        : '';
+                    window.showErrorDialog(
+                        'Incomplete Form',
+                        'Please complete all required fields for Basic Details correctly.' + list
+                    );
                 }
             });
 
@@ -2281,13 +2332,20 @@
             if (next3PersonalBtn) {
                 next3PersonalBtn.addEventListener('click', (e) => {
                     const {
-                        isForm3Complete
+                        isForm3Complete,
+                        form3Errors
                     } = checkFormCompletion();
 
                     // If the form is NOT complete, prevent the submission and show an alert.
                     if (!isForm3Complete) {
                         e.preventDefault();
-                        window.showErrorDialog('Incomplete Form', 'Please complete all required fields for Account Setup correctly.');
+                        const list = (form3Errors && form3Errors.length)
+                            ? '\n\nMissing or invalid fields:\n• ' + form3Errors.join('\n• ')
+                            : '';
+                        window.showErrorDialog(
+                            'Incomplete Form',
+                            'Please complete all required fields for Account Setup correctly.' + list
+                        );
                     }
                 });
             }

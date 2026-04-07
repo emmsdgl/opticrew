@@ -9,11 +9,11 @@ class CompanySettingService
 {
     /**
      * Get a company setting value by key.
-     * Caches results for 5 minutes.
+     * Static reference data → 24 hour TTL (set() invalidates on changes).
      */
     public static function get(string $key, $default = null)
     {
-        return Cache::remember("company_setting_{$key}", 300, function () use ($key, $default) {
+        return Cache::remember("company_setting_{$key}", now()->addHours(24), function () use ($key, $default) {
             $setting = DB::table('company_settings')->where('key', $key)->first();
 
             if (!$setting) {

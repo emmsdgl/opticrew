@@ -12,10 +12,10 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-                ->name('register');
-
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    // Redirect Breeze register to the actual signup flow used by this project
+    Route::get('register', function () {
+        return redirect()->route('signup');
+    })->name('register');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
                 ->name('login');

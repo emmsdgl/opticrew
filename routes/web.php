@@ -112,9 +112,10 @@ Route::get('/privacypolicy', function () {
 
 // Careers in Fin-noys
 Route::get('/recruitment', function () {
+    // Job postings change rarely → 1 hour TTL (observer invalidates on changes)
     $jobPostings = \Illuminate\Support\Facades\Cache::remember(
         'job_postings:active',
-        now()->addMinutes(15),
+        now()->addHour(),
         function () {
             return \App\Models\JobPosting::active()->orderBy('created_at', 'desc')->get();
         }

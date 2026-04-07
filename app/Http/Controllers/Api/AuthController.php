@@ -231,22 +231,29 @@ class AuthController extends Controller
     public function profile(Request $request)
     {
         $user = $request->user();
-        $user->load('employee');
 
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'phone' => $user->phone,
-                'location' => $user->location,
-                'profile_picture' => $user->profile_picture,
-                'cover_photo' => $this->resolveUrl($user->cover_photo),
-                'employee_id' => $user->employee?->id,
-                'google_linked' => !empty($user->google_id),
-            ],
-        ]);
+        // User profile changes rarely → 1 hour TTL (observer invalidates on user updates)
+        $payload = \Illuminate\Support\Facades\Cache::remember(
+            "user_profile:{$user->id}",
+            now()->addHour(),
+            function () use ($user) {
+                $user->load('employee');
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'phone' => $user->phone,
+                    'location' => $user->location,
+                    'profile_picture' => $user->profile_picture,
+                    'cover_photo' => $this->resolveUrl($user->cover_photo),
+                    'employee_id' => $user->employee?->id,
+                    'google_linked' => !empty($user->google_id),
+                ];
+            }
+        );
+
+        return response()->json(['user' => $payload]);
     }
 
     /**

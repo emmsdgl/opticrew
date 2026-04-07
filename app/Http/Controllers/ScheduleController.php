@@ -62,6 +62,7 @@ class ScheduleController extends Controller
         $clientKey = $validated['client_id'] ?? 'all';
         $cacheKey = "schedule:{$validated['service_date']}:{$clientKey}";
 
+        // Schedule changes when tasks are completed → 10 min TTL (observer invalidates on task changes)
         $results = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($validated) {
             $query = \App\Models\OptimizationResult::whereDate('service_date', $validated['service_date']);
 
@@ -89,6 +90,7 @@ class ScheduleController extends Controller
 
         $cacheKey = "stats:{$validated['service_date']}";
 
+        // Statistics change frequently as tasks are completed → 10 min TTL (observer invalidates on task changes)
         $statistics = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($validated) {
             $results = \App\Models\OptimizationResult::whereDate('service_date', $validated['service_date'])
                 ->get();
