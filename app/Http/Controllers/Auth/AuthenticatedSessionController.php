@@ -31,6 +31,19 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
         $request->session()->forget('banned');
 
+        // If the user already accepted the Terms & Privacy on the login page
+        // (cookies set by the login form checkbox), auto-mark their account as
+        // accepted so the standalone terms page is skipped on first login.
+        $user = Auth::user();
+        if (
+            $user
+            && is_null($user->terms_accepted_at)
+            && $request->cookie('finnoys_terms_accepted') === '1'
+            && $request->cookie('finnoys_policy_accepted') === '1'
+        ) {
+            $user->update(['terms_accepted_at' => Carbon::now()]);
+        }
+
         UserActivityLog::log(
             Auth::id(),
             UserActivityLog::TYPE_LOGIN,

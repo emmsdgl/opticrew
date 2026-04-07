@@ -1,5 +1,6 @@
 @props([
     'holidays' => [],
+    'taskDates' => [], // Array of 'Y-m-d' strings that should display a dot indicator
     'calendarId' => 'default' // Unique ID for this calendar instance
 ])
 
@@ -89,6 +90,10 @@
       return acc;
     }, {});
 
+    // Load task dates (dates with at least one task/appointment)
+    const taskDates = @js($taskDates);
+    const taskDateSet = new Set(taskDates);
+
     const today = new Date(); // Actual today - never changes
     let currentWeekDate = new Date(); // For week navigation
     let clickedDate = null; // Track clicked date for outline
@@ -156,8 +161,15 @@
         clickedDate = new Date(current);
         renderWeek(currentWeekDate); // Re-render with outline
 
-        // Show holiday modal
-        showHolidayModal(dateString, isHoliday);
+        // Notify any listeners (e.g. dashboards) that a date was selected
+        document.dispatchEvent(new CustomEvent('calendar-date-selected', {
+          detail: { calendarId: calendarId, date: dateString }
+        }));
+
+        // Show holiday modal only on holidays — for regular days the listener handles UI
+        if (isHoliday) {
+          showHolidayModal(dateString, isHoliday);
+        }
       });
 
       container.appendChild(button);
@@ -169,6 +181,14 @@
         holidayBadge.title = isHoliday;
         holidayBadge.innerHTML = '<i class="fa-solid fa-star text-white" style="font-size: 8px;"></i>';
         container.appendChild(holidayBadge);
+      }
+
+      // Add task indicator (small dot below the date) when there's at least one task that day
+      if (taskDateSet.has(dateString)) {
+        const taskDot = document.createElement("span");
+        taskDot.className = "absolute left-1/2 -translate-x-1/2 bottom-0.5 w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400";
+        taskDot.title = 'Has scheduled tasks';
+        container.appendChild(taskDot);
       }
 
       weekDaysContainer.appendChild(container);

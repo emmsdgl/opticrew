@@ -42,7 +42,7 @@
                         this.pwCheckStatus = 'checking';
                         this.pwCheckTimer = setTimeout(async () => {
                             try {
-                                const res = await fetch('{{ route("settings.check-password") }}', {
+                                const res = await fetch('{{ route("manager.settings.check-password") }}', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                                     body: JSON.stringify({ password: this.currentPassword })

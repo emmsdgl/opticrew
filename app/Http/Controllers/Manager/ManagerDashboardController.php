@@ -27,6 +27,9 @@ class ManagerDashboardController extends Controller
         if (!$contractedClient) {
             return view('manager.dashboard', [
                 'todayTasks' => collect(),
+                'allTasks' => collect(),
+                'taskDates' => [],
+                'holidays' => [],
                 'stats' => ['todayTasks' => 0, 'completedToday' => 0, 'onDuty' => 0, 'totalEmployees' => 0, 'weekTasks' => 0, 'locations' => 0],
                 'taskOverview' => ['completed' => 0, 'inProgress' => 0, 'scheduled' => 0, 'onHold' => 0],
                 'recentActivity' => [],
@@ -35,13 +38,34 @@ class ManagerDashboardController extends Controller
 
         $locationIds = $contractedClient->locations()->pluck('id');
 
-        // Today's tasks
+        // Today's tasks (default view)
         $todayTasks = Task::whereIn('location_id', $locationIds)
             ->whereDate('scheduled_date', $today)
             ->with(['location', 'assignedEmployees'])
             ->orderBy('scheduled_time')
-            ->limit(5)
             ->get();
+
+        // All upcoming tasks (used by calendar-driven date filter)
+        $allTasks = Task::whereIn('location_id', $locationIds)
+            ->whereDate('scheduled_date', '>=', $today->copy()->subDays(7))
+            ->whereDate('scheduled_date', '<=', $today->copy()->addDays(60))
+            ->with(['location', 'assignedEmployees'])
+            ->orderBy('scheduled_date')
+            ->orderBy('scheduled_time')
+            ->get();
+
+        // List of unique dates that have at least one task (for calendar dot indicators)
+        $taskDates = $allTasks
+            ->map(fn ($task) => Carbon::parse($task->scheduled_date)->format('Y-m-d'))
+            ->unique()
+            ->values()
+            ->toArray();
+
+        // Holidays (reuse the same source the client dashboard uses, if available)
+        $holidays = [];
+        if (class_exists(\App\Models\Holiday::class)) {
+            $holidays = \App\Models\Holiday::orderBy('date')->get(['date', 'name'])->toArray();
+        }
 
         // Statistics
         $stats = [
@@ -112,6 +136,9 @@ class ManagerDashboardController extends Controller
 
         return view('manager.dashboard', compact(
             'todayTasks',
+            'allTasks',
+            'taskDates',
+            'holidays',
             'stats',
             'taskOverview',
             'recentActivity'
