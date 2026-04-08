@@ -31,6 +31,9 @@ class HybridGA
     {
         $this->fitnessHistory = [];
 
+        // Start the "solution time" timer — measures only the GA work
+        $solutionStartTime = microtime(true);
+
         if (empty($tasks) || empty($teams)) {
             return [
                 'best_schedule' => [],
@@ -38,6 +41,7 @@ class HybridGA
                 'generations' => 0,
                 'convergence_generation' => null,
                 'fitness_history' => [],
+                'solution_time_ms' => (microtime(true) - $solutionStartTime) * 1000,
             ];
         }
 
@@ -111,12 +115,16 @@ class HybridGA
             $population = array_slice($newPopulation, 0, $this->config['population_size']);
         }
 
+        // ─── GA WORK COMPLETE — capture the "solution time" here ───
+        $solutionTimeMs = (microtime(true) - $solutionStartTime) * 1000;
+
         return [
             'best_schedule' => $bestSchedule ?? [],
             'best_fitness' => max(0, $bestFitness),
             'generations' => $generation + 1,
             'convergence_generation' => $convergenceGeneration,
             'fitness_history' => $this->fitnessHistory,
+            'solution_time_ms' => $solutionTimeMs,
         ];
     }
 

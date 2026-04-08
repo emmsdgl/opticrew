@@ -173,11 +173,54 @@ function loadAvailableDates() {
     ")->fetchAll();
 }
 
+/**
+ * Inject arrival_status = 1 on a number of tasks for the simulation.
+ * If the existing tasks already contain arrivals, those are preserved and we
+ * only fill in extras up to the requested target.
+ *
+ * @param array $tasks
+ * @param int $arrivalCount  How many tasks should be marked as arrivals (capped at task count)
+ * @return array
+ */
+function injectArrivals(array $tasks, int $arrivalCount): array {
+    if (empty($tasks) || $arrivalCount <= 0) return $tasks;
+
+    $arrivalCount = min($arrivalCount, count($tasks));
+
+    // Count existing arrivals (from the database)
+    $existingArrivalIndices = [];
+    $nonArrivalIndices = [];
+    foreach ($tasks as $i => $t) {
+        if (!empty($t['arrival_status']) && (int)$t['arrival_status'] === 1) {
+            $existingArrivalIndices[] = $i;
+        } else {
+            $nonArrivalIndices[] = $i;
+        }
+    }
+
+    $needed = $arrivalCount - count($existingArrivalIndices);
+    if ($needed <= 0) return $tasks; // Already enough arrivals
+
+    // Randomly pick from non-arrivals (deterministic seed for reproducible runs)
+    shuffle($nonArrivalIndices);
+    $pick = array_slice($nonArrivalIndices, 0, $needed);
+    foreach ($pick as $i) {
+        $tasks[$i]['arrival_status'] = 1;
+    }
+
+    return $tasks;
+}
+
 // ─── Run Comparison ───
-function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
+function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10, $arrivalCount = 0) {
     $employees = loadEmployees($employeeLimit);
     $tasks = loadTasks($serviceDate, $taskLimit);
     $allClients = loadClients();
+
+    // Inject arrival tasks (for sequencing-fitness simulation)
+    if ($arrivalCount > 0) {
+        $tasks = injectArrivals($tasks, $arrivalCount);
+    }
 
     if (empty($employees) || empty($tasks) || empty($allClients)) {
         return ['error' => 'Insufficient data. Employees: ' . count($employees) . ', Tasks: ' . count($tasks) . ', Clients: ' . count($allClients)];
@@ -215,11 +258,14 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
     for ($i = 0; $i < $runs; $i++) {
         $startTime = microtime(true);
 
+        // Preprocessor is part of the solve for the Hybrid algorithm
+        $preStart = microtime(true);
         $preprocessor = new RuleBasedPreprocessor();
         $preprocessed = $preprocessor->preprocess($tasks, $employees, $clients);
+        $preElapsedMs = (microtime(true) - $preStart) * 1000;
 
         if (empty($preprocessed['valid_tasks'])) {
-            $hybridResults[] = ['fitness' => 0, 'generations' => 0, 'time_ms' => 0];
+            $hybridResults[] = ['fitness' => 0, 'generations' => 0, 'time_ms' => 0, 'solution_time_ms' => 0];
             continue;
         }
 
@@ -232,11 +278,13 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
 
         $elapsed = (microtime(true) - $startTime) * 1000;
 
+        // Solve time = preprocessor + GA loop (no reporting overhead in Hybrid)
         $hybridResults[] = [
             'fitness' => $result['best_fitness'],
             'generations' => $result['generations'],
             'convergence' => $result['convergence_generation'],
             'time_ms' => $elapsed,
+            'solution_time_ms' => ($result['solution_time_ms'] ?? $elapsed) + $preElapsedMs,
         ];
 
         // Validate first run's best schedule for accuracy breakdown
@@ -263,6 +311,7 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
             'generations' => $result['generations'],
             'convergence' => $result['convergence_generation'],
             'time_ms' => $elapsed,
+            'solution_time_ms' => $result['solution_time_ms'] ?? $elapsed,
         ];
 
         // Validate first run's best schedule
@@ -276,14 +325,18 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
 
     // Run Enhanced Hybrid (Multi-Objective GA)
     $enhancedTeams = [];
+    $enhancedExtendedReport = null;
     for ($i = 0; $i < $runs; $i++) {
         $startTime = microtime(true);
 
+        // Preprocessor is part of the solve for the Enhanced Hybrid algorithm
+        $preStart = microtime(true);
         $preprocessor = new RuleBasedPreprocessor();
         $preprocessed = $preprocessor->preprocess($tasks, $employees, $clients);
+        $preElapsedMs = (microtime(true) - $preStart) * 1000;
 
         if (empty($preprocessed['valid_tasks'])) {
-            $enhancedResults[] = ['fitness' => 0, 'generations' => 0, 'time_ms' => 0];
+            $enhancedResults[] = ['fitness' => 0, 'generations' => 0, 'time_ms' => 0, 'solution_time_ms' => 0];
             continue;
         }
 
@@ -296,11 +349,13 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
 
         $elapsed = (microtime(true) - $startTime) * 1000;
 
+        // Solve time = preprocessor + GA loop (excludes extended report building)
         $enhancedResults[] = [
             'fitness' => $result['best_fitness'],
             'generations' => $result['generations'],
             'convergence' => $result['convergence_generation'],
             'time_ms' => $elapsed,
+            'solution_time_ms' => ($result['solution_time_ms'] ?? $elapsed) + $preElapsedMs,
         ];
 
         if ($i === 0 && !empty($result['best_schedule'])) {
@@ -308,6 +363,7 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
                 $result['best_schedule'], $tasks, $preprocessed['teams'], $employees
             );
             $enhancedTeams = $preprocessed['teams'];
+            $enhancedExtendedReport = $result['extended_report'] ?? null;
         }
     }
 
@@ -322,6 +378,7 @@ function runComparison($serviceDate, $employeeLimit, $taskLimit, $runs = 10) {
         'hybrid_validation' => $hybridValidation,
         'traditional_validation' => $traditionalValidation,
         'enhanced_validation' => $enhancedValidation,
+        'enhanced_extended_report' => $enhancedExtendedReport,
         'meta' => [
             'employees_used' => count($employees),
             'tasks_used' => count($tasks),
@@ -337,6 +394,7 @@ function aggregateResults($results) {
     $generationValues = array_column($results, 'generations');
     $convergenceValues = array_filter(array_column($results, 'convergence'), fn($v) => $v !== null);
     $timeValues = array_column($results, 'time_ms');
+    $solutionTimeValues = array_column($results, 'solution_time_ms');
 
     return [
         'avg_fitness' => count($fitnessValues) ? array_sum($fitnessValues) / count($fitnessValues) : 0,
@@ -344,6 +402,7 @@ function aggregateResults($results) {
         'avg_generations' => count($generationValues) ? array_sum($generationValues) / count($generationValues) : 0,
         'avg_convergence' => count($convergenceValues) ? array_sum($convergenceValues) / count($convergenceValues) : 0,
         'avg_time_ms' => count($timeValues) ? array_sum($timeValues) / count($timeValues) : 0,
+        'avg_solution_time_ms' => count($solutionTimeValues) ? array_sum($solutionTimeValues) / count($solutionTimeValues) : 0,
         'std_dev_fitness' => stdDev($fitnessValues),
     ];
 }
@@ -487,9 +546,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $employeeLimit = (int)($_POST['employee_limit'] ?? 10);
     $taskLimit = (int)($_POST['task_limit'] ?? 10);
     $runs = min((int)($_POST['runs'] ?? 10), 20);
+    // Number of arrival tasks to inject (per day) — capped at the task limit
+    $arrivalCount = max(0, min((int)($_POST['arrivals'] ?? 0), $taskLimit));
 
     try {
-        $result = runComparison($serviceDate, $employeeLimit, $taskLimit, $runs);
+        $result = runComparison($serviceDate, $employeeLimit, $taskLimit, $runs, $arrivalCount);
         echo json_encode($result);
     } catch (Exception $e) {
         echo json_encode(['error' => $e->getMessage()]);
@@ -901,6 +962,9 @@ try {
             <label>No. of Tasks</label>
             <input type="number" class="setup-tasks" value="<?= $setup['tasks'] ?>" min="2" max="100">
 
+            <label>Arrivals per Day</label>
+            <input type="number" class="setup-arrivals" value="0" min="0" max="100" title="Number of tasks per day to mark as arrivals (sequencing test)">
+
             <label>Runs per Algorithm</label>
             <input type="number" class="setup-runs" value="10" min="1" max="20">
         </div>
@@ -942,6 +1006,7 @@ async function runAllSetups() {
             date: card.querySelector('.setup-date').value,
             employees: card.querySelector('.setup-employees').value,
             tasks: card.querySelector('.setup-tasks').value,
+            arrivals: card.querySelector('.setup-arrivals').value,
             runs: card.querySelector('.setup-runs').value,
         });
     }
@@ -966,6 +1031,7 @@ async function runAllSetups() {
             formData.append('service_date', setup.date);
             formData.append('employee_limit', setup.employees);
             formData.append('task_limit', setup.tasks);
+            formData.append('arrivals', setup.arrivals);
             formData.append('runs', setup.runs);
 
             const response = await fetch('', { method: 'POST', body: formData });
@@ -1013,10 +1079,16 @@ function renderComparisonTable(data, tableNum, label, setup) {
     const fitValues = { hybrid: h.avg_fitness, traditional: t.avg_fitness, enhanced: e.avg_fitness };
     const convValues = { hybrid: h.avg_convergence, traditional: t.avg_convergence, enhanced: e.avg_convergence };
     const timeValues = { hybrid: h.avg_time_ms, traditional: t.avg_time_ms, enhanced: e.avg_time_ms };
+    const solveValues = {
+        hybrid: h.avg_solution_time_ms || h.avg_time_ms,
+        traditional: t.avg_solution_time_ms || t.avg_time_ms,
+        enhanced: e.avg_solution_time_ms || e.avg_time_ms,
+    };
 
     const fitWinner = Object.keys(fitValues).reduce((a, b) => fitValues[a] >= fitValues[b] ? a : b);
     const convWinner = Object.keys(convValues).reduce((a, b) => convValues[a] <= convValues[b] ? a : b);
     const timeWinner = Object.keys(timeValues).reduce((a, b) => timeValues[a] <= timeValues[b] ? a : b);
+    const solveWinner = Object.keys(solveValues).reduce((a, b) => solveValues[a] <= solveValues[b] ? a : b);
 
     let html = `
     <div class="results-section">
@@ -1028,8 +1100,9 @@ function renderComparisonTable(data, tableNum, label, setup) {
                     <th>No. of Employees</th>
                     <th>No. of Tasks</th>
                     <th>Fitness Rate</th>
-                    <th>Convergence Rate</th>
-                    <th>Run Time</th>
+                    <th>Convergence / Total Gens</th>
+                    <th title="Time spent only on the GA loop (finding the solution), excluding report rendering">Solve Time</th>
+                    <th title="Total wall-clock time including extended report building (timetables, makespans, subtask simulation)">Total Run Time</th>
                 </tr>
             </thead>
             <tbody>
@@ -1038,7 +1111,8 @@ function renderComparisonTable(data, tableNum, label, setup) {
                     <td>${meta.employees_used}</td>
                     <td>${meta.tasks_used}</td>
                     <td class="${fitWinner === 'traditional' ? 'winner' : 'loser'}">${t.avg_fitness.toFixed(4)}</td>
-                    <td class="${convWinner === 'traditional' ? 'winner' : 'loser'}">${Math.round(t.avg_convergence)} generations</td>
+                    <td class="${convWinner === 'traditional' ? 'winner' : 'loser'}">${Math.round(t.avg_convergence)} / ${Math.round(t.avg_generations || 0)} gens</td>
+                    <td class="${solveWinner === 'traditional' ? 'winner' : 'loser'}">${(t.avg_solution_time_ms || t.avg_time_ms).toFixed(2)} ms</td>
                     <td class="${timeWinner === 'traditional' ? 'winner' : 'loser'}">${t.avg_time_ms.toFixed(2)} ms</td>
                 </tr>
                 <tr>
@@ -1046,7 +1120,8 @@ function renderComparisonTable(data, tableNum, label, setup) {
                     <td>${meta.employees_used}</td>
                     <td>${meta.tasks_used}</td>
                     <td class="${fitWinner === 'hybrid' ? 'winner' : 'loser'}">${h.avg_fitness.toFixed(4)}</td>
-                    <td class="${convWinner === 'hybrid' ? 'winner' : 'loser'}">${Math.round(h.avg_convergence)} generations</td>
+                    <td class="${convWinner === 'hybrid' ? 'winner' : 'loser'}">${Math.round(h.avg_convergence)} / ${Math.round(h.avg_generations || 0)} gens</td>
+                    <td class="${solveWinner === 'hybrid' ? 'winner' : 'loser'}">${(h.avg_solution_time_ms || h.avg_time_ms).toFixed(2)} ms</td>
                     <td class="${timeWinner === 'hybrid' ? 'winner' : 'loser'}">${h.avg_time_ms.toFixed(2)} ms</td>
                 </tr>
                 <tr style="background: #f0fdf4;">
@@ -1054,7 +1129,8 @@ function renderComparisonTable(data, tableNum, label, setup) {
                     <td>${meta.employees_used}</td>
                     <td>${meta.tasks_used}</td>
                     <td class="${fitWinner === 'enhanced' ? 'winner' : 'loser'}">${e.avg_fitness.toFixed(4)}</td>
-                    <td class="${convWinner === 'enhanced' ? 'winner' : 'loser'}">${Math.round(e.avg_convergence)} generations</td>
+                    <td class="${convWinner === 'enhanced' ? 'winner' : 'loser'}">${Math.round(e.avg_convergence)} / ${Math.round(e.avg_generations || 0)} gens</td>
+                    <td class="${solveWinner === 'enhanced' ? 'winner' : 'loser'}">${(e.avg_solution_time_ms || e.avg_time_ms).toFixed(2)} ms</td>
                     <td class="${timeWinner === 'enhanced' ? 'winner' : 'loser'}">${e.avg_time_ms.toFixed(2)} ms</td>
                 </tr>
             </tbody>
@@ -1069,6 +1145,351 @@ function renderComparisonTable(data, tableNum, label, setup) {
         html += renderAccuracyBreakdown3Way(data.hybrid_validation, data.traditional_validation, null, tableNum);
     }
 
+    // Enhanced Hybrid extended report (timetable, makespan, subtasks, employee performance)
+    if (data.enhanced_extended_report) {
+        html += renderEnhancedExtendedReport(data.enhanced_extended_report);
+    }
+
+    return html;
+}
+
+function fmtMin(min) {
+    if (min == null || isNaN(min)) return '-';
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function renderMakespanTimetable(timetable, borderColor, bgColor) {
+    if (!timetable || timetable.length === 0) {
+        return `<div style="font-size:11px; color:#94a3b8; padding:8px;">(no data)</div>`;
+    }
+
+    let html = '';
+    timetable.forEach(team => {
+        html += `<div style="border:1px solid ${borderColor}; border-radius:6px; padding:8px; margin-bottom:6px; background:${bgColor};">
+            <div style="font-size:11px; font-weight:600; color:#0f172a; margin-bottom:4px;">
+                Team #${team.team_id} &middot; eff ${team.efficiency} &middot; finish ${team.team_finish_label}
+            </div>
+            <table style="width:100%; font-size:10px; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:rgba(0,0,0,0.04);">
+                        <th style="padding:3px 4px; text-align:left;">#</th>
+                        <th style="padding:3px 4px; text-align:left;">Task</th>
+                        <th style="padding:3px 4px; text-align:right;">Min</th>
+                        <th style="padding:3px 4px; text-align:center;">Start</th>
+                        <th style="padding:3px 4px; text-align:center;">End</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        team.tasks.forEach(t => {
+            const arrival = t.arrival_status ? '🛬 ' : '';
+            html += `<tr>
+                <td style="padding:3px 4px;">${t.sequence}</td>
+                <td style="padding:3px 4px;">${arrival}#${t.task_id}</td>
+                <td style="padding:3px 4px; text-align:right;">${t.effective_duration}</td>
+                <td style="padding:3px 4px; text-align:center;">${t.start_label}</td>
+                <td style="padding:3px 4px; text-align:center;">${t.end_label}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+    });
+    return html;
+}
+
+function renderEnhancedExtendedReport(rep) {
+    if (!rep || !rep.timetable) return '';
+
+    let html = `
+    <div class="extended-report">
+        <h3 style="margin-top: 24px; color: #071957; font-size: 18px;">Enhanced Hybrid GA — Extended Report</h3>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
+            Timetable, makespan comparison, subtask simulation, per-employee efficiency, and
+            per-generation fitness data for the best schedule from the first run.
+        </p>
+
+        <div style="background:#fff7ed; border:1px solid #fdba74; border-radius:8px; padding:10px 14px; margin-bottom:14px;">
+            <strong style="color:#9a3412; font-size:12px;">⚙ Run summary:</strong>
+            <span style="font-size:12px; color:#0f172a;">
+                Population size: <strong>${rep.population_size}</strong> &middot;
+                Total generations run: <strong>${rep.total_generations_run}</strong> &middot;
+                Best fitness reached at generation: <strong>${rep.convergence_generation ?? '—'}</strong>
+            </span>
+        </div>
+    `;
+
+    // ── Section 0: Fitness per generation (population evolution) ──
+    if (rep.fitness_per_generation && rep.fitness_per_generation.length > 0) {
+        html += `<div class="extended-section">
+            <h4 style="margin: 14px 0 8px; font-size: 14px; color: #1e293b;">0. Fitness Per Generation (Population Evolution)</h4>
+            <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+                Each row is one generation. <strong>Best</strong> = highest-scoring individual,
+                <strong>Avg</strong> = mean of the population, <strong>Worst</strong> = lowest-scoring.
+                Click "▶ show all" to see every individual's fitness in that generation.
+            </p>
+            <table style="width:100%; font-size:11px; border-collapse:collapse; border:1px solid #e2e8f0;">
+                <thead>
+                    <tr style="background:#e2e8f0;">
+                        <th style="padding:6px; text-align:left;">Gen</th>
+                        <th style="padding:6px; text-align:right;">Best</th>
+                        <th style="padding:6px; text-align:right;">Average</th>
+                        <th style="padding:6px; text-align:right;">Worst</th>
+                        <th style="padding:6px; text-align:right;">Population</th>
+                        <th style="padding:6px; text-align:left;">All Individuals</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        rep.fitness_per_generation.forEach((g, idx) => {
+            const isBest = (g.generation === rep.convergence_generation);
+            const rowBg = isBest ? 'background:#dcfce7;' : '';
+            const detailsId = 'gen-detail-' + idx;
+            html += `<tr style="${rowBg}">
+                <td style="padding:5px 6px; border-top:1px solid #f1f5f9; font-weight:${isBest ? '700' : '400'};">
+                    ${g.generation}${isBest ? ' ⭐' : ''}
+                </td>
+                <td style="padding:5px 6px; text-align:right; border-top:1px solid #f1f5f9; font-weight:600;">${Number(g.best).toFixed(4)}</td>
+                <td style="padding:5px 6px; text-align:right; border-top:1px solid #f1f5f9;">${Number(g.average).toFixed(4)}</td>
+                <td style="padding:5px 6px; text-align:right; border-top:1px solid #f1f5f9; color:#94a3b8;">${Number(g.worst).toFixed(4)}</td>
+                <td style="padding:5px 6px; text-align:right; border-top:1px solid #f1f5f9;">${g.population_size}</td>
+                <td style="padding:5px 6px; border-top:1px solid #f1f5f9;">
+                    <details>
+                        <summary style="cursor:pointer; color:#3b82f6; font-size:10px;">▶ show all ${g.population_size}</summary>
+                        <div style="max-width:600px; font-family:monospace; font-size:10px; color:#475569; margin-top:4px; line-height:1.4;">
+                            ${(g.individual_fitnesses || []).map((f, i) => {
+                                const dot = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '•'));
+                                return `${dot} ${Number(f).toFixed(4)}`;
+                            }).join(' &nbsp; ')}
+                        </div>
+                    </details>
+                </td>
+            </tr>`;
+        });
+        html += `</tbody></table>
+        <p style="font-size:10px; color:#94a3b8; margin-top:6px;">
+            ⭐ = generation where the global best fitness was discovered.
+            🥇🥈🥉 = top 3 individuals in that generation.
+        </p>
+        </div>`;
+    }
+
+    // ── Section 1: Timetable per team ──
+    html += `<div class="extended-section">
+        <h4 style="margin: 14px 0 8px; font-size: 14px; color: #1e293b;">1. Task Sequencing &amp; Timetable</h4>
+        <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+            Service start: <strong>${fmtMin(rep.service_start_minutes)}</strong>.
+            Each team's tasks are ordered, and start/end times are derived from team efficiency × task duration.
+        </p>`;
+
+    rep.timetable.forEach(team => {
+        html += `<div style="border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:10px; background:#f8fafc;">
+            <div style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:6px;">
+                Team #${team.team_id} &middot; Efficiency: ${team.efficiency} &middot; Finish: ${team.team_finish_label}
+            </div>
+            <table style="width:100%; font-size:11px; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#e2e8f0;">
+                        <th style="padding:4px 6px; text-align:left;">#</th>
+                        <th style="padding:4px 6px; text-align:left;">Task</th>
+                        <th style="padding:4px 6px; text-align:center;">Arrival</th>
+                        <th style="padding:4px 6px; text-align:right;">Base (min)</th>
+                        <th style="padding:4px 6px; text-align:right;">Effective</th>
+                        <th style="padding:4px 6px; text-align:center;">Start</th>
+                        <th style="padding:4px 6px; text-align:center;">End</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        team.tasks.forEach(t => {
+            html += `<tr>
+                <td style="padding:4px 6px;">${t.sequence}</td>
+                <td style="padding:4px 6px;">#${t.task_id}</td>
+                <td style="padding:4px 6px; text-align:center;">${t.arrival_status ? '🛬' : '—'}</td>
+                <td style="padding:4px 6px; text-align:right;">${t.base_duration}</td>
+                <td style="padding:4px 6px; text-align:right;">${t.effective_duration}</td>
+                <td style="padding:4px 6px; text-align:center;">${t.start_label}</td>
+                <td style="padding:4px 6px; text-align:center;">${t.end_label}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+    });
+    html += `</div>`;
+
+    // ── Section 1b: Per-client breakdown (timetable grouped by client + makespan per client) ──
+    if (rep.client_breakdown && rep.client_breakdown.length > 0) {
+        html += `<div class="extended-section">
+            <h4 style="margin: 14px 0 8px; font-size: 14px; color: #1e293b;">1b. Per-Client Breakdown (timetable + makespan score)</h4>
+            <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+                Same teams grouped under their client. Each client has its own makespan
+                (when its last team finishes) and a corresponding makespan score.
+            </p>`;
+
+        rep.client_breakdown.forEach(client => {
+            const scoreColor = client.makespan_score >= 0.8 ? '#16a34a'
+                               : (client.makespan_score >= 0.5 ? '#eab308' : '#dc2626');
+            html += `<div style="border:1px solid #cbd5e1; border-radius:10px; padding:12px; margin-bottom:14px; background:#fff;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #e2e8f0;">
+                    <div>
+                        <div style="font-size:13px; font-weight:700; color:#0f172a;">${client.client_name}</div>
+                        <div style="font-size:11px; color:#64748b;">
+                            ${client.team_count} team(s) &middot; ${client.task_count} task(s)
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:11px; color:#64748b;">Client Makespan</div>
+                        <div style="font-size:18px; font-weight:700; color:#0f172a;">${client.makespan_label}</div>
+                        <div style="font-size:11px; color:${scoreColor}; font-weight:600;">
+                            Score: ${client.makespan_score}
+                        </div>
+                    </div>
+                </div>`;
+
+            client.teams.forEach(team => {
+                html += `<div style="border:1px solid #e2e8f0; border-radius:6px; padding:8px; margin-bottom:6px; background:#f8fafc;">
+                    <div style="font-size:11px; font-weight:600; color:#0f172a; margin-bottom:4px;">
+                        Team #${team.team_id} &middot; eff ${team.efficiency} &middot; finish ${team.team_finish_label}
+                    </div>
+                    <table style="width:100%; font-size:10px; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:rgba(0,0,0,0.04);">
+                                <th style="padding:3px 4px; text-align:left;">#</th>
+                                <th style="padding:3px 4px; text-align:left;">Task</th>
+                                <th style="padding:3px 4px; text-align:center;">Arrival</th>
+                                <th style="padding:3px 4px; text-align:right;">Eff. Dur</th>
+                                <th style="padding:3px 4px; text-align:center;">Start</th>
+                                <th style="padding:3px 4px; text-align:center;">End</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                team.tasks.forEach(t => {
+                    html += `<tr>
+                        <td style="padding:3px 4px;">${t.sequence}</td>
+                        <td style="padding:3px 4px;">#${t.task_id}</td>
+                        <td style="padding:3px 4px; text-align:center;">${t.arrival_status ? '🛬' : '—'}</td>
+                        <td style="padding:3px 4px; text-align:right;">${t.effective_duration}</td>
+                        <td style="padding:3px 4px; text-align:center;">${t.start_label}</td>
+                        <td style="padding:3px 4px; text-align:center;">${t.end_label}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
+            });
+
+            html += `</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    // ── Section 2: Makespan comparison (numbers + sequence side-by-side) ──
+    const cmp = rep.comparison_long_makespan || {};
+    html += `<div class="extended-section">
+        <h4 style="margin: 14px 0 8px; font-size: 14px; color: #1e293b;">2. Makespan Optimization</h4>
+        <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+            "Makespan" is when the LAST team finishes. Lower = better. We compare the GA's optimized
+            sequence to a deliberately worse alternate sequence.
+        </p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div style="border:2px solid #16a34a; border-radius:8px; padding:12px; background:#f0fdf4;">
+                <div style="font-size:12px; font-weight:600; color:#15803d;">✅ Optimized (GA)</div>
+                <div style="font-size:24px; font-weight:700; margin-top:4px;">${fmtMin(rep.makespan_minutes)}</div>
+                <div style="font-size:11px; color:#475569;">Total: ${rep.makespan_minutes} min</div>
+                <div style="font-size:11px; color:#475569;">Score: <strong>${rep.makespan_score}</strong></div>
+            </div>
+            <div style="border:2px solid #dc2626; border-radius:8px; padding:12px; background:#fef2f2;">
+                <div style="font-size:12px; font-weight:600; color:#b91c1c;">⚠️ Long-Makespan Alt</div>
+                <div style="font-size:24px; font-weight:700; margin-top:4px;">${fmtMin(cmp.makespan_minutes)}</div>
+                <div style="font-size:11px; color:#475569;">Total: ${cmp.makespan_minutes} min</div>
+                <div style="font-size:11px; color:#475569;">Score: <strong>${cmp.makespan_score}</strong></div>
+            </div>
+        </div>
+        <div style="margin-top:8px; font-size:12px; color:#0f172a;">
+            <strong>GA improvement:</strong> saved <strong>${cmp.improvement_minutes} min</strong>
+            (<strong>${cmp.improvement_percent}%</strong> shorter than the alternative)
+        </div>
+
+        <!-- Side-by-side timetable comparison -->
+        <div style="margin-top:14px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div>
+                <div style="font-size:12px; font-weight:600; color:#15803d; margin-bottom:6px;">
+                    ✅ Optimized Sequence
+                </div>
+                ${renderMakespanTimetable(rep.timetable, '#16a34a', '#f0fdf4')}
+            </div>
+            <div>
+                <div style="font-size:12px; font-weight:600; color:#b91c1c; margin-bottom:6px;">
+                    ⚠️ Long-Makespan Alternative
+                </div>
+                ${renderMakespanTimetable(cmp.timetable, '#dc2626', '#fef2f2')}
+            </div>
+        </div>
+    </div>`;
+
+    // ── Section 3: Subtask simulation ──
+    if (rep.subtask_simulation && rep.subtask_simulation.length > 0) {
+        html += `<div class="extended-section">
+            <h4 style="margin: 14px 0 8px; font-size: 14px; color: #1e293b;">3. Subtask Simulation (per task checklist)</h4>
+            <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+                Each task has up to 4 subtasks randomly assigned to team members. Used to compute
+                the per-employee performance ratio below.
+            </p>`;
+        rep.subtask_simulation.slice(0, 6).forEach(taskSim => { // limit display to first 6
+            html += `<div style="border:1px solid #e2e8f0; border-radius:6px; padding:8px; margin-bottom:8px; background:#fff;">
+                <div style="font-size:11px; font-weight:600; color:#1e293b;">
+                    Task #${taskSim.task_id} (Team #${taskSim.team_id}) &middot;
+                    ${taskSim.task_start_label}–${taskSim.task_end_label} &middot;
+                    estimated ${taskSim.estimated_duration} min
+                </div>
+                <ul style="margin:4px 0 0 16px; font-size:11px; color:#475569; list-style:disc;">`;
+            taskSim.subtasks.forEach(st => {
+                html += `<li>${st.name} → <strong>${st.completed_by_name}</strong>
+                    (${st.start_label}–${st.end_label})</li>`;
+            });
+            html += `</ul></div>`;
+        });
+        if (rep.subtask_simulation.length > 6) {
+            html += `<p style="font-size:11px; color:#94a3b8; margin-top:4px;">
+                (Showing first 6 of ${rep.subtask_simulation.length} tasks)
+            </p>`;
+        }
+        html += `</div>`;
+    }
+
+    // ── Section 4: Per-employee performance & efficiency ──
+    if (rep.employee_performance && rep.employee_performance.length > 0) {
+        html += `<div class="extended-section">
+            <h4 style="margin: 14px 0 8px; font-size: 14px; color: #1e293b;">4. Per-Employee Efficiency</h4>
+            <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+                Computed from the subtask simulation above using:<br>
+                <code>contribution = subtasks_done / total_subtasks</code><br>
+                <code>expected_time = task_duration × contribution</code><br>
+                <code>performance_ratio = expected / actual (capped at 1.0)</code><br>
+                <code>new_efficiency = (old × 0.7) + (ratio × 0.3)</code>, clamped [0.5, 1.0]
+            </p>
+            <table style="width:100%; font-size:11px; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#e2e8f0;">
+                        <th style="padding:6px; text-align:left;">Employee</th>
+                        <th style="padding:6px; text-align:right;">Team</th>
+                        <th style="padding:6px; text-align:right;">Tasks Touched</th>
+                        <th style="padding:6px; text-align:right;">Starting Eff</th>
+                        <th style="padding:6px; text-align:right;">Final Eff</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        rep.employee_performance.forEach(emp => {
+            const eff = emp.current_efficiency;
+            const color = eff >= 0.95 ? '#16a34a' : (eff >= 0.8 ? '#eab308' : '#dc2626');
+            html += `<tr>
+                <td style="padding:6px;">${emp.name}</td>
+                <td style="padding:6px; text-align:right;">#${emp.team_id}</td>
+                <td style="padding:6px; text-align:right;">${emp.tasks_touched}</td>
+                <td style="padding:6px; text-align:right;">${emp.starting_efficiency}</td>
+                <td style="padding:6px; text-align:right; font-weight:700; color:${color};">${eff}</td>
+            </tr>`;
+        });
+        html += `</tbody></table>
+        </div>`;
+    }
+
+    html += `</div>`;
     return html;
 }
 
