@@ -63,13 +63,13 @@
 
         {{-- Drop indicator (between rows) --}}
         @if ($showDrop && $drop !== null && !$loop->last)
-            <div class="text-center my-3">
+            <div class="text-center my-4">
                 <span class="text-xs font-semibold text-gray-400 dark:text-gray-500">
                     {{ $drop > 0 ? $drop . '% drop' : ($drop < 0 ? abs($drop) . '% gain' : 'no change') }}
                 </span>
             </div>
         @elseif ($showDrop && !$loop->last)
-            <div class="my-3"></div>
+            <div class="my-4"></div>
         @endif
     @endforeach
 </div>

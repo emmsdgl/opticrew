@@ -40,6 +40,30 @@
                             'duration' => $task->duration,
                             'status' => $task->status,
                             'team_count' => $task->assignedEmployees ? $task->assignedEmployees->count() : 0,
+                            // Drawer-friendly aliases (compatible with appointment-details-drawer)
+                            'service_type' => $service,
+                            'service_date' => \Carbon\Carbon::parse($task->scheduled_date)->format('Y-m-d'),
+                            'service_time' => $task->scheduled_time
+                                ? \Carbon\Carbon::parse($task->scheduled_time)->format('H:i')
+                                : null,
+                            'assignedMembers' => $task->assignedEmployees
+                                ? $task->assignedEmployees->map(function ($emp) {
+                                    $name = $emp->user->name ?? 'Employee';
+                                    return [
+                                        'name' => $name,
+                                        'initial' => strtoupper(substr($name, 0, 1)) ?: 'E',
+                                    ];
+                                })->values()->toArray()
+                                : [],
+                            // Only include indices of items that are actually completed
+                            'checklist_completions' => $task->checklistCompletions
+                                ? $task->checklistCompletions
+                                    ->where('is_completed', true)
+                                    ->pluck('checklist_item_id')
+                                    ->map(fn ($i) => (int) $i)
+                                    ->values()
+                                    ->toArray()
+                                : [],
                         ];
                     })
                     ->values();
@@ -56,7 +80,7 @@
 
                 <div class="flex flex-row justify-between items-center">
                     <div class="py-4 px-0">
-                        <x-labelwithvalue label="Tasks" count="" />
+                        <x-labelwithvalue label="Today's Tasks" count="" />
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="selectedDateDisplay"></p>
                     </div>
 
@@ -64,7 +88,7 @@
                     {{-- Service Filter Dropdown (replaces "View All") --}}
                     <div class="relative" x-data="{ open: false }">
                         <button type="button" @click="open = !open"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            class="inline-flex items-center gap-2 px-2 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <i class="fas fa-filter text-xs"></i>
                             <span class="text-xs"
                                 x-text="selectedService === 'all' ? 'Filter by Service' : selectedService"></span>
@@ -88,13 +112,15 @@
                 </div>
 
                 <div
-                    class="rounded-lg my-6 bg-white shadow-sm dark:bg-gray-800/40 h-auto">
-                    <div class="p-4 md:p-5">
+                    class="rounded-lg my-6 h-[26rem]"
+                    :class="filteredTasks.length === 0 ? 'bg-white shadow-sm dark:bg-gray-800/40' : ''">
+                    <div class="p-2 h-full overflow-y-auto">
                         <template x-if="filteredTasks.length > 0">
                             <div class="space-y-3">
                                 <template x-for="task in filteredTasks" :key="task.id">
                                     <div
-                                        class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800/60 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all">
+                                        @click="viewDetails(task.id)"
+                                        class="cursor-pointer flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800/60 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all">
                                         <!-- Status dot -->
                                         <div class="flex-shrink-0">
                                             <div class="w-3 h-3 rounded-full" :class="statusDot(task.status)"></div>
@@ -135,33 +161,53 @@
 
                         <template x-if="filteredTasks.length === 0">
                             <!-- Empty State (matches client dashboard) -->
-                            <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
-                                <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                            <div class="flex flex-col items-center justify-center px-6 text-center h-full">
+                                <div class="w-40 h-40 mb-4 flex items-center justify-center">
                                     <img src="{{ asset('images/icons/no-items-found.svg') }}" alt="No tasks"
                                         class="w-full h-full object-contain opacity-80 dark:opacity-60">
                                 </div>
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
                                     <span
                                         x-text="selectedDate === todayDate ? 'No tasks scheduled today' : 'No tasks scheduled for this date'"></span>
                                 </h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mb-3">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 max-w-md mb-2">
                                     There are no tasks for the selected date. You can create a new task to get started.
                                 </p>
                                 <a href="{{ route('manager.schedule') }}"
-                                    class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
                                     + Create a new task
                                 </a>
                             </div>
                         </template>
                     </div>
                 </div>
+
+                <!-- Task Details Slide-in Drawer -->
+                <x-client-components.shared.appointment-details-drawer
+                    showVar="showDrawer"
+                    dataVar="selectedTask"
+                    closeMethod="closeDrawer"
+                    title="Task Details"
+                    panelWidth="w-screen max-w-xs sm:max-w-sm"
+                    :showTeam="true"
+                    :showChecklist="true">
+                    <x-slot name="footer">
+                        <div class="flex gap-3">
+                            <button
+                                @click="closeDrawer()"
+                                class="flex-1 text-sm px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium">
+                                Close
+                            </button>
+                        </div>
+                    </x-slot>
+                </x-client-components.shared.appointment-details-drawer>
             </div>
 
         </div>
         <!-- /Left Panel -->
 
         <!-- Right Panel - Task Overview & Activity -->
-        <div id="tour-mgr-activity" class="flex flex-col gap-3 w-full lg:w-1/3 rounded-lg h-auto">
+        <div id="tour-mgr-activity" class="flex flex-col w-full lg:w-1/3 rounded-lg h-full self-stretch">
             @php
                 $taskOverviewTotal =
                     ($taskOverview['completed'] ?? 0) +
@@ -171,13 +217,13 @@
             @endphp
 
             <!-- Task Status Overview - Pie Chart -->
-            <div class="py-4 px-0">
+            <div class="py-8  px-0">
                 <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Task Overview</h2>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">This week's task distribution</p>
             </div>
-            <div class="bg-white dark:bg-transparent rounded-xl">
+            <div class="bg-white dark:bg-transparent rounded-xl py-3">
                 <div class="p-4 md:p-5">
-                    <div class="relative h-56">
+                    <div class="relative h-56 mb-12">
                         <canvas id="taskOverviewChart"></canvas>
                         @if ($taskOverviewTotal === 0)
                             {{-- Overlay label for the empty grayscale doughnut --}}
@@ -189,7 +235,7 @@
                     </div>
 
                     {{-- Custom legend with values (color-coded regardless of data state) --}}
-                    <div class="my-6 grid grid-cols-2 gap-x-3 gap-y-2">
+                    <div class="bg-transparent py-6 grid grid-cols-2 gap-x-3 gap-y-2">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2 min-w-0">
                                 <div class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></div>
@@ -226,6 +272,9 @@
                 </div>
             </div>
 
+            <!-- Statistics Funnel Chart -->
+            <div id="tour-mgr-stats"
+            class="bg-white dark:bg-transparent rounded-xl flex flex-col">
             <div class="py-4 px-0">
                 <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Workforce Summary</h2>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Funnel of activity across employees,
@@ -233,10 +282,7 @@
 
                 </p>
             </div>
-            <!-- Statistics Funnel Chart -->
-            <div id="tour-mgr-stats"
-                class="bg-white dark:bg-transparent rounded-xl">
-                <div class="p-4 md:p-5">
+                <div class="px-4 md:px-5 py-12 md:py-14 flex-1 flex flex-col justify-center">
                     @php
                         $workforceFunnel = [
                             ['label' => 'Total Employees', 'value' => $stats['totalEmployees'] ?? 0],
@@ -251,40 +297,6 @@
                 </div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                <div
-                    class="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
-                    <a href="{{ route('manager.activity') }}"
-                        class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                        View All
-                    </a>
-                </div>
-                <div class="p-4 md:p-5">
-                    @if (count($recentActivity ?? []) > 0)
-                        <div class="space-y-4">
-                            @foreach ($recentActivity as $activity)
-                                <div class="flex gap-3">
-                                    <div
-                                        class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                        <i
-                                            class="fa-solid fa-{{ $activity['icon'] ?? 'circle-info' }} text-xs text-blue-600 dark:text-blue-400"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm text-gray-900 dark:text-white">{{ $activity['message'] }}
-                                        </p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                            {{ $activity['time'] }}</p>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No recent activity</p>
-                    @endif
-                </div>
-            </div>
         </div>
         </div>
         <!-- /Right Panel -->
@@ -369,12 +381,83 @@
                 selectedDate: window.managerDashboardToday,
                 selectedService: 'all',
 
+                // Drawer state
+                showDrawer: false,
+                selectedTask: null,
+
                 init() {
                     document.addEventListener('calendar-date-selected', (e) => {
                         if (e.detail && e.detail.calendarId === 'manager-dashboard') {
                             this.selectedDate = e.detail.date;
                         }
                     });
+                },
+
+                viewDetails(taskId) {
+                    this.selectedTask = this.allTasks.find(t => t.id === taskId) || null;
+                    if (this.selectedTask) {
+                        this.showDrawer = true;
+                        document.body.style.overflow = 'hidden';
+                    }
+                },
+
+                closeDrawer() {
+                    this.showDrawer = false;
+                    this.selectedTask = null;
+                    document.body.style.overflow = 'auto';
+                },
+
+                // Drawer helper methods (mirrors client dashboard)
+                getDrawerStatus() {
+                    return (this.selectedTask?.status || '').toLowerCase();
+                },
+
+                getDrawerData(key) {
+                    return this.selectedTask?.[key];
+                },
+
+                getDrawerChecklistItems() {
+                    const serviceType = this.selectedTask?.service_type || '';
+                    return window.getChecklistByServiceType ? window.getChecklistByServiceType(serviceType) : [];
+                },
+
+                isChecklistItemCompleted(itemIndex) {
+                    if (!this.selectedTask) return false;
+                    const completions = this.selectedTask.checklist_completions || [];
+                    return completions.includes(itemIndex) || completions.includes(itemIndex + 1);
+                },
+
+                getDrawerChecklistProgress() {
+                    if (!this.selectedTask) return { completed: 0, total: 0, percentage: 0 };
+                    const checklistItems = this.getDrawerChecklistItems();
+                    const total = checklistItems.length;
+                    const completions = this.selectedTask.checklist_completions || [];
+                    const completed = completions.length;
+                    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+                    return { completed, total, percentage };
+                },
+
+                formatDrawerDate(dateString) {
+                    if (!dateString) return '-';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                },
+
+                formatDrawerTime(timeString) {
+                    if (!timeString) return '-';
+                    const parts = timeString.split(':');
+                    if (parts.length < 2) return timeString;
+                    let hours = parseInt(parts[0]);
+                    const minutes = parts[1];
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12;
+                    return hours + ':' + minutes + ' ' + ampm;
                 },
 
                 get availableServices() {

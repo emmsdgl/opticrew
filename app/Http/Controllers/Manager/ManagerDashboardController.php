@@ -49,7 +49,7 @@ class ManagerDashboardController extends Controller
         $allTasks = Task::whereIn('location_id', $locationIds)
             ->whereDate('scheduled_date', '>=', $today->copy()->subDays(7))
             ->whereDate('scheduled_date', '<=', $today->copy()->addDays(60))
-            ->with(['location', 'assignedEmployees'])
+            ->with(['location', 'assignedEmployees.user', 'checklistCompletions'])
             ->orderBy('scheduled_date')
             ->orderBy('scheduled_time')
             ->get();

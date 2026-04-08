@@ -7,14 +7,16 @@
 ])
 
 @php
+    // Decode HTML entities (e.g. &#039; from Blade-escaped attribute values) before splitting
+    $decodedText = html_entity_decode((string) $text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $elements  = $animateBy === 'words'
-        ? explode(' ', trim($text))
-        : preg_split('//u', trim($text), -1, PREG_SPLIT_NO_EMPTY);
+        ? explode(' ', trim($decodedText))
+        : preg_split('//u', trim($decodedText), -1, PREG_SPLIT_NO_EMPTY);
     $totalDuration = $stepDuration * 2;
     $yFrom     = $direction === 'top' ? -50 : 50;
 @endphp
 
-<span {{ $attributes->merge(['class' => 'blur-text-root inline-flex flex-wrap gap-x-[0.25em]']) }}
+<span {{ $attributes->merge(['class' => 'blur-text-root flex flex-wrap gap-x-[0.25em]']) }}
       data-bt-direction="{{ $direction }}">
     @foreach($elements as $index => $word)
         <span

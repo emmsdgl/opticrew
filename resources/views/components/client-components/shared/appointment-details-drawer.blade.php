@@ -6,6 +6,7 @@
     'showChecklist' => true,
     'showTeam' => true,
     'showFooter' => true,
+    'panelWidth' => 'w-screen max-w-md sm:max-w-lg',
 ])
 
 <!-- Appointment Details Slide-in Drawer -->
@@ -31,7 +32,7 @@
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="translate-x-full"
              @click.stop
-             class="relative w-screen max-w-md sm:max-w-lg">
+             class="relative {{ $panelWidth }}">
 
             <!-- Drawer Content -->
             <div class="h-full flex flex-col bg-white dark:bg-slate-800 shadow-2xl border-l border-gray-200 dark:border-slate-700">
@@ -66,6 +67,10 @@
                             class="px-3 py-1 text-xs rounded-full bg-[#FE1E2820] text-[#FE1E28] font-semibold">Cancelled</span>
                         <span x-show="getDrawerStatus() === 'rejected'"
                             class="px-3 py-1 text-xs rounded-full bg-[#FE1E2820] text-[#FE1E28] font-semibold">Rejected</span>
+                        <span x-show="getDrawerStatus() === 'scheduled'"
+                            class="px-3 py-1 text-xs rounded-full bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-semibold">Scheduled</span>
+                        <span x-show="getDrawerStatus() === 'on hold' || getDrawerStatus() === 'on_hold'"
+                            class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 font-semibold">On Hold</span>
                     </div>
 
                     <!-- Service Details Section -->
@@ -170,7 +175,7 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Team members assigned to this service</p>
                         </div>
 
-                        <div class="flex items-center gap-2 flex-wrap py-2.5 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div class="flex items-center gap-1 flex-wrap py-2.5 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                             <template x-for="(member, idx) in (getDrawerData('assignedMembers') || []).slice(0, 5)" :key="idx">
                                 <div class="relative group">
                                     <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-pointer transition-transform hover:scale-110"
