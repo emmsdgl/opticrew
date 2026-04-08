@@ -328,20 +328,132 @@ class GoogleAuthController extends Controller
                 ->with('error', 'This Google account is already linked to another user. Please use a different Google account.');
         }
 
-        // Link the Google account
-        $user->update([
+        // 2FA: Generate OTP and send to the Google account email to verify it is active
+        // and owned by the user before completing the link.
+        $otp = random_int(100000, 999999);
+        Cache::put("google_link_otp:{$user->id}", [
+            'otp' => (string) $otp,
             'google_id' => $googleUser->getId(),
-            'alternative_email' => $user->alternative_email ?: $googleUser->getEmail(),
-        ]);
+            'google_email' => $googleUser->getEmail(),
+            'google_avatar' => $googleUser->getAvatar(),
+        ], now()->addMinutes(5));
 
-        if ($googleUser->getAvatar() && !$user->profile_picture) {
-            $user->update(['profile_picture' => $googleUser->getAvatar()]);
+        try {
+            Mail::to($googleUser->getEmail())
+                ->send(new \App\Mail\EmailVerificationOtp($otp));
+        } catch (\Exception $e) {
+            Log::error('Failed to send Google link OTP: ' . $e->getMessage());
+            Cache::forget("google_link_otp:{$user->id}");
+            return redirect($this->dashboardUrl($user->role))
+                ->with('error', 'Failed to send verification code to your Google account. Please try again.');
         }
 
-        UserActivityLog::log($user->id, UserActivityLog::TYPE_LOGIN, 'Linked Google account', null, request()->ip());
+        return redirect()->route('google.link.otp.show');
+    }
+
+    /**
+     * Show the OTP verification form for Google account linking (2FA step).
+     */
+    public function showLinkOtp()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $pending = Cache::get("google_link_otp:{$user->id}");
+        if (!$pending) {
+            return redirect($this->dashboardUrl($user->role))
+                ->with('error', 'Your verification session has expired. Please try linking your Google account again.');
+        }
+
+        return view('auth.link-google-otp', [
+            'googleEmail' => $pending['google_email'],
+        ]);
+    }
+
+    /**
+     * Verify the OTP and finalize Google account linking.
+     */
+    public function verifyLinkOtp(Request $request)
+    {
+        $request->validate([
+            'otp' => 'required|digits:6',
+        ]);
+
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $pending = Cache::get("google_link_otp:{$user->id}");
+        if (!$pending) {
+            return redirect($this->dashboardUrl($user->role))
+                ->with('error', 'Your verification session has expired. Please try linking your Google account again.');
+        }
+
+        if ((string) $request->otp !== (string) $pending['otp']) {
+            return back()->with('error', 'The verification code is incorrect. Please try again.');
+        }
+
+        // Re-check that the Google ID has not been claimed by another account in the meantime
+        $existingUser = User::where('google_id', $pending['google_id'])
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($existingUser) {
+            Cache::forget("google_link_otp:{$user->id}");
+            return redirect($this->dashboardUrl($user->role))
+                ->with('error', 'This Google account is already linked to another user. Please use a different Google account.');
+        }
+
+        // Finalize the link
+        $user->update([
+            'google_id' => $pending['google_id'],
+            'alternative_email' => $user->alternative_email ?: $pending['google_email'],
+        ]);
+
+        if (!empty($pending['google_avatar']) && !$user->profile_picture) {
+            $user->update(['profile_picture' => $pending['google_avatar']]);
+        }
+
+        Cache::forget("google_link_otp:{$user->id}");
+
+        UserActivityLog::log($user->id, UserActivityLog::TYPE_LOGIN, 'Linked Google account (OTP verified)', null, $request->ip());
 
         return redirect($this->dashboardUrl($user->role))
             ->with('success', 'Your Google account has been linked successfully. You can now sign in with Google.');
+    }
+
+    /**
+     * Resend the OTP to the pending Google account email.
+     */
+    public function resendLinkOtp()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $pending = Cache::get("google_link_otp:{$user->id}");
+        if (!$pending) {
+            return redirect($this->dashboardUrl($user->role))
+                ->with('error', 'Your verification session has expired. Please try linking your Google account again.');
+        }
+
+        $otp = random_int(100000, 999999);
+        $pending['otp'] = (string) $otp;
+        Cache::put("google_link_otp:{$user->id}", $pending, now()->addMinutes(5));
+
+        try {
+            Mail::to($pending['google_email'])
+                ->send(new \App\Mail\EmailVerificationOtp($otp));
+        } catch (\Exception $e) {
+            Log::error('Failed to resend Google link OTP: ' . $e->getMessage());
+            return back()->with('error', 'Failed to resend verification code. Please try again.');
+        }
+
+        return back()->with('success', 'A new verification code has been sent to your Google account.');
     }
 
     /**
@@ -682,19 +794,107 @@ class GoogleAuthController extends Controller
             return redirect($callback . '?error=' . urlencode('This Google account is already linked to another user. Please use a different Google account.'));
         }
 
-        // Link the Google account
-        $user->update([
+        // 2FA: Generate OTP and send to the Google account email to verify it is active
+        // and owned by the user before completing the link.
+        $otp = random_int(100000, 999999);
+        Cache::put("google_link_otp:{$user->id}", [
+            'otp' => (string) $otp,
             'google_id' => $googleUser->getId(),
-            'alternative_email' => $user->alternative_email ?: $googleUser->getEmail(),
-        ]);
+            'google_email' => $googleUser->getEmail(),
+            'google_avatar' => $googleUser->getAvatar(),
+        ], now()->addMinutes(5));
 
-        if ($googleUser->getAvatar() && !$user->profile_picture) {
-            $user->update(['profile_picture' => $googleUser->getAvatar()]);
+        try {
+            Mail::to($googleUser->getEmail())
+                ->send(new \App\Mail\EmailVerificationOtp($otp));
+        } catch (\Exception $e) {
+            Log::error('Failed to send Google link OTP (mobile): ' . $e->getMessage());
+            Cache::forget("google_link_otp:{$user->id}");
+            return redirect($callback . '?error=' . urlencode('Failed to send verification code to your Google account. Please try again.'));
         }
 
-        UserActivityLog::log($user->id, UserActivityLog::TYPE_LOGIN, 'Linked Google account (mobile)', null, request()->ip());
+        return redirect($callback . '?otp_required=true&user_id=' . $user->id . '&google_email=' . urlencode($googleUser->getEmail()));
+    }
 
-        return redirect($callback . '?success=' . urlencode('Your Google account has been linked successfully.'));
+    /**
+     * Mobile API: Verify OTP and finalize Google account linking.
+     */
+    public function mobileVerifyLinkOtp(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer',
+            'otp' => 'required|digits:6',
+        ]);
+
+        $user = User::find($request->user_id);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found.'], 404);
+        }
+
+        $pending = Cache::get("google_link_otp:{$user->id}");
+        if (!$pending) {
+            return response()->json(['success' => false, 'message' => 'Verification session expired. Please try linking again.'], 410);
+        }
+
+        if ((string) $request->otp !== (string) $pending['otp']) {
+            return response()->json(['success' => false, 'message' => 'The verification code is incorrect.'], 422);
+        }
+
+        $existingUser = User::where('google_id', $pending['google_id'])
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($existingUser) {
+            Cache::forget("google_link_otp:{$user->id}");
+            return response()->json(['success' => false, 'message' => 'This Google account is already linked to another user.'], 409);
+        }
+
+        $user->update([
+            'google_id' => $pending['google_id'],
+            'alternative_email' => $user->alternative_email ?: $pending['google_email'],
+        ]);
+
+        if (!empty($pending['google_avatar']) && !$user->profile_picture) {
+            $user->update(['profile_picture' => $pending['google_avatar']]);
+        }
+
+        Cache::forget("google_link_otp:{$user->id}");
+
+        UserActivityLog::log($user->id, UserActivityLog::TYPE_LOGIN, 'Linked Google account (mobile, OTP verified)', null, $request->ip());
+
+        return response()->json(['success' => true, 'message' => 'Your Google account has been linked successfully.']);
+    }
+
+    /**
+     * Mobile API: Resend OTP for Google account linking.
+     */
+    public function mobileResendLinkOtp(Request $request)
+    {
+        $request->validate(['user_id' => 'required|integer']);
+
+        $user = User::find($request->user_id);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found.'], 404);
+        }
+
+        $pending = Cache::get("google_link_otp:{$user->id}");
+        if (!$pending) {
+            return response()->json(['success' => false, 'message' => 'Verification session expired. Please try linking again.'], 410);
+        }
+
+        $otp = random_int(100000, 999999);
+        $pending['otp'] = (string) $otp;
+        Cache::put("google_link_otp:{$user->id}", $pending, now()->addMinutes(5));
+
+        try {
+            Mail::to($pending['google_email'])
+                ->send(new \App\Mail\EmailVerificationOtp($otp));
+        } catch (\Exception $e) {
+            Log::error('Failed to resend Google link OTP (mobile): ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to resend verification code.'], 500);
+        }
+
+        return response()->json(['success' => true, 'message' => 'A new verification code has been sent.']);
     }
 
     /**
