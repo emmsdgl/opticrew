@@ -95,6 +95,31 @@ Route::get('/contact', function () {
     return view('landingpage-contact');
 })->name('contact');
 
+// Submit Contact Form (Mailtrap)
+Route::post('/contact/submit', function (\Illuminate\Http\Request $request) {
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'service' => 'required|string|max:100',
+        'message' => 'required|string|max:5000',
+    ]);
+
+    try {
+        \Illuminate\Support\Facades\Mail::to(config('mail.from.address'))
+            ->send(new \App\Mail\ContactMessage(
+                $validated['name'],
+                $validated['email'],
+                $validated['service'],
+                $validated['message'],
+            ));
+
+        return response()->json(['success' => true, 'message' => 'Your message has been sent successfully.']);
+    } catch (\Throwable $e) {
+        \Illuminate\Support\Facades\Log::error('Contact form mail failed: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to send message. Please try again later.'], 500);
+    }
+})->name('contact.submit');
+
 // Documentation
 Route::get('/documentation', function () {
     return view('landingpage-documentation');

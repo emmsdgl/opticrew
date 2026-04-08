@@ -14,7 +14,7 @@
       "Bash(git push:*)",
       "Bash(git pull:*)",
       "Bash(/c/xampp/mysql/bin/mysql:*)",
-      "Bash(ls -la \"d:\\\\xampp\\\\htdocs\\\\opticrew\\\\app\\\\Models\"\" | find \"d:xampphtdocsopticrewappModels\" -maxdepth 1 -type f -name \"*.php \")",
+      "Bash(ls -la \"d:\\\\xampp\\\\htdocs\\\\opticrew\\\\app\\\\Models\" | find \"d:xampphtdocsopticrewappModels\" -maxdepth 1 -type f -name \"*.php \")",
       "Bash(ls -d d:/xampp/htdocs/opticrew/resources/views/components/*/)",
       "Bash(xargs grep -l \"training\\\\|course\\\\|development\")",
       "Bash(composer require laravel/socialite)",
@@ -22,30 +22,6 @@
       "Bash(php -r \"require ''vendor/autoload.php''; $app = require_once ''bootstrap/app.php''; $app->make\\(''Illuminate\\\\Contracts\\\\Console\\\\Kernel''\\)->bootstrap\\(\\); $users = App\\\\Models\\\\User::whereNotNull\\(''google_id''\\)->get\\([''id'',''name'',''email'',''role'',''google_id'']\\); foreach\\($users as $u\\) { echo $u->id.'' | ''.$u->name.'' | ''.$u->email.'' | ''.$u->role.PHP_EOL; }\")",
       "Bash(mysql -u root opticrew -e \"SELECT id, name, email, role, google_id FROM users WHERE google_id IS NOT NULL;\")",
       "Bash(c:/xampp/mysql/bin/mysql.exe -u root opticrew -e \"SELECT id, name, email, role, google_id FROM users WHERE google_id IS NOT NULL;\")"
-    ],
-    "deny": [],
-    "ask": []
-  }
-}
-{
-  "permissions": {
-    "allow": [
-      "Bash(cat:*)",
-      "Bash(git add:*)",
-      "Bash(php artisan list:*)",
-      "Bash(php -l:*)",
-      "Bash(php artisan serve:*)",
-      "Bash(timeout 5 bash:*)",
-      "Bash(php artisan:*)",
-      "Bash(find:*)",
-      "Bash(git stash:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git pull:*)",
-      "Bash(/c/xampp/mysql/bin/mysql:*)",
-      "Bash(ls -la \"d:\\\\xampp\\\\htdocs\\\\opticrew\\\\app\\\\Models\"\" | find \"d:xampphtdocsopticrewappModels\" -maxdepth 1 -type f -name \"*.php \")",
-      "Bash(ls -d d:/xampp/htdocs/opticrew/resources/views/components/*/)",
-      "Bash(xargs grep -l \"training\\\\|course\\\\|development\")"
     ],
     "deny": [],
     "ask": []

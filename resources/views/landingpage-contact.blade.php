@@ -97,7 +97,20 @@
             <!-- Right Side - Contact Form -->
             <div class="bg-white dark:bg-gray-800 rounded-3xl p-12 shadow-[0_10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)]" x-data="{
                 form: { name: '', email: '', service: '', message: '' },
+                submitting: false,
+                showConfirm: false,
+                serviceLabels: {
+                    'Final Cleaning': 'Final Cleaning',
+                    'Deep Cleaning': 'Deep Cleaning',
+                    'Daily Cleaning': 'Daily Cleaning',
+                    'Snowout Cleaning': 'Snow Out Cleaning',
+                    'General Cleaning': 'General Cleaning',
+                    'Hotel Cleaning': 'Hotel Cleaning',
+                    'Others': 'Others'
+                },
                 submitContact() {
+                    if (this.submitting) return;
+
                     const missing = [];
                     if (!this.form.name.trim()) missing.push('Name');
                     if (!this.form.email.trim()) missing.push('Email');
@@ -115,8 +128,38 @@
                         return;
                     }
 
-                    if (window.showSuccessDialog) window.showSuccessDialog('Message Sent', 'Thank you for reaching out! We will get back to you shortly.');
-                    this.form = { name: '', email: '', service: '', message: '' };
+                    this.showConfirm = true;
+                },
+                async sendContact() {
+                    this.showConfirm = false;
+                    if (this.submitting) return;
+                    this.submitting = true;
+                    try {
+                        const response = await fetch('{{ route('contact.submit') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || ''
+                            },
+                            body: JSON.stringify(this.form)
+                        });
+
+                        const data = await response.json().catch(() => ({}));
+
+                        if (!response.ok || !data.success) {
+                            const msg = data.message || 'Failed to send your message. Please try again.';
+                            if (window.showErrorDialog) window.showErrorDialog('Send Failed', msg);
+                            return;
+                        }
+
+                        if (window.showSuccessDialog) window.showSuccessDialog('Message Sent', 'Thank you for reaching out! We will get back to you shortly.');
+                        this.form = { name: '', email: '', service: '', message: '' };
+                    } catch (e) {
+                        if (window.showErrorDialog) window.showErrorDialog('Network Error', 'Could not reach the server. Please try again.');
+                    } finally {
+                        this.submitting = false;
+                    }
                 }
             }">
                 <form @submit.prevent="submitContact()" class="space-y-6 pt-8">
@@ -154,7 +197,7 @@
                                 <i class="fa-solid fa-briefcase text-sm"></i>
                             </span>
                             <span :class="form.service ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"
-                                  x-text="form.service ? {'residential':'Residential Cleaning','commercial':'Commercial Cleaning','industrial':'Industrial Cleaning','specialized':'Specialized Services','other':'Other'}[form.service] : 'Service Type *'"></span>
+                                  x-text="form.service ? serviceLabels[form.service] : 'Service Type *'"></span>
                             <svg class="w-2.5 h-2.5 transition-transform duration-300 text-gray-500 dark:text-gray-400"
                                  :class="{ 'rotate-180': serviceOpen }"
                                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
@@ -171,11 +214,15 @@
                              class="absolute left-0 right-0 top-full mt-2 z-10 bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden"
                              style="display: none;">
                             <ul class="py-2 text-sm text-gray-700 dark:text-white">
-                                <li><button type="button" @click="form.service = 'residential'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'residential' ? 'bg-gray-100 dark:bg-gray-600' : ''">Residential Cleaning</button></li>
-                                <li><button type="button" @click="form.service = 'commercial'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'commercial' ? 'bg-gray-100 dark:bg-gray-600' : ''">Commercial Cleaning</button></li>
-                                <li><button type="button" @click="form.service = 'industrial'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'industrial' ? 'bg-gray-100 dark:bg-gray-600' : ''">Industrial Cleaning</button></li>
-                                <li><button type="button" @click="form.service = 'specialized'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'specialized' ? 'bg-gray-100 dark:bg-gray-600' : ''">Specialized Services</button></li>
-                                <li><button type="button" @click="form.service = 'other'; serviceOpen = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :class="form.service === 'other' ? 'bg-gray-100 dark:bg-gray-600' : ''">Other</button></li>
+                                <template x-for="(label, value) in serviceLabels" :key="value">
+                                    <li>
+                                        <button type="button"
+                                                @click="form.service = value; serviceOpen = false"
+                                                class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                                :class="form.service === value ? 'bg-gray-100 dark:bg-gray-600' : ''"
+                                                x-text="label"></button>
+                                    </li>
+                                </template>
                             </ul>
                         </div>
                     </div>
@@ -202,13 +249,30 @@
                     <!-- Submit Button -->
                     <button
                         type="submit"
+                        :disabled="submitting"
+                        :class="submitting ? 'opacity-60 cursor-not-allowed' : ''"
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-4 px-6 rounded-full flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_25px_rgba(102,126,234,0.4)]">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
-                        Get a Solution
+                        <span x-text="submitting ? 'Sending...' : 'Get a Solution'"></span>
                     </button>
                 </form>
+
+                {{-- Confirmation Dialog --}}
+                <x-dialogs.confirm-dialog
+                    show="showConfirm"
+                    icon="fa-solid fa-paper-plane"
+                    iconBg="bg-blue-50 dark:bg-blue-900/30"
+                    iconColor="text-blue-500"
+                    title="Send your inquiry?"
+                    cancelText="Cancel"
+                    confirmText="Yes, Send"
+                    onCancel="showConfirm = false"
+                    onConfirm="sendContact()"
+                >
+                    Please confirm that you'd like to send this message to our team.
+                </x-dialogs.confirm-dialog>
             </div>
 
         </div>
