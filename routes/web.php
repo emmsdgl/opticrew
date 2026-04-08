@@ -220,6 +220,13 @@ Route::get('/mobile/google-link', [GoogleAuthController::class, 'mobileLinkRedir
 Route::get('/mobile/google-verify', [GoogleAuthController::class, 'mobileVerifyRedirect'])->name('mobile.google.verify');
 Route::post('/auth/google/recruitment-apply', [GoogleAuthController::class, 'recruitmentApply'])->name('recruitment.google.apply');
 
+// 2FA OTP verification for Gmail account linking (all authenticated roles)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/link-google/verify', [GoogleAuthController::class, 'showLinkOtp'])->name('google.link.otp.show');
+    Route::post('/link-google/verify', [GoogleAuthController::class, 'verifyLinkOtp'])->name('google.link.otp.verify');
+    Route::post('/link-google/resend', [GoogleAuthController::class, 'resendLinkOtp'])->name('google.link.otp.resend');
+});
+
 /*
 |-------------------------------------------------------------------------
 | Web Routes

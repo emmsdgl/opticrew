@@ -38,6 +38,10 @@ use App\Http\Controllers\Api\MobileForgotPasswordController;
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 Route::post('/google-login', [AuthController::class, 'googleLogin'])->name('api.google-login');
 
+// 2FA OTP verification for Gmail account linking (mobile)
+Route::post('/google-link/verify-otp', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'mobileVerifyLinkOtp']);
+Route::post('/google-link/resend-otp', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'mobileResendLinkOtp']);
+
 // Real-time login validation (for mobile app)
 Route::post('/validate-login', function (Request $request) {
     $login = $request->input('login', '');
