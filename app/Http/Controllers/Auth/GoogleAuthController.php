@@ -318,14 +318,46 @@ class GoogleAuthController extends Controller
             return redirect()->route('login')->with('error', 'Please log in first to link your Google account.');
         }
 
-        // Check if this Google ID is already linked to another account
-        $existingUser = User::where('google_id', $googleUser->getId())
+        $googleId = $googleUser->getId();
+        $googleEmail = $googleUser->getEmail();
+
+        // Check 1: This Google ID is already linked to another account
+        $byGoogleId = User::where('google_id', $googleId)
             ->where('id', '!=', $user->id)
             ->first();
 
-        if ($existingUser) {
-            return redirect($this->dashboardUrl($user->role))
-                ->with('error', 'This Google account is already linked to another user. Please use a different Google account.');
+        if ($byGoogleId) {
+            return $this->renderLinkError(
+                'This Google Account Is Already Linked',
+                'The Google account ' . $googleEmail . ' is already linked to another ' . $this->roleLabel($byGoogleId->role) . ' account in our system. Each Google account can only be linked to one user. Please choose a different Google account that is not yet associated with CastCrew.',
+                $user->role
+            );
+        }
+
+        // Check 2: This Google email is already used as the primary email by another user
+        $byEmail = User::where('email', $googleEmail)
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($byEmail) {
+            return $this->renderLinkError(
+                'This Email Already Belongs To Another Account',
+                'The email address ' . $googleEmail . ' is already registered in CastCrew as a ' . $this->roleLabel($byEmail->role) . ' account. Please use a different Google account that is not yet registered with our system.',
+                $user->role
+            );
+        }
+
+        // Check 3: This Google email is set as another user's alternative (recovery) email
+        $byAltEmail = User::where('alternative_email', $googleEmail)
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($byAltEmail) {
+            return $this->renderLinkError(
+                'This Email Is Linked To Another Account',
+                'The email address ' . $googleEmail . ' is already saved as a recovery email for another ' . $this->roleLabel($byAltEmail->role) . ' account in CastCrew. Please use a different Google account.',
+                $user->role
+            );
         }
 
         // 2FA: Generate OTP and send to the Google account email to verify it is active
@@ -333,22 +365,52 @@ class GoogleAuthController extends Controller
         $otp = random_int(100000, 999999);
         Cache::put("google_link_otp:{$user->id}", [
             'otp' => (string) $otp,
-            'google_id' => $googleUser->getId(),
-            'google_email' => $googleUser->getEmail(),
+            'google_id' => $googleId,
+            'google_email' => $googleEmail,
             'google_avatar' => $googleUser->getAvatar(),
         ], now()->addMinutes(5));
 
         try {
-            Mail::to($googleUser->getEmail())
+            Mail::to($googleEmail)
                 ->send(new \App\Mail\EmailVerificationOtp($otp));
         } catch (\Exception $e) {
             Log::error('Failed to send Google link OTP: ' . $e->getMessage());
             Cache::forget("google_link_otp:{$user->id}");
-            return redirect($this->dashboardUrl($user->role))
-                ->with('error', 'Failed to send verification code to your Google account. Please try again.');
+            return $this->renderLinkError(
+                'Could Not Send Verification Code',
+                'We were unable to send a verification code to ' . $googleEmail . '. Please make sure your Google account is active and try again. If the problem continues, contact your administrator.',
+                $user->role
+            );
         }
 
         return redirect()->route('google.link.otp.show');
+    }
+
+    /**
+     * Render a friendly Gmail-link error page.
+     */
+    private function renderLinkError(string $title, string $message, string $role)
+    {
+        return response()->view('auth.link-google-error', [
+            'title' => $title,
+            'message' => $message,
+            'dashboardUrl' => $this->dashboardUrl($role),
+        ]);
+    }
+
+    /**
+     * Convert internal role keys to human-readable labels.
+     */
+    private function roleLabel(string $role): string
+    {
+        return match ($role) {
+            'admin' => 'administrator',
+            'employee' => 'employee',
+            'company' => 'company client',
+            'external_client' => 'personal client',
+            'applicant' => 'job applicant',
+            default => str_replace('_', ' ', $role),
+        };
     }
 
     /**
@@ -403,8 +465,11 @@ class GoogleAuthController extends Controller
 
         if ($existingUser) {
             Cache::forget("google_link_otp:{$user->id}");
-            return redirect($this->dashboardUrl($user->role))
-                ->with('error', 'This Google account is already linked to another user. Please use a different Google account.');
+            return $this->renderLinkError(
+                'This Google Account Is Already Linked',
+                'While you were verifying, this Google account was linked to another ' . $this->roleLabel($existingUser->role) . ' account. Please use a different Google account.',
+                $user->role
+            );
         }
 
         // Finalize the link
@@ -785,13 +850,40 @@ class GoogleAuthController extends Controller
             return redirect($callback . '?success=' . urlencode('Your Google account is already linked.'));
         }
 
-        // Check if this Google ID is already linked to another account
-        $existingUser = User::where('google_id', $googleUser->getId())
+        $googleId = $googleUser->getId();
+        $googleEmail = $googleUser->getEmail();
+
+        // Check 1: This Google ID is already linked to another account
+        $byGoogleId = User::where('google_id', $googleId)
             ->where('id', '!=', $user->id)
             ->first();
 
-        if ($existingUser) {
-            return redirect($callback . '?error=' . urlencode('This Google account is already linked to another user. Please use a different Google account.'));
+        if ($byGoogleId) {
+            return redirect($callback . '?error=' . urlencode(
+                'The Google account ' . $googleEmail . ' is already linked to another ' . $this->roleLabel($byGoogleId->role) . ' account in CastCrew. Each Google account can only be linked to one user. Please choose a different Google account.'
+            ));
+        }
+
+        // Check 2: This Google email is already used as the primary email by another user
+        $byEmail = User::where('email', $googleEmail)
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($byEmail) {
+            return redirect($callback . '?error=' . urlencode(
+                'The email address ' . $googleEmail . ' is already registered in CastCrew as a ' . $this->roleLabel($byEmail->role) . ' account. Please use a different Google account.'
+            ));
+        }
+
+        // Check 3: This Google email is set as another user's alternative (recovery) email
+        $byAltEmail = User::where('alternative_email', $googleEmail)
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($byAltEmail) {
+            return redirect($callback . '?error=' . urlencode(
+                'The email address ' . $googleEmail . ' is already saved as a recovery email for another ' . $this->roleLabel($byAltEmail->role) . ' account in CastCrew. Please use a different Google account.'
+            ));
         }
 
         // 2FA: Generate OTP and send to the Google account email to verify it is active
@@ -799,21 +891,21 @@ class GoogleAuthController extends Controller
         $otp = random_int(100000, 999999);
         Cache::put("google_link_otp:{$user->id}", [
             'otp' => (string) $otp,
-            'google_id' => $googleUser->getId(),
-            'google_email' => $googleUser->getEmail(),
+            'google_id' => $googleId,
+            'google_email' => $googleEmail,
             'google_avatar' => $googleUser->getAvatar(),
         ], now()->addMinutes(5));
 
         try {
-            Mail::to($googleUser->getEmail())
+            Mail::to($googleEmail)
                 ->send(new \App\Mail\EmailVerificationOtp($otp));
         } catch (\Exception $e) {
             Log::error('Failed to send Google link OTP (mobile): ' . $e->getMessage());
             Cache::forget("google_link_otp:{$user->id}");
-            return redirect($callback . '?error=' . urlencode('Failed to send verification code to your Google account. Please try again.'));
+            return redirect($callback . '?error=' . urlencode('We were unable to send a verification code to ' . $googleEmail . '. Please make sure your Google account is active and try again.'));
         }
 
-        return redirect($callback . '?otp_required=true&user_id=' . $user->id . '&google_email=' . urlencode($googleUser->getEmail()));
+        return redirect($callback . '?otp_required=true&user_id=' . $user->id . '&google_email=' . urlencode($googleEmail));
     }
 
     /**
