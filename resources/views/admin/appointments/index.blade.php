@@ -185,7 +185,7 @@
         <!-- Assigned Appointments -->
         <div>
             <div class="flex items-center justify-between mb-3">
-                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Approved Appointments</h2>
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">All Appointments</h2>
                 <div class="flex flex-row gap-2">
                     <!-- Filter by Service -->
                     <div class="relative" x-data="{ open: false }">
@@ -338,7 +338,10 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                                     €{{ number_format($appointment->total_amount, 2) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if ($appointment->status === 'approved')
+                                    @if ($appointment->status === 'pending')
+                                        <span
+                                            class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">Pending</span>
+                                    @elseif ($appointment->status === 'approved')
                                         <span
                                             class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Approved</span>
                                     @elseif($appointment->status === 'rejected')
@@ -367,13 +370,13 @@
             <div id="approved-filter-empty" class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center" style="display: none;">
                 <i class="fa-solid fa-filter text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
                 <p class="text-base font-medium text-gray-500 dark:text-gray-400">No matching appointments</p>
-                <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">No approved appointments match the selected filter.</p>
+                <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">No appointments match the selected filter.</p>
             </div>
             @else
             <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
                 <i class="fa-solid fa-inbox text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
-                <p class="text-base font-medium text-gray-500 dark:text-gray-400">No assigned appointments</p>
-                <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Appointments will appear here once they are approved and assigned to a team.</p>
+                <p class="text-base font-medium text-gray-500 dark:text-gray-400">No appointments yet</p>
+                <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Appointments will appear here once clients submit them.</p>
             </div>
             @endif
         </div>
