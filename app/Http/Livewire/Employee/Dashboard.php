@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use App\Models\TaskPerformanceHistory;
 use App\Models\Attendance;
+use App\Services\CompanySettingService;
 
 
 class Dashboard extends Component
@@ -45,6 +46,14 @@ class Dashboard extends Component
     // New method for the clock-in button
     public function clockIn()
     {
+        // Geofence enforcement (Dev Controls toggle): in FN mode this Livewire path
+        // cannot determine the user's GPS, so it must refuse.
+        $mode = strtoupper((string) CompanySettingService::get('geofence_test_mode', 'PH'));
+        if ($mode === 'FN') {
+            session()->flash('error', 'Geofence enforced (FN mode): please use the dashboard Clock In button which captures your location.');
+            return;
+        }
+
         Attendance::create([
             'employee_id' => Auth::user()->employee->id,
             'clock_in' => now(),
@@ -55,6 +64,12 @@ class Dashboard extends Component
     // New method for the clock-out button
     public function clockOut()
     {
+        $mode = strtoupper((string) CompanySettingService::get('geofence_test_mode', 'PH'));
+        if ($mode === 'FN') {
+            session()->flash('error', 'Geofence enforced (FN mode): please use the dashboard Clock Out button which captures your location.');
+            return;
+        }
+
         if ($this->currentAttendance) {
             $clockInTime = new Carbon($this->currentAttendance->clock_in);
             $clockOutTime = now();

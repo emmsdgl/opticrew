@@ -22,9 +22,8 @@
       "Bash(php -r \"require ''vendor/autoload.php''; $app = require_once ''bootstrap/app.php''; $app->make\\(''Illuminate\\\\Contracts\\\\Console\\\\Kernel''\\)->bootstrap\\(\\); $users = App\\\\Models\\\\User::whereNotNull\\(''google_id''\\)->get\\([''id'',''name'',''email'',''role'',''google_id'']\\); foreach\\($users as $u\\) { echo $u->id.'' | ''.$u->name.'' | ''.$u->email.'' | ''.$u->role.PHP_EOL; }\")",
       "Bash(mysql -u root opticrew -e \"SELECT id, name, email, role, google_id FROM users WHERE google_id IS NOT NULL;\")",
       "Bash(c:/xampp/mysql/bin/mysql.exe -u root opticrew -e \"SELECT id, name, email, role, google_id FROM users WHERE google_id IS NOT NULL;\")",
-      "Bash(curl -s \"http://localhost/opticrew/public/algorithm-comparison/\" -o /tmp/out.html -w \"%{http_code}\\\\n\")",
-      "Bash(xxd)",
-      "WebFetch(domain:gdpr.eu)"
+      "Bash(npx expo:*)",
+      "Bash(git rev-list:*)"
     ],
     "deny": [],
     "ask": []

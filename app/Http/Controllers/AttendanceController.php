@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\DayOff;
 use App\Models\Employee;
 use App\Models\EmployeeRequest;
+use App\Services\CompanySettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -535,6 +536,18 @@ class AttendanceController extends Controller
             return redirect()->back()->with('error', 'Employee profile not found');
         }
 
+        // Server-side geofence enforcement (Dev Controls toggle: PH bypasses, FN enforces)
+        $geoCheck = $this->enforceGeofenceWeb(
+            $request,
+            $employee->id,
+            $request->input('latitude'),
+            $request->input('longitude'),
+            'clock in'
+        );
+        if ($geoCheck !== null) {
+            return $geoCheck;
+        }
+
         // All checks passed - Create new attendance record
         $attendance = Attendance::create([
             'employee_id' => $employee->id,
@@ -619,6 +632,18 @@ class AttendanceController extends Controller
             return redirect()->back()->with('error', 'Clock-out time must be after clock-in time');
         }
 
+        // Server-side geofence enforcement (Dev Controls toggle: PH bypasses, FN enforces)
+        $geoCheck = $this->enforceGeofenceWeb(
+            $request,
+            $employee->id,
+            $request->input('latitude'),
+            $request->input('longitude'),
+            'clock out'
+        );
+        if ($geoCheck !== null) {
+            return $geoCheck;
+        }
+
         // Calculate total minutes worked
         $totalMinutes = $clockOut->diffInMinutes($clockIn);
 
@@ -639,6 +664,97 @@ class AttendanceController extends Controller
         }
 
         return redirect()->back()->with('success', 'Clocked out successfully');
+    }
+
+    /**
+     * Enforce geofence based on the global Dev Controls toggle.
+     *
+     * - geofence_test_mode = PH  → bypass entirely (returns null)
+     * - geofence_test_mode = FN  → require lat/lng AND that the user is within the
+     *   radius of today's assigned task's contracted-client coordinates.
+     *
+     * Returns null when the action should proceed, or a Response (JSON or redirect)
+     * when the request must be rejected.
+     */
+    private function enforceGeofenceWeb(Request $request, int $employeeId, $lat, $lng, string $action)
+    {
+        $mode = strtoupper((string) CompanySettingService::get('geofence_test_mode', 'PH'));
+
+        if ($mode !== 'FN') {
+            return null;
+        }
+
+        if ($lat === null || $lat === '' || $lng === null || $lng === '') {
+            return $this->geofenceReject(
+                $request,
+                'Geofence enforced (FN mode): your device location is required to ' . $action . '.',
+                'GEOFENCE_LOCATION_MISSING'
+            );
+        }
+
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+
+        $radiusSetting = DB::table('company_settings')->where('key', 'geofence_radius')->first();
+        $radius = $radiusSetting ? (float) $radiusSetting->value : 100.0;
+
+        $today = now()->format('Y-m-d');
+
+        $task = DB::table('tasks')
+            ->join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
+            ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
+            ->leftJoin('locations', 'tasks.location_id', '=', 'locations.id')
+            ->leftJoin('contracted_clients', 'locations.contracted_client_id', '=', 'contracted_clients.id')
+            ->where('optimization_team_members.employee_id', $employeeId)
+            ->where('tasks.scheduled_date', $today)
+            ->whereNull('tasks.deleted_at')
+            ->whereNotNull('contracted_clients.latitude')
+            ->whereNotNull('contracted_clients.longitude')
+            ->select('contracted_clients.latitude', 'contracted_clients.longitude', 'contracted_clients.name as client_name')
+            ->first();
+
+        if (!$task) {
+            return $this->geofenceReject(
+                $request,
+                'Geofence (FN mode): No task with a registered location is assigned to you today.',
+                'GEOFENCE_NO_TASK_LOCATION'
+            );
+        }
+
+        $distance = $this->haversineMeters($lat, $lng, (float) $task->latitude, (float) $task->longitude);
+
+        if ($distance > $radius) {
+            return $this->geofenceReject(
+                $request,
+                'You are outside the allowed clock-in area for ' . $task->client_name . ' (' . (int) round($distance) . 'm away, allowed ' . (int) $radius . 'm).',
+                'OUT_OF_GEOFENCE'
+            );
+        }
+
+        return null;
+    }
+
+    private function geofenceReject(Request $request, string $message, string $code)
+    {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+                'error_code' => $code,
+            ], 403);
+        }
+        return redirect()->back()->with('error', $message);
+    }
+
+    private function haversineMeters(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371000.0;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat / 2) ** 2 +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return $earthRadius * $c;
     }
 
     /**

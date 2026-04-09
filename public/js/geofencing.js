@@ -13,6 +13,20 @@ class Geofencing {
         this.statusElementId = config.statusElementId;
         this.distanceElementId = config.distanceElementId;
 
+        // Geofence test mode: when bypass is true (PH demo mode), skip all distance checks
+        // and unconditionally enable the clock-in/out button.
+        this.bypassGeofence = config.bypassGeofence === true;
+        this.geofenceTestMode = config.geofenceTestMode || null;
+
+        if (this.bypassGeofence) {
+            this.noTaskLocation = false;
+            this.isInRange = true;
+            this.distance = 0;
+            this.locationName = config.locationName || 'Test mode';
+            this.showBypassEnabled();
+            return;
+        }
+
         // Handle case where no task location is available
         if (!config.officeLatitude || !config.officeLongitude) {
             this.noTaskLocation = true;
@@ -46,6 +60,27 @@ class Geofencing {
 
         // Start watching user's position
         this.startWatching();
+    }
+
+    showBypassEnabled() {
+        const button = document.getElementById(this.buttonId);
+        const statusElement = document.getElementById(this.statusElementId);
+        const distanceElement = document.getElementById(this.distanceElementId);
+
+        if (button) {
+            button.classList.remove('bg-gray-300', 'dark:bg-gray-600', 'cursor-not-allowed', 'pointer-events-none');
+            button.classList.add('bg-[#2A6DFA]', 'hover:bg-[#2558d6]', 'cursor-pointer');
+            button.disabled = false;
+        }
+
+        if (statusElement) {
+            statusElement.innerHTML = '<i class="fa-solid fa-flask text-yellow-500"></i> <span class="text-yellow-600 dark:text-yellow-400">Test Mode (PH) — geofence bypassed</span>';
+        }
+
+        if (distanceElement) {
+            distanceElement.textContent = 'Geofence enforcement disabled in PH test mode';
+            distanceElement.classList.remove('hidden');
+        }
     }
 
     showNoTaskError(message) {

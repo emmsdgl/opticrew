@@ -88,8 +88,11 @@
 
                 <!-- Inner Down - Tasks Particulars -->
                 <div id="tour-emp-tasks" class="w-full flex-1 flex flex-col">
-                    <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
-                    <div class="todo-list-container rounded-lg my-6 bg-white shadow-sm dark:bg-gray-800/40 dark:border-transparent flex-1">
+                    <div class="flex items-center justify-between gap-2">
+                        <x-labelwithvalue label="Your To-Do List" count="({{ $todoList->count() }})" />
+                        <span id="todo-list-date-label" class="hidden text-xs font-medium text-blue-600 dark:text-blue-400"></span>
+                    </div>
+                    <div id="todo-list-section" class="todo-list-container rounded-lg my-6 bg-white shadow-sm dark:bg-gray-800/40 dark:border-transparent flex-1">
                         @php
                             // Transform tasks to the format expected by task-overview-list component
                             $tasks = $todoList
@@ -119,6 +122,58 @@
                             emptyMessage="You don't have any tasks at the moment. New tasks will appear here once assigned." />
                     </div>
                 </div>
+
+                @push('scripts')
+                <script>
+                (function () {
+                    const section = document.getElementById('todo-list-section');
+                    const dateLabel = document.getElementById('todo-list-date-label');
+                    if (!section) return;
+
+                    const endpoint = @js(route('employee.dashboard.tasks-by-date'));
+                    const csrf = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
+                    let inflight = null;
+
+                    document.addEventListener('calendar-date-selected', async function (e) {
+                        const date = e.detail && e.detail.date;
+                        if (!date) return;
+
+                        // Cancel any in-flight request to keep the latest click authoritative
+                        if (inflight) inflight.abort();
+                        const controller = new AbortController();
+                        inflight = controller;
+
+                        section.classList.add('opacity-50');
+
+                        try {
+                            const res = await fetch(endpoint + '?date=' + encodeURIComponent(date), {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': csrf
+                                },
+                                signal: controller.signal,
+                                credentials: 'same-origin'
+                            });
+                            if (!res.ok) throw new Error('HTTP ' + res.status);
+                            const data = await res.json();
+                            section.innerHTML = data.html || '';
+                            if (dateLabel) {
+                                dateLabel.textContent = 'Showing: ' + (data.label || date) + ' (' + (data.count || 0) + ')';
+                                dateLabel.classList.remove('hidden');
+                            }
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.error('Failed to load tasks for date', date, err);
+                            }
+                        } finally {
+                            section.classList.remove('opacity-50');
+                            if (inflight === controller) inflight = null;
+                        }
+                    });
+                })();
+                </script>
+                @endpush
             </div>
 
             <!-- Right Panel - Tasks Details -->

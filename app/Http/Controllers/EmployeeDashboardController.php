@@ -185,4 +185,83 @@ class EmployeeDashboardController extends Controller
             'shiftEnd' => $shiftEnd,
         ]);
     }
+
+    /**
+     * Return the employee's tasks for a specific calendar date as rendered HTML.
+     * Used by the dashboard calendar to refresh the To-Do list when a date is clicked.
+     */
+    public function tasksByDate(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date_format:Y-m-d',
+        ]);
+
+        $user = Auth::user();
+        $employee = $user->employee;
+
+        if (!$employee) {
+            return response()->json(['html' => '', 'count' => 0, 'label' => 'No employee record'], 200);
+        }
+
+        $date = $request->input('date');
+
+        // Mirror the original $todoList query but filtered by the selected date.
+        // Status filter is intentionally relaxed so historical (Completed/Cancelled) tasks
+        // are visible when an employee browses past dates.
+        $tasks = DB::table('tasks')
+            ->leftJoin('locations', 'tasks.location_id', '=', 'locations.id')
+            ->leftJoin('contracted_clients', 'locations.contracted_client_id', '=', 'contracted_clients.id')
+            ->join('optimization_teams', 'tasks.assigned_team_id', '=', 'optimization_teams.id')
+            ->join('optimization_team_members', 'optimization_teams.id', '=', 'optimization_team_members.optimization_team_id')
+            ->where('optimization_team_members.employee_id', $employee->id)
+            ->where('tasks.employee_approved', true)
+            ->whereDate('tasks.scheduled_date', $date)
+            ->whereNull('tasks.deleted_at')
+            ->select(
+                'tasks.id',
+                DB::raw("COALESCE(contracted_clients.name, 'No Client Assigned') as client_name"),
+                'tasks.scheduled_date as date',
+                'locations.location_name as cabin_name',
+                'tasks.task_description',
+                'tasks.estimated_duration_minutes as duration',
+                'tasks.status'
+            )
+            ->orderBy('tasks.scheduled_time')
+            ->get();
+
+        $items = $tasks->map(function ($task) {
+            return [
+                'service' => $task->task_description,
+                'status' => $task->status,
+                'service_date' => Carbon::parse($task->date)->format('M d, Y'),
+                'service_time' => $task->duration . ' min',
+                'description' => 'Client: ' . $task->client_name .
+                    ($task->cabin_name ? ' • Location: ' . $task->cabin_name : ''),
+                'action_url' => route('employee.tasks.show', [
+                    'task' => $task->id,
+                    'from' => 'dashboard',
+                ]),
+                'action_label' => 'View Details',
+            ];
+        })->toArray();
+
+        $isToday = Carbon::parse($date)->isToday();
+        $emptyTitle = $isToday ? 'No tasks assigned yet' : 'No tasks on this date';
+        $emptyMessage = $isToday
+            ? "You don't have any tasks at the moment. New tasks will appear here once assigned."
+            : 'There are no tasks scheduled for ' . Carbon::parse($date)->format('M d, Y') . '.';
+
+        $html = view('employee.partials.todo-list-items', [
+            'items' => $items,
+            'emptyTitle' => $emptyTitle,
+            'emptyMessage' => $emptyMessage,
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+            'count' => count($items),
+            'date' => $date,
+            'label' => Carbon::parse($date)->format('M d, Y'),
+        ]);
+    }
 }
