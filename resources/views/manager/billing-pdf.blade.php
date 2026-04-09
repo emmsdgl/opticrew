@@ -67,7 +67,7 @@
                     <td>{{ $task->location->name ?? 'N/A' }}</td>
                     <td>{{ $task->task_description ?? 'Cleaning Service' }}</td>
                     <td>{{ $task->duration ?? 0 }} min</td>
-                    <td style="text-align: right;">{{ number_format($task->price ?? 0, 2) }} EUR</td>
+                    <td style="text-align: right;">{{ number_format($task->calculated_price ?? 0, 2) }} EUR</td>
                 </tr>
             @endforeach
             <tr class="total-row">

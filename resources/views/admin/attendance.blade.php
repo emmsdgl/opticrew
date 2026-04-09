@@ -163,20 +163,16 @@
                         document.body.style.overflow = 'auto';
                     },
 
-                    async approveRequest() {
+                    showApproveModal: false,
+                    showRejectModal: false,
+
+                    approveRequest() {
                         if (this.isSubmitting || !this.selectedRequest) return;
+                        this.showApproveModal = true;
+                    },
 
-                        try {
-                            await window.showConfirmDialog(
-                                'Approve Request',
-                                `Are you sure you want to approve this ${this.selectedRequest.type || 'leave'} request from ${this.selectedRequest.employee_name || 'this employee'}?`,
-                                'Approve',
-                                'Cancel'
-                            );
-                        } catch (e) {
-                            return;
-                        }
-
+                    async doApprove() {
+                        this.showApproveModal = false;
                         this.isSubmitting = true;
 
                         try {
@@ -206,34 +202,21 @@
                     },
 
                     handleDeclineClick() {
-                        if (!this.showRejectionForm) {
-                            this.showRejectionForm = true;
-                            return;
-                        }
-                        this.rejectRequest();
+                        if (!this.selectedRequest) return;
+                        this.rejectionReason = '';
+                        this.adminNotes = '';
+                        this.showRejectModal = true;
                     },
 
-                    async rejectRequest() {
-                        if (this.isSubmitting || !this.selectedRequest) return;
+                    async doReject() {
                         if (!this.rejectionReason) {
                             window.showErrorDialog('Validation Error', 'Please select a reason for rejection.');
                             return;
                         }
 
-                        const fullNotes = this.rejectionReason + (this.adminNotes ? ': ' + this.adminNotes : '');
-
-                        try {
-                            await window.showConfirmDialog(
-                                'Reject Request',
-                                'Are you sure you want to reject this request? Reason: "' + this.rejectionReason + '"',
-                                'Reject',
-                                'Cancel'
-                            );
-                        } catch (e) {
-                            return;
-                        }
-
+                        this.showRejectModal = false;
                         this.isSubmitting = true;
+                        const fullNotes = this.rejectionReason + (this.adminNotes ? ': ' + this.adminNotes : '');
 
                         try {
                             const response = await fetch(`/admin/employee-requests/${this.selectedRequest.id}/reject`, {
@@ -470,12 +453,6 @@
                                     </div>
                                 </template>
 
-                                <template x-if="selectedRequest && selectedRequest.status === 'approved'">
-                                    <div class="flex items-center justify-center gap-2 py-3 px-4 mb-6 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                                        <i class="fa-solid fa-circle-check text-green-600 dark:text-green-400"></i>
-                                        <span class="text-sm font-medium text-green-700 dark:text-green-400">This request has been approved</span>
-                                    </div>
-                                </template>
 
                                 <template x-if="selectedRequest && selectedRequest.status === 'cancelled'">
                                     <div class="flex items-center justify-center gap-2 py-3 px-4 mb-6 bg-gray-50 dark:bg-gray-700/20 rounded-lg border border-gray-200 dark:border-gray-600">
@@ -484,42 +461,6 @@
                                     </div>
                                 </template>
 
-                                <!-- Rejection Form (shown only after clicking Decline) -->
-                                <template x-if="selectedRequest && selectedRequest.status === 'pending' && showRejectionForm">
-                                    <div class="mb-6 space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                                        <div class="flex items-center gap-2 mb-2">
-                                            <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
-                                            <span class="text-sm font-medium text-red-700 dark:text-red-400">Decline Request</span>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Rejection Reason <span class="text-red-500">*</span>
-                                            </label>
-                                            <select
-                                                x-model="rejectionReason"
-                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                                                <option value="">Select a reason...</option>
-                                                <template x-for="reason in rejectionReasons" :key="reason">
-                                                    <option :value="reason" x-text="reason"></option>
-                                                </template>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Additional Notes <span class="text-gray-400">(optional)</span>
-                                            </label>
-                                            <textarea
-                                                x-model="adminNotes"
-                                                rows="2"
-                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                                placeholder="Add additional notes..."></textarea>
-                                        </div>
-                                        <button @click="showRejectionForm = false; rejectionReason = ''; adminNotes = '';"
-                                            class="w-full px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </template>
 
                                 <!-- Employee Tasks Section -->
                                 <template x-if="selectedRequest && selectedRequest.tasks && selectedRequest.tasks.length > 0">
@@ -590,21 +531,21 @@
                                     <template x-if="selectedRequest && selectedRequest.status === 'pending'">
                                         <div class="flex gap-3 flex-1">
                                             <button @click="handleDeclineClick()"
-                                                :disabled="isSubmitting || (showRejectionForm && !rejectionReason)"
+                                                :disabled="isSubmitting"
                                                 class="flex-1 px-4 py-2.5 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                                                 :class="{
-                                                    'bg-red-600 hover:bg-red-700': !isSubmitting && (!showRejectionForm || rejectionReason),
-                                                    'bg-red-400 cursor-not-allowed': isSubmitting || (showRejectionForm && !rejectionReason)
+                                                    'bg-red-600 hover:bg-red-700': !isSubmitting,
+                                                    'bg-red-400 cursor-not-allowed': isSubmitting
                                                 }">
                                                 <i class="fa-solid fa-xmark"></i>
-                                                <span x-text="isSubmitting ? 'Processing...' : (showRejectionForm ? 'Confirm Decline' : 'Decline')"></span>
+                                                <span x-text="isSubmitting ? 'Processing...' : 'Decline'"></span>
                                             </button>
                                             <button @click="approveRequest()"
-                                                :disabled="isSubmitting || showRejectionForm"
+                                                :disabled="isSubmitting"
                                                 class="flex-1 px-4 py-2.5 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                                                 :class="{
-                                                    'bg-green-600 hover:bg-green-700': !isSubmitting && !showRejectionForm,
-                                                    'bg-green-400 cursor-not-allowed': isSubmitting || showRejectionForm
+                                                    'bg-green-600 hover:bg-green-700': !isSubmitting,
+                                                    'bg-green-400 cursor-not-allowed': isSubmitting
                                                 }">
                                                 <i class="fa-solid fa-check"></i>
                                                 <span x-text="isSubmitting ? 'Processing...' : 'Approve'"></span>
@@ -636,16 +577,69 @@
                                         </div>
                                     </template>
 
-                                    <button @click="closeRequestModal()"
-                                        class="flex-1 text-sm px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors font-medium">
-                                        Close
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Approve Confirmation Dialog -->
+            <x-dialogs.confirm-dialog
+                show="showApproveModal"
+                icon="fa-solid fa-check-circle"
+                iconBg="bg-green-50 dark:bg-green-900/30"
+                iconColor="text-green-500"
+                title="Approve Request"
+                confirmText="Approve"
+                cancelText="Cancel"
+                confirmClass="flex-1 py-2 rounded-xl text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition-colors"
+                onCancel="showApproveModal = false"
+                onConfirm="doApprove()"
+            >
+                <p>Are you sure you want to approve this leave request?</p>
+            </x-dialogs.confirm-dialog>
+
+            <!-- Reject Confirmation Dialog -->
+            <x-dialogs.confirm-dialog
+                show="showRejectModal"
+                icon="fa-solid fa-triangle-exclamation"
+                iconBg="bg-red-50 dark:bg-red-900/30"
+                iconColor="text-red-500"
+                title="Decline Request"
+                confirmText="Confirm Decline"
+                cancelText="Cancel"
+                confirmClass="flex-1 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition-colors"
+                onCancel="showRejectModal = false; rejectionReason = ''; adminNotes = '';"
+                onConfirm="doReject()"
+            >
+                <div class="space-y-4 text-left">
+                    <p class="text-center">Please provide a reason for declining this request.</p>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            Rejection Reason <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            x-model="rejectionReason"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            <option value="">Select a reason...</option>
+                            <template x-for="reason in rejectionReasons" :key="reason">
+                                <option :value="reason" x-text="reason"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            Additional Details <span class="text-gray-400">(optional)</span>
+                        </label>
+                        <textarea
+                            x-model="adminNotes"
+                            rows="3"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            placeholder="Add additional details for the rejection..."></textarea>
+                    </div>
+                </div>
+            </x-dialogs.confirm-dialog>
         </div>
 
     </section>
