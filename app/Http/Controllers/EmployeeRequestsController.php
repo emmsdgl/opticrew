@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Services\Notification\NotificationService;
+use App\Models\Task;
+use App\Models\Employee;
+use Carbon\Carbon;
 
 class EmployeeRequestsController extends Controller
 {
@@ -124,6 +127,73 @@ class EmployeeRequestsController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Request cancelled successfully'
+        ]);
+    }
+
+    /**
+     * Check for conflicting tasks on a given date/time range
+     */
+    public function checkConflicts(Request $request)
+    {
+        $validated = $request->validate([
+            'absence_date' => 'required|date',
+            'from_time' => 'nullable|string',
+            'to_time' => 'nullable|string',
+        ]);
+
+        $employee = Auth::user()->employee;
+        $date = $validated['absence_date'];
+
+        $tasks = Task::with('location')
+            ->whereHas('optimizationTeam.members', function ($query) use ($employee) {
+                $query->where('employee_id', $employee->id);
+            })
+            ->where('scheduled_date', $date)
+            ->whereNotIn('status', ['Completed', 'Cancelled'])
+            ->orderBy('optimized_start_minutes')
+            ->get();
+
+        // If from_time/to_time provided, filter tasks that overlap with the leave time range
+        $fromTime = $validated['from_time'] ?? null;
+        $toTime = $validated['to_time'] ?? null;
+
+        if ($fromTime && $toTime) {
+            $leaveStartMin = intval(substr($fromTime, 0, 2)) * 60 + intval(substr($fromTime, 3, 2));
+            $leaveEndMin = intval(substr($toTime, 0, 2)) * 60 + intval(substr($toTime, 3, 2));
+
+            $tasks = $tasks->filter(function ($task) use ($leaveStartMin, $leaveEndMin) {
+                $taskStart = $task->optimized_start_minutes ?? 0;
+                $taskEnd = $task->optimized_end_minutes ?? ($taskStart + ($task->duration ?? 60));
+                // Check overlap
+                return $taskStart < $leaveEndMin && $taskEnd > $leaveStartMin;
+            });
+        }
+
+        $conflicting = $tasks->map(function ($task) {
+            $startH = intdiv($task->optimized_start_minutes ?? 0, 60);
+            $startM = ($task->optimized_start_minutes ?? 0) % 60;
+            $endMin = $task->optimized_end_minutes ?? (($task->optimized_start_minutes ?? 0) + ($task->duration ?? 60));
+            $endH = intdiv($endMin, 60);
+            $endM = $endMin % 60;
+
+            $title = $task->task_description ?? 'Task #' . $task->id;
+            if ($task->location) {
+                $title .= ' @ ' . $task->location->name;
+            }
+
+            return [
+                'id' => $task->id,
+                'title' => $title,
+                'time' => sprintf('%d:%02d %s - %d:%02d %s',
+                    $startH % 12 ?: 12, $startM, $startH >= 12 ? 'PM' : 'AM',
+                    $endH % 12 ?: 12, $endM, $endH >= 12 ? 'PM' : 'AM'),
+                'status' => $task->status,
+            ];
+        })->values()->toArray();
+
+        return response()->json([
+            'success' => true,
+            'conflicts' => $conflicting,
         ]);
     }
 }

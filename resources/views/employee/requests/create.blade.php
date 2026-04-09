@@ -92,7 +92,7 @@
                         icon="fi fi-rr-calendar"
                         required
                         :min="''"
-                        x-bind:min="new Date().toISOString().split('T')[0]"
+                        x-bind:min="getMinDate()"
                     />
 
                     <!-- Time Range -->
@@ -124,6 +124,16 @@
                                 :class="(focused || filled || formData.time_range) ? 'top-1.5 translate-y-0 text-[11px] ' + (focused ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500') : 'top-1/2 -translate-y-1/2 text-sm'">
                                 Time Range <span class="text-red-500">*</span>
                             </label>
+                        </div>
+
+                        <!-- Time slot indicator (shown for non-custom selections) -->
+                        <div x-show="formData.time_range && formData.time_range !== 'Custom Hours' && formData.from_time && formData.to_time"
+                             x-transition
+                             class="mt-2 flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <i class="fi fi-rr-clock text-blue-500 text-xs"></i>
+                            <span class="text-sm text-blue-700 dark:text-blue-300">
+                                <span x-text="formatTime12(formData.from_time)"></span> — <span x-text="formatTime12(formData.to_time)"></span>
+                            </span>
                         </div>
                     </div>
 
@@ -199,10 +209,10 @@
                                 </div>
                                 <button type="button"
                                         @click="$refs.fileInput.click()"
-                                        class="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                                        class="text-blue-600 text-xs dark:text-blue-400 font-medium hover:underline">
                                     Upload images or videos or
                                 </button>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     browse files on your phone
                                 </p>
                                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
@@ -356,28 +366,66 @@
                             <p class="text-sm text-gray-600 dark:text-gray-400" x-text="formData.description"></p>
                         </div>
 
-                        <!-- Submit Button -->
-                        <button type="button" 
-                                @click="submitForm()"
-                                :disabled="submitting"
-                                :class="{'opacity-50 cursor-not-allowed': submitting}"
-                                class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors">
-                            <span x-show="!submitting">Submit Request</span>
-                            <span x-show="submitting">Processing...</span>
-                        </button>
                     </div>
 
                     <!-- Navigation -->
                     <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button type="button" 
-                                @click="prevStep()" 
+                        <button type="button"
+                                @click="prevStep()"
                                 class="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-300 transition-colors">
                             <i class="fi fi-rr-angle-left mr-2"></i>Back
+                        </button>
+                        <button type="button"
+                                @click="submitForm()"
+                                :disabled="submitting"
+                                :class="{'opacity-50 cursor-not-allowed': submitting}"
+                                class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors">
+                            <span x-show="!submitting">Submit Request</span>
+                            <span x-show="submitting">Processing...</span>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Submit Confirmation Dialog -->
+        <x-dialogs.confirm-dialog
+            show="showSubmitConfirm"
+            icon="fa-solid fa-paper-plane"
+            iconBg="bg-blue-50 dark:bg-blue-900/30"
+            iconColor="text-blue-500"
+            title="Submit Request"
+            confirmText="Submit"
+            cancelText="Cancel"
+            onCancel="showSubmitConfirm = false"
+            onConfirm="showSubmitConfirm = false; doSubmit()"
+        >
+            <p class="mb-2">Are you sure you want to submit this absence request?</p>
+
+            {{-- Task conflict count (shown for all leave types) --}}
+            <template x-if="conflictingTasks.length > 0">
+                <div class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-left">
+                    <p class="text-[11px] font-semibold text-yellow-700 dark:text-yellow-400 mb-1">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>You will leave behind
+                        <span x-text="conflictingTasks.length"></span>
+                        <span x-text="conflictingTasks.length === 1 ? 'task' : 'tasks'"></span>
+                        on this date.
+                    </p>
+
+                    {{-- Detailed task list (shown only for emergency leave) --}}
+                    <template x-if="formData.absence_type === 'Emergency Leave'">
+                        <ul class="space-y-1 mt-2 pt-2 border-t border-yellow-200 dark:border-yellow-700">
+                            <template x-for="task in conflictingTasks" :key="task.id">
+                                <li class="text-[11px] text-yellow-600 dark:text-yellow-300">
+                                    <span class="font-medium" x-text="task.title"></span>
+                                    <span class="text-yellow-500 dark:text-yellow-400" x-text="'(' + task.time + ')'"></span>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                </div>
+            </template>
+        </x-dialogs.confirm-dialog>
     </div>
 </x-layouts.general-stepper-form>
 
@@ -402,10 +450,29 @@
                 description: ''
             },
 
+            conflictingTasks: [],
+            showSubmitConfirm: false,
+
             init() {
                 this.$watch('formData.time_range', (value) => {
                     this.updateTimeRange(value);
                 });
+                this.$watch('formData.absence_type', () => {
+                    // Reset date if it falls within the restricted range when switching away from emergency
+                    if (this.formData.absence_date && this.formData.absence_date < this.getMinDate()) {
+                        this.formData.absence_date = '';
+                    }
+                });
+            },
+
+            getMinDate() {
+                const today = new Date();
+                if (this.formData.absence_type === 'Emergency Leave') {
+                    return today.toISOString().split('T')[0];
+                }
+                // Non-emergency: min date is 3 days from now (skip today + 2 days)
+                today.setDate(today.getDate() + 3);
+                return today.toISOString().split('T')[0];
             },
 
             updateTimeRange(value) {
@@ -564,17 +631,38 @@
             },
 
             async submitForm() {
+                // Check for conflicting tasks before showing confirmation dialog
+                this.conflictingTasks = [];
+
                 try {
-                    await window.showConfirmDialog(
-                        'Submit Request',
-                        'Are you sure you want to submit this absence request?',
-                        'Submit',
-                        'Cancel'
-                    );
-                } catch {
-                    return;
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    const checkResponse = await fetch('{{ route("employee.requests.check-conflicts") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            absence_date: this.formData.absence_date,
+                            from_time: this.formData.from_time || '',
+                            to_time: this.formData.to_time || '',
+                        })
+                    });
+
+                    const checkData = await checkResponse.json();
+                    if (checkData.success && checkData.conflicts.length > 0) {
+                        this.conflictingTasks = checkData.conflicts;
+                    }
+                } catch (e) {
+                    console.error('Failed to check conflicts:', e);
                 }
 
+                // Show the confirm dialog component
+                this.showSubmitConfirm = true;
+            },
+
+            async doSubmit() {
                 this.submitting = true;
 
                 try {
