@@ -1232,24 +1232,48 @@
                                 </div>
                             </div>
                         @else
+                            @php
+                                $isScheduledTodayDesktop = \Carbon\Carbon::parse($task->scheduled_date)->isSameDay(\Carbon\Carbon::today());
+                            @endphp
                             <!-- Approval Action Buttons - Show when task needs approval -->
                             <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                <button type="button" onclick="handleTaskAction('Accept Task', 'Are you sure you want to accept this task?', 'Accept', 'approve-task-form')"
-                                    class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                                <button type="button"
+                                    @if($isScheduledTodayDesktop)
+                                        onclick="handleTaskAction('Accept Task', 'Are you sure you want to accept this task?', 'Accept', 'approve-task-form')"
+                                        class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                                    @else
+                                        disabled
+                                        class="w-full px-4 py-2.5 bg-gray-400 cursor-not-allowed text-white font-medium rounded-lg text-sm flex items-center justify-center gap-2"
+                                    @endif
+                                >
                                     <i class="fas fa-check"></i>
                                     Accept Task
                                 </button>
-                                <button type="button" onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
-                                    class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2">
+                                <button type="button"
+                                    @if($isScheduledTodayDesktop)
+                                        onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
+                                        class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2"
+                                    @else
+                                        disabled
+                                        class="w-full px-4 py-2.5 bg-gray-400 cursor-not-allowed text-white font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-sm flex items-center justify-center gap-2"
+                                    @endif
+                                >
                                     <i class="fas fa-times"></i>
                                     Decline Task
                                 </button>
                             </div>
 
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Please accept or decline this task
-                            </p>
+                            @if($isScheduledTodayDesktop)
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Please accept or decline this task
+                                </p>
+                            @else
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    You can accept or decline on {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
+                                </p>
+                            @endif
                         @endif
 
                     @elseif($task->employee_approved === true)
