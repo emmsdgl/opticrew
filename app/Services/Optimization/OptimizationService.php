@@ -377,6 +377,9 @@ class OptimizationService
                 if (empty($existingUnsavedRunIds) || !in_array($task->optimization_run_id, $existingUnsavedRunIds)) {
                     $task->assigned_team_id = null;
                     $task->optimization_run_id = null;
+                    // ✅ STAGE 2: clear stale optimized times so a re-run doesn't keep old timeline
+                    $task->optimized_start_minutes = null;
+                    $task->optimized_end_minutes = null;
                     $task->save();
                 }
             }
@@ -788,9 +791,31 @@ class OptimizationService
         // ✅ Track assigned tasks to detect duplicates
         $assignedTaskIds = [];
 
+        // ✅ STAGE 2: workday starts at 08:00 = 480 minutes since midnight
+        $serviceStartMinutes = 8 * 60;
+
         foreach ($scheduleData as $teamIndex => $teamSchedule) {
             $team = $teamSchedule['team'];
             $tasks = $teamSchedule['tasks'];
+
+            // ✅ STAGE 2: compute the team's average efficiency so per-task
+            //   effective duration = base_duration / team_efficiency.
+            //   Matches the makespan logic in FitnessCalculator exactly.
+            $teamEfficiency = 1.0;
+            if (!empty($team)) {
+                $effSum = 0.0;
+                $effCount = 0;
+                foreach ($team as $employee) {
+                    $effSum += (float) ($employee->efficiency ?? 1.0);
+                    $effCount++;
+                }
+                if ($effCount > 0) {
+                    $teamEfficiency = max(0.1, $effSum / $effCount);
+                }
+            }
+
+            // Walking cursor for this team's timeline (resets each team)
+            $cursorMinutes = $serviceStartMinutes;
 
             // ✅ Create optimization team
             $optimizationTeam = \App\Models\OptimizationTeam::create([
@@ -831,11 +856,23 @@ class OptimizationService
                 // Mark task as assigned
                 $assignedTaskIds[] = $task->id;
 
+                // ✅ STAGE 2: compute this task's start/end clock time
+                //   effective_duration = base_duration / team_efficiency
+                //   start = current cursor; end = start + effective_duration
+                //   Then advance the cursor for the next task in this team's queue.
+                $baseDuration = (int) ($task->duration ?? 60);
+                $effectiveDuration = (int) round($baseDuration / $teamEfficiency);
+                $startMinutes = $cursorMinutes;
+                $endMinutes = $cursorMinutes + $effectiveDuration;
+                $cursorMinutes = $endMinutes;
+
                 Task::where('id', $task->id)->update([
                     'status' => 'Scheduled',
                     'optimization_run_id' => $optimizationRunId,
                     'assigned_by_generation' => null,
                     'assigned_team_id' => $optimizationTeam->id, // ✅ Unique team ID
+                    'optimized_start_minutes' => $startMinutes,
+                    'optimized_end_minutes' => $endMinutes,
                 ]);
                 
                 Log::info("Task updated", [
@@ -858,6 +895,93 @@ class OptimizationService
             'duplicates_detected_and_skipped' => $duplicateCount,
             'assigned_task_ids' => $assignedTaskIds
         ]);
+    }
+
+    /**
+     * ✅ STAGE 2.5: Recompute the start/end clock times for one team's queue.
+     *
+     * STRICT MODE: only tasks with employee_approved = true are placed in the
+     * timeline. Pending (null) and declined (false) tasks have their optimized
+     * times nulled so the schedule reflects only confirmed work.
+     *
+     * Triggered by TaskObserver whenever a task's employee_approved field changes.
+     *
+     * @param int $optimizationTeamId  optimization_teams.id (NOT employees.id)
+     * @param string $serviceDate       Y-m-d
+     * @return array  ['approved' => N, 'deferred' => N, 'team_efficiency' => float]
+     */
+    public function recomputeTeamTimetable(int $optimizationTeamId, string $serviceDate): array
+    {
+        $serviceStartMinutes = 8 * 60; // 08:00
+
+        return \DB::transaction(function () use ($optimizationTeamId, $serviceDate, $serviceStartMinutes) {
+            // 1. Compute team efficiency from current member efficiencies (Stage 3 will keep these fresh)
+            $memberEfficiencies = \DB::table('optimization_team_members')
+                ->join('employees', 'optimization_team_members.employee_id', '=', 'employees.id')
+                ->where('optimization_team_members.optimization_team_id', $optimizationTeamId)
+                ->pluck('employees.efficiency')
+                ->map(fn($e) => (float) ($e ?? 1.0))
+                ->all();
+
+            $teamEfficiency = !empty($memberEfficiencies)
+                ? max(0.1, array_sum($memberEfficiencies) / count($memberEfficiencies))
+                : 1.0;
+
+            // 2. Pull every task currently on this team for this date
+            //    Sort priority (matches Stage 1 sequencing objective):
+            //      a) Arrival tasks ALWAYS come first (arrival_status DESC)
+            //      b) Then by existing optimized_start_minutes (preserves prior GA order)
+            //      c) Then by id as a stable tiebreaker
+            //    This guarantees that re-approving an arrival puts it back at the
+            //    front of the queue even if it lost its optimized time when declined.
+            $allTeamTasks = \App\Models\Task::where('assigned_team_id', $optimizationTeamId)
+                ->whereDate('scheduled_date', $serviceDate)
+                ->whereNull('deleted_at')
+                ->orderByRaw('COALESCE(arrival_status, 0) DESC')
+                ->orderByRaw('optimized_start_minutes IS NULL, optimized_start_minutes ASC')
+                ->orderBy('id', 'asc')
+                ->get();
+
+            // 3. Split into approved (in timeline) vs deferred (out of timeline)
+            $approved = $allTeamTasks->filter(fn($t) => $t->employee_approved === 1 || $t->employee_approved === true);
+            $deferred = $allTeamTasks->reject(fn($t) => $t->employee_approved === 1 || $t->employee_approved === true);
+
+            // 4. Walk approved queue with cursor, write fresh times
+            $cursor = $serviceStartMinutes;
+            foreach ($approved as $task) {
+                $base = (int) ($task->duration ?? $task->estimated_duration_minutes ?? 60);
+                $effective = (int) round($base / $teamEfficiency);
+                $task->optimized_start_minutes = $cursor;
+                $task->optimized_end_minutes = $cursor + $effective;
+                $task->saveQuietly(); // Quiet to prevent re-triggering the observer
+                $cursor += $effective;
+            }
+
+            // 5. Null out times for deferred tasks (pending or declined)
+            foreach ($deferred as $task) {
+                if ($task->optimized_start_minutes !== null || $task->optimized_end_minutes !== null) {
+                    $task->optimized_start_minutes = null;
+                    $task->optimized_end_minutes = null;
+                    $task->saveQuietly();
+                }
+            }
+
+            Log::info('Team timetable recomputed (strict mode)', [
+                'optimization_team_id' => $optimizationTeamId,
+                'service_date' => $serviceDate,
+                'team_efficiency' => round($teamEfficiency, 4),
+                'approved_count' => $approved->count(),
+                'deferred_count' => $deferred->count(),
+                'final_cursor_minutes' => $cursor,
+                'final_cursor_label' => sprintf('%02d:%02d', intdiv($cursor, 60), $cursor % 60),
+            ]);
+
+            return [
+                'approved' => $approved->count(),
+                'deferred' => $deferred->count(),
+                'team_efficiency' => $teamEfficiency,
+            ];
+        });
     }
 
     protected function generateStatistics(array $schedules, array $preprocessResult): array

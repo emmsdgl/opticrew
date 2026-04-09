@@ -67,7 +67,7 @@
                 <div x-show="!loading && tasks.length > 0" class="space-y-3">
                     <template x-for="task in tasks" :key="task.id">
                         <div class="flex items-center gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                             :class="{ 'ring-2 ring-amber-400': task.arrival_status && task.arrival_status !== 0 }"
+                             :class="{ 'ring-2 ring-red-400': task.employee_approved === false, 'ring-2 ring-amber-400': task.employee_approved !== false && task.arrival_status && task.arrival_status !== 0 }"
                              @click="openTaskDetails(task)">
                             <div class="flex-shrink-0">
                                 <div class="w-3 h-3 rounded-full"
@@ -82,13 +82,31 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2">
                                     <p class="text-sm font-medium text-gray-900 dark:text-white truncate" x-text="task.location_name"></p>
+                                    <span x-show="task.assigned_team_id"
+                                          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold"
+                                          :class="teamBadgeClass(task.assigned_team_id)"
+                                          x-text="'Team ' + task.assigned_team_id"></span>
+                                    <span x-show="task.employee_approved === false"
+                                          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">DECLINED</span>
                                     <span x-show="task.arrival_status && task.arrival_status !== 0 && task.arrival_status !== '0'"
                                           class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">ARRIVAL</span>
                                 </div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    <span x-text="task.scheduled_time"></span>
-                                    <span class="mx-1" x-show="task.duration">-</span>
-                                    <span x-show="task.duration" x-text="task.duration + ' min'"></span>
+                                    {{-- ✅ STAGE 2: prefer GA-computed start–end window over the static scheduled_time --}}
+                                    <template x-if="task.optimized_start && task.optimized_end">
+                                        <span>
+                                            <span x-text="task.optimized_start + ' - ' + task.optimized_end"></span>
+                                            <span class="mx-1" x-show="task.duration">·</span>
+                                            <span x-show="task.duration" x-text="task.duration + ' min'"></span>
+                                        </span>
+                                    </template>
+                                    <template x-if="!(task.optimized_start && task.optimized_end)">
+                                        <span>
+                                            <span x-text="task.scheduled_time"></span>
+                                            <span class="mx-1" x-show="task.duration">-</span>
+                                            <span x-show="task.duration" x-text="task.duration + ' min'"></span>
+                                        </span>
+                                    </template>
                                     <span class="mx-1" x-show="task.cabin_status">-</span>
                                     <span x-show="task.cabin_status" class="capitalize" x-text="(task.cabin_status || '').replace('_', ' ')"></span>
                                 </p>
@@ -224,7 +242,7 @@
                         <!-- 3. Date -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Date</label>
-                            <input type="date" x-model="taskForm.scheduled_date" @change="checkHoliday()"
+                            <input type="date" x-model="taskForm.scheduled_date" @change="checkHoliday(); locationsLoaded = false;"
                                 :min="minBookingDate"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -234,7 +252,7 @@
                             <div x-show="holidayInfo && holidayInfo.is_sunday_or_holiday" class="mt-2 flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-200 dark:border-amber-800">
                                 <span class="text-lg">&#x1F389;</span>
                                 <div>
-                                    <p class="text-xs font-medium text-amber-700 dark:text-amber-400" x-text="holidayInfo.is_holiday ? 'Holiday: ' + holidayInfo.holiday_name : 'Sunday'"></p>
+                                    <p class="text-xs font-medium text-amber-700 dark:text-amber-400" x-text="holidayInfo?.is_holiday ? 'Holiday: ' + holidayInfo.holiday_name : 'Sunday'"></p>
                                     <p class="text-[11px] text-amber-600 dark:text-amber-500">1.5x rate applies to extra tasks</p>
                                 </div>
                             </div>
@@ -256,9 +274,13 @@
                         <!-- 5. Duration (Preset Buttons) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estimated Duration (minutes)</label>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                Leave unselected to use the location's default duration. Click a selected button again to clear it.
+                            </p>
                             <div class="grid grid-cols-5 gap-2">
                                 <template x-for="dur in [30, 60, 90, 120, 180]" :key="dur">
-                                    <button @click="taskForm.estimated_duration_minutes = dur"
+                                    <button type="button"
+                                            @click="taskForm.estimated_duration_minutes = (taskForm.estimated_duration_minutes === dur ? null : dur)"
                                             :class="taskForm.estimated_duration_minutes === dur ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                                             class="px-2 py-2 rounded-lg text-sm font-medium transition-all text-center" x-text="dur">
                                     </button>
@@ -579,7 +601,13 @@
                                 <i class="fa-solid fa-location-dot text-blue-600 dark:text-blue-400"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedTask?.location_name"></p>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white" x-text="selectedTask?.location_name"></p>
+                                    <span x-show="selectedTask?.assigned_team_id"
+                                          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold"
+                                          :class="teamBadgeClass(selectedTask?.assigned_team_id || 1)"
+                                          x-text="'Team ' + selectedTask?.assigned_team_id"></span>
+                                </div>
                                 <p class="text-xs text-gray-500" x-text="selectedTask?.location_type"></p>
                             </div>
                         </div>
@@ -611,6 +639,17 @@
                         <div x-show="selectedTask?.task_description" class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                             <p class="text-xs text-gray-500 dark:text-gray-400">Description</p>
                             <p class="text-sm text-gray-900 dark:text-white" x-text="selectedTask?.task_description"></p>
+                        </div>
+
+                        <!-- Declined Notice -->
+                        <div x-show="selectedTask?.employee_approved === false" class="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-circle-xmark text-red-500"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-red-700 dark:text-red-400">Task Declined</p>
+                                    <p class="text-xs text-red-600 dark:text-red-500" x-show="selectedTask?.declined_by" x-text="'Declined by ' + selectedTask?.declined_by"></p>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Assigned Employees -->
@@ -702,7 +741,7 @@
                     cabin_status: 'departure',
                     arrival_status: 0,
                     extra_bed: false,
-                    estimated_duration_minutes: 60,
+                    estimated_duration_minutes: null,
                     auto_assign: true,
                     notes: '',
                 },
@@ -773,6 +812,18 @@
                     return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
                 },
 
+                teamBadgeClass(teamId) {
+                    const colors = [
+                        'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                        'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+                        'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400',
+                        'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
+                        'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+                    ];
+                    return colors[(teamId - 1) % colors.length];
+                },
+
                 // ---- Data Fetching ----
                 async fetchTasks() {
                     this.loading = true;
@@ -838,7 +889,7 @@
                         cabin_status: 'departure',
                         arrival_status: 0,
                         extra_bed: false,
-                        estimated_duration_minutes: 60,
+                        estimated_duration_minutes: null,
                         auto_assign: true,
                         notes: '',
                     };

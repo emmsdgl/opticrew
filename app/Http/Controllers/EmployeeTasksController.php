@@ -36,24 +36,31 @@ class EmployeeTasksController extends Controller
             ->get();
 
         // Get all approved active tasks (not completed) - "My Tasks for Today"
+        // ✅ STAGE 2: order by GA timeline so arrivals appear first, then by start time
         $todayTasks = Task::whereHas('optimizationTeam.members', function ($query) use ($employee) {
                 $query->where('employee_id', $employee->id);
             })
             ->where('employee_approved', true)  // Only show approved tasks
             ->whereNotIn('status', ['Completed'])  // Exclude completed tasks
             ->with(['location', 'optimizationTeam.members.employee.user', 'optimizationTeam.car', 'assignedBy'])
-            ->orderBy('scheduled_date', 'desc')
-            ->orderBy('scheduled_time', 'desc')
+            ->orderBy('scheduled_date', 'asc')
+            ->orderByRaw('COALESCE(arrival_status, 0) DESC')
+            ->orderByRaw('optimized_start_minutes IS NULL, optimized_start_minutes ASC')
+            ->orderBy('id')
             ->get();
 
         // Get upcoming tasks (only approved tasks)
+        // ✅ STAGE 2: same ordering as today's list for consistency
         $upcomingTasks = Task::where('scheduled_date', '>', $today)
             ->whereHas('optimizationTeam.members', function ($query) use ($employee) {
                 $query->where('employee_id', $employee->id);
             })
             ->where('employee_approved', true)  // Only show approved tasks
             ->with(['location', 'optimizationTeam.members.employee.user', 'optimizationTeam.car'])
-            ->orderBy('scheduled_date', 'desc')
+            ->orderBy('scheduled_date', 'asc')
+            ->orderByRaw('COALESCE(arrival_status, 0) DESC')
+            ->orderByRaw('optimized_start_minutes IS NULL, optimized_start_minutes ASC')
+            ->orderBy('id')
             ->limit(10)
             ->get();
 
@@ -239,6 +246,7 @@ class EmployeeTasksController extends Controller
         $task->update([
             'employee_approved' => true,
             'employee_approved_at' => Carbon::now(),
+            'approved_by' => $user->id,
         ]);
 
         // Notify all admins that the employee approved the task
@@ -301,6 +309,7 @@ class EmployeeTasksController extends Controller
         $task->update([
             'employee_approved' => false,
             'employee_approved_at' => Carbon::now(),
+            'approved_by' => $user->id,
         ]);
 
         // Notify all admins that the employee declined the task

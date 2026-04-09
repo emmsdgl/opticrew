@@ -23,7 +23,14 @@
       "Bash(mysql -u root opticrew -e \"SELECT id, name, email, role, google_id FROM users WHERE google_id IS NOT NULL;\")",
       "Bash(c:/xampp/mysql/bin/mysql.exe -u root opticrew -e \"SELECT id, name, email, role, google_id FROM users WHERE google_id IS NOT NULL;\")",
       "Bash(npx expo:*)",
-      "Bash(git rev-list:*)"
+      "Bash(git rev-list:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(wc -l \"C:\\\\xampp\\\\htdocs\\\\opticrew\\\\app\\\\Services\\\\Optimization\\\\GeneticAlgorithm/\"*.php \"C:\\\\xampp\\\\htdocs\\\\opticrew\\\\app\\\\Services\\\\Optimization\\\\OptimizationService.php\")",
+      "WebFetch(domain:fitsmallbusiness.com)",
+      "Bash(wc -l /c/xampp/htdocs/opticrew/public/algorithm-comparison/algorithms/*.php)",
+      "Bash(mysql -u root opticrew -e \"SELECT table_name, table_rows, ROUND\\(data_length/1024/1024, 2\\) AS data_mb FROM information_schema.tables WHERE table_schema='opticrew' ORDER BY table_rows DESC;\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"SELECT table_name, table_rows, ROUND\\(data_length/1024/1024, 2\\) AS data_mb FROM information_schema.tables WHERE table_schema='opticrew' ORDER BY table_rows DESC;\")"
     ],
     "deny": [],
     "ask": []

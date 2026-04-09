@@ -42,6 +42,8 @@ class EmployeeDashboardController extends Controller
             });
 
         // --- To-Do List (Detailed Task Information) ---
+        // ✅ STAGE 2: order by GA-computed timeline so arrivals (placed first by the GA)
+        //   appear at the top of the employee's day. NULL optimized_start_minutes go last.
         $todoList = DB::table('tasks')
             ->leftJoin('locations', 'tasks.location_id', '=', 'locations.id')
             ->leftJoin('contracted_clients', 'locations.contracted_client_id', '=', 'contracted_clients.id')
@@ -57,9 +59,14 @@ class EmployeeDashboardController extends Controller
                 'locations.location_name as cabin_name',
                 'tasks.task_description',
                 'tasks.estimated_duration_minutes as duration',
+                'tasks.optimized_start_minutes',
+                'tasks.optimized_end_minutes',
+                'tasks.arrival_status',
                 'tasks.status'
             )
             ->orderBy('tasks.scheduled_date')
+            ->orderByRaw('tasks.optimized_start_minutes IS NULL, tasks.optimized_start_minutes ASC')
+            ->orderBy('tasks.id')
             ->get();
 
         // --- UPDATED: Tasks Summary Logic ---

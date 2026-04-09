@@ -97,11 +97,27 @@
                             // Transform tasks to the format expected by task-overview-list component
                             $tasks = $todoList
                                 ->map(function ($task) {
+                                    // ✅ STAGE 2: prefer GA-computed start–end window over raw duration
+                                    if ($task->optimized_start_minutes !== null && $task->optimized_end_minutes !== null) {
+                                        $startLabel = sprintf('%d:%02d %s',
+                                            ((int) intdiv($task->optimized_start_minutes, 60) + 11) % 12 + 1,
+                                            $task->optimized_start_minutes % 60,
+                                            intdiv($task->optimized_start_minutes, 60) >= 12 ? 'PM' : 'AM'
+                                        );
+                                        $endLabel = sprintf('%d:%02d %s',
+                                            ((int) intdiv($task->optimized_end_minutes, 60) + 11) % 12 + 1,
+                                            $task->optimized_end_minutes % 60,
+                                            intdiv($task->optimized_end_minutes, 60) >= 12 ? 'PM' : 'AM'
+                                        );
+                                        $serviceTime = $startLabel . ' – ' . $endLabel . ' (' . $task->duration . ' min)';
+                                    } else {
+                                        $serviceTime = $task->duration . ' min';
+                                    }
                                     return [
                                         'service' => $task->task_description,
                                         'status' => $task->status,
                                         'service_date' => \Carbon\Carbon::parse($task->date)->format('M d, Y'),
-                                        'service_time' => $task->duration . ' min',
+                                        'service_time' => $serviceTime,
                                         'description' =>
                                             'Client: ' .
                                             $task->client_name .

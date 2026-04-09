@@ -47,8 +47,9 @@ class MutationOperator
         $mutatedSchedule = $schedule;
         
         // Randomly select mutation type
-        $mutationType = rand(1, 3);
-        
+        // ✅ Stage 1: Added adjacentSwapMutation (case 4) for incremental sequencing improvements
+        $mutationType = rand(1, 4);
+
         switch ($mutationType) {
             case 1:
                 $mutatedSchedule = $this->swapMutation($mutatedSchedule);
@@ -58,6 +59,9 @@ class MutationOperator
                 break;
             case 3:
                 $mutatedSchedule = $this->scrambleMutation($mutatedSchedule);
+                break;
+            case 4:
+                $mutatedSchedule = $this->adjacentSwapMutation($mutatedSchedule);
                 break;
         }
         
@@ -196,6 +200,45 @@ class MutationOperator
         // Shuffle tasks within the team
         $schedule[$randomTeamIndex]['tasks'] = $tasks->shuffle();
         
+        return $schedule;
+    }
+
+    /**
+     * Adjacent swap mutation — swap two NEIGHBORING tasks within a team's sequence.
+     *
+     * Why: makes small, incremental improvements to task ordering. Unlike scramble
+     * (which randomizes everything), adjacent swap explores the local neighborhood
+     * one step at a time. If the swap puts an arrival earlier or shortens makespan,
+     * the GA keeps it via selection. If not, it dies off.
+     *
+     * This is the "Good sequences are found incrementally" mechanism from the spec.
+     */
+    protected function adjacentSwapMutation(array $schedule): array
+    {
+        $teamIndices = array_keys($schedule);
+
+        // Pick a random team that has at least 2 tasks
+        $eligibleTeams = array_filter($teamIndices, function ($idx) use ($schedule) {
+            return $schedule[$idx]['tasks']->count() >= 2;
+        });
+
+        if (empty($eligibleTeams)) {
+            return $schedule;
+        }
+
+        $randomTeamIndex = $eligibleTeams[array_rand($eligibleTeams)];
+        $tasks = $schedule[$randomTeamIndex]['tasks'];
+
+        // Pick a random adjacent pair (positions i and i+1)
+        $maxIndex = $tasks->count() - 2;
+        $swapIndex = rand(0, $maxIndex);
+
+        // Swap the two adjacent tasks
+        $taskA = $tasks[$swapIndex];
+        $taskB = $tasks[$swapIndex + 1];
+        $schedule[$randomTeamIndex]['tasks'][$swapIndex] = $taskB;
+        $schedule[$randomTeamIndex]['tasks'][$swapIndex + 1] = $taskA;
+
         return $schedule;
     }
 

@@ -154,8 +154,23 @@ class FitnessCalculator
         // Higher weight = stronger penalty for imbalance
         $taskBalanceMultiplier = 1 / (1 + $taskStdDev * 5.0);
 
+        // 5️⃣ ✅ STAGE 1: SEQUENCING MULTIPLIER
+        //    Reward schedules where each team's arrival tasks come BEFORE its
+        //    non-arrival tasks. Score is per-team and averaged.
+        $sequencingMultiplier = $this->calculateSequencingMultiplier($schedule);
+
+        // 6️⃣ ✅ STAGE 1: MAKESPAN MULTIPLIER
+        //    Reward schedules where the slowest team finishes close to the
+        //    theoretical minimum (total work / team count).
+        $makespanMultiplier = $this->calculateMakespanMultiplier($schedule, $teamEfficiencies);
+
         // FINAL FITNESS: Multiply all components
-        $fitness = $baseFitness * $constraintMultiplier * $completionMultiplier * $taskBalanceMultiplier;
+        $fitness = $baseFitness
+                 * $constraintMultiplier
+                 * $completionMultiplier
+                 * $taskBalanceMultiplier
+                 * $sequencingMultiplier
+                 * $makespanMultiplier;
 
         // Ensure fitness is in valid range
         $fitness = max(0.001, min(1.0, $fitness));
@@ -171,6 +186,8 @@ class FitnessCalculator
             '2_constraint_multiplier' => round($constraintMultiplier, 4),
             '3_completion_multiplier' => round($completionMultiplier, 4),
             '4_task_balance_multiplier' => round($taskBalanceMultiplier, 4),
+            '5_sequencing_multiplier' => round($sequencingMultiplier, 4),
+            '6_makespan_multiplier' => round($makespanMultiplier, 4),
             'final_fitness' => round($fitness, 4),
             'team_details' => $penaltyDetails
         ]);
@@ -286,5 +303,119 @@ class FitnessCalculator
 
         // Ensure minimum threshold
         return max(0.0001, $completionMultiplier);
+    }
+
+    /**
+     * ✅ STAGE 1: Sequencing multiplier — arrivals first within each team's queue.
+     *
+     * For each team:
+     *   - If the team has 0 or all-arrival tasks, score = 1.0 (no conflict possible)
+     *   - Otherwise: count how many arrivals appear in the first N positions
+     *     (where N = total arrival tasks on this team) and divide by N.
+     *
+     * The team scores are averaged into a single multiplier in [0, 1].
+     * A perfect schedule (all arrivals at the front of every team) returns 1.0.
+     *
+     * @param array $schedule
+     * @return float Multiplier between 0.001 and 1.0
+     */
+    private function calculateSequencingMultiplier(array $schedule): float
+    {
+        if (empty($schedule)) {
+            return 1.0;
+        }
+
+        $teamScores = [];
+
+        foreach ($schedule as $teamSchedule) {
+            $tasks = $teamSchedule['tasks'];
+            if ($tasks->isEmpty()) {
+                continue;
+            }
+
+            // Build an array of arrival flags in queue order
+            $arrivalFlags = [];
+            foreach ($tasks as $task) {
+                $arrivalFlags[] = $task->arrival_status ? 1 : 0;
+            }
+
+            $totalArrivals = array_sum($arrivalFlags);
+            $totalTasks = count($arrivalFlags);
+
+            if ($totalArrivals === 0 || $totalArrivals === $totalTasks) {
+                // No sequencing conflict possible — perfect score
+                $teamScores[] = 1.0;
+                continue;
+            }
+
+            // Count arrivals correctly placed in the first N positions
+            $correctlyPlaced = 0;
+            for ($i = 0; $i < $totalArrivals; $i++) {
+                if ($arrivalFlags[$i] === 1) {
+                    $correctlyPlaced++;
+                }
+            }
+
+            $teamScores[] = $correctlyPlaced / $totalArrivals;
+        }
+
+        if (empty($teamScores)) {
+            return 1.0;
+        }
+
+        return max(0.001, array_sum($teamScores) / count($teamScores));
+    }
+
+    /**
+     * ✅ STAGE 1: Makespan multiplier — minimize when the LAST team finishes.
+     *
+     * Effective duration per task = base_duration / team_efficiency
+     * (a more efficient team finishes the same task faster).
+     *
+     * Score = idealMakespan / actualMakespan, where:
+     *   idealMakespan = totalWork / teamCount  (perfectly balanced split)
+     *   actualMakespan = max team finish time
+     *
+     * Range (0, 1]. A perfectly balanced schedule scores 1.0.
+     *
+     * @param array $schedule
+     * @param array $teamEfficiencies
+     * @return float Multiplier between 0.001 and 1.0
+     */
+    private function calculateMakespanMultiplier(array $schedule, array $teamEfficiencies): float
+    {
+        if (empty($schedule)) {
+            return 1.0;
+        }
+
+        $teamCompletionTimes = [];
+        $totalWork = 0;
+
+        foreach ($schedule as $teamIndex => $teamSchedule) {
+            $efficiency = $teamEfficiencies[$teamIndex] ?? 1.0;
+            $teamTime = 0;
+
+            foreach ($teamSchedule['tasks'] as $task) {
+                $effectiveDuration = $task->duration / max(0.1, $efficiency);
+                $teamTime += $effectiveDuration;
+            }
+
+            $teamCompletionTimes[] = $teamTime;
+            $totalWork += $teamTime;
+        }
+
+        if (empty($teamCompletionTimes) || $totalWork <= 0) {
+            return 1.0;
+        }
+
+        $makespan = max($teamCompletionTimes);
+        if ($makespan <= 0) {
+            return 1.0;
+        }
+
+        $idealMakespan = $totalWork / count($teamCompletionTimes);
+        $ratio = $idealMakespan / $makespan;
+
+        return max(0.001, min(1.0, $ratio));
     }
 }

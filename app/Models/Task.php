@@ -42,6 +42,9 @@ class Task extends Model
         'reassignment_reason',    // Why task was reassigned
         'optimization_run_id',    // Link to optimization run
         'assigned_by_generation', // GA generation that assigned this task
+        'optimized_start_minutes', // ✅ STAGE 2: GA-computed start time (minutes since midnight)
+        'optimized_end_minutes',   // ✅ STAGE 2: GA-computed end time (minutes since midnight)
+        'approved_by',             // ✅ User ID of whoever approved/declined the task
     ];
 
     protected $casts = [

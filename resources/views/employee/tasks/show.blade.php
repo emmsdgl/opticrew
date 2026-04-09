@@ -187,8 +187,11 @@
                     This task has been assigned to you and should be started in
                     <span class="font-semibold text-green-600 dark:text-green-400">
                         @php
+                            // ✅ STAGE 2: prefer GA-optimized start time when present
                             $scheduledDate = \Carbon\Carbon::parse($task->scheduled_date);
-                            if ($task->scheduled_time) {
+                            if ($task->optimized_start_minutes !== null) {
+                                $scheduledDateTime = $scheduledDate->copy()->setTime(0, 0)->addMinutes($task->optimized_start_minutes);
+                            } elseif ($task->scheduled_time) {
                                 $scheduledTime = \Carbon\Carbon::parse($task->scheduled_time);
                                 $scheduledDateTime = $scheduledDate->setTimeFromTimeString($scheduledTime->format('H:i:s'));
                             } else {
@@ -240,7 +243,15 @@
                         </div>
 
                         {{-- Task Starting Time --}}
-                        @if($task->scheduled_time)
+                        {{-- ✅ STAGE 2: prefer GA-optimized start when available --}}
+                        @if($task->optimized_start_minutes !== null)
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Task Starting Time</span>
+                                <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                    {{ \Carbon\Carbon::createFromFormat('H:i', sprintf('%02d:%02d', intdiv($task->optimized_start_minutes, 60), $task->optimized_start_minutes % 60))->format('g:i A') }}
+                                </span>
+                            </div>
+                        @elseif($task->scheduled_time)
                             <div class="flex justify-between items-center">
                                 <span class="text-sm text-gray-600 dark:text-gray-400">Task Starting Time</span>
                                 <span class="text-sm font-semibold text-gray-900 dark:text-white">
@@ -572,7 +583,18 @@
                                             <p class="text-sm font-semibold text-gray-900 dark:text-white">
                                                 {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
                                             </p>
-                                            @if($task->scheduled_time)
+                                            {{-- ✅ STAGE 2: prefer GA-optimized window when available --}}
+                                            @if($task->optimized_start_minutes !== null && $task->optimized_end_minutes !== null)
+                                                @php
+                                                    $optStart = sprintf('%02d:%02d', intdiv($task->optimized_start_minutes, 60), $task->optimized_start_minutes % 60);
+                                                    $optEnd = sprintf('%02d:%02d', intdiv($task->optimized_end_minutes, 60), $task->optimized_end_minutes % 60);
+                                                    $startCarbon = \Carbon\Carbon::createFromFormat('H:i', $optStart);
+                                                    $endCarbon = \Carbon\Carbon::createFromFormat('H:i', $optEnd);
+                                                @endphp
+                                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                                    {{ $startCarbon->format('g:i A') }} – {{ $endCarbon->format('g:i A') }}
+                                                </p>
+                                            @elseif($task->scheduled_time)
                                                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                                                     {{ \Carbon\Carbon::parse($task->scheduled_time)->format('g:i A') }}
                                                 </p>
@@ -659,12 +681,18 @@
 
                                         // Employee approval/decline
                                         if (!is_null($task->employee_approved)) {
+                                            // ✅ FIX: use the actual user who approved/declined, not the viewer
+                                            $approvedByUser = $task->approved_by
+                                                ? \App\Models\User::find($task->approved_by)
+                                                : null;
+                                            $approvedByName = $approvedByUser ? $approvedByUser->name : 'Team Member';
+
                                             $activities->push([
                                                 'type' => $task->employee_approved ? 'approved' : 'declined',
                                                 'icon' => $task->employee_approved ? 'fa-check-circle' : 'fa-times-circle',
                                                 'icon_color' => $task->employee_approved ? 'text-green-600 dark:text-green-800/30' : 'text-red-600 dark:text-red-400/30',
                                                 'bg_color' => $task->employee_approved ? 'bg-green-100 dark:bg-green-800/30' : 'bg-red-100 dark:bg-red-900/30',
-                                                'user' => $employee->user->name,
+                                                'user' => $approvedByName,
                                                 'action' => $task->employee_approved ? 'approved this task' : 'declined this task',
                                                 'timestamp' => $task->employee_approved_at,
                                             ]);

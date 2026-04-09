@@ -66,6 +66,15 @@ class ManagerScheduleController extends Controller
                     'location_name' => $task->location->name ?? 'Unknown Location',
                     'location_type' => $task->location->location_type ?? '',
                     'scheduled_time' => $task->scheduled_time ? Carbon::parse($task->scheduled_time)->format('H:i') : null,
+                    // ✅ STAGE 2: GA-computed start/end times (HH:MM format) so the
+                    //   schedule list can show the real per-task timeline.
+                    //   Falls back to scheduled_time when the task hasn't been optimized yet.
+                    'optimized_start' => $task->optimized_start_minutes !== null
+                        ? sprintf('%02d:%02d', intdiv($task->optimized_start_minutes, 60), $task->optimized_start_minutes % 60)
+                        : null,
+                    'optimized_end' => $task->optimized_end_minutes !== null
+                        ? sprintf('%02d:%02d', intdiv($task->optimized_end_minutes, 60), $task->optimized_end_minutes % 60)
+                        : null,
                     'duration' => $task->duration,
                     'status' => $task->status,
                     'cabin_status' => $task->cabin_status ?? null,
@@ -73,6 +82,11 @@ class ManagerScheduleController extends Controller
                     'task_description' => $task->task_description ?? '',
                     'arrival_status' => $task->arrival_status ?? 0,
                     'extra_bed' => $task->extra_bed ?? 0,
+                    'assigned_team_id' => $task->assigned_team_id,
+                    'employee_approved' => $task->employee_approved,
+                    'declined_by' => $task->employee_approved === false
+                        ? optional(\App\Models\User::find($task->approved_by))->name
+                        : null,
                     'employee_count' => $task->assignedEmployees->count(),
                     'employees' => $task->assignedEmployees->map(fn($e) => [
                         'id' => $e->id,
