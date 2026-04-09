@@ -34,7 +34,6 @@ class ProcessTaskApprovalGracePeriod extends Command
         $expiredApprovalTasks = Task::whereNull('employee_approved')
             ->whereNotNull('assigned_team_id')
             ->whereNotIn('status', ['Completed', 'Cancelled'])
-            ->whereDate('scheduled_date', '>=', $today)
             ->get()
             ->filter(function ($task) use ($gracePeriod) {
                 // Check if grace period has passed since assignment
