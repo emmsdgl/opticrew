@@ -68,7 +68,8 @@
       "Bash(\"C:/xampp/mysql/bin/mysql\" -u root -e \"DROP DATABASE IF EXISTS opticrew_test_merge; DROP DATABASE IF EXISTS opticrew_hostinger;\")",
       "Bash(C:/xampp/mysql/bin/mysql -u root opticrew -e ':*)",
       "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE performance_evaluations;\")",
-      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DELETE FROM performance_evaluations WHERE id BETWEEN 421 AND 440;\")"
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DELETE FROM performance_evaluations WHERE id BETWEEN 421 AND 440;\")",
+      "Bash(ls -la /c/xampp/htdocs/opticrew/database/migrations/*task*)"
     ],
     "deny": [],
     "ask": []

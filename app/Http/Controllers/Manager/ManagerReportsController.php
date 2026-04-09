@@ -76,6 +76,29 @@ class ManagerReportsController extends Controller
     }
 
     /**
+     * Calculate the billable rate for a task based on location rates and day type.
+     */
+    private function calculateTaskRate(Task $task, array $holidays): float
+    {
+        $location = $task->location;
+        if (!$location) return 0;
+
+        $scheduledDate = Carbon::parse($task->scheduled_date);
+        $isSundayOrHoliday = $scheduledDate->dayOfWeek === Carbon::SUNDAY
+            || in_array($scheduledDate->format('Y-m-d'), $holidays);
+
+        if ($task->rate_type === 'Student') {
+            return $isSundayOrHoliday
+                ? (float) ($location->student_sunday_holiday_rate ?? 0)
+                : (float) ($location->student_rate ?? 0);
+        }
+
+        return $isSundayOrHoliday
+            ? (float) ($location->sunday_holiday_rate ?? 0)
+            : (float) ($location->normal_rate_per_hour ?? 0);
+    }
+
+    /**
      * Generate billing report data (AJAX).
      */
     public function billingReport(Request $request)
@@ -94,6 +117,12 @@ class ManagerReportsController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
+        $holidays = \DB::table('holidays')
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->pluck('date')
+            ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
+
         $tasks = Task::whereIn('location_id', $locationIds)
             ->whereBetween('scheduled_date', [$startDate, $endDate])
             ->where('status', 'Completed')
@@ -101,23 +130,28 @@ class ManagerReportsController extends Controller
             ->orderBy('scheduled_date')
             ->get();
 
-        $totalAmount = $tasks->sum('price');
+        $totalAmount = 0;
         $totalHours = round($tasks->sum('duration') / 60, 1);
 
         $tasksByDate = $tasks->groupBy(function ($task) {
             return Carbon::parse($task->scheduled_date)->format('Y-m-d');
-        })->map(function ($dayTasks, $date) {
+        })->map(function ($dayTasks, $date) use ($holidays, &$totalAmount) {
+            $subtotal = 0;
+            $mappedTasks = $dayTasks->map(function ($task) use ($holidays, &$subtotal) {
+                $rate = $this->calculateTaskRate($task, $holidays);
+                $subtotal += $rate;
+                return [
+                    'location' => $task->location->name ?? 'Unknown',
+                    'description' => $task->task_description ?? 'Cleaning Service',
+                    'duration' => $task->duration ?? 0,
+                    'price' => number_format($rate, 2),
+                ];
+            });
+            $totalAmount += $subtotal;
             return [
                 'date' => Carbon::parse($date)->format('M d, Y'),
-                'tasks' => $dayTasks->map(function ($task) {
-                    return [
-                        'location' => $task->location->name ?? 'Unknown',
-                        'description' => $task->task_description ?? 'Cleaning Service',
-                        'duration' => $task->duration ?? 0,
-                        'price' => number_format($task->price ?? 0, 2),
-                    ];
-                }),
-                'subtotal' => number_format($dayTasks->sum('price'), 2),
+                'tasks' => $mappedTasks,
+                'subtotal' => number_format($subtotal, 2),
             ];
         })->values();
 
@@ -154,6 +188,12 @@ class ManagerReportsController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
+        $holidays = \DB::table('holidays')
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->pluck('date')
+            ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
+
         $tasks = Task::whereIn('location_id', $locationIds)
             ->whereBetween('scheduled_date', [$startDate, $endDate])
             ->where('status', 'Completed')
@@ -161,7 +201,12 @@ class ManagerReportsController extends Controller
             ->orderBy('scheduled_date')
             ->get();
 
-        $totalAmount = $tasks->sum('price');
+        $totalAmount = 0;
+        $tasks->each(function ($task) use ($holidays, &$totalAmount) {
+            $task->calculated_price = $this->calculateTaskRate($task, $holidays);
+            $totalAmount += $task->calculated_price;
+        });
+
         $totalHours = round($tasks->sum('duration') / 60, 1);
 
         $html = view('manager.billing-pdf', [
