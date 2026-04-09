@@ -163,8 +163,14 @@
                                 :class="group.color">
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="font-medium truncate flex-1" x-text="group.client"></span>
-                                    <span class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-semibold bg-white/30 dark:bg-black/20"
-                                        x-text="group.count + ' task' + (group.count > 1 ? 's' : '')"></span>
+                                    <template x-if="group.isPendingAppointment">
+                                        <span class="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded border bg-orange-50 border-orange-500/40 text-orange-700 dark:bg-orange-950/40 dark:border-orange-400/40 dark:text-orange-300"
+                                            x-text="'Pending' + (group.count > 1 ? ' (' + group.count + ')' : '')"></span>
+                                    </template>
+                                    <template x-if="!group.isPendingAppointment">
+                                        <span class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-semibold bg-white/30 dark:bg-black/20"
+                                            x-text="group.count + ' task' + (group.count > 1 ? 's' : '')"></span>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -782,17 +788,22 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
 
             events.forEach(event => {
                 const clientName = event.title.split('-')[0].trim();
-                if (!groups[clientName]) {
-                    groups[clientName] = {
+                const isPendingAppointment = event.is_appointment && event.status === 'Pending';
+                const groupKey = isPendingAppointment ? clientName + '__pending' : clientName;
+                if (!groups[groupKey]) {
+                    groups[groupKey] = {
                         client: clientName,
                         count: 0,
-                        color: this.getServiceColor(event.pureServiceType),
+                        color: isPendingAppointment
+                            ? 'bg-orange-500/30 text-orange-800 dark:text-orange-200 border border-orange-500'
+                            : this.getServiceColor(event.pureServiceType),
                         serviceType: event.pureServiceType || '',
+                        isPendingAppointment: isPendingAppointment,
                         tasks: []
                     };
                 }
-                groups[clientName].count++;
-                groups[clientName].tasks.push(event);
+                groups[groupKey].count++;
+                groups[groupKey].tasks.push(event);
             });
             return Object.values(groups);
         },
@@ -1331,7 +1342,7 @@ function calendarComponent(initialClients, initialEvents, bookedLocationsByDate,
                 'Completed': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
                 'In Progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
                 'Scheduled': 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-200',
-                'Pending': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+                'Pending': 'bg-orange-50 border border-orange-500/40 text-orange-700 dark:bg-orange-950/40 dark:border-orange-400/40 dark:text-orange-300',
                 'Incomplete': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
             };
             return colors[status] || colors['Incomplete'];

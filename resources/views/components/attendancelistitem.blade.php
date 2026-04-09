@@ -8,6 +8,31 @@
 <div class="w-full overflow-x-auto" x-data="{
     showAttendanceDrawer: false,
     selectedRecord: null,
+    currentPage: 1,
+    perPage: 5,
+    totalRecords: {{ count($records) }},
+
+    get totalPages() {
+        return Math.ceil(this.totalRecords / this.perPage);
+    },
+
+    get startIndex() {
+        return (this.currentPage - 1) * this.perPage;
+    },
+
+    get endIndex() {
+        return Math.min(this.startIndex + this.perPage, this.totalRecords);
+    },
+
+    isVisible(index) {
+        return index >= this.startIndex && index < this.endIndex;
+    },
+
+    goToPage(page) {
+        if (page >= 1 && page <= this.totalPages) {
+            this.currentPage = page;
+        }
+    },
 
     openAttendanceDrawer(record) {
         this.selectedRecord = record;
@@ -52,6 +77,7 @@
     <div class="divide-y divide-gray-200 dark:divide-gray-700">
         @foreach($records as $index => $record)
         <div x-data="attendanceRow({{ $index }}, @js($record))" data-index="{{ $index }}"
+             x-show="isVisible({{ $index }})"
              class="grid grid-cols-1 md:grid-cols-6 gap-4 px-6 py-4 bg-white dark:bg-gray-900
                     hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
              :class="{ 'border-2 border-blue-500': isHighlighted }">
@@ -165,6 +191,34 @@
         </div>
         @endforeach
     </div>
+
+    <!-- Pagination Controls -->
+    @if(count($records) > 5)
+    <div class="flex items-center justify-between px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+            Showing <span x-text="startIndex + 1"></span>-<span x-text="endIndex"></span> of <span x-text="totalRecords"></span>
+        </span>
+        <div class="flex items-center gap-1">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+                class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+            <template x-for="page in totalPages" :key="page">
+                <button @click="goToPage(page)"
+                    class="px-3 py-1.5 text-sm rounded-lg border transition-colors"
+                    :class="page === currentPage
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                    x-text="page">
+                </button>
+            </template>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+                class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+        </div>
+    </div>
+    @endif
 
     <!-- Empty State -->
     @if(count($records) === 0)

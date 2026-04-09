@@ -539,6 +539,7 @@ Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
 
     Route::get('/employee/requests/create', [EmployeeRequestsController::class, 'create'])->name('employee.requests.create');
     Route::post('/employee/requests/store', [EmployeeRequestsController::class, 'store'])->name('employee.requests.store');
+    Route::post('/employee/requests/check-conflicts', [EmployeeRequestsController::class, 'checkConflicts'])->name('employee.requests.check-conflicts');
     Route::post('/employee/requests/{id}/cancel', [EmployeeRequestsController::class, 'cancel'])->name('employee.requests.cancel');
 
     Route::get('/employee/attendance', [AttendanceController::class, 'index'])

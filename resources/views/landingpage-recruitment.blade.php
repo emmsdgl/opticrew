@@ -617,6 +617,21 @@
                                     'fa-briefcase' => 'general',
                                 ];
                                 $jobCategory = $categoryMap[$job->icon] ?? 'other';
+
+                                // Localized type badge — falls back to DB value if no translation key matches.
+                                $typeKeyMap = [
+                                    'full-time' => 'full_time',
+                                    'part-time' => 'part_time',
+                                    'remote'    => 'remote',
+                                ];
+                                $typeBadgeText = isset($typeKeyMap[$job->type])
+                                    ? __('landing.recruitment.' . $typeKeyMap[$job->type])
+                                    : $job->type_badge;
+
+                                // Localized "posted X ago" using Carbon's current locale.
+                                $postedAgo = $job->created_at
+                                    ? $job->created_at->locale(app()->getLocale())->diffForHumans()
+                                    : '';
                             @endphp
                             <div class="job-item" data-job-id="{{ $job->id }}" data-type="{{ $job->type }}"
                                 data-category="{{ $jobCategory }}" data-location="{{ $job->location }}"
@@ -651,7 +666,7 @@
                                     <div class="flex flex-wrap gap-1.5 mb-3">
                                         <span
                                             class="px-2.5 py-0.5 {{ $typeBadgeClass }} text-sm font-medium rounded-full">
-                                            {{ $job->type_badge }}
+                                            {{ $typeBadgeText }}
                                         </span>
                                     </div>
 
@@ -669,7 +684,7 @@
                                                 class="text-sm font-normal text-gray-400">{{ __('landing.recruitment.per_hour') }}</span></span>
                                         <span class="text-sm text-gray-400 dark:text-gray-500 flex items-center gap-1">
                                             <i class="far fa-clock"></i>
-                                            {{ __('landing.recruitment.posted') }} {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
+                                            {{ __('landing.recruitment.posted') }} {{ $postedAgo }}
                                         </span>
                                     </div>
                                 </div>

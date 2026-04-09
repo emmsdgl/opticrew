@@ -241,7 +241,7 @@ class TrainingVideoController extends Controller
 
         $user = $request->user();
         $progress = $validated['progress'];
-        $status = $progress >= 90 ? 'completed' : ($progress > 0 ? 'in_progress' : 'pending');
+        $status = $progress >= 100 ? 'completed' : ($progress > 0 ? 'in_progress' : 'pending');
 
         UserCourseProgress::updateOrCreate(
             [

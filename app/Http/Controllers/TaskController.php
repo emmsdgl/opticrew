@@ -300,7 +300,40 @@ class TaskController extends Controller
             ];
         }
 
-        // --- 7. RETURN TO VIEW ---
+        // --- 7. ADD PENDING APPOINTMENTS TO CALENDAR ---
+        $pendingAppointments = \App\Models\ClientAppointment::with('client')
+            ->where('status', 'pending')
+            ->whereBetween('service_date', [$startDate, $endDate])
+            ->get();
+
+        foreach ($pendingAppointments as $appt) {
+            $dateKey = date('Y-n-j', strtotime($appt->service_date));
+
+            $clientName = 'Unknown Client';
+            if ($appt->client) {
+                $clientName = trim(($appt->client->first_name ?? '') . ' ' . ($appt->client->last_name ?? ''));
+                if ($appt->is_company_inquiry && $appt->client->company_name) {
+                    $clientName = $appt->client->company_name;
+                }
+            }
+
+            $events[$dateKey][] = [
+                'title' => $clientName . ' - ' . $appt->service_type,
+                'color' => 'bg-orange-500/30 text-orange-800 dark:text-orange-200 border border-orange-500',
+                'status' => 'Pending',
+                'serviceType' => $appt->service_type,
+                'pureServiceType' => $appt->service_type,
+                'cabinType' => null,
+                'client' => $clientName,
+                'location' => $appt->location ?? '-',
+                'employees' => [],
+                'team_id' => null,
+                'arrival_status' => false,
+                'is_appointment' => true,
+            ];
+        }
+
+        // --- 8. RETURN TO VIEW ---
         return view('admin.tasks', [
             'tasks' => $tasks,
             'clients' => $allClients,

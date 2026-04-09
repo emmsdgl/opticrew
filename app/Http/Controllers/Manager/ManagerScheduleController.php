@@ -29,16 +29,75 @@ class ManagerScheduleController extends Controller
         $contractedClient = $this->getContractedClient();
 
         $locationTypes = [];
+        $totalLocations = 0;
+        $companyAddress = 'N/A';
+        $companyCityState = '';
+        $companyStreetAddress = '';
+        $locationsByType = [];
+        $typesAddedLastMonth = 0;
+        $locationsAddedLastMonth = 0;
+
         if ($contractedClient) {
             $locationTypes = Location::where('contracted_client_id', $contractedClient->id)
                 ->selectRaw('location_type, COUNT(*) as count')
                 ->groupBy('location_type')
                 ->pluck('count', 'location_type')
                 ->toArray();
+
+            $totalLocations = array_sum($locationTypes);
+            $companyAddress = $contractedClient->address ?? 'N/A';
+
+            // Parse address into city/state and street
+            $addressParts = array_map('trim', explode(',', $companyAddress));
+            if (count($addressParts) >= 3) {
+                // Assume format: Street, City, State/Country (or similar)
+                $companyStreetAddress = $addressParts[0];
+                $companyCityState = implode(', ', array_slice($addressParts, 1));
+            } elseif (count($addressParts) === 2) {
+                $companyStreetAddress = $addressParts[0];
+                $companyCityState = $addressParts[1];
+            } else {
+                $companyCityState = $companyAddress;
+                $companyStreetAddress = '';
+            }
+
+            // Get location names grouped by type for tooltips
+            $locationsByType = Location::where('contracted_client_id', $contractedClient->id)
+                ->select('location_type', 'location_name')
+                ->orderBy('location_type')
+                ->orderBy('location_name')
+                ->get()
+                ->groupBy('location_type')
+                ->map(fn($group) => $group->pluck('location_name')->toArray())
+                ->toArray();
+
+            // Count locations added in the last month
+            $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
+            $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
+
+            $locationsAddedLastMonth = Location::where('contracted_client_id', $contractedClient->id)
+                ->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
+                ->count();
+
+            // Count distinct types added in the last month
+            $typesAddedLastMonth = Location::where('contracted_client_id', $contractedClient->id)
+                ->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
+                ->distinct('location_type')
+                ->count('location_type');
         }
 
         $minimumBookingNoticeDays = \App\Services\CompanySettingService::get('minimum_booking_notice_days', 3);
-        return view('manager.schedule', compact('locationTypes', 'minimumBookingNoticeDays'));
+        return view('manager.schedule', compact(
+            'locationTypes',
+            'totalLocations',
+            'companyAddress',
+            'companyCityState',
+            'companyStreetAddress',
+            'locationsByType',
+            'typesAddedLastMonth',
+            'locationsAddedLastMonth',
+            'minimumBookingNoticeDays'
+        ));
     }
 
     /**

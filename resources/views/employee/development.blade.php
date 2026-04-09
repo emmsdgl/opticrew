@@ -3,7 +3,7 @@
 
         {{-- Left Sidebar - Course List --}}
         <div id="courseSidebar"
-            class="w-full lg:w-[30rem] rounded-2xl transition-all duration-300 flex flex-col lg:h-full">
+            class="w-full lg:w-[30rem] rounded-2xl transition-all duration-300 flex flex-col">
             <div class="p-4 md:p-6 flex-shrink-0">
                 {{-- Header --}}
                 <div class="mb-6">
@@ -45,15 +45,8 @@
             </div>
 
             {{-- Course List - Scrollable --}}
-            <div id="courseList" class="space-y-4 px-6 pb-6 flex-1 overflow-y-auto scrollbar-custom">
+            <div id="courseList" class="space-y-4 px-6 pb-6 overflow-y-auto scrollbar-custom">
                 @foreach($videosByCategory as $category => $videos)
-                    {{-- Category Header --}}
-                    <div class="pt-2 pb-1">
-                        <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                            {{ $categoryInfo[$category]['title'] ?? ucfirst(str_replace('_', ' ', $category)) }}
-                        </h4>
-                    </div>
-
                     @foreach($videos as $index => $video)
                         @php
                             $isFirst = $loop->parent->first && $loop->first;
@@ -67,21 +60,21 @@
                             onclick="selectCourse({{ $video->id }})">
                             <div class="flex gap-4 p-4 rounded-xl {{ $isFirst ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-500' : 'bg-white dark:bg-gray-800/30 hover:bg-blue-50 dark:hover:bg-gray-700 border-transparent hover:border-blue-200 dark:hover:border-blue-800' }} transition-all border-2">
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                    <div class="flex items-center gap-2 mb-1 flex-nowrap">
+                                        <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate">
                                             {{ $video->title }}
                                         </h3>
                                         @if($video->required)
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 shrink-0 whitespace-nowrap">
                                                 Required
                                             </span>
                                         @endif
                                         @if($status === 'completed')
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 shrink-0 whitespace-nowrap">
                                                 <i class="fas fa-check mr-1"></i>Done
                                             </span>
                                         @elseif($status === 'in_progress')
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 shrink-0 whitespace-nowrap">
                                                 <i class="fas fa-play mr-1 text-[10px]"></i>In Progress
                                             </span>
                                         @endif
@@ -134,6 +127,18 @@
                                 <h3 class="text-xl font-bold mb-2">Course Completed!</h3>
                                 <p class="text-gray-300 text-sm mb-4">Great job! You've finished this lesson.</p>
                                 <button onclick="replayVideo()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
+                                    <i class="fa-solid fa-rotate-right mr-2"></i>Watch Again
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Incomplete Overlay (shown when video ends but not fully watched) --}}
+                        <div id="incompleteOverlay" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white z-10">
+                            <div class="text-center p-8">
+                                <i class="fa-solid fa-circle-exclamation text-6xl text-yellow-400 mb-4"></i>
+                                <h3 class="text-xl font-bold mb-2">Incomplete</h3>
+                                <p class="text-gray-300 text-sm mb-4">You must watch the entire video to complete this course. Please watch all parts you skipped.</p>
+                                <button onclick="replayVideo()" class="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm font-medium transition-colors">
                                     <i class="fa-solid fa-rotate-right mr-2"></i>Watch Again
                                 </button>
                             </div>
@@ -291,46 +296,13 @@
             let watchedSeconds = new Set(); // Track unique seconds watched
             let videoDuration = 0;
             let isCompleted = false;
-            const COMPLETION_THRESHOLD = 90; // Must watch 90% to complete
+            const COMPLETION_THRESHOLD = 100; // Must watch 100% to complete
             let saveTimeout = null;
             let currentCourseCompleted = false; // Whether current course has been completed at least once
 
-            // Lock/unlock sidebar controls based on completion
-            function lockControls() {
-                document.querySelectorAll('.course-item').forEach(item => {
-                    if (item.getAttribute('data-course-id') != currentCourseId) {
-                        item.style.pointerEvents = 'none';
-                        item.style.opacity = '0.5';
-                    }
-                });
-                document.querySelectorAll('.filter-tab').forEach(tab => {
-                    tab.disabled = true;
-                    tab.style.pointerEvents = 'none';
-                    tab.style.opacity = '0.5';
-                });
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.disabled = true;
-                    searchInput.style.opacity = '0.5';
-                }
-            }
-
-            function unlockControls() {
-                document.querySelectorAll('.course-item').forEach(item => {
-                    item.style.pointerEvents = '';
-                    item.style.opacity = '';
-                });
-                document.querySelectorAll('.filter-tab').forEach(tab => {
-                    tab.disabled = false;
-                    tab.style.pointerEvents = '';
-                    tab.style.opacity = '';
-                });
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.disabled = false;
-                    searchInput.style.opacity = '';
-                }
-            }
+            // Controls are always enabled — users can freely browse, search, and switch courses
+            function lockControls() {}
+            function unlockControls() {}
 
             // Save progress to server
             function saveProgressToServer(courseId, progress) {
@@ -412,9 +384,9 @@
                     updateCourseStatusTag('in_progress');
                     lockControls();
                 } else {
-                    // pending
+                    // pending — don't lock controls so user can browse courses freely
                     currentCourseCompleted = false;
-                    lockControls();
+                    unlockControls();
                 }
             }
 
@@ -457,6 +429,7 @@
                 // Reset all UI elements
                 updateProgressUI(0, 0, 0);
                 hideCompletionOverlay();
+                hideIncompleteOverlay();
                 updateProgressStatus('default');
 
                 // Hide completion badge
@@ -500,6 +473,7 @@
                 isCompleted = false;
                 updateProgressUI(0, 0, 0);
                 hideCompletionOverlay();
+                hideIncompleteOverlay();
                 updateProgressStatus('default');
 
                 const completionBadge = document.getElementById('completionBadge');
@@ -530,6 +504,11 @@
                         const courseItem = document.querySelector(`[data-course-id="${currentCourseId}"]`);
                         if (courseItem) courseItem.setAttribute('data-status', 'in_progress');
                     }
+
+                    // Lock controls while actively watching (not yet completed)
+                    if (!currentCourseCompleted) {
+                        lockControls();
+                    }
                 });
 
                 videoEl.addEventListener('pause', function() {
@@ -540,6 +519,9 @@
                 videoEl.addEventListener('ended', function() {
                     stopProgressTracking();
                     checkCompletion(true);
+                    if (!isCompleted) {
+                        showIncompleteOverlay();
+                    }
                 });
 
                 videoEl.addEventListener('error', function() {
@@ -613,6 +595,11 @@
                             courseItem.setAttribute('data-status', 'in_progress');
                         }
                     }
+
+                    // Lock controls while actively watching (not yet completed)
+                    if (!currentCourseCompleted) {
+                        lockControls();
+                    }
                 } else if (event.data === YT.PlayerState.PAUSED) {
                     lastYTTime = player.getCurrentTime();
                     stopProgressTracking();
@@ -620,6 +607,9 @@
                 } else if (event.data === YT.PlayerState.ENDED) {
                     stopProgressTracking();
                     checkCompletion(true);
+                    if (!isCompleted) {
+                        showIncompleteOverlay();
+                    }
                 } else if (event.data === YT.PlayerState.BUFFERING) {
                     // Update duration during buffering too
                     if (player && player.getDuration) {
@@ -758,7 +748,7 @@
             function checkCompletion(videoEnded) {
                 const percentage = calculateWatchedPercentage();
 
-                if (percentage >= COMPLETION_THRESHOLD || videoEnded) {
+                if (percentage >= COMPLETION_THRESHOLD) {
                     isCompleted = true;
                     currentCourseCompleted = true;
 
@@ -803,8 +793,23 @@
                 }
             }
 
+            function showIncompleteOverlay() {
+                const overlay = document.getElementById('incompleteOverlay');
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                }
+            }
+
+            function hideIncompleteOverlay() {
+                const overlay = document.getElementById('incompleteOverlay');
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                }
+            }
+
             function replayVideo() {
                 hideCompletionOverlay();
+                hideIncompleteOverlay();
                 if (player) {
                     player.seekTo(0);
                     player.playVideo();
@@ -840,6 +845,15 @@
 
             // Check for course parameter in URL and auto-select on page load
             document.addEventListener('DOMContentLoaded', function() {
+                // Set course list max-height to fit exactly 3 items
+                const courseList = document.getElementById('courseList');
+                const items = courseList.querySelectorAll('.course-item');
+                if (items.length >= 4) {
+                    const listTop = courseList.getBoundingClientRect().top;
+                    const fourthItemBottom = items[3].getBoundingClientRect().bottom;
+                    courseList.style.maxHeight = (fourthItemBottom - listTop) + 'px';
+                }
+
                 // Apply saved statuses to sidebar course items
                 Object.keys(courses).forEach(id => {
                     const courseItem = document.querySelector(`[data-course-id="${id}"]`);

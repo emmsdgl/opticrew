@@ -39,7 +39,7 @@ class AppointmentController extends Controller
 
         $assignedAppointments = ClientAppointment::with(['client', 'assignedTeam', 'recommendedTeam'])
             ->where('is_company_inquiry', false)
-            ->whereIn('status', ['approved', 'rejected'])
+            ->whereIn('status', ['pending', 'approved', 'rejected'])
             ->orderBy('created_at', 'desc')
             ->paginate(15, ['*'], 'assigned_page');
 

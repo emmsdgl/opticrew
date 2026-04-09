@@ -11,6 +11,7 @@ $palette = [
     'green'  => ['light' => 'bg-green-50 border-green-500/40 text-green-700',     'dark' => 'dark:bg-green-950/40 dark:border-green-400/40 dark:text-green-300',     'glow' => '34,197,94'],
     'purple' => ['light' => 'bg-purple-50 border-purple-500/40 text-purple-700',  'dark' => 'dark:bg-purple-950/40 dark:border-purple-400/40 dark:text-purple-300',  'glow' => '168,85,247'],
     'red'    => ['light' => 'bg-red-50 border-red-500/40 text-red-700',           'dark' => 'dark:bg-red-950/40 dark:border-red-400/40 dark:text-red-300',           'glow' => '239,68,68'],
+    'orange' => ['light' => 'bg-orange-50 border-orange-500/40 text-orange-700',  'dark' => 'dark:bg-orange-950/40 dark:border-orange-400/40 dark:text-orange-300',  'glow' => '249,115,22'],
     'gray'   => ['light' => 'bg-gray-50 border-gray-400/40 text-gray-600',        'dark' => 'dark:bg-gray-800/40 dark:border-gray-500/40 dark:text-gray-400',        'glow' => '107,114,128'],
     'indigo' => ['light' => 'bg-indigo-50 border-indigo-500/40 text-indigo-700',  'dark' => 'dark:bg-indigo-950/40 dark:border-indigo-400/40 dark:text-indigo-300',  'glow' => '99,102,241'],
 ];
