@@ -32,21 +32,43 @@ class EmployeeRequestsController extends Controller
 
         $employee = Auth::user()->employee;
 
+        // Auto-calculate from_time and to_time based on time_range and employee shift
+        $shiftStart = $employee->shift_start ?? '11:00';
+        $shiftEnd = $employee->shift_end ?? '20:00';
+        $fromTime = $validated['from_time'] ?? null;
+        $toTime = $validated['to_time'] ?? null;
+
+        if ($validated['time_range'] !== 'Custom Hours') {
+            $startMinutes = intval(substr($shiftStart, 0, 2)) * 60 + intval(substr($shiftStart, 3, 2));
+            $endMinutes = intval(substr($shiftEnd, 0, 2)) * 60 + intval(substr($shiftEnd, 3, 2));
+            $midMinutes = $startMinutes + intdiv($endMinutes - $startMinutes, 2);
+            $midTime = sprintf('%02d:%02d', intdiv($midMinutes, 60), $midMinutes % 60);
+
+            if ($validated['time_range'] === 'Full Shift') {
+                $fromTime = $shiftStart;
+                $toTime = $shiftEnd;
+            } elseif ($validated['time_range'] === 'Morning (First Half)') {
+                $fromTime = $shiftStart;
+                $toTime = $midTime;
+            } elseif ($validated['time_range'] === 'Afternoon (Second Half)') {
+                $fromTime = $midTime;
+                $toTime = $shiftEnd;
+            }
+        }
+
         // Handle file upload if present
         $proofPath = null;
         if ($request->hasFile('proof_document')) {
             $proofPath = $request->file('proof_document')->store('employee-requests', 'public');
         }
 
-        // Create the request in your database
-        // Adjust this based on your actual database schema
         $employeeRequest = \App\Models\EmployeeRequest::create([
             'employee_id' => $employee->id,
             'absence_type' => $validated['absence_type'],
             'absence_date' => $validated['absence_date'],
             'time_range' => $validated['time_range'],
-            'from_time' => $validated['from_time'] ?? null,
-            'to_time' => $validated['to_time'] ?? null,
+            'from_time' => $fromTime,
+            'to_time' => $toTime,
             'reason' => $validated['reason'],
             'description' => $validated['description'] ?? null,
             'proof_document' => $proofPath,

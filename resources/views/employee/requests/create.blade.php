@@ -386,7 +386,9 @@
         return {
             currentStep: 1,
             submitting: false,
-            
+            shiftStart: '{{ $employee->shift_start ?? "11:00" }}',
+            shiftEnd: '{{ $employee->shift_end ?? "20:00" }}',
+
             formData: {
                 absence_type: '',
                 absence_date: '',
@@ -401,7 +403,41 @@
             },
 
             init() {
-                // Any initialization logic
+                this.$watch('formData.time_range', (value) => {
+                    this.updateTimeRange(value);
+                });
+            },
+
+            updateTimeRange(value) {
+                const [startH, startM] = this.shiftStart.split(':').map(Number);
+                const [endH, endM] = this.shiftEnd.split(':').map(Number);
+                const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+                const midMinutes = (startH * 60 + startM) + Math.floor(totalMinutes / 2);
+                const midH = Math.floor(midMinutes / 60);
+                const midM = midMinutes % 60;
+                const midTime = String(midH).padStart(2, '0') + ':' + String(midM).padStart(2, '0');
+
+                if (value === 'Full Shift') {
+                    this.formData.from_time = this.shiftStart;
+                    this.formData.to_time = this.shiftEnd;
+                } else if (value === 'Morning (First Half)') {
+                    this.formData.from_time = this.shiftStart;
+                    this.formData.to_time = midTime;
+                } else if (value === 'Afternoon (Second Half)') {
+                    this.formData.from_time = midTime;
+                    this.formData.to_time = this.shiftEnd;
+                } else if (value === 'Custom Hours') {
+                    this.formData.from_time = '';
+                    this.formData.to_time = '';
+                }
+            },
+
+            formatTime12(time24) {
+                if (!time24) return '';
+                const [h, m] = time24.split(':').map(Number);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                return h12 + ':' + String(m).padStart(2, '0') + ' ' + ampm;
             },
 
             showToast(message, type = 'error') {
@@ -465,10 +501,11 @@
             },
 
             getTimeRangeDisplay() {
-                if (this.formData.time_range === 'Custom Hours' && this.formData.from_time && this.formData.to_time) {
-                    return `${this.formData.from_time} - ${this.formData.to_time}`;
+                if (!this.formData.time_range) return '-';
+                if (this.formData.from_time && this.formData.to_time) {
+                    return `${this.formData.time_range} (${this.formatTime12(this.formData.from_time)} - ${this.formatTime12(this.formData.to_time)})`;
                 }
-                return this.formData.time_range || '-';
+                return this.formData.time_range;
             },
 
             validateStep1() {

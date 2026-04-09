@@ -178,7 +178,17 @@
 
             @if(count($requestRecords ?? []) > 0)
                 <!-- Request Records Grid -->
-                <div class="w-full overflow-x-auto bg-white dark:bg-gray-800/30 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
+                <div class="w-full overflow-x-auto bg-white dark:bg-gray-800/30 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800"
+                     x-data="{
+                        reqCurrentPage: 1,
+                        reqPerPage: 5,
+                        reqTotal: {{ count($requestRecords ?? []) }},
+                        get reqTotalPages() { return Math.ceil(this.reqTotal / this.reqPerPage); },
+                        get reqStartIndex() { return (this.reqCurrentPage - 1) * this.reqPerPage; },
+                        get reqEndIndex() { return Math.min(this.reqStartIndex + this.reqPerPage, this.reqTotal); },
+                        reqIsVisible(index) { return index >= this.reqStartIndex && index < this.reqEndIndex; },
+                        reqGoToPage(page) { if (page >= 1 && page <= this.reqTotalPages) this.reqCurrentPage = page; }
+                     }">
                     <!-- Table Header -->
                     <div class="hidden md:grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-800/50
                                 border-b border-gray-200 dark:border-gray-700 rounded-t-2xl">
@@ -199,7 +209,8 @@
                     <!-- Table Body -->
                     <div class="divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach($requestRecords as $index => $request)
-                        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 px-6 py-4
+                        <div x-show="reqIsVisible({{ $index }})"
+                             class="grid grid-cols-1 md:grid-cols-6 gap-4 px-6 py-4
                                     hover:bg-blue-400/10 dark:hover:bg-blue-400/10 transition-colors">
 
                             <!-- Status Badge -->
@@ -259,6 +270,34 @@
                         </div>
                         @endforeach
                     </div>
+
+                    <!-- Pagination Controls -->
+                    @if(count($requestRecords ?? []) > 5)
+                    <div class="flex items-center justify-between px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                            Showing <span x-text="reqStartIndex + 1"></span>-<span x-text="reqEndIndex"></span> of <span x-text="reqTotal"></span>
+                        </span>
+                        <div class="flex items-center gap-1">
+                            <button @click="reqGoToPage(reqCurrentPage - 1)" :disabled="reqCurrentPage === 1"
+                                class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                <i class="fa-solid fa-chevron-left text-xs"></i>
+                            </button>
+                            <template x-for="page in reqTotalPages" :key="page">
+                                <button @click="reqGoToPage(page)"
+                                    class="px-3 py-1.5 text-sm rounded-lg border transition-colors"
+                                    :class="page === reqCurrentPage
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                                    x-text="page">
+                                </button>
+                            </template>
+                            <button @click="reqGoToPage(reqCurrentPage + 1)" :disabled="reqCurrentPage === reqTotalPages"
+                                class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             @else
                 <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto bg-white dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">

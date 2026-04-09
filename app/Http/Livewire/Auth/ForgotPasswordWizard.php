@@ -269,8 +269,11 @@ class ForgotPasswordWizard extends Component
 
         Cache::forget("web_pwd_reset_verified:{$this->resetToken}");
 
-        $this->successMessage = 'Your password has been reset successfully. Redirecting to login...';
         $this->dispatchBrowserEvent('web-fp-success');
+        $this->dispatchBrowserEvent('fp-success', [
+            'title' => 'Password Reset',
+            'message' => 'Your password has been reset successfully. Redirecting to login...',
+        ]);
     }
 
     private function resetMessages(): void
