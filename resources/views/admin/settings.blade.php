@@ -742,42 +742,6 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">Note: Advanced security features will be functional in a future update</p>
             </div>
 
-            <!-- Language & Region -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    <i class="fa-solid fa-globe mr-2 text-blue-500"></i>
-                    Language & Region
-                </h2>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Language
-                        </label>
-                        <select class="w-full px-4 py-3 rounded-xl border border-gray-400 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)] transition-all duration-200">
-                            <option>English</option>
-                            <option>Spanish</option>
-                            <option>French</option>
-                            <option>German</option>
-                            <option>Finnish</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Timezone
-                        </label>
-                        <select class="w-full px-4 py-3 rounded-xl border border-gray-400 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] dark:focus:shadow-[0_0_0_3px_rgba(96,165,250,0.1)] transition-all duration-200">
-                            <option>UTC+02:00 (Helsinki)</option>
-                            <option>UTC+00:00 (London)</option>
-                            <option>UTC-05:00 (New York)</option>
-                            <option>UTC-08:00 (Los Angeles)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">Note: Language and timezone settings will be functional in a future update</p>
-            </div>
         </div>
     </section>
     </x-skeleton-page>
