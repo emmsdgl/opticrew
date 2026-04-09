@@ -37,26 +37,9 @@
                 ['label' => 'Approved Leaves', 'value' => $totalLeaves],
                 ['label' => 'Total Leave Days', 'value' => $totalLeaveDays],
                 ['label' => 'Total Employees', 'value' => $totalEmployees],
-                ['label' => 'Flagged Employees', 'value' => count($flaggedEmployees), 'icon' => 'fi fi-rr-triangle-warning', 'iconColor' => '#ef4444'],
+                ['label' => 'Flagged Employees', 'value' => count($flaggedEmployees)],
             ]" />
         </div>
-
-        <!-- Flagged Employees Alert -->
-        @if(count($flaggedEmployees) > 0)
-        <div class="flex items-start gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700">
-            <i class="fa-solid fa-triangle-exclamation text-red-500 mt-0.5"></i>
-            <div>
-                <p class="text-sm font-semibold text-red-700 dark:text-red-300">Exceeded Max Absences ({{ $maxAbsencesAllowed }} days)</p>
-                <p class="text-xs text-red-600 dark:text-red-400 mt-1">
-                    @foreach($flaggedEmployees as $name)
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-medium mr-1 mb-1">
-                            {{ $name }} ({{ $absenceCountsByEmployee[$name] }})
-                        </span>
-                    @endforeach
-                </p>
-            </div>
-        </div>
-        @endif
 
         <!-- Search & Sort Controls -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -220,10 +203,43 @@
 
         <!-- Absences Table -->
         <div class="flex flex-col gap-4">
-            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
-                Absences
-                <span class="text-sm font-normal text-gray-500 dark:text-gray-400" x-text="'(' + filteredAbsences().length + ')'"></span>
-            </h2>
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-white">
+                    Absences
+                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400" x-text="'(' + filteredAbsences().length + ')'"></span>
+                </h2>
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" type="button"
+                        class="flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <i class="fa-solid fa-sort text-xs text-gray-400"></i>
+                        <span x-text="absenceSort === 'all' ? 'All' : absenceSort === 'exceeded' ? 'Exceeded' : absenceSort === 'warning' ? 'Warning' : 'No Absences'"></span>
+                        <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-cloak
+                        class="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                        <button @click="absenceSort = 'all'; absencePage = 1; open = false"
+                            class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :class="absenceSort === 'all' ? 'text-blue-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                            All
+                        </button>
+                        <button @click="absenceSort = 'exceeded'; absencePage = 1; open = false"
+                            class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :class="absenceSort === 'exceeded' ? 'text-blue-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                            <i class="fa-solid fa-circle text-red-500 text-[8px] mr-1.5"></i> Exceeded
+                        </button>
+                        <button @click="absenceSort = 'warning'; absencePage = 1; open = false"
+                            class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :class="absenceSort === 'warning' ? 'text-blue-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                            <i class="fa-solid fa-circle text-yellow-500 text-[8px] mr-1.5"></i> Warning
+                        </button>
+                        <button @click="absenceSort = 'none'; absencePage = 1; open = false"
+                            class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :class="absenceSort === 'none' ? 'text-blue-600 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                            <i class="fa-solid fa-circle text-green-500 text-[8px] mr-1.5"></i> No Absences
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <template x-if="filteredAbsences().length > 0">
                 <div>
@@ -241,21 +257,25 @@
                                 <template x-for="(absence, idx) in paginatedAbsences()" :key="idx">
                                     <tr :class="idx % 2 === 1 ? 'bg-gray-50 dark:bg-gray-800/50' : ''">
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center gap-2">
-                                                <div>
-                                                    <div class="text-sm font-semibold text-gray-900 dark:text-white" x-text="absence.name"></div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400" x-text="absence.email"></div>
-                                                </div>
-                                                <span x-show="flaggedEmployees.includes(absence.name)"
-                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 whitespace-nowrap">
-                                                    <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> Exceeded Max Absences
-                                                </span>
-                                            </div>
+                                            <div class="text-sm font-semibold text-gray-900 dark:text-white" x-text="absence.name"></div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400" x-text="absence.email"></div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200" x-text="absence.date"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400" x-text="absence.day"></td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Absent</span>
+                                            <template x-if="getAbsenceStatus(absence.name) === 'exceeded'">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                                    <i class="fa-solid fa-triangle-exclamation text-[8px]"></i> Exceeded
+                                                </span>
+                                            </template>
+                                            <template x-if="getAbsenceStatus(absence.name) === 'warning'">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                                    <i class="fa-solid fa-exclamation text-[8px]"></i> Warning
+                                                </span>
+                                            </template>
+                                            <template x-if="getAbsenceStatus(absence.name) === 'normal'">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">Absent</span>
+                                            </template>
                                         </td>
                                     </tr>
                                 </template>
@@ -280,7 +300,16 @@
                                     class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300">
                                     <i class="fa-solid fa-chevron-left text-xs"></i>
                                 </button>
-                                <template x-for="p in totalAbsencePages()" :key="p">
+                                <template x-for="p in (() => {
+                                    const total = totalAbsencePages();
+                                    const current = absencePage;
+                                    const maxVisible = 5;
+                                    if (total <= maxVisible) return Array.from({length: total}, (_, i) => i + 1);
+                                    let start = Math.max(1, current - Math.floor(maxVisible / 2));
+                                    let end = start + maxVisible - 1;
+                                    if (end > total) { end = total; start = end - maxVisible + 1; }
+                                    return Array.from({length: end - start + 1}, (_, i) => start + i);
+                                })()" :key="p">
                                     <button @click="absencePage = p"
                                         class="px-3 py-1.5 text-sm rounded-lg transition-colors"
                                         :class="absencePage === p ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'"
@@ -304,6 +333,7 @@
                 </div>
             </template>
         </div>
+
     </section>
 
     @php
@@ -337,13 +367,13 @@
                 search: '',
                 employeeFilter: 'all',
                 dateSort: 'newest',
+                absenceSort: 'all',
                 leavePage: 1,
                 absencePage: 1,
                 perPage: 5,
                 today: new Date().toISOString().split('T')[0],
 
                 leaves: @json($leavesJson),
-
                 absences: @json($absencesJson),
 
                 maxAbsencesAllowed: {{ $maxAbsencesAllowed }},
@@ -353,6 +383,13 @@
                 resetPages() {
                     this.leavePage = 1;
                     this.absencePage = 1;
+                },
+
+                getAbsenceStatus(name) {
+                    const count = this.absenceCounts[name] || 0;
+                    if (count >= this.maxAbsencesAllowed) return 'exceeded';
+                    if (count >= this.maxAbsencesAllowed - 2) return 'warning';
+                    return 'normal';
                 },
 
                 matchesFilter(name, dateRaw) {
@@ -371,6 +408,16 @@
 
                 filteredAbsences() {
                     let result = this.absences.filter(a => this.matchesFilter(a.name, a.date_raw));
+
+                    // Apply absence sort filter
+                    if (this.absenceSort === 'exceeded') {
+                        result = result.filter(a => this.getAbsenceStatus(a.name) === 'exceeded');
+                    } else if (this.absenceSort === 'warning') {
+                        result = result.filter(a => this.getAbsenceStatus(a.name) === 'warning');
+                    } else if (this.absenceSort === 'none') {
+                        result = result.filter(a => this.getAbsenceStatus(a.name) === 'normal');
+                    }
+
                     if (this.dateSort === 'newest') result.sort((a, b) => b.date_raw.localeCompare(a.date_raw));
                     else if (this.dateSort === 'oldest') result.sort((a, b) => a.date_raw.localeCompare(b.date_raw));
                     return result;

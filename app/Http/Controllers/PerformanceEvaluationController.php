@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Notification;
+use App\Models\Task;
 use App\Models\PerformanceEvaluation;
 use App\Models\PerformanceImprovementPlan;
 use App\Services\Notification\NotificationService;
@@ -60,7 +61,39 @@ class PerformanceEvaluationController extends Controller
             'active_pips' => $employees->filter(fn($e) => $e->has_active_pip || $e->pip_pending)->count(),
         ];
 
-        return view('admin.reports.performance.index', compact('employees', 'stats', 'month', 'year', 'periodStart', 'periodEnd'));
+        // --- Employee Efficiency Data ---
+        $efficiencyRecords = $employees->map(function ($employee) use ($periodStart, $periodEnd) {
+            $totalTasks = Task::whereHas('optimizationTeam.members', function ($q) use ($employee) {
+                    $q->where('employee_id', $employee->id);
+                })
+                ->whereBetween('scheduled_date', [$periodStart, $periodEnd])
+                ->whereNull('deleted_at')
+                ->count();
+
+            $completedTasks = Task::whereHas('optimizationTeam.members', function ($q) use ($employee) {
+                    $q->where('employee_id', $employee->id);
+                })
+                ->whereBetween('scheduled_date', [$periodStart, $periodEnd])
+                ->whereNull('deleted_at')
+                ->where('status', 'Completed')
+                ->count();
+
+            $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0;
+            $efficiencyScore = $completionRate;
+            $status = $efficiencyScore >= 70 ? 'High' : ($efficiencyScore < 50 ? 'Low' : 'Medium');
+
+            return [
+                'name' => $employee->user->name ?? 'Unknown',
+                'email' => $employee->user->email ?? '',
+                'total_tasks' => $totalTasks,
+                'completed_tasks' => $completedTasks,
+                'completion_rate' => $completionRate,
+                'efficiency_score' => $efficiencyScore,
+                'status' => $status,
+            ];
+        })->sortByDesc('efficiency_score')->values();
+
+        return view('admin.reports.performance.index', compact('employees', 'stats', 'month', 'year', 'periodStart', 'periodEnd', 'efficiencyRecords'));
     }
 
     /**

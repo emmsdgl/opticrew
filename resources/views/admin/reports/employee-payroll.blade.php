@@ -36,13 +36,13 @@
 
         <!-- Stats Cards -->
         <div class="py-6">
-        <x-employer-components.stats-cards :stats="[
-            ['label' => 'Total Payroll', 'value' => '€' . number_format($totalSalary, 2)],
-            ['label' => 'Regular Hours', 'value' => number_format($totalRegularHours, 2)],
-            ['label' => 'Sunday/Holiday Hours', 'value' => number_format($totalPremiumHours, 2), 'subtitle' => '2x Rate'],
-            ['label' => 'Total Employees', 'value' => $totalEmployees],
-            ['label' => 'Avg Hours/Employee', 'value' => $averageHoursPerEmployee],
-        ]" />
+            <x-employer-components.stats-cards :stats="[
+                ['label' => 'Total Payroll', 'value' => '€' . number_format($totalSalary, 2)],
+                ['label' => 'Regular Hours', 'value' => number_format($totalRegularHours, 2)],
+                ['label' => 'Sunday/Holiday Hours', 'value' => number_format($totalPremiumHours, 2), 'subtitle' => '2x Rate'],
+                ['label' => 'Total Employees', 'value' => $totalEmployees],
+                ['label' => 'Avg Hours/Employee', 'value' => $averageHoursPerEmployee],
+            ]" />
         </div>
 
         <!-- Employee Payroll Table -->

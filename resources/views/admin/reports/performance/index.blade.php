@@ -65,27 +65,14 @@
         @endif
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Employees</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['total_employees'] }}</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-                <p class="text-xs text-green-600 dark:text-green-400 font-medium">Evaluated</p>
-                <p class="text-2xl font-bold text-green-700 dark:text-green-300 mt-1">{{ $stats['evaluated'] }}</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-                <p class="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Drafts</p>
-                <p class="text-2xl font-bold text-yellow-700 dark:text-yellow-300 mt-1">{{ $stats['drafts'] }}</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Pending</p>
-                <p class="text-2xl font-bold text-gray-700 dark:text-gray-300 mt-1">{{ $stats['pending'] }}</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-                <p class="text-xs text-red-600 dark:text-red-400 font-medium">Active PIPs</p>
-                <p class="text-2xl font-bold text-red-700 dark:text-red-300 mt-1">{{ $stats['active_pips'] }}</p>
-            </div>
+        <div class="py-6">
+            <x-employer-components.stats-cards :stats="[
+                ['label' => 'Total Employees', 'value' => $stats['total_employees']],
+                ['label' => 'Evaluated', 'value' => $stats['evaluated']],
+                ['label' => 'Drafts', 'value' => $stats['drafts']],
+                ['label' => 'Pending', 'value' => $stats['pending']],
+                ['label' => 'Active PIPs', 'value' => $stats['active_pips']],
+            ]" />
         </div>
 
         <!-- Progress Bar -->
@@ -105,8 +92,8 @@
         </div>
 
         <!-- Employee Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden" x-data="{ page: 1, perPage: 5, total: {{ $employees->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
-            <div class="overflow-x-auto">
+        <div x-data="{ page: 1, perPage: 5, total: {{ $employees->count() }}, get totalPages() { return Math.ceil(this.total / this.perPage); } }">
+            <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-700">
@@ -118,9 +105,9 @@
                             <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody>
                         @forelse ($employees as $employee)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
+                            <tr class="even:bg-gray-50 dark:even:bg-gray-800/50" x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         @php
@@ -209,9 +196,105 @@
                     </tbody>
                 </table>
             </div>
-            <div class="px-4 pb-4">
-                @include('components.report-pagination')
-            </div>
+            @include('components.report-pagination')
+        </div>
+
+        <!-- Employee Efficiency Table -->
+        <div class="flex flex-col gap-4">
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Employee Efficiency</h2>
+
+            @if($efficiencyRecords->count() > 0)
+                <div x-data="{ effPage: 1, effPerPage: 5, effTotal: {{ $efficiencyRecords->count() }}, get effTotalPages() { return Math.ceil(this.effTotal / this.effPerPage); } }">
+                <div class="w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Employee</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Total Tasks</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Completed</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Completion Rate</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Efficiency Score</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($efficiencyRecords as $emp)
+                                <tr class="even:bg-gray-50 dark:even:bg-gray-800/50" x-show="{{ $loop->index }} >= (effPage - 1) * effPerPage && {{ $loop->index }} < effPage * effPerPage">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $emp['name'] }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $emp['email'] }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">{{ $emp['total_tasks'] }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">{{ $emp['completed_tasks'] }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                                                <div class="h-1.5 rounded-full transition-all {{ $emp['completion_rate'] >= 70 ? 'bg-green-500' : ($emp['completion_rate'] >= 50 ? 'bg-yellow-500' : 'bg-red-500') }}"
+                                                    style="width: {{ $emp['completion_rate'] }}%"></div>
+                                            </div>
+                                            <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ $emp['completion_rate'] }}%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm font-bold {{ $emp['efficiency_score'] >= 70 ? 'text-green-600 dark:text-green-400' : ($emp['efficiency_score'] >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400') }}">
+                                            {{ $emp['efficiency_score'] }}%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($emp['status'] === 'High')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">High</span>
+                                        @elseif($emp['status'] === 'Medium')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">Medium</span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Low</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Efficiency Pagination -->
+                <template x-if="effTotalPages > 1">
+                    <div class="flex items-center justify-between mt-4 px-2">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Showing <span x-text="(effPage - 1) * effPerPage + 1"></span>-<span x-text="Math.min(effPage * effPerPage, effTotal)"></span> of <span x-text="effTotal"></span>
+                        </p>
+                        <div class="flex items-center gap-1">
+                            <button @click="effPage = Math.max(1, effPage - 1)" :disabled="effPage === 1"
+                                class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300">
+                                <i class="fa-solid fa-chevron-left text-xs"></i>
+                            </button>
+                            <template x-for="p in (() => {
+                                const total = effTotalPages;
+                                const current = effPage;
+                                const maxVisible = 5;
+                                if (total <= maxVisible) return Array.from({length: total}, (_, i) => i + 1);
+                                let start = Math.max(1, current - Math.floor(maxVisible / 2));
+                                let end = start + maxVisible - 1;
+                                if (end > total) { end = total; start = end - maxVisible + 1; }
+                                return Array.from({length: end - start + 1}, (_, i) => start + i);
+                            })()" :key="p">
+                                <button @click="effPage = p"
+                                    class="px-3 py-1.5 text-sm rounded-lg transition-colors"
+                                    :class="effPage === p ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                    x-text="p"></button>
+                            </template>
+                            <button @click="effPage = Math.min(effTotalPages, effPage + 1)" :disabled="effPage === effTotalPages"
+                                class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                </div>
+            @else
+                <div class="w-full rounded-lg border-1 border-dashed border-gray-200 dark:border-gray-700 px-6 py-24 text-center">
+                    <i class="fa-solid fa-chart-line text-3xl mb-3 block w-full text-gray-400 dark:text-gray-500"></i>
+                    <p class="text-base font-medium text-gray-500 dark:text-gray-400">No efficiency data available</p>
+                    <p class="text-xs mt-2 text-gray-400 dark:text-gray-500">Employee efficiency data will appear here once tasks are assigned</p>
+                </div>
+            @endif
         </div>
     </section>
 
