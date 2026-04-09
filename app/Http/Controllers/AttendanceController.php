@@ -6,10 +6,13 @@ use App\Models\Attendance;
 use App\Models\DayOff;
 use App\Models\Employee;
 use App\Models\EmployeeRequest;
+use App\Models\Task;
+use App\Models\OptimizationTeamMember;
 use App\Services\CompanySettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -776,10 +779,61 @@ class AttendanceController extends Controller
             'admin_notes' => $request->input('admin_notes', ''),
         ]);
 
+        // Remove employee from any scheduled tasks on the leave date
+        $this->removeEmployeeFromScheduledTasks(
+            $employeeRequest->employee_id,
+            $employeeRequest->absence_date
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Request approved successfully'
         ]);
+    }
+
+    /**
+     * Remove an employee from scheduled tasks on a given date.
+     * When a leave is approved, the employee should not remain assigned to tasks.
+     */
+    private function removeEmployeeFromScheduledTasks($employeeId, $date)
+    {
+        // Find all team memberships for this employee on tasks scheduled for this date
+        $teamMemberships = OptimizationTeamMember::where('employee_id', $employeeId)
+            ->whereHas('team.tasks', function ($q) use ($date) {
+                $q->whereDate('scheduled_date', $date)
+                  ->whereIn('status', ['Pending', 'Scheduled']);
+            })
+            ->get();
+
+        if ($teamMemberships->isEmpty()) {
+            return;
+        }
+
+        foreach ($teamMemberships as $membership) {
+            $team = $membership->team;
+
+            // Remove the employee from the team
+            $membership->delete();
+
+            Log::info('Removed employee from team due to approved leave', [
+                'employee_id' => $employeeId,
+                'team_id' => $team->id,
+                'date' => $date,
+            ]);
+
+            // If the team has no members left, cancel the associated tasks
+            if ($team->members()->count() === 0) {
+                Task::where('assigned_team_id', $team->id)
+                    ->whereDate('scheduled_date', $date)
+                    ->whereIn('status', ['Pending', 'Scheduled'])
+                    ->update(['status' => 'Pending', 'assigned_team_id' => null]);
+
+                Log::info('Team left empty after leave removal, tasks set back to Pending', [
+                    'team_id' => $team->id,
+                    'date' => $date,
+                ]);
+            }
+        }
     }
 
     /**

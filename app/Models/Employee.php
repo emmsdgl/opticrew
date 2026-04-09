@@ -61,6 +61,12 @@ class Employee extends Model
         return $this->hasMany(DayOff::class);
     }
 
+    // Relationship: Employee absence requests
+    public function employeeRequests()
+    {
+        return $this->hasMany(EmployeeRequest::class);
+    }
+
     // ACCESSOR: Get employee's full name from related user
     public function getFullNameAttribute()
     {

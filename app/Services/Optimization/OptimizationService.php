@@ -282,7 +282,17 @@ class OptimizationService
             // ✅ Get active employees whose users are NOT soft-deleted
             // MULTI-COMPANY FIX: Exclude employees already assigned to preserved runs
             $employeesQuery = Employee::where('is_active', true)
-                ->whereDoesntHave('dayOffs', fn($q) => $q->whereDate('date', $serviceDate))
+                ->whereDoesntHave('dayOffs', fn($q) =>
+                    $q->where('date', '<=', $serviceDate)
+                      ->where(function ($sub) use ($serviceDate) {
+                          $sub->where('end_date', '>=', $serviceDate)
+                              ->orWhereNull('end_date');
+                      })
+                )
+                ->whereDoesntHave('employeeRequests', fn($q) =>
+                    $q->where('status', 'Approved')
+                      ->whereDate('absence_date', $serviceDate)
+                )
                 ->whereHas('user', function($q) {
                     $q->whereNull('deleted_at'); // Exclude soft-deleted users
                 })
