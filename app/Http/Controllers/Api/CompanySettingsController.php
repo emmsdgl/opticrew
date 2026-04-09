@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\CompanySettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,10 @@ class CompanySettingsController extends Controller
             ->first();
 
         $radius = $radiusSetting ? $radiusSetting->value : '100';
+
+        // Geofence test mode: PH bypasses the geofence (for local demo); FN enforces the real check
+        $geoMode = strtoupper((string) CompanySettingService::get('geofence_test_mode', 'PH'));
+        $bypassGeofence = ($geoMode === 'PH');
 
         // Check if user is authenticated via session
         $user = Auth::user();
@@ -72,6 +77,8 @@ class CompanySettingsController extends Controller
                         'location_name' => $task->client_name,
                         'task_id' => $task->id,
                         'task_description' => $task->task_description,
+                        'geofence_test_mode' => $geoMode,
+                        'bypass_geofence' => $bypassGeofence,
                     ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
                       ->header('Pragma', 'no-cache')
                       ->header('Expires', '0');
@@ -99,6 +106,8 @@ class CompanySettingsController extends Controller
             'geofence_radius' => $radius,
             'location_type' => 'none',
             'message' => 'No task assigned for today',
+            'geofence_test_mode' => $geoMode,
+            'bypass_geofence' => $bypassGeofence,
         ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
           ->header('Pragma', 'no-cache')
           ->header('Expires', '0');

@@ -338,6 +338,8 @@
                             locationName: data.location_name,
                             locationType: data.location_type,
                             message: data.message,
+                            bypassGeofence: data.bypass_geofence === true,
+                            geofenceTestMode: data.geofence_test_mode || null,
                             buttonId: 'clock-in-out-button',
                             statusElementId: 'geofence-status',
                             distanceElementId: 'geofence-distance'

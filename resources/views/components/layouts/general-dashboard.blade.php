@@ -401,12 +401,47 @@
     @stack('modals')
 
     <!-- Dev Time Panel: PH & Finland time -->
+    @php
+        $__devGeoMode = \App\Services\CompanySettingService::get('geofence_test_mode', 'PH');
+        $__devIsAdmin = auth()->check() && auth()->user()->role === 'admin';
+    @endphp
     <div x-data="{
         open: false,
         phTime: '',
         fiTime: '',
         phDate: '',
         fiDate: '',
+        geoMode: @js($__devGeoMode),
+        geoSaving: false,
+        geoError: '',
+        async setGeoMode(mode) {
+            if (this.geoSaving || this.geoMode === mode) return;
+            this.geoSaving = true;
+            this.geoError = '';
+            try {
+                const res = await fetch('{{ route('admin.dev.geofence-mode') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+                    },
+                    body: JSON.stringify({ mode })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.success) {
+                    this.geoError = data.message || 'Failed to update';
+                    return;
+                }
+                this.geoMode = data.mode;
+                // Soft reload so geofencing.js re-fetches /api/company-settings with the new mode
+                setTimeout(() => window.location.reload(), 350);
+            } catch (e) {
+                this.geoError = 'Network error';
+            } finally {
+                this.geoSaving = false;
+            }
+        },
         init() {
             this.updateTime();
             setInterval(() => this.updateTime(), 1000);
@@ -454,6 +489,32 @@
                 <div class="border-t border-gray-700 pt-1.5 mt-1.5">
                     <p class="text-[10px] text-gray-500">PH is 5h ahead of Finland</p>
                 </div>
+                @if($__devIsAdmin)
+                <div class="border-t border-gray-700 pt-2 mt-2">
+                    <p class="text-[9px] text-gray-500 uppercase tracking-wider mb-1.5 font-semibold">Geofence Test Mode</p>
+                    <div class="flex items-center gap-1 bg-gray-800 rounded p-0.5">
+                        <button type="button"
+                            @click="setGeoMode('PH')"
+                            :disabled="geoSaving"
+                            :class="geoMode === 'PH' ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-white'"
+                            class="flex-1 text-[10px] font-bold py-1 rounded transition-colors disabled:opacity-50">
+                            PH (Bypass)
+                        </button>
+                        <button type="button"
+                            @click="setGeoMode('FN')"
+                            :disabled="geoSaving"
+                            :class="geoMode === 'FN' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'"
+                            class="flex-1 text-[10px] font-bold py-1 rounded transition-colors disabled:opacity-50">
+                            FN (Real)
+                        </button>
+                    </div>
+                    <p class="text-[9px] text-gray-500 mt-1.5 leading-tight">
+                        <span x-show="geoMode === 'PH'">Geofence bypassed — clock-in allowed anywhere.</span>
+                        <span x-show="geoMode === 'FN'">Real geofence enforced (100m around client in Finland).</span>
+                    </p>
+                    <p x-show="geoError" x-text="geoError" class="text-[9px] text-red-400 mt-1"></p>
+                </div>
+                @endif
             </div>
         </div>
     </div>

@@ -290,6 +290,21 @@ Route::middleware(['auth', 'terms.accepted'])->group(function () {
 Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+    // Dev Controls: toggle global geofence test mode (PH = bypass / FN = enforce real Finland radius)
+    Route::post('/admin/dev/geofence-mode', function (\Illuminate\Http\Request $request) {
+        $mode = strtoupper((string) $request->input('mode', ''));
+        if (!in_array($mode, ['PH', 'FN'], true)) {
+            return response()->json(['success' => false, 'message' => 'Invalid mode'], 422);
+        }
+        \App\Services\CompanySettingService::set(
+            'geofence_test_mode',
+            $mode,
+            'string',
+            'Geofence demo mode: PH bypasses the geofence; FN enforces the real Finland radius.'
+        );
+        return response()->json(['success' => true, 'mode' => $mode]);
+    })->name('admin.dev.geofence-mode');
+
     Route::get('/admin/history', [\App\Http\Controllers\Admin\HistoryController::class, 'index'])->name('admin.history');
 
     Route::get('/admin/attendance', [AttendanceController::class, 'adminIndex'])->name('admin.attendance');
@@ -514,6 +529,9 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
 Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
         ->name('employee.dashboard');
+
+    Route::get('/employee/dashboard/tasks-by-date', [EmployeeDashboardController::class, 'tasksByDate'])
+        ->name('employee.dashboard.tasks-by-date');
 
     // Gmail account linking for employees
     Route::get('/employee/link-google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'linkGoogle'])

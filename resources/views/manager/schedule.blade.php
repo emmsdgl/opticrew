@@ -842,7 +842,7 @@
                         <!-- 3. Date -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Date</label>
-                            <input type="date" x-model="taskForm.scheduled_date" @change="checkHoliday()"
+                            <input type="date" x-model="taskForm.scheduled_date" @change="checkHoliday(); locationsLoaded = false;"
                                 :min="minBookingDate"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -852,7 +852,7 @@
                             <div x-show="holidayInfo && holidayInfo.is_sunday_or_holiday" class="mt-2 flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-200 dark:border-amber-800">
                                 <span class="text-lg">&#x1F389;</span>
                                 <div>
-                                    <p class="text-xs font-medium text-amber-700 dark:text-amber-400" x-text="holidayInfo.is_holiday ? 'Holiday: ' + holidayInfo.holiday_name : 'Sunday'"></p>
+                                    <p class="text-xs font-medium text-amber-700 dark:text-amber-400" x-text="holidayInfo?.is_holiday ? 'Holiday: ' + holidayInfo.holiday_name : 'Sunday'"></p>
                                     <p class="text-[11px] text-amber-600 dark:text-amber-500">1.5x rate applies to extra tasks</p>
                                 </div>
                             </div>
@@ -874,9 +874,13 @@
                         <!-- 5. Duration (Preset Buttons) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estimated Duration (minutes)</label>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                Leave unselected to use the location's default duration. Click a selected button again to clear it.
+                            </p>
                             <div class="grid grid-cols-5 gap-2">
                                 <template x-for="dur in [30, 60, 90, 120, 180]" :key="dur">
-                                    <button @click="taskForm.estimated_duration_minutes = dur"
+                                    <button type="button"
+                                            @click="taskForm.estimated_duration_minutes = (taskForm.estimated_duration_minutes === dur ? null : dur)"
                                             :class="taskForm.estimated_duration_minutes === dur ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                                             class="px-2 py-2 rounded-lg text-sm font-medium transition-all text-center" x-text="dur">
                                     </button>
@@ -1289,7 +1293,7 @@
                     cabin_status: 'departure',
                     arrival_status: 0,
                     extra_bed: false,
-                    estimated_duration_minutes: 60,
+                    estimated_duration_minutes: null,
                     auto_assign: true,
                     notes: '',
                 },
@@ -1567,6 +1571,18 @@
                     return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
                 },
 
+                teamBadgeClass(teamId) {
+                    const colors = [
+                        'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                        'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+                        'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400',
+                        'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
+                        'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+                    ];
+                    return colors[(teamId - 1) % colors.length];
+                },
+
                 formatTaskDate(dateStr) {
                     if (!dateStr) return '-';
                     const date = new Date(dateStr + 'T00:00:00');
@@ -1641,7 +1657,7 @@
                         cabin_status: 'departure',
                         arrival_status: 0,
                         extra_bed: false,
-                        estimated_duration_minutes: 60,
+                        estimated_duration_minutes: null,
                         auto_assign: true,
                         notes: '',
                     };

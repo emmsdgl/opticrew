@@ -41,16 +41,21 @@
 
                     $color = $statusColors[$task->status] ?? '#6B7280'; // Default gray
 
-                    // Parse scheduled time
-                    $scheduledTime = $task->scheduled_time ? \Carbon\Carbon::parse($task->scheduled_time) : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                    // ✅ STAGE 2: prefer GA-optimized times when available, fall back to form scheduled_time
+                    if ($task->optimized_start_minutes !== null && $task->optimized_end_minutes !== null) {
+                        $scheduledTime = \Carbon\Carbon::parse($task->scheduled_date)->setTime(0, 0)->addMinutes($task->optimized_start_minutes);
+                        $endCarbon = \Carbon\Carbon::parse($task->scheduled_date)->setTime(0, 0)->addMinutes($task->optimized_end_minutes);
+                    } else {
+                        $scheduledTime = $task->scheduled_time ? \Carbon\Carbon::parse($task->scheduled_time) : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                        $duration = $task->estimated_duration_minutes ?? 60;
+                        $endCarbon = $scheduledTime->copy()->addMinutes($duration);
+                    }
                     $startTime = $scheduledTime->format('H:i');
-
-                    // Calculate end time based on estimated duration
+                    $endTime = $endCarbon->format('H:i');
                     $duration = $task->estimated_duration_minutes ?? 60;
-                    $endTime = $scheduledTime->copy()->addMinutes($duration)->format('H:i');
 
                     // Format time display
-                    $timeDisplay = $scheduledTime->format('h:i A') . ' - ' . $scheduledTime->copy()->addMinutes($duration)->format('h:i A');
+                    $timeDisplay = $scheduledTime->format('h:i A') . ' - ' . $endCarbon->format('h:i A');
 
                     return [
                         'id' => $task->id,
@@ -270,11 +275,21 @@
             @php
                 // Transform today's tasks to the format expected by task-overview-list component
                 $todayTasksFormatted = $todayTasks->map(function($task) {
-                    $scheduledTime = $task->scheduled_time
-                        ? \Carbon\Carbon::parse($task->scheduled_time)
-                        : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                    // ✅ STAGE 2: prefer GA-optimized times when available
+                    if ($task->optimized_start_minutes !== null) {
+                        $scheduledTime = \Carbon\Carbon::parse($task->scheduled_date)->setTime(0, 0)->addMinutes($task->optimized_start_minutes);
+                    } else {
+                        $scheduledTime = $task->scheduled_time
+                            ? \Carbon\Carbon::parse($task->scheduled_time)
+                            : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                    }
 
-                    $duration = $task->estimated_duration_minutes ?? 60;
+                    // Use GA effective duration when available so the displayed minutes match the actual queue length
+                    if ($task->optimized_start_minutes !== null && $task->optimized_end_minutes !== null) {
+                        $duration = $task->optimized_end_minutes - $task->optimized_start_minutes;
+                    } else {
+                        $duration = $task->estimated_duration_minutes ?? 60;
+                    }
 
                     // Get client name
                     $clientName = 'Unknown Client';
@@ -378,11 +393,21 @@
             @php
                 // Transform pending approval tasks to the format expected by task-overview-list component
                 $pendingApprovalTasksFormatted = $pendingApprovalTasks->map(function($task) {
-                    $scheduledTime = $task->scheduled_time
-                        ? \Carbon\Carbon::parse($task->scheduled_time)
-                        : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                    // ✅ STAGE 2: prefer GA-optimized times when available
+                    if ($task->optimized_start_minutes !== null) {
+                        $scheduledTime = \Carbon\Carbon::parse($task->scheduled_date)->setTime(0, 0)->addMinutes($task->optimized_start_minutes);
+                    } else {
+                        $scheduledTime = $task->scheduled_time
+                            ? \Carbon\Carbon::parse($task->scheduled_time)
+                            : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                    }
 
-                    $duration = $task->estimated_duration_minutes ?? 60;
+                    // Use GA effective duration when available so the displayed minutes match the actual queue length
+                    if ($task->optimized_start_minutes !== null && $task->optimized_end_minutes !== null) {
+                        $duration = $task->optimized_end_minutes - $task->optimized_start_minutes;
+                    } else {
+                        $duration = $task->estimated_duration_minutes ?? 60;
+                    }
 
                     // Get client name
                     $clientName = 'Unknown Client';
@@ -496,11 +521,21 @@
             @php
                 // Transform completed tasks to the format expected by task-overview-list component
                 $allTasksFormatted = $completedTasks->map(function($task) {
-                    $scheduledTime = $task->scheduled_time
-                        ? \Carbon\Carbon::parse($task->scheduled_time)
-                        : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                    // ✅ STAGE 2: prefer GA-optimized times when available
+                    if ($task->optimized_start_minutes !== null) {
+                        $scheduledTime = \Carbon\Carbon::parse($task->scheduled_date)->setTime(0, 0)->addMinutes($task->optimized_start_minutes);
+                    } else {
+                        $scheduledTime = $task->scheduled_time
+                            ? \Carbon\Carbon::parse($task->scheduled_time)
+                            : \Carbon\Carbon::parse($task->scheduled_date)->setTime(9, 0);
+                    }
 
-                    $duration = $task->estimated_duration_minutes ?? 60;
+                    // Use GA effective duration when available so the displayed minutes match the actual queue length
+                    if ($task->optimized_start_minutes !== null && $task->optimized_end_minutes !== null) {
+                        $duration = $task->optimized_end_minutes - $task->optimized_start_minutes;
+                    } else {
+                        $duration = $task->estimated_duration_minutes ?? 60;
+                    }
 
                     // Get client name
                     $clientName = 'Unknown Client';
