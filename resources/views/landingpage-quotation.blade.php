@@ -36,19 +36,19 @@
         <!-- Hero Section -->
         <div class="relative isolate px-6 py-12 sm:py-24 lg:px-8 lg:pb-32 overflow-hidden">
             <div class="mx-auto max-w-4xl text-center fade-in">
-                <h2 class="text-base/7 font-bold text-blue-600">Choose your clean</h2>
+                <h2 class="text-base/7 font-bold text-blue-600">{{ __('landing.quotation.hero_subtitle') }}</h2>
                 <h3 data-typing data-typing-duration="1.8" class="my-12 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
-                    Shine brighter with <br><span class="aurora-text">our cleaning services</span>
+                    {{ __('landing.quotation.hero_title_prefix') }} <br><span class="aurora-text">{{ __('landing.quotation.hero_title_highlight') }}</span>
                 </h3>
                 <p class="mx-auto mt-6 max-w-2xl text-center text-sm sm:text-xs lg:text-base text-gray-500 dark:text-gray-300">
-                    Professional cleaning services tailored to your space. No hidden fees, transparent pricing, just quality service.
+                    {{ __('landing.quotation.hero_description') }}
                 </p>
                 <button @click="openModal()"
                     class="shine-btn relative overflow-hidden inline-flex items-center justify-center gap-2 mt-8 rounded-full px-6 py-3 font-bold text-sm sm:text-base text-white cursor-pointer group">
                     <span class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full group-hover:rotate-12 transition-transform duration-300">
                         <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M2 9a3 3 0 1 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 1 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M9 9h.01"/><path d="m15 9-6 6"/><path d="M15 15h.01"/></svg>
                     </span>
-                    <span class="font-semibold">Request Quotation</span>
+                    <span class="font-semibold">{{ __('landing.quotation.request_quotation') }}</span>
                     <div class="shine-effect absolute top-0 left-[-75%] w-[200%] h-full bg-white/30 skew-x-[-20deg] opacity-0 pointer-events-none z-20"></div>
                 </button>
             </div>
@@ -61,15 +61,15 @@
                     <div class="mx-auto mt-6 grid max-w-lg grid-cols-1 items-center gap-y-6 sm:mt-6 sm:gap-y-0 lg:max-w-4xl lg:grid-cols-2">
                         {{-- Final Cleaning Card --}}
                         <div class="pricing-card rounded-3xl rounded-t-3xl bg-gradient-to-br from-white via-blue-50/60 to-indigo-50/40 dark:from-white/5 dark:via-blue-900/10 dark:to-indigo-900/10 p-8 ring-1 ring-gray-200 dark:ring-white/10 sm:mx-8 sm:rounded-b-none sm:p-10 lg:mx-0 lg:rounded-tr-none lg:rounded-bl-3xl">
-                            <span class="px-3 py-1 text-blue-600 dark:text-blue-400 bg-blue-600/10 dark:bg-blue-600/20 rounded-full text-xs">Most Popular</span>
-                            <h3 class="text-base/7 font-bold text-blue-500 dark:text-blue-400 my-6">Final Cleaning</h3>
+                            <span class="px-3 py-1 text-blue-600 dark:text-blue-400 bg-blue-600/10 dark:bg-blue-600/20 rounded-full text-xs">{{ __('landing.quotation.most_popular') }}</span>
+                            <h3 class="text-base/7 font-bold text-blue-500 dark:text-blue-400 my-6">{{ __('landing.quotation.final_cleaning') }}</h3>
                             <p class="mt-4 flex items-baseline gap-x-2">
                                 <span class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-blue-600 dark:text-white">€70 - €315</span>
                             </p>
-                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-500 dark:text-gray-300">Complete cleaning solution perfect for regular maintenance and move-out situations.</p>
-                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-400">Based on unit size</p>
+                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-500 dark:text-gray-300">{{ __('landing.quotation.final_cleaning_desc') }}</p>
+                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-400">{{ __('landing.quotation.based_on_unit_size') }}</p>
                             <ul role="list" class="mt-8 space-y-3 text-sm/6 text-gray-500 dark:text-gray-300 sm:mt-10">
-                                @foreach(['Kitchen cleaning & surfaces', 'Living room & bedroom tidying', 'Bathroom & sauna cleaning', 'Vacuuming & mopping floors'] as $feature)
+                                @foreach([__('landing.quotation.final_feature_1'), __('landing.quotation.final_feature_2'), __('landing.quotation.final_feature_3'), __('landing.quotation.final_feature_4')] as $feature)
                                 <li class="flex gap-x-3">
                                     <svg viewBox="0 0 20 20" fill="currentColor" class="h-6 w-5 flex-none text-blue-600 dark:text-blue-500"><path d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
                                     {{ $feature }}
@@ -77,21 +77,21 @@
                                 @endforeach
                             </ul>
                             <button @click="openModal('Final Cleaning')" class="mt-8 w-full block rounded-lg bg-blue-600 px-4 py-3 text-center text-sm font-bold text-white shadow-md hover:bg-blue-700 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-0.5">
-                                Request Quotation
+                                {{ __('landing.quotation.request_quotation') }}
                             </button>
                         </div>
 
                         {{-- Deep Cleaning Card --}}
                         <div class="pricing-card relative rounded-3xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 dark:from-blue-600 dark:via-blue-700 dark:to-indigo-800 p-8 ring-1 ring-blue-400/30 dark:ring-white/10 sm:p-10">
-                            <span class="px-3 py-1 text-white bg-white/20 rounded-full text-xs">Thorough</span>
-                            <h3 class="text-base/7 font-bold text-white mt-6">Deep Cleaning</h3>
+                            <span class="px-3 py-1 text-white bg-white/20 rounded-full text-xs">{{ __('landing.quotation.thorough') }}</span>
+                            <h3 class="text-base/7 font-bold text-white mt-6">{{ __('landing.quotation.deep_cleaning') }}</h3>
                             <p class="mt-4 flex items-baseline gap-x-2">
                                 <span class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">€120 - €480</span>
                             </p>
-                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-100">Intensive cleaning service for spotless results and hard-to-reach areas.</p>
-                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-100">€48/hour based on space</p>
+                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-100">{{ __('landing.quotation.deep_cleaning_desc') }}</p>
+                            <p class="mt-6 text-base/7 text-sm sm:text-xs lg:text-base text-gray-100">{{ __('landing.quotation.hourly_rate') }}</p>
                             <ul role="list" class="mt-8 space-y-3 text-sm/6 text-gray-100 sm:mt-10">
-                                @foreach(['All Final Cleaning tasks included', 'Hard-to-reach areas & corners', 'Detailed scrubbing & sanitization', 'Behind appliances & furniture', 'Window sills & baseboards', 'Deep floor treatment'] as $feature)
+                                @foreach([__('landing.quotation.deep_feature_1'), __('landing.quotation.deep_feature_2'), __('landing.quotation.deep_feature_3'), __('landing.quotation.deep_feature_4'), __('landing.quotation.deep_feature_5'), __('landing.quotation.deep_feature_6')] as $feature)
                                 <li class="flex gap-x-3">
                                     <svg viewBox="0 0 20 20" fill="currentColor" class="h-6 w-5 flex-none text-indigo-300"><path d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
                                     {{ $feature }}
@@ -99,7 +99,7 @@
                                 @endforeach
                             </ul>
                             <button @click="openModal('Deep Cleaning')" class="mt-8 w-full block rounded-lg bg-white text-blue-600 px-4 py-3 text-center text-sm font-bold shadow-md hover:bg-gray-100 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-0.5">
-                                Request Quotation
+                                {{ __('landing.quotation.request_quotation') }}
                             </button>
                         </div>
                     </div>
@@ -108,12 +108,12 @@
                 <!-- Rate Inclusions Section -->
                 <div class="my-24 mx-4 sm:mx-8 lg:mx-32 flex flex-col lg:flex-row gap-8">
                     <div class="mb-8 lg:mx-6 flex-shrink-0 lg:w-1/2">
-                        <p class="text-base font-bold text-blue-600 dark:text-blue-500 my-6">Detailed Rates</p>
+                        <p class="text-base font-bold text-blue-600 dark:text-blue-500 my-6">{{ __('landing.quotation.detailed_rates') }}</p>
                         <h3 class="my-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
-                            Pricing <br><span class="aurora-text">Rate Inclusions</span>
+                            {{ __('landing.quotation.pricing_title_prefix') }} <br><span class="aurora-text">{{ __('landing.quotation.pricing_title_highlight') }}</span>
                         </h3>
                         <p class="mt-3 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl">
-                            Check out our Special Day Rates and All-Inclusive Pricing for hassle-free, budget-friendly cleaning that fits your schedule.
+                            {{ __('landing.quotation.pricing_description') }}
                         </p>
                     </div>
 
@@ -125,9 +125,9 @@
                                     <i class="fa-solid fa-money-bill-wave text-lg sm:text-xl text-blue-500 dark:text-blue-400"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-base sm:text-lg font-bold text-blue-500 dark:text-blue-400 mb-3">Special Day Rates</h3>
+                                    <h3 class="text-base sm:text-lg font-bold text-blue-500 dark:text-blue-400 mb-3">{{ __('landing.quotation.special_day_rates') }}</h3>
                                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                                        Sundays and public holidays are charged at <strong class="font-bold text-gray-900 dark:text-white">double the regular rate</strong> due to special scheduling requirements.
+                                        {{ __('landing.quotation.special_day_desc_prefix') }} <strong class="font-bold text-gray-900 dark:text-white">{{ __('landing.quotation.special_day_desc_strong') }}</strong> {{ __('landing.quotation.special_day_desc_suffix') }}
                                     </p>
                                 </div>
                             </div>
@@ -140,9 +140,9 @@
                                     <i class="fa-solid fa-tags text-lg sm:text-xl text-blue-500 dark:text-blue-400"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-base sm:text-lg font-bold text-blue-500 dark:text-blue-400 mb-3">All-Inclusive Pricing</h3>
+                                    <h3 class="text-base sm:text-lg font-bold text-blue-500 dark:text-blue-400 mb-3">{{ __('landing.quotation.all_inclusive_pricing') }}</h3>
                                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                                        All prices include <strong class="font-bold text-gray-900 dark:text-white">24% VAT</strong>. No hidden fees or additional charges.
+                                        {{ __('landing.quotation.all_inclusive_desc_prefix') }} <strong class="font-bold text-gray-900 dark:text-white">{{ __('landing.quotation.all_inclusive_desc_strong') }}</strong>{{ __('landing.quotation.all_inclusive_desc_suffix') }}
                                     </p>
                                 </div>
                             </div>
@@ -152,12 +152,12 @@
 
                 <!-- Service Rates Header -->
                 <div class="mx-auto max-w-4xl text-center fade-in px-4">
-                    <h2 class="text-base/7 font-bold text-blue-600 dark:text-blue-500">Make Every Day Shine!</h2>
+                    <h2 class="text-base/7 font-bold text-blue-600 dark:text-blue-500">{{ __('landing.quotation.make_every_day_shine') }}</h2>
                     <h3 class="my-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
-                        Cleaning <span class="aurora-text">Service Rates</span>
+                        {{ __('landing.quotation.service_rates_title_prefix') }} <span class="aurora-text">{{ __('landing.quotation.service_rates_title_highlight') }}</span>
                     </h3>
                     <p class="mx-auto mt-6 max-w-2xl text-center text-sm sm:text-base text-gray-500 dark:text-gray-400">
-                        Explore our transparent pricing for standard and specialized cleaning options.
+                        {{ __('landing.quotation.service_rates_description') }}
                     </p>
                 </div>
 
@@ -166,16 +166,16 @@
                     {{-- Final Cleaning Rates Table --}}
                     <div class="pricing-table rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10">
                         <div class="p-4 sm:p-6 lg:p-8 border-b border-gray-200 dark:border-white/10">
-                            <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white">Final Cleaning Rates</h3>
-                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Fixed pricing per unit size</p>
+                            <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{{ __('landing.quotation.final_cleaning_rates') }}</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{{ __('landing.quotation.fixed_pricing_per_unit') }}</p>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full min-w-[500px]">
                                 <thead>
                                     <tr class="bg-gray-50 dark:bg-white/5">
-                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[35%]">Unit Size (m²)</th>
-                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[32.5%]">Normal Day</th>
-                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[32.5%]">Sun/Holiday</th>
+                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[35%]">{{ __('landing.quotation.unit_size') }}</th>
+                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[32.5%]">{{ __('landing.quotation.normal_day') }}</th>
+                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[32.5%]">{{ __('landing.quotation.sun_holiday') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-white/10">
@@ -206,16 +206,16 @@
                     {{-- Deep Cleaning Rates Table --}}
                     <div class="pricing-table rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10">
                         <div class="p-4 sm:p-6 lg:p-8 border-b border-gray-200 dark:border-white/10">
-                            <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white">Deep Cleaning Rates</h3>
-                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">€48/hour based estimate</p>
+                            <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{{ __('landing.quotation.deep_cleaning_rates') }}</h3>
+                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{{ __('landing.quotation.deep_hourly_estimate') }}</p>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full min-w-[500px]">
                                 <thead>
                                     <tr class="bg-gray-50 dark:bg-white/5">
-                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[35%]">Unit Size (m²)</th>
-                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[32.5%]">Normal Day</th>
-                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[32.5%]">Sun/Holiday</th>
+                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[35%]">{{ __('landing.quotation.unit_size') }}</th>
+                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[32.5%]">{{ __('landing.quotation.normal_day') }}</th>
+                                        <th class="text-center py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 w-[32.5%]">{{ __('landing.quotation.sun_holiday') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-white/10">

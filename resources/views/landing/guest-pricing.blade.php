@@ -168,58 +168,56 @@
             class="flex flex-1 flex-col w-full text-left relative isolate px-6 pt-14 lg:ml-16 lg:px-8">
 
             <h1 style="font-family: 'fam-bold';" class="text-4xl font-black text-balance text-blue-600 sm:text-4xl">
-                Pricing Quotation</h1>
-            <p class="mt-4 text-base text-pretty text-gray-400 sm:text-base">Calculate the approximate cost of service
-                according to your space</p>
+                {{ __('landing.pricing.title') }}</h1>
+            <p class="mt-4 text-base text-pretty text-gray-400 sm:text-base">{{ __('landing.pricing.subtitle') }}</p>
 
             <div id="service-scroller" class="mb-8">
                 <p style="font-family: 'fam-bold';" class="mt-8 mb-3 text-base text-pretty text-blue-950 sm:text-base">
-                    Service</p>
+                    {{ __('landing.pricing.service_label') }}</p>
                 <div class="flex flex-wrap gap-2 sm:gap-3" id="service-options">
                     <button data-value="deep"
                         class="service-btn px-4 py-2 text-sm font-medium rounded-xl text-blue-600 bg-white border border-blue-100 hover:bg-blue-50 transition duration-150">
-                        Deep Cleaning
+                        {{ __('landing.pricing.deep_cleaning') }}
                     </button>
                     <button data-value="daily-room"
                         class="service-btn px-4 py-2 text-sm font-medium rounded-xl text-blue-600 bg-white border border-blue-100 hover:bg-blue-50 transition duration-150">
-                        Daily Room Cleaning
+                        {{ __('landing.pricing.daily_room_cleaning') }}
                     </button>
                     <button data-value="snow"
                         class="service-btn px-4 py-2 text-sm font-medium rounded-xl text-blue-600 bg-white border border-blue-100 hover:bg-blue-50 transition duration-150">
-                        Snow Out Cleaning
+                        {{ __('landing.pricing.snow_out_cleaning') }}
                     </button>
                     <button data-value="light"
                         class="service-btn px-4 py-2 text-sm font-medium rounded-xl text-blue-600 bg-white border border-blue-100 hover:bg-blue-50 transition duration-150">
-                        Light Daily Cleaning
+                        {{ __('landing.pricing.light_daily_cleaning') }}
                     </button>
                     <button data-value="full"
                         class="service-btn px-4 py-2 text-sm font-medium rounded-xl text-blue-600 bg-white border border-blue-100 hover:bg-blue-50 transition duration-150">
-                        Full Daily Cleaning
+                        {{ __('landing.pricing.full_daily_cleaning') }}
                     </button>
                     <button data-value="hotel"
                         class="service-btn selected px-4 py-2 text-sm font-medium rounded-xl text-white bg-blue-600 shadow-md shadow-blue-300/50 transition duration-150">
-                        Hotel Cleaning
+                        {{ __('landing.pricing.hotel_cleaning') }}
                     </button>
                 </div>
 
                 <div id="location-scroller" class="mb-8">
                     <p style="font-family: 'fam-bold';"
-                        class="mt-8 mb-3 text-base text-pretty text-blue-950 sm:text-base">Location</p>
+                        class="mt-8 mb-3 text-base text-pretty text-blue-950 sm:text-base">{{ __('landing.pricing.location_label') }}</p>
 
                     <div id="map"></div>
 
                     <div class="mt-4 p-3 text-sm">
                         <p class="font-medium text-blue-950">
-                            Base Location (Inari):
+                            {{ __('landing.pricing.base_location') }}
                             <span id="base-coords" class="text-sm text-gray-600 font-normal">68.91°N, 26.87°E</span>
                         </p>
                         <p class="font-medium text-blue-950 mt-1">
-                            Selected Location:
-                            <span id="selected-coords" class="text-sm text-gray-600 font-normal">Click map to
-                                select...</span>
+                            {{ __('landing.pricing.selected_location') }}
+                            <span id="selected-coords" class="text-sm text-gray-600 font-normal">{{ __('landing.pricing.click_map') }}</span>
                         </p>
                         <p class="font-bold text-blue-950 mt-4 text-sm">
-                            Distance:
+                            {{ __('landing.pricing.distance') }}
                             <span id="distance-display" class="text-sm">0.00 km</span>
                         </p>
                     </div>
@@ -228,11 +226,11 @@
                 <div class="mb-4">
                     <div class="flex justify-between items-center">
                         <h2 style="font-family: 'fam-bold';"
-                            class="mt-3 mb-3 text-base text-pretty text-blue-950 sm:text-base">Duration</h2>
+                            class="mt-3 mb-3 text-base text-pretty text-blue-950 sm:text-base">{{ __('landing.pricing.duration_label') }}</h2>
                         <div class="relative inline-block text-left">
                             <button id="duration-unit-toggle" data-current-unit="days" type="button"
                                 class="inline-flex justify-center items-center px-3 py-1 text-sm rounded-2xl text-white bg-blue-600 hover:bg-blue-900 transition duration-150">
-                                Days
+                                {{ __('landing.pricing.days') }}
                                 <svg class="w-3 h-3 ml-2 rtl:rotate-180 transition-transform duration-200"
                                     id="dropdown-arrow" fill="none" viewBox="0 0 24 24" stroke="white">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -244,13 +242,13 @@
                                 class="absolute right-0 mt-2 w-32 origin-top-right bg-white divide-y divide-gray-100 rounded-lg shadow-xl z-10 hidden">
                                 <ul class="py-1 text-sm text-blue-700">
                                     <li><a href="#" data-unit="days"
-                                            class="dropdown-option block px-4 py-2 hover:bg-gray-100 transition duration-100">Days</a>
+                                            class="dropdown-option block px-4 py-2 hover:bg-gray-100 transition duration-100">{{ __('landing.pricing.days') }}</a>
                                     </li>
                                     <li><a href="#" data-unit="hours"
-                                            class="dropdown-option block px-4 py-2 hover:bg-gray-100 transition duration-100">Hours</a>
+                                            class="dropdown-option block px-4 py-2 hover:bg-gray-100 transition duration-100">{{ __('landing.pricing.hours') }}</a>
                                     </li>
                                     <li><a href="#" data-unit="months"
-                                            class="dropdown-option block px-4 py-2 hover:bg-gray-100 transition duration-100">Months</a>
+                                            class="dropdown-option block px-4 py-2 hover:bg-gray-100 transition duration-100">{{ __('landing.pricing.months') }}</a>
                                     </li>
                                 </ul>
                             </div>
@@ -271,22 +269,21 @@
 
         <div id="container-2"
             class="flex flex-1 flex-col w-full text-center justify-start align-items-center mt-8 lg:mt-20">
-            <p class="mb-3 text-base font-semibold text-pretty text-blue-950 sm:text-base">Estimated Price Quote
+            <p class="mb-3 text-base font-semibold text-pretty text-blue-950 sm:text-base">{{ __('landing.pricing.estimated_price') }}
             </p>
             <h1 id="generated-price" style="font-family: 'fam-bold';"
                 class="mb-3 mt-3 text-4xl font-black text-balance text-blue-600 sm:text-4xl">€ 120</h1>
 
-            <p class="mt-8 mb-1 text-base font-semibold text-pretty text-blue-950 sm:text-base">Base Service Fee</p>
-            <p class=" mb-6 text-base font-light text-pretty text-blue-950 sm:text-base">€ 20/ hr</p>
+            <p class="mt-8 mb-1 text-base font-semibold text-pretty text-blue-950 sm:text-base">{{ __('landing.pricing.base_fee') }}</p>
+            <p class=" mb-6 text-base font-light text-pretty text-blue-950 sm:text-base">{{ __('landing.pricing.base_fee_value') }}</p>
 
-            <p class="mt-8 mb-1 text-base font-semibold text-pretty text-blue-950 sm:text-base">Additional Fee <span
-                    class="italic font-light">(Seasonal Fee, Range-based Fee)</span></p>
-            <p class=" mb-10 text-base font-light text-pretty text-blue-950 sm:text-base">No Additional Fees</p>
+            <p class="mt-8 mb-1 text-base font-semibold text-pretty text-blue-950 sm:text-base">{{ __('landing.pricing.additional_fee') }} <span
+                    class="italic font-light">{{ __('landing.pricing.additional_fee_note') }}</span></p>
+            <p class=" mb-10 text-base font-light text-pretty text-blue-950 sm:text-base">{{ __('landing.pricing.no_additional_fees') }}</p>
 
             <div id="buttons-container" class="flex justify-center gap-4 mt-6">
                 <button type="button" id="next-1"
-                    class="w-full/4 px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Avail
-                    a Service</button>
+                    class="w-full/4 px-20 py-4 text-white text-sm bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">{{ __('landing.pricing.avail_button') }}</button>
             </div>
 
         </div>

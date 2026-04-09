@@ -1,6 +1,6 @@
 @extends('components.layouts.general-landing')
 
-@section('title', 'About CastCrew')
+@section('title', __('landing.castcrew.page_title'))
 
 @push('styles')
     <style>
@@ -24,15 +24,13 @@
     <section class="system light-mode-bg py-24 sm:py-32">
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <div class="mx-auto max-w-2xl lg:text-center">
-                <h2 class="text-base/7 font-semibold text-blue-600 dark:text-blue-400">Introducing</h2>
+                <h2 class="text-base/7 font-semibold text-blue-600 dark:text-blue-400">{{ __('landing.castcrew.introducing') }}</h2>
                 <p
                     class="mt-2 text-4xl font-semibold text-pretty text-gray-900 dark:text-white sm:text-5xl lg:text-balance">
-                    CastCrew: <span class="font-normal">Your Centralized Workforce Management Solution</span>
+                    {{ __('landing.castcrew.headline_prefix') }} <span class="font-normal">{{ __('landing.castcrew.headline_suffix') }}</span>
                 </p>
                 <p class="mt-6 text-base text-justify text-gray-600 dark:text-gray-300">
-                    CastCrew, a Workforce Management System (WFMS) that incorporates dynamic scheduling, task allocation,
-                    and real-time attendance tracking to optimize employee, service, and client management, was developed
-                    for Fin-noys as a cleaning company
+                    {{ __('landing.castcrew.overview') }}
                 </p>
             </div>
             <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
@@ -48,11 +46,10 @@
                                         stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                             </div>
-                            Optimize Management
+                            {{ __('landing.castcrew.feature_1_title') }}
                         </dt>
                         <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-400">
-                            A company-based workforce management system designed to optimize task and service management,
-                            ensuring a high-quality service delivery and increased productivity.
+                            {{ __('landing.castcrew.feature_1_desc') }}
                         </dd>
                     </div>
                     <div class="relative pl-16">
@@ -66,12 +63,10 @@
                                         stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                             </div>
-                            Enhanced Development Approach
+                            {{ __('landing.castcrew.feature_2_title') }}
                         </dt>
                         <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-400">
-                            A hybrid of Rule-Based Algorithm and Genetic Algorithm (GA) for efficient task allocation and
-                            scheduling, and real-time GPS tracking via Google's Fused Location Provider (FLP) with
-                            geofencing for attendance monitoring.
+                            {{ __('landing.castcrew.feature_2_desc') }}
                         </dd>
                     </div>
                     <div class="relative pl-16">
@@ -85,11 +80,10 @@
                                         stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                             </div>
-                            Automated Processes
+                            {{ __('landing.castcrew.feature_3_title') }}
                         </dt>
                         <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-400">
-                            By automating and streamlining core processes, CastCrew aims to reduce occupational burnout,
-                            improve workload distribution through an optimized task allocation and scheduling feature
+                            {{ __('landing.castcrew.feature_3_desc') }}
                         </dd>
                     </div>
                     <div class="relative pl-16">
@@ -103,12 +97,10 @@
                                         stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                             </div>
-                            Monitoring and Reporting
+                            {{ __('landing.castcrew.feature_4_title') }}
                         </dt>
                         <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-400">
-                            Real-time visibility into operational activities through progress tracking and analytical
-                            reports, enabling employers to monitor performance, generate insights, and support data driven
-                            decision making
+                            {{ __('landing.castcrew.feature_4_desc') }}
                         </dd>
                     </div>
                 </dl>
@@ -121,11 +113,10 @@
         <div class="mx-auto grid max-w-7xl gap-20 px-6 lg:px-8 xl:grid-cols-3">
             <div class="max-w-xl">
                 <h2 class="text-3xl font-semibold text-pretty text-gray-900 dark:text-white sm:text-4xl">
-                    Meet our team: Ela-vate
+                    {{ __('landing.castcrew.team_title') }}
                 </h2>
                 <p class="mt-6 text-base text-gray-600 dark:text-gray-400 text-justify">
-                    We’re a team of developers passionate about building well-crafted solutions and delivering real value to
-                    our clients. </p>
+                    {{ __('landing.castcrew.team_desc') }} </p>
             </div>
             <ul role="list" class="grid gap-x-8 gap-y-12 sm:grid-cols-2 sm:gap-y-16 xl:col-span-2">
                 <li>
@@ -135,8 +126,7 @@
                         <div>
                             <h3 class="text-base/7 font-semibold tracking-tight text-gray-900 dark:text-white">Adam Jay B.
                             </h3>
-                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">Business Analyst |
-                                Documentation</p>
+                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">{{ __('landing.castcrew.role_ba') }}</p>
                         </div>
                     </div>
                 </li>
@@ -147,7 +137,7 @@
                         <div>
                             <h3 class="text-base/7 font-semibold tracking-tight text-gray-900 dark:text-white">Sushmita E.
                             </h3>
-                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">Tester | Documentation</p>
+                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">{{ __('landing.castcrew.role_tester') }}</p>
                         </div>
                     </div>
                 </li>
@@ -158,7 +148,7 @@
                         <div>
                             <h3 class="text-base/7 font-semibold tracking-tight text-gray-900 dark:text-white">Emmaus D.
                             </h3>
-                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">Lead Backend Developer</p>
+                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">{{ __('landing.castcrew.role_backend') }}</p>
                         </div>
                     </div>
                 </li>
@@ -169,8 +159,7 @@
                         <div>
                             <h3 class="text-base/7 font-semibold tracking-tight text-gray-900 dark:text-white">Leiramarie S.
                             </h3>
-                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">Lead Front-end Developer |
-                                UI/UX Designer</p>
+                            <p class="text-sm/6 font-semibold text-blue-600 dark:text-blue-400">{{ __('landing.castcrew.role_frontend') }}</p>
                         </div>
                     </div>
                 </li>

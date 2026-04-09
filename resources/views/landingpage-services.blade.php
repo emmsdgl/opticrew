@@ -212,12 +212,12 @@
         <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {{-- Header --}}
             <div class="mx-auto max-w-4xl text-center">
-                <h2 class="text-base/7 font-bold text-blue-600 dark:text-blue-400">What We Offer · Our Services</h2>
+                <h2 class="text-base/7 font-bold text-blue-600 dark:text-blue-400">{{ __('landing.services.header_subtitle') }}</h2>
                 <h3 data-typing data-typing-duration="1.8" class="my-8 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
-                    From Request to Refresh — <br>We Make It <span class="aurora-text">Shine</span>
+                    {{ __('landing.services.header_title_prefix') }} <br>{{ __('landing.services.header_title_suffix_prefix') }} <span class="aurora-text">{{ __('landing.services.header_title_highlight') }}</span>
                 </h3>
                 <p class="mx-auto mt-6 max-w-2xl text-center text-base text-gray-500 dark:text-gray-300">
-                    Discover our range of professional cleaning services designed to make your home or business shine.
+                    {{ __('landing.services.header_description') }}
                 </p>
             </div>
 
@@ -253,17 +253,17 @@
                         'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 2h8l4 10H4L8 2Z"/><path d="M12 12v6"/><path d="M8 22v-2c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v2H8Z"/><path d="M2 22h20"/></svg>',
                     ],
                     [
-                        'name' => 'Light Daily Cleaning',
-                        'price' => '€ 50 - € 80',
-                        'description' => 'Quick daily maintenance cleaning to keep your space tidy and fresh between deep cleans.',
-                        'badges' => ['Dusting', 'Vacuuming', 'Surface Wipe', 'Trash Removal'],
+                        'name' => __('landing.services.light_daily_name'),
+                        'price' => __('landing.services.light_daily_price'),
+                        'description' => __('landing.services.light_daily_desc'),
+                        'badges' => [__('landing.services.light_daily_badge_1'), __('landing.services.light_daily_badge_2'), __('landing.services.light_daily_badge_3'), __('landing.services.light_daily_badge_4')],
                         'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
                     ],
                     [
-                        'name' => 'Linen & Laundry Service',
-                        'price' => '€ 40 - € 70',
-                        'description' => 'Professional linen replacement, washing, and fresh bedding preparation for guest stays.',
-                        'badges' => ['Bed Linen', 'Towel Replacement', 'Ironing', 'Folding'],
+                        'name' => __('landing.services.linen_name'),
+                        'price' => __('landing.services.linen_price'),
+                        'description' => __('landing.services.linen_desc'),
+                        'badges' => [__('landing.services.linen_badge_1'), __('landing.services.linen_badge_2'), __('landing.services.linen_badge_3'), __('landing.services.linen_badge_4')],
                         'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23Z"/></svg>',
                     ],
                 ];

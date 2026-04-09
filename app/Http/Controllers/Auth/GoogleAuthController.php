@@ -1144,14 +1144,18 @@ class GoogleAuthController extends Controller
                 ->with('web_forgot_password_email', $resetEmail);
         }
 
-        // Google verification passed — generate and send OTP (3FA Step 3).
-        // Always send OTP to the employee's verified Google account email; @finnoys.com
-        // addresses have no inbox so we never send there.
+        // Google verification passed — generate and send the initial OTP (3FA Step 3).
         $otp = random_int(100000, 999999);
-        Cache::put("web_pwd_reset_otp:{$user->id}", $otp, now()->addMinutes(5));
+        Cache::put("web_pwd_reset_otp:{$user->id}", $otp, now()->addSeconds(60));
+        Cache::put("web_pwd_reset_otp_throttle:{$user->id}", true, now()->addSeconds(60));
 
-        Mail::to($user->alternative_email)
-            ->send(new \App\Mail\EmailVerificationOtp($otp));
+        $recoveryEmail = ! empty($user->alternative_email) ? $user->alternative_email : $user->email;
+        try {
+            Mail::to($recoveryEmail)->send(new \App\Mail\EmailVerificationOtp($otp));
+        } catch (\Throwable $e) {
+            Cache::forget("web_pwd_reset_otp_throttle:{$user->id}");
+            \Log::error('Forgot-password initial OTP mail failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('forgot.password.new')
             ->with('web_forgot_password_verified_email', $resetEmail);

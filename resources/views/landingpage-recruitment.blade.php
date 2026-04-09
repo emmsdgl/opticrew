@@ -1,6 +1,6 @@
 @extends('components.layouts.general-landing')
 
-@section('title', 'Job Opportunities')
+@section('title', __('landing.recruitment.page_title'))
 @push('styles')
     <style>
         [x-cloak] { display: none !important; }
@@ -236,17 +236,16 @@
                 {{-- Left Content --}}
                 <div class="flex flex-col text-center lg:text-left max-w-2xl px-6 items-center justify-center">
                     <div class="w-full px-10">
-                        <p class="text-sm font-bold text-blue-600 dark:text-blue-400 mb-6">Welcome to Fin-noys</p>
+                        <p class="text-sm font-bold text-blue-600 dark:text-blue-400 mb-6">{{ __('landing.recruitment.welcome') }}</p>
                         <h1
                             class="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-gray-900 dark:text-white leading-tight mb-6">
-                            Explore<br>
-                            opportunities<br>
-                            <span class="aurora-text font-extrabold">with Fin-noys.</span>
+                            {{ __('landing.recruitment.headline_1') }}<br>
+                            {{ __('landing.recruitment.headline_2') }}<br>
+                            <span class="aurora-text font-extrabold">{{ __('landing.recruitment.headline_3') }}</span>
                         </h1>
                         <p
                             class="text-gray-500 dark:text-gray-400 text-sm md:text-sm mb-10 max-w-md mx-auto lg:mx-0 leading-relaxed">
-                            Find a job according to your interest simply click on search
-                            and choose category according to your skills
+                            {{ __('landing.recruitment.hero_description') }}
                         </p>
                     </div>
 
@@ -259,7 +258,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <input type="text" id="heroSearchInput" placeholder="Job Title or keyword"
+                            <input type="text" id="heroSearchInput" placeholder="{{ __('landing.recruitment.search_placeholder') }}"
                                 class="w-full bg-transparent border-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-0 py-2"
                                 onkeydown="if(event.key==='Enter'){event.preventDefault();window.heroSearchGo();}">
                         </div>
@@ -301,13 +300,13 @@
                                     :style="dropdownStyle">
                                     {{-- All Locations option --}}
                                     <button type="button"
-                                        @click="selectLocation('', 'All Locations')"
+                                        @click="selectLocation('', @json(__('landing.recruitment.all_locations')))"
                                         class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2"
                                         :class="selectedLoc === '' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'">
                                         <svg class="w-4 h-4 flex-shrink-0" :class="selectedLoc === '' ? 'text-blue-500' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <span>All Locations</span>
+                                        <span>{{ __('landing.recruitment.all_locations') }}</span>
                                     </button>
                                     @php
                                         $heroLocations = ($jobPostings ?? collect())->pluck('location')->unique()->sort()->values();
@@ -330,7 +329,7 @@
                         <button
                             class="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-sm font-normal px-6 py-3 rounded-full transition-colors"
                             onclick="window.heroSearchGo()">
-                            Search
+                            {{ __('landing.recruitment.search') }}
                         </button>
                     </div>
                 </div>
@@ -437,9 +436,9 @@
                         {{-- Job Type Filter --}}
                         <div>
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Job Type</h3>
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ __('landing.recruitment.job_type') }}</h3>
                                 <button @click="clearJobTypes()"
-                                    class="text-xs text-red-500 hover:text-red-600 font-medium">Clear all</button>
+                                    class="text-xs text-red-500 hover:text-red-600 font-medium">{{ __('landing.recruitment.clear_all') }}</button>
                             </div>
                             <div class="space-y-2.5">
                                 <label class="flex items-center gap-3 cursor-pointer group">
@@ -447,23 +446,21 @@
                                         @change="applyFilters()"
                                         class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
                                     <span
-                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Full
-                                        time</span>
+                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">{{ __('landing.recruitment.full_time') }}</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
                                     <input type="checkbox" value="part-time" x-model="selectedTypes"
                                         @change="applyFilters()"
                                         class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
                                     <span
-                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Part
-                                        time</span>
+                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">{{ __('landing.recruitment.part_time') }}</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
                                     <input type="checkbox" value="remote" x-model="selectedTypes"
                                         @change="applyFilters()"
                                         class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
                                     <span
-                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Remote</span>
+                                        class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">{{ __('landing.recruitment.remote') }}</span>
                                 </label>
                             </div>
                         </div>
@@ -471,7 +468,7 @@
                         {{-- Salary Range Filter --}}
                         <div>
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Salary Range</h3>
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ __('landing.recruitment.salary_range') }}</h3>
                                 <span class="text-xs font-semibold text-blue-600 dark:text-blue-400">$<span
                                         x-text="salaryMin"></span> &ndash; $<span x-text="salaryMax"></span></span>
                             </div>
@@ -498,10 +495,10 @@
                         {{-- Location Filter --}}
                         <div>
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">Location</h3>
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ __('landing.recruitment.location') }}</h3>
                                 <button @click="selectedLocations = []; applyFilters()"
                                     x-show="selectedLocations.length > 0"
-                                    class="text-xs text-red-500 hover:text-red-600 font-medium">Clear</button>
+                                    class="text-xs text-red-500 hover:text-red-600 font-medium">{{ __('landing.recruitment.clear') }}</button>
                             </div>
                             <div class="space-y-2.5 max-h-48 overflow-y-auto scrollbar-custom">
                                 <template x-for="loc in locations" :key="loc">
@@ -524,7 +521,7 @@
 
                         {{-- Job Categories Filter --}}
                         <div>
-                            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Job Categories</h3>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('landing.recruitment.job_categories') }}</h3>
                             <div class="space-y-2.5">
                                 <template x-for="cat in categories" :key="cat.value">
                                     <label class="flex items-center justify-between cursor-pointer group">
@@ -557,26 +554,26 @@
                             <i class="fas fa-sliders-h text-sm"></i>
                         </button>
                         <span class="text-sm text-gray-500 dark:text-gray-400" x-show="searchQuery">
-                            Searching: "<span x-text="searchQuery" class="font-medium text-gray-700 dark:text-gray-200"></span>"
-                            <button @click="searchQuery = ''; selectedLocations = []; applyFilters();" class="ml-1 text-red-500 hover:text-red-600 text-xs font-medium">Clear</button>
+                            {{ __('landing.recruitment.searching') }} "<span x-text="searchQuery" class="font-medium text-gray-700 dark:text-gray-200"></span>"
+                            <button @click="searchQuery = ''; selectedLocations = []; applyFilters();" class="ml-1 text-red-500 hover:text-red-600 text-xs font-medium">{{ __('landing.recruitment.clear') }}</button>
                         </span>
                     </div>
 
                     {{-- Results Header --}}
                     <div class="flex items-center justify-between mb-4 px-8">
                         <div class="flex items-center gap-4">
-                            <span class="text-sm font-bold text-gray-900 dark:text-white">Jobs For You</span>
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('landing.recruitment.jobs_for_you') }}</span>
                             <span
-                                class="text-sm text-blue-600 dark:text-blue-400 font-semibold cursor-pointer">Popular</span>
+                                class="text-sm text-blue-600 dark:text-blue-400 font-semibold cursor-pointer">{{ __('landing.recruitment.popular') }}</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs text-gray-400">Sort:</span>
+                            <span class="text-xs text-gray-400">{{ __('landing.recruitment.sort') }}</span>
                             <select x-model="sortBy" @change="applyFilters()"
                                 class="text-xs px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-gray-300">
-                                <option value="newest">Newest</option>
-                                <option value="oldest">Oldest</option>
-                                <option value="salary-high">Salary: High to Low</option>
-                                <option value="salary-low">Salary: Low to High</option>
+                                <option value="newest">{{ __('landing.recruitment.sort_newest') }}</option>
+                                <option value="oldest">{{ __('landing.recruitment.sort_oldest') }}</option>
+                                <option value="salary-high">{{ __('landing.recruitment.sort_salary_high') }}</option>
+                                <option value="salary-low">{{ __('landing.recruitment.sort_salary_low') }}</option>
                             </select>
                         </div>
                     </div>
@@ -669,10 +666,10 @@
                                         class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto">
                                         <span
                                             class="text-base font-bold text-gray-900 dark:text-white">&euro;{{ $job->salary }}<span
-                                                class="text-sm font-normal text-gray-400">/hr</span></span>
+                                                class="text-sm font-normal text-gray-400">{{ __('landing.recruitment.per_hour') }}</span></span>
                                         <span class="text-sm text-gray-400 dark:text-gray-500 flex items-center gap-1">
                                             <i class="far fa-clock"></i>
-                                            Posted {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
+                                            {{ __('landing.recruitment.posted') }} {{ $job->created_at ? $job->created_at->diffForHumans() : '' }}
                                         </span>
                                     </div>
                                 </div>
@@ -680,10 +677,8 @@
                         @empty
                             <div class="col-span-full text-center py-16">
                                 <i class="fas fa-briefcase text-gray-300 dark:text-gray-600 text-5xl mb-4"></i>
-                                <p class="text-gray-500 dark:text-gray-400 text-base font-medium">No job openings available
-                                    at the moment.</p>
-                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Please check back later for new
-                                    opportunities.</p>
+                                <p class="text-gray-500 dark:text-gray-400 text-base font-medium">{{ __('landing.recruitment.no_jobs_title') }}</p>
+                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">{{ __('landing.recruitment.no_jobs_desc') }}</p>
                             </div>
                         @endforelse
                     </div>
@@ -691,10 +686,9 @@
                     {{-- No results from filter --}}
                     <div x-show="visibleCount === 0 && totalJobs > 0" x-cloak class="text-center py-16">
                         <i class="fas fa-search text-gray-300 dark:text-gray-600 text-4xl mb-4"></i>
-                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No jobs match your filters.</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">{{ __('landing.recruitment.no_match') }}</p>
                         <button @click="clearAllFilters()"
-                            class="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">Clear all
-                            filters</button>
+                            class="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">{{ __('landing.recruitment.clear_filters') }}</button>
                     </div>
                 </div>
 
@@ -731,7 +725,7 @@
                         <div class="flex flex-col h-full min-h-0">
                             {{-- Drawer Header --}}
                             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
-                                <h2 class="text-base font-bold text-gray-900 dark:text-white">Job Details</h2>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-white">{{ __('landing.recruitment.job_details') }}</h2>
                                 <button @click="showDetail = false; selectedJobId = null; selectedJob = null;"
                                     class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -768,7 +762,7 @@
                                     {{-- Salary + Type badges --}}
                                     <div class="flex items-center gap-2 mt-3">
                                         <span class="text-sm font-bold text-gray-900 dark:text-white">
-                                            &euro;<span x-text="selectedJob.salary"></span><span class="text-xs font-normal text-gray-400">/hr</span>
+                                            &euro;<span x-text="selectedJob.salary"></span><span class="text-xs font-normal text-gray-400">{{ __('landing.recruitment.per_hour') }}</span>
                                         </span>
                                         <span class="px-2.5 py-0.5 text-xs font-medium rounded-full"
                                             :class="{
@@ -782,7 +776,7 @@
 
                                 {{-- About the Job --}}
                                 <div class="px-6 py-5">
-                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">About the Job</h3>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('landing.recruitment.about_the_job') }}</h3>
                                     <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                                         <p class="w-full text-justify" x-text="selectedJob.description"></p>
                                     </div>
@@ -791,7 +785,7 @@
                                 {{-- Required Skills --}}
                                 <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
                                     x-show="selectedJob.requiredSkills && selectedJob.requiredSkills.length > 0">
-                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required Skills</h3>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('landing.recruitment.required_skills') }}</h3>
                                     <div class="flex flex-wrap gap-2">
                                         <template x-for="skill in selectedJob.requiredSkills" :key="skill">
                                             <span class="px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
@@ -803,7 +797,7 @@
                                 {{-- Required Documents --}}
                                 <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
                                     x-show="selectedJob.requiredDocs && selectedJob.requiredDocs.length > 0">
-                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Required Documents</h3>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('landing.recruitment.required_documents') }}</h3>
                                     <ul class="space-y-2">
                                         <template x-for="doc in selectedJob.requiredDocs"
                                             :key="typeof doc === 'object' ? doc.name : doc">
@@ -824,7 +818,7 @@
                                 {{-- Benefits --}}
                                 <div class="px-6 py-5 border-t border-gray-100 dark:border-gray-700"
                                     x-show="selectedJob.benefits && selectedJob.benefits.length > 0">
-                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Benefits</h3>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('landing.recruitment.benefits') }}</h3>
                                     <ul class="space-y-2">
                                         <template x-for="benefit in selectedJob.benefits" :key="benefit">
                                             <li class="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -842,7 +836,7 @@
                             <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center gap-3 flex-shrink-0">
                                 <button @click="openApplicationModal()"
                                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full transition-all shadow-md text-sm font-semibold hover:shadow-lg">
-                                    Apply Now
+                                    {{ __('landing.recruitment.apply_now') }}
                                 </button>
                                 <button @click.stop
                                     class="w-11 h-11 bg-gray-100 dark:bg-gray-700 text-gray-300 hover:text-red-400 dark:text-gray-600 dark:hover:text-red-400 rounded-full transition-colors flex items-center justify-center flex-shrink-0">
@@ -900,10 +894,10 @@
             {{-- Modal Body --}}
             <div class="p-6">
                 <p class="text-sm text-center mr-3 my-6 w-full text-gray-900 dark:text-white">
-                    Application Form
+                    {{ __('landing.recruitment.application_form') }}
                 </p>
                 <p class="text-3xl font-bold text-center mr-3 my-6 w-full text-gray-900 dark:text-white">
-                    Want to proceed <br>with your application?
+                    {{ __('landing.recruitment.proceed_application') }}
                 </p>
                 <form id="applicationForm" action="{{ route('recruitment.google.apply') }}" method="POST"
                     class="space-y-4 p-3">
@@ -923,8 +917,8 @@
                             </div>
                         </div>
                         <p class="flex flex-col text-sm text-gray-600 dark:text-gray-400 leading-relaxed mt-8 mb-4">
-                            <span class="font-normal">Sign in with your Google account to apply.</span> <span
-                                class="font-normal">Your email will be used for application updates.</span>
+                            <span class="font-normal">{{ __('landing.recruitment.google_signin_intro') }}</span> <span
+                                class="font-normal">{{ __('landing.recruitment.google_signin_email') }}</span>
                         </p>
                     </div>
 
@@ -937,16 +931,16 @@
                                     :class="!checkboxEnabled && 'pointer-events-none'">
                             </div>
                             <span class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                                By signing in, I agree to the
+                                {{ __('landing.recruitment.agree_prefix') }}
                                 <button type="button" @click.stop="openRecruitTermsModal()"
                                     class="text-sm text-blue-600 hover:underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-xs inline">
-                                    Terms & Conditions
+                                    {{ __('landing.recruitment.terms_conditions') }}
                                 </button>
                                 <span x-show="termsOpened" class="text-green-500 text-[10px]"><i class="fas fa-check-circle"></i></span>
-                                and
+                                {{ __('landing.recruitment.and') }}
                                 <button type="button" @click.stop="openRecruitPrivacyModal()"
                                     class="text-sm text-blue-600 hover:underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-xs inline">
-                                    Privacy Policy
+                                    {{ __('landing.recruitment.privacy_policy') }}
                                 </button>
                                 <span x-show="privacyOpened" class="text-green-500 text-xs"><i class="fas fa-check-circle"></i></span>.
                             </span>
@@ -981,8 +975,7 @@
                                 <path fill="#34A853"
                                     d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                             </svg>
-                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Sign in with Google to
-                                Apply</span>
+                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ __('landing.recruitment.signin_google_apply') }}</span>
                         </button>
                     </div>
                 </form>
@@ -994,7 +987,7 @@
     <div id="recruit-terms-modal" class="fixed inset-0 z-[250] flex items-center justify-center bg-black/50 p-4" style="display: none;">
         <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Terms & Conditions</h2>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('landing.recruitment.terms_conditions') }}</h2>
                 <button type="button" onclick="document.getElementById('recruit-terms-modal').style.display='none'; unlockScroll();" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
                     <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -1003,27 +996,27 @@
             </div>
             <div class="p-5 overflow-y-auto flex-1">
                 <div class="space-y-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Last Updated: November 5, 2025</p>
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">1. Acceptance of Terms</h3>
-                    <p class="text-sm leading-relaxed">By accessing or using the Castcrew workforce management and scheduling platform (the "System"), you ("User") agree to comply with and be bound by these Terms and Conditions.</p>
-                    <p class="text-sm leading-relaxed">If you do not agree with any part of these Terms, you must refrain from using the System.</p>
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">2. System Operations and Allocation Rules</h3>
-                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.1 Workforce Allocation</h4>
-                    <p class="text-sm leading-relaxed">Castcrew automatically determines the optimal number of employees required for each task based on employee availability, pending workload, budget constraints, and utilization targets.</p>
-                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.2 Team Composition and Driver Requirement</h4>
-                    <p class="text-sm leading-relaxed">Each assigned team must include at least one employee registered as having valid driving skills.</p>
-                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.3 Task Prioritization</h4>
-                    <p class="text-sm leading-relaxed">Tasks labeled with an "Arrival Status" are assigned the highest scheduling priority.</p>
-                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.4 Schedule Generation and Re-Optimization</h4>
-                    <p class="text-sm leading-relaxed">Schedules are generated automatically. If a new task is added before a schedule is finalized, the System will regenerate an optimized schedule.</p>
-                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">2.5 Working Hours Compliance</h4>
-                    <p class="text-sm leading-relaxed">The System enforces a maximum of 12 working hours per day per employee, in compliance with Finnish labor standards.</p>
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">3. System Authority and Finality</h3>
-                    <p class="text-sm leading-relaxed">All task assignments and schedules are the outcome of automated, rule-based optimization and are deemed final for operational purposes.</p>
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">4. Modifications to System Rules</h3>
-                    <p class="text-sm leading-relaxed">Castcrew reserves the right to modify these Terms at any time. Continued use constitutes acceptance of revised Terms.</p>
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">5. Contact Information</h3>
-                    <p class="text-sm leading-relaxed">For inquiries, contact: opticrewhelpcenter@gmail.com</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">{{ __('landing.recruitment.terms_last_updated') }}</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.terms_1_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_1_p1') }}</p>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_1_p2') }}</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.terms_2_title') }}</h3>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">{{ __('landing.recruitment.terms_2_1') }}</h4>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_2_1_p') }}</p>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">{{ __('landing.recruitment.terms_2_2') }}</h4>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_2_2_p') }}</p>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">{{ __('landing.recruitment.terms_2_3') }}</h4>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_2_3_p') }}</p>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">{{ __('landing.recruitment.terms_2_4') }}</h4>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_2_4_p') }}</p>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mt-3">{{ __('landing.recruitment.terms_2_5') }}</h4>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_2_5_p') }}</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.terms_3_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_3_p') }}</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.terms_4_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_4_p') }}</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.terms_5_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.terms_5_p') }}</p>
                 </div>
             </div>
             <div class="p-4 border-t border-gray-200 dark:border-gray-700" x-data="{ alreadyAccepted: document.cookie.includes('finnoys_terms_accepted=1') }">
@@ -1032,10 +1025,10 @@
                     if (el && el._x_dataStack) { el._x_dataStack[0].markTermsRead(); }
                     else { document.cookie = 'finnoys_terms_accepted=1; path=/; max-age=' + (30*24*60*60); document.getElementById('recruit-terms-modal').style.display='none'; unlockScroll(); }
                 " class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
-                    I have read the Terms & Conditions
+                    {{ __('landing.recruitment.terms_read_btn') }}
                 </button>
                 <button x-show="alreadyAccepted" x-cloak type="button" disabled class="w-full py-2.5 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-semibold rounded-full cursor-not-allowed">
-                    Already Agreed
+                    {{ __('landing.recruitment.already_agreed') }}
                 </button>
             </div>
         </div>
@@ -1045,7 +1038,7 @@
     <div id="recruit-privacy-modal" class="fixed inset-0 z-[250] flex items-center justify-center bg-black/50 p-4" style="display: none;">
         <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Privacy Policy</h2>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('landing.recruitment.privacy_policy') }}</h2>
                 <button type="button" onclick="document.getElementById('recruit-privacy-modal').style.display='none'; unlockScroll();" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors">
                     <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -1054,21 +1047,21 @@
             </div>
             <div class="p-5 overflow-y-auto flex-1">
                 <div class="space-y-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Last updated: January 2024</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">1. Information We Collect</h3>
-                    <p class="text-sm leading-relaxed">We collect information you provide directly to us, including your name, email address, phone number, payment information, and service preferences.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">2. How We Use Your Information</h3>
-                    <p class="text-sm leading-relaxed">We use the information we collect to provide, maintain, and improve our services, to process your bookings, and to communicate with you.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">3. Information Sharing</h3>
-                    <p class="text-sm leading-relaxed">We do not sell or rent your personal information to third parties. We may share your information with service providers who assist us.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">4. Data Security</h3>
-                    <p class="text-sm leading-relaxed">We implement appropriate technical and organizational measures to protect your personal information.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">5. Your Rights</h3>
-                    <p class="text-sm leading-relaxed">You have the right to access, update, or delete your personal information. You may also opt-out of promotional communications.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">6. Cookies and Tracking</h3>
-                    <p class="text-sm leading-relaxed">We use cookies and similar tracking technologies to improve our services. You can control cookies through your browser settings.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">7. Contact Us</h3>
-                    <p class="text-sm leading-relaxed">If you have any questions about this Privacy Policy, please contact us at privacy@finnoys.com.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('landing.recruitment.privacy_last_updated') }}</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.privacy_1_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.privacy_1_p') }}</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.privacy_2_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.privacy_2_p') }}</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.privacy_3_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.privacy_3_p') }}</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.privacy_4_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.privacy_4_p') }}</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.privacy_5_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.privacy_5_p') }}</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.privacy_6_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.privacy_6_p') }}</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">{{ __('landing.recruitment.privacy_7_title') }}</h3>
+                    <p class="text-sm leading-relaxed">{{ __('landing.recruitment.privacy_7_p') }}</p>
                 </div>
             </div>
             <div class="p-4 border-t border-gray-200 dark:border-gray-700" x-data="{ alreadyAccepted: document.cookie.includes('finnoys_policy_accepted=1') }">
@@ -1077,10 +1070,10 @@
                     if (el && el._x_dataStack) { el._x_dataStack[0].markPrivacyRead(); }
                     else { document.cookie = 'finnoys_policy_accepted=1; path=/; max-age=' + (30*24*60*60); document.getElementById('recruit-privacy-modal').style.display='none'; unlockScroll(); }
                 " class="w-full py-2.5 bg-[#0077FF] text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors">
-                    I have read the Privacy Policy
+                    {{ __('landing.recruitment.privacy_read_btn') }}
                 </button>
                 <button x-show="alreadyAccepted" x-cloak type="button" disabled class="w-full py-2.5 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-semibold rounded-full cursor-not-allowed">
-                    Already Agreed
+                    {{ __('landing.recruitment.already_agreed') }}
                 </button>
             </div>
         </div>

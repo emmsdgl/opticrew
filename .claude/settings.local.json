@@ -23,7 +23,8 @@
       "Bash(mysql -u root opticrew -e \"SELECT id, name, email, role, google_id FROM users WHERE google_id IS NOT NULL;\")",
       "Bash(c:/xampp/mysql/bin/mysql.exe -u root opticrew -e \"SELECT id, name, email, role, google_id FROM users WHERE google_id IS NOT NULL;\")",
       "Bash(curl -s \"http://localhost/opticrew/public/algorithm-comparison/\" -o /tmp/out.html -w \"%{http_code}\\\\n\")",
-      "Bash(xxd)"
+      "Bash(xxd)",
+      "WebFetch(domain:gdpr.eu)"
     ],
     "deny": [],
     "ask": []

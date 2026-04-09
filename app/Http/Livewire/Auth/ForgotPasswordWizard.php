@@ -37,6 +37,37 @@ class ForgotPasswordWizard extends Component
     public ?string $errorMessage = null;
     public ?string $successMessage = null;
 
+    /** Realtime email existence check: null = unknown, true = exists, false = not found. */
+    public ?bool $emailExists = null;
+
+    protected $listeners = ['fp-prev-step' => 'previousStep'];
+
+    public function previousStep(): void
+    {
+        $this->resetMessages();
+        if ($this->step > 1) {
+            $this->step = 1;
+        }
+    }
+
+    public function updatedEmail(): void
+    {
+        $this->checkEmailExists();
+    }
+
+    public function checkEmailExists(): void
+    {
+        $email = trim($this->email);
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->emailExists = null;
+            return;
+        }
+
+        $this->emailExists = User::where('email', $email)
+            ->orWhere('alternative_email', $email)
+            ->exists();
+    }
+
     public function mount(): void
     {
         // Returning from a successful Google verify — jump straight to the OTP step.
@@ -80,22 +111,17 @@ class ForgotPasswordWizard extends Component
             ->first();
 
         if (!$user) {
-            $this->errorMessage = "We couldn't find an account with that email address. Please check and try again.";
+            $this->dispatchBrowserEvent('fp-error', ['title' => 'Account Not Found', 'message' => "We couldn't find an account with that email address. Please check and try again."]);
             return;
         }
 
         if (!$user->is_active) {
-            $this->errorMessage = 'This account has been deactivated. Please contact support.';
+            $this->dispatchBrowserEvent('fp-error', ['title' => 'Account Deactivated', 'message' => 'This account has been deactivated. Please contact support.']);
             return;
         }
 
         if (empty($user->google_id)) {
-            $this->errorMessage = 'Password reset requires a linked Google account. Please contact your administrator to reset your password.';
-            return;
-        }
-
-        if (empty($user->alternative_email)) {
-            $this->errorMessage = 'No recovery email has been set up for this account. Please contact your administrator for help.';
+            $this->dispatchBrowserEvent('fp-error', ['title' => 'Google Account Required', 'message' => 'Password reset requires a linked Google account. Please contact your administrator to reset your password.']);
             return;
         }
 
@@ -107,8 +133,14 @@ class ForgotPasswordWizard extends Component
     {
         $this->resetMessages();
 
+        // Silently ignore empty submissions (e.g. triggered by clearing inputs after a resend).
+        if ($this->otp === '' || $this->otp === null) {
+            return;
+        }
+
         if (strlen($this->otp) !== 6 || !ctype_digit($this->otp)) {
-            $this->errorMessage = 'Please enter the complete 6-digit verification code.';
+            $this->dispatchBrowserEvent('fp-error', ['title' => 'Incomplete Code', 'message' => 'Please enter the complete 6-digit verification code.']);
+            $this->dispatchBrowserEvent('web-fp-otp-clear');
             return;
         }
 
@@ -117,7 +149,7 @@ class ForgotPasswordWizard extends Component
             ->first();
 
         if (!$user) {
-            $this->errorMessage = "We couldn't find your account. Please start over.";
+            $this->dispatchBrowserEvent('fp-error', ['title' => 'Session Expired', 'message' => "We couldn't find your account. Please start over."]);
             return;
         }
 
@@ -125,12 +157,14 @@ class ForgotPasswordWizard extends Component
         $stored = Cache::get($cacheKey);
 
         if (!$stored) {
-            $this->errorMessage = 'Your verification code has expired. Please request a new one.';
+            $this->dispatchBrowserEvent('fp-error', ['title' => 'Code Expired', 'message' => 'Your verification code has expired. Please request a new one.']);
+            $this->dispatchBrowserEvent('web-fp-otp-clear');
             return;
         }
 
         if ((string) $this->otp !== (string) $stored) {
-            $this->errorMessage = 'The verification code you entered is incorrect. Please try again.';
+            $this->dispatchBrowserEvent('fp-error', ['title' => 'Incorrect Code', 'message' => 'The verification code you entered is incorrect. Please try again.']);
+            $this->dispatchBrowserEvent('web-fp-otp-clear');
             return;
         }
 
@@ -152,19 +186,46 @@ class ForgotPasswordWizard extends Component
             ->orWhere('alternative_email', $this->email)
             ->first();
 
-        if (!$user || empty($user->alternative_email)) {
+        if (!$user) {
             $this->errorMessage = 'Unable to resend the code. Please start over.';
             return;
         }
 
-        $otp = random_int(100000, 999999);
-        Cache::put("web_pwd_reset_otp:{$user->id}", $otp, now()->addMinutes(5));
+        // Throttle: refuse if a code was sent in the last 60s (matches OTP TTL and
+        // keeps us under upstream mail-provider rate limits like Mailtrap testing).
+        $throttleKey = "web_pwd_reset_otp_throttle:{$user->id}";
+        if (Cache::has($throttleKey)) {
+            $this->dispatchBrowserEvent('fp-error', [
+                'title' => 'Please Wait',
+                'message' => 'A verification code was just sent. Please wait a moment before requesting another.',
+            ]);
+            return;
+        }
 
-        Mail::to($user->alternative_email)->send(new EmailVerificationOtp($otp));
+        $recoveryEmail = ! empty($user->alternative_email) ? $user->alternative_email : $user->email;
+
+        $otp = random_int(100000, 999999);
+        Cache::put("web_pwd_reset_otp:{$user->id}", $otp, now()->addSeconds(60));
+        Cache::put($throttleKey, true, now()->addSeconds(60));
+
+        try {
+            Mail::to($recoveryEmail)->send(new EmailVerificationOtp($otp));
+        } catch (\Throwable $e) {
+            Cache::forget($throttleKey);
+            \Log::error('Forgot-password OTP mail failed: ' . $e->getMessage());
+            $this->dispatchBrowserEvent('fp-error', [
+                'title' => 'Email Delivery Failed',
+                'message' => 'We were unable to send the verification code right now. Please try again in a moment.',
+            ]);
+            return;
+        }
 
         $this->otp = '';
-        $this->successMessage = 'A new verification code has been sent to your email.';
         $this->dispatchBrowserEvent('web-fp-resent');
+        $this->dispatchBrowserEvent('fp-success', [
+            'title' => 'Verification Code Sent',
+            'message' => 'A new verification code has been sent to your email.',
+        ]);
     }
 
     /** Step 4: validate the new password and persist it. */
@@ -220,6 +281,7 @@ class ForgotPasswordWizard extends Component
 
     public function render()
     {
+        $this->dispatchBrowserEvent('fp-step-changed', ['step' => $this->step]);
         return view('livewire.auth.forgot-password-wizard');
     }
 }

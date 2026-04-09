@@ -49,10 +49,9 @@
     <div class="relative bg-white overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div class="w-full text-center">
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-4">Getting Started Guide</h1>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-4">{{ __('landing.documentation.hero_title') }}</h1>
                 <p class="text-sm sm:text-xs lg:text-base text-slate-600 leading-relaxed">
-                    Welcome to CastCrew. This guide will walk you through the initial setup
-                    and basic navigation for each user role to ensure a smooth onboarding process.
+                    {{ __('landing.documentation.hero_description') }}
                 </p>
             </div>
         </div>
@@ -65,23 +64,23 @@
             <nav class="flex gap-2 pb-2 min-w-max">
                 <a href="#accessing"
                     class="inline-block py-1.5 px-3 text-xs font-medium text-blue-600 bg-blue-50 rounded-full whitespace-nowrap">
-                    Accessing
+                    {{ __('landing.documentation.nav_accessing') }}
                 </a>
                 <a href="#employers"
                     class="inline-block py-1.5 px-3 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-full whitespace-nowrap transition-colors">
-                    Employers
+                    {{ __('landing.documentation.nav_employers') }}
                 </a>
                 <a href="#employees"
                     class="inline-block py-1.5 px-3 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-full whitespace-nowrap transition-colors">
-                    Employees
+                    {{ __('landing.documentation.nav_employees') }}
                 </a>
                 <a href="#clients"
                     class="inline-block py-1.5 px-3 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-full whitespace-nowrap transition-colors">
-                    Clients
+                    {{ __('landing.documentation.nav_clients') }}
                 </a>
                 <a href="#requirements"
                     class="inline-block py-1.5 px-3 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-full whitespace-nowrap transition-colors">
-                    Requirements
+                    {{ __('landing.documentation.nav_requirements') }}
                 </a>
             </nav>
         </div>
@@ -90,28 +89,28 @@
             <!-- Sidebar Navigation (desktop only) -->
             <aside class="hidden lg:block w-64 flex-shrink-0 sticky top-8 self-start">
                 <div class="space-y-1">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">On this page</p>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">{{ __('landing.documentation.on_this_page') }}</p>
 
                     <nav class="space-y-1">
                         <a href="#accessing"
                             class="block py-2 px-3 text-sm font-medium text-blue-600 bg-blue-50 rounded-md">
-                            Accessing the Platform
+                            {{ __('landing.documentation.sidebar_accessing') }}
                         </a>
                         <a href="#employers"
                             class="block py-2 px-3 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors">
-                            For Employers
+                            {{ __('landing.documentation.sidebar_employers') }}
                         </a>
                         <a href="#employees"
                             class="block py-2 px-3 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors">
-                            For Employees
+                            {{ __('landing.documentation.sidebar_employees') }}
                         </a>
                         <a href="#clients"
                             class="block py-2 px-3 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors">
-                            For Clients
+                            {{ __('landing.documentation.sidebar_clients') }}
                         </a>
                         <a href="#requirements"
                             class="block py-2 px-3 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors">
-                            System Requirements
+                            {{ __('landing.documentation.sidebar_requirements') }}
                         </a>
                     </nav>
                 </div>
@@ -121,7 +120,7 @@
             <main class="flex-1 max-w-3xl min-w-0">
                 <!-- Accessing the Platform Section -->
                 <section id="accessing" class="mb-8 sm:mb-12 scroll-mt-8">
-                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-4 sm:mb-6">1. Accessing the Platform</h2>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-4 sm:mb-6">{{ __('landing.documentation.sec1_title') }}</h2>
 
                     <ul class="space-y-3 mb-8">
                         <li class="flex items-start">
@@ -130,8 +129,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">URL:</span> Navigate to
-                                the system link provided by your administrator.</span>
+                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">{{ __('landing.documentation.sec1_url_strong') }}</span> {{ __('landing.documentation.sec1_url_text') }}</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600 mr-2 sm:mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
@@ -139,8 +137,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">Login:</span> Enter
-                                your registered email address and password.</span>
+                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">{{ __('landing.documentation.sec1_login_strong') }}</span> {{ __('landing.documentation.sec1_login_text') }}</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600 mr-2 sm:mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
@@ -148,56 +145,48 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">Role
-                                    Redirection:</span> The system will automatically detect your role (Admin, Employee, or
-                                Client) and direct you to your specific dashboard.</span>
+                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">{{ __('landing.documentation.sec1_role_strong') }}</span> {{ __('landing.documentation.sec1_role_text') }}</span>
                         </li>
                     </ul>
                 </section>
 
                 <!-- For Employers Section -->
                 <section id="employers" class="mb-8 sm:mb-12 scroll-mt-8">
-                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">2. For Employers (Admins)</h2>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">{{ __('landing.documentation.sec2_title') }}</h2>
 
                     <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed mb-4 sm:mb-6 font-semibold">
-                        Goal: Set up your workforce and start accepting bookings.
+                        {{ __('landing.documentation.sec2_goal') }}
                     </p>
 
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">1. Complete Business Profile</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec2_1_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Go to General Account Management (ERWM-GAM-001) to update your business name, billing
-                                address, and contact details.
+                                {{ __('landing.documentation.sec2_1_p') }}
                             </p>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">2. Define Services</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec2_2_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Set up your cleaning service types and pricing to enable the Provisional Billing feature for
-                                clients.
+                                {{ __('landing.documentation.sec2_2_p') }}
                             </p>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">3. Recruit & Tag Staff</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec2_3_title') }}</h3>
                             <ul class="space-y-2 ml-6 mt-2">
-                                <li class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed list-disc">Upload employee profiles.</li>
+                                <li class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed list-disc">{{ __('landing.documentation.sec2_3_li_1') }}</li>
                                 <li class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed list-disc">
-                                    <span class="font-semibold">Crucial Step:</span> Assign Skill Tags to each employee
-                                    (e.g., "Deep Cleaning," "Sanitization").
-                                    This allows the Skill-Based Matching (ERWM-RS-001-02) engine to suggest the best staff
-                                    for specific jobs.
+                                    <span class="font-semibold">{{ __('landing.documentation.sec2_3_li_2_strong') }}</span> {{ __('landing.documentation.sec2_3_li_2_text') }}
                                 </li>
                             </ul>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">4. Set Payroll Rules</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec2_4_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Configure your salary settings, including Sunday premiums and holiday pay, to automate
-                                monthly payroll.
+                                {{ __('landing.documentation.sec2_4_p') }}
                             </p>
                         </div>
                     </div>
@@ -205,41 +194,38 @@
 
                 <!-- For Employees Section -->
                 <section id="employees" class="mb-8 sm:mb-12 scroll-mt-8">
-                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">3. For Employees (Cleaning Staff)</h2>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">{{ __('landing.documentation.sec3_title') }}</h2>
 
                     <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed mb-4 sm:mb-6 font-semibold">
-                        Goal: Manage your schedule and execute tasks efficiently.
+                        {{ __('landing.documentation.sec3_goal') }}
                     </p>
 
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">1. Verify Profile</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec3_1_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Check your Account Details (EEWM-ACM-001-01) to ensure your contact information is correct.
+                                {{ __('landing.documentation.sec3_1_p') }}
                             </p>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">2. Check the Dashboard</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec3_2_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Your home screen will show Task Assignments. You must manually "Approve" or "Decline" new
-                                tasks.
+                                {{ __('landing.documentation.sec3_2_p') }}
                             </p>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">3. Attendance Setup</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec3_3_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Ensure your mobile device's GPS is enabled. The system uses Geofencing to allow clock-ins
-                                only when you are at the client's location.
+                                {{ __('landing.documentation.sec3_3_p') }}
                             </p>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">4. Visit the Training Hub</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec3_4_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Before your first shift, check the Skill Training Hub for any assigned video tutorials or
-                                cleaning checklists.
+                                {{ __('landing.documentation.sec3_4_p') }}
                             </p>
                         </div>
                     </div>
@@ -247,41 +233,38 @@
 
                 <!-- For Clients Section -->
                 <section id="clients" class="mb-8 sm:mb-12 scroll-mt-8">
-                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">4. For Clients</h2>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">{{ __('landing.documentation.sec4_title') }}</h2>
 
                     <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed mb-4 sm:mb-6 font-semibold">
-                        Goal: Book your first cleaning service.
+                        {{ __('landing.documentation.sec4_goal') }}
                     </p>
 
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">1. Register Your Account</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec4_1_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Provide your business or home details and primary contact information.
+                                {{ __('landing.documentation.sec4_1_p') }}
                             </p>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">2. Request a Quote</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec4_2_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Use the Provisional Billing tool. Select your required service and time to see an instant
-                                cost breakdown.
+                                {{ __('landing.documentation.sec4_2_p') }}
                             </p>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">3. Book a Service</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec4_3_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                Confirm the quote to send a request to the Admin. Once approved, it will appear on your
-                                Service Schedule calendar.
+                                {{ __('landing.documentation.sec4_3_p') }}
                             </p>
                         </div>
 
                         <div>
-                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">4. Track Progress</h3>
+                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ __('landing.documentation.sec4_4_title') }}</h3>
                             <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed">
-                                On the day of the service, check your dashboard to see real-time updates (e.g., "Cleaner En
-                                Route," "Cleaning In Progress").
+                                {{ __('landing.documentation.sec4_4_p') }}
                             </p>
                         </div>
                     </div>
@@ -289,10 +272,10 @@
 
                 <!-- System Requirements Section -->
                 <section id="requirements" class="mb-8 sm:mb-12 scroll-mt-8">
-                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">5. System Requirements</h2>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">{{ __('landing.documentation.sec5_title') }}</h2>
 
                     <p class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed mb-4 sm:mb-6">
-                        To ensure all features (especially real-time notifications and tracking) work correctly:
+                        {{ __('landing.documentation.sec5_intro') }}
                     </p>
 
                     <ul class="space-y-3">
@@ -302,8 +285,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">Browser:</span> Use the
-                                latest version of Google Chrome, Mozilla Firefox, or Safari.</span>
+                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">{{ __('landing.documentation.sec5_browser_strong') }}</span> {{ __('landing.documentation.sec5_browser_text') }}</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600 mr-2 sm:mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
@@ -311,8 +293,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">Internet:</span> A
-                                stable connection is required for real-time status syncing.</span>
+                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">{{ __('landing.documentation.sec5_internet_strong') }}</span> {{ __('landing.documentation.sec5_internet_text') }}</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600 mr-2 sm:mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
@@ -320,9 +301,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">Permissions:</span>
-                                Allow the browser/app to access your Location (for Employees) and Notifications (for all
-                                users).</span>
+                            <span class="text-xs sm:text-sm lg:text-base text-slate-700 leading-relaxed"><span class="font-semibold">{{ __('landing.documentation.sec5_permissions_strong') }}</span> {{ __('landing.documentation.sec5_permissions_text') }}</span>
                         </li>
                     </ul>
                 </section>
@@ -336,7 +315,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
                                 </path>
                             </svg>
-                            Back to top
+                            {{ __('landing.documentation.back_to_top') }}
                         </a>
                     </div>
                 </div>

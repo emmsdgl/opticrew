@@ -1,6 +1,6 @@
 @extends('components.layouts.general-landing')
 
-@section('title', 'Privacy Policy')
+@section('title', __('landing.privacy.title'))
 
 @push('styles')
 <style>
@@ -281,169 +281,176 @@
 @section('content')
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="terms-container">
-        <p class="agreement-label">PRIVACY</p>
-        <h1 class="terms-title text-4xl sm:text-5xl lg:text-6xl">Privacy Policy</h1>
-        <p class="last-updated">Last Updated: January 26, 2026</p>
-        
+        <p class="agreement-label">{{ __('landing.privacy.privacy_label') }}</p>
+        <h1 class="terms-title text-4xl sm:text-5xl lg:text-6xl">{{ __('landing.privacy.title') }}</h1>
+        <p class="last-updated">{{ __('landing.privacy.last_updated') }}</p>
+
         <div class="terms-intro">
             <p class="mb-4 text-sm sm:text-xs lg:text-base text-justify">
-                This Privacy Policy describes how our Workforce Management & Booking System collects, uses, and 
-                protects the information of our Employers, Employees, and Clients. By using this platform, you 
-                agree to the data practices described in this policy.
+                {{ __('landing.privacy.intro') }}
             </p>
         </div>
 
         <!-- Section 1: Information We Collect -->
-        <h2 class="section-title">1. Information We Collect</h2>
-        
+        <h2 class="section-title">{{ __('landing.privacy.section_1') }}</h2>
+
         <div class="terms-content">
             <p class="mb-3">
-                We collect information to provide a seamless cleaning service experience and to ensure efficient 
-                workforce management.
+                {{ __('landing.privacy.section_1_p') }}
             </p>
             <ul class="terms-list">
                 <li>
-                    <strong>For Clients:</strong> Name, business/home address, billing details, contact information, 
-                    and service history (as required for Service Request Management).
+                    <strong>{{ __('landing.privacy.section_1_strong_1') }}</strong> {{ __('landing.privacy.section_1_li_1') }}
                 </li>
                 <li>
-                    <strong>For Employees:</strong> Personal details, contact information, professional qualifications, 
-                    and Skill Tags (as required for Skill-Based Matching).
+                    <strong>{{ __('landing.privacy.section_1_strong_2') }}</strong> {{ __('landing.privacy.section_1_li_2') }}
                 </li>
                 <li>
-                    <strong>For Job Applicants:</strong> Resumes, interview schedules, and application statuses.
+                    <strong>{{ __('landing.privacy.section_1_strong_3') }}</strong> {{ __('landing.privacy.section_1_li_3') }}
                 </li>
                 <li>
-                    <strong>Automated Data:</strong> We collect Geolocation Data from employees only during active 
-                    shifts via the Attendance Tracker to verify presence at geofenced job sites.
+                    <strong>{{ __('landing.privacy.section_1_strong_4') }}</strong> {{ __('landing.privacy.section_1_li_4') }}
                 </li>
             </ul>
         </div>
 
         <!-- Section 2: How We Use Your Information -->
-        <h2 class="section-title">2. How We Use Your Information</h2>
-        
+        <h2 class="section-title">{{ __('landing.privacy.section_2') }}</h2>
+
         <div class="terms-content">
             <p class="mb-3">
-                The data collected is used strictly for the operational needs of the cleaning company:
+                {{ __('landing.privacy.section_2_p') }}
             </p>
             <ul class="terms-list">
                 <li>
-                    <strong>Service Fulfillment:</strong> Matching the right employee to a client based on skills 
-                    and location.
+                    <strong>{{ __('landing.privacy.section_2_strong_1') }}</strong> {{ __('landing.privacy.section_2_li_1') }}
                 </li>
                 <li>
-                    <strong>Performance Tracking:</strong> Monitoring task completion rates and Customer Satisfaction 
-                    (CSAT) scores.
+                    <strong>{{ __('landing.privacy.section_2_strong_2') }}</strong> {{ __('landing.privacy.section_2_li_2') }}
                 </li>
                 <li>
-                    <strong>Payroll & Attendance:</strong> Using clock-in/out data to calculate salaries, Sunday 
-                    premiums, and holiday pay.
+                    <strong>{{ __('landing.privacy.section_2_strong_3') }}</strong> {{ __('landing.privacy.section_2_li_3') }}
                 </li>
                 <li>
-                    <strong>Safety & Compliance:</strong> Using geofencing to ensure staff safety and service 
-                    verification at client premises.
+                    <strong>{{ __('landing.privacy.section_2_strong_4') }}</strong> {{ __('landing.privacy.section_2_li_4') }}
                 </li>
                 <li>
-                    <strong>Communication:</strong> Sending real-time notifications regarding schedule changes, 
-                    task approvals, or system updates.
+                    <strong>{{ __('landing.privacy.section_2_strong_5') }}</strong> {{ __('landing.privacy.section_2_li_5') }}
                 </li>
             </ul>
         </div>
 
         <!-- Section 3: Data Storage and Security -->
-        <h2 class="section-title">3. Data Storage and Security</h2>
-        
+        <h2 class="section-title">{{ __('landing.privacy.section_3') }}</h2>
+
         <div class="terms-content">
             <p class="mb-3">
-                In accordance with our system's General Account Management protocols:
+                {{ __('landing.privacy.section_3_p') }}
             </p>
             <ul class="terms-list">
-                <li>
-                    All account information (passwords, login credentials, and billing data) is saved securely 
-                    and encrypted.
-                </li>
-                <li>
-                    All changes to profile information are validated before being reflected across the system.
-                </li>
-                <li>
-                    We implement industry-standard firewalls and security layers to prevent unauthorized access 
-                    to workforce and client records.
-                </li>
+                <li>{{ __('landing.privacy.section_3_li_1') }}</li>
+                <li>{{ __('landing.privacy.section_3_li_2') }}</li>
+                <li>{{ __('landing.privacy.section_3_li_3') }}</li>
             </ul>
         </div>
 
         <!-- Section 4: Data Sharing and Disclosure -->
-        <h2 class="section-title">4. Data Sharing and Disclosure</h2>
-        
+        <h2 class="section-title">{{ __('landing.privacy.section_4') }}</h2>
+
         <div class="terms-content">
             <ul class="terms-list">
                 <li>
-                    <strong>Third Parties:</strong> We do not sell, rent, or lease our user lists to third parties.
+                    <strong>{{ __('landing.privacy.section_4_strong_1') }}</strong> {{ __('landing.privacy.section_4_li_1') }}
                 </li>
                 <li>
-                    <strong>Service Transparency:</strong> A client will be able to see the name, profile picture, 
-                    and performance rating of the employee assigned to their task.
+                    <strong>{{ __('landing.privacy.section_4_strong_2') }}</strong> {{ __('landing.privacy.section_4_li_2') }}
                 </li>
                 <li>
-                    <strong>Legal Requirements:</strong> We may disclose information if required by law to comply 
-                    with legal processes or protect the rights and safety of the company and its users.
+                    <strong>{{ __('landing.privacy.section_4_strong_3') }}</strong> {{ __('landing.privacy.section_4_li_3') }}
                 </li>
             </ul>
         </div>
 
         <!-- Section 5: User Rights and Controls -->
-        <h2 class="section-title">5. User Rights and Controls</h2>
-        
+        <h2 class="section-title">{{ __('landing.privacy.section_5') }}</h2>
+
         <div class="terms-content">
             <p class="mb-3">
-                Users have the following rights within the platform:
+                {{ __('landing.privacy.section_5_p') }}
             </p>
             <ul class="terms-list">
                 <li>
-                    <strong>Access & Update:</strong> Employees and Clients can update their contact details and 
-                    addresses via their respective Account Management dashboards.
+                    <strong>{{ __('landing.privacy.section_5_strong_1') }}</strong> {{ __('landing.privacy.section_5_li_1') }}
                 </li>
                 <li>
-                    <strong>Notifications:</strong> Users can manage their alert preferences for system updates.
+                    <strong>{{ __('landing.privacy.section_5_strong_2') }}</strong> {{ __('landing.privacy.section_5_li_2') }}
                 </li>
                 <li>
-                    <strong>Data Portability:</strong> Employers can export performance analytics and payroll data 
-                    in downloadable formats.
+                    <strong>{{ __('landing.privacy.section_5_strong_3') }}</strong> {{ __('landing.privacy.section_5_li_3') }}
+                </li>
+                <li>
+                    <strong>{{ __('landing.privacy.section_5_strong_4') }}</strong> {{ __('landing.privacy.section_5_li_4') }}
                 </li>
             </ul>
         </div>
 
         <!-- Section 6: Geolocation Tracking Policy -->
-        <h2 class="section-title">6. Geolocation Tracking Policy</h2>
-        
+        <h2 class="section-title">{{ __('landing.privacy.section_6') }}</h2>
+
         <div class="terms-content">
             <p>
-                Employee geolocation is tracked only for the duration of an assigned task. Tracking begins upon 
-                "Clock In" and ends upon "Clock Out." This data is used solely to verify that services are being 
-                performed at the client's designated location as per the Geofencing requirement in the test plan.
+                {{ __('landing.privacy.section_6_p') }}
             </p>
         </div>
 
         <!-- Section 7: Changes to this Policy -->
-        <h2 class="section-title">7. Changes to this Policy</h2>
-        
+        <h2 class="section-title">{{ __('landing.privacy.section_7') }}</h2>
+
         <div class="terms-content">
             <p>
-                The company reserves the right to update this Privacy Policy to reflect system changes or legal 
-                requirements. Users will be notified of significant changes via the System Notifications panel 
-                on their dashboard.
+                {{ __('landing.privacy.section_7_p') }}
             </p>
         </div>
 
         <!-- Section 8: Contact Information -->
-        <h2 class="section-title">8. Contact Information</h2>
-        
+        <h2 class="section-title">{{ __('landing.privacy.section_8') }}</h2>
+
         <div class="terms-content">
             <p>
-                If you have questions regarding this Privacy Policy or your data, please contact the System 
-                Administrator through the Help Center or the provided contact details in your Account Management tab.
+                {{ __('landing.privacy.section_8_p') }}
             </p>
+        </div>
+
+        <!-- Section 9: European Data Privacy (GDPR Compliance) -->
+        <h2 class="section-title">{{ __('landing.privacy.section_9') }}</h2>
+
+        <div class="terms-content">
+            <p class="mb-3">
+                {{ __('landing.privacy.section_9_p') }}
+            </p>
+            <ul class="terms-list">
+                <li>
+                    <strong>{{ __('landing.privacy.section_9_strong_1') }}</strong> {{ __('landing.privacy.section_9_li_1') }}
+                </li>
+                <li>
+                    <strong>{{ __('landing.privacy.section_9_strong_2') }}</strong> {{ __('landing.privacy.section_9_li_2') }}
+                </li>
+                <li>
+                    <strong>{{ __('landing.privacy.section_9_strong_3') }}</strong> {{ __('landing.privacy.section_9_li_3') }}
+                </li>
+                <li>
+                    <strong>{{ __('landing.privacy.section_9_strong_4') }}</strong> {{ __('landing.privacy.section_9_li_4') }}
+                </li>
+                <li>
+                    <strong>{{ __('landing.privacy.section_9_strong_5') }}</strong> {{ __('landing.privacy.section_9_li_5') }}
+                </li>
+                <li>
+                    <strong>{{ __('landing.privacy.section_9_strong_6') }}</strong> {{ __('landing.privacy.section_9_li_6') }}
+                </li>
+                <li>
+                    <strong>{{ __('landing.privacy.section_9_strong_7') }}</strong> {{ __('landing.privacy.section_9_li_7') }}
+                </li>
+            </ul>
         </div>
 
     </div>

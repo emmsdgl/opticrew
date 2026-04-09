@@ -151,16 +151,14 @@
                     <div class="duration-700 ease-in-out" data-carousel-item="active">
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
                             style="background-image: url('/images/backgrounds/services_carousel/cover-page.svg');">
-                            <h3 class="text-base text-[#ffffff]">Our Services</h3>
-                            <h2 class="text-5xl font-[fam-bold] text-[#ffffff] pt-6 pb-6 tracking-tight">What do we
-                                offer?</h2>
+                            <h3 class="text-base text-[#ffffff]">{{ __('landing.services.cover_subtitle') }}</h3>
+                            <h2 class="text-5xl font-[fam-bold] text-[#ffffff] pt-6 pb-6 tracking-tight">{{ __('landing.services.cover_title') }}</h2>
                             <p class="mt-4 text-sm text-[#ffffff] max-w-2xl text-center">
-                                Discover our range of professional cleaning services designed to make your home or
-                                business shine
+                                {{ __('landing.services.cover_description') }}
                             </p>
                             <a href="#"
                                 class="mt-12 text-sm inline-block bg-[#ffffff94] text-[#006ce7] font-[fam-bold] px-9 py-3 rounded-full hover:bg-indigo-400 transition">
-                                Explore Services
+                                {{ __('landing.services.cover_button') }}
                             </a>
                         </div>
                     </div>
@@ -169,38 +167,37 @@
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
                             style="background-image: url('/images/backgrounds/services_carousel/deep-cleaning.svg');">
-                            <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
+                            <h3 class="text-base text-[#081032] pt-6">{{ __('landing.services.price_range_label') }}
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
-                            <h2 class="text-5xl font-[fam-bold] tracking-tight text-[#081032] pt-6 pb-6">Deep Cleaning
+                            <h2 class="text-5xl font-[fam-bold] tracking-tight text-[#081032] pt-6 pb-6">{{ __('landing.services.deep_cleaning') }}
                             </h2>
 
                             <!-- Badges -->
                             <div id="badges-container" class="grid grid-cols-3 items-center gap-3 mt-3 mb-3">
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Linen Laundry
+                                    {{ __('landing.services.badge_linen_laundry') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Toilet Cleaning
+                                    {{ __('landing.services.badge_toilet_cleaning') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Window Cleaning
+                                    {{ __('landing.services.badge_window_cleaning') }}
                                 </span>
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-span-2 justify-self-center">
-                                    Interior Arrangement
+                                    {{ __('landing.services.badge_interior_arrangement') }}
                                 </span>
                                 <span class="px-6 py-1 rounded-full"></span>
                             </div>
 
                             <p class="mt-4 text-base text-[#081032] max-w-2xl text-justify">
-                                A thorough, top-to-bottom cleaning that tackles dirt and grime in hard-to-reach places.
-                                Perfect for spring cleaning or when your space needs a detailed refresh beyond
-                                <span class="font-[fam-bold]">routine maintenance.</span>
+                                {{ __('landing.services.deep_desc') }}
+                                <span class="font-[fam-bold]">{{ __('landing.services.routine_maintenance') }}</span>
                             </p>
                             <a href="#"
                                 class="mt-12 text-sm inline-block bg-[#081032] text-white px-9 py-3 rounded-full shadow hover:bg-indigo-400 transition">
-                                Book A Service
+                                {{ __('landing.services.book_button') }}
                             </a>
                         </div>
                     </div>
@@ -209,45 +206,42 @@
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
                             style="background-image: url('/images/backgrounds/services_carousel/daily-room-cleaning.svg');">
-                            <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
+                            <h3 class="text-base text-[#081032] pt-6">{{ __('landing.services.price_range_label') }}
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
-                            <h2 class="text-5xl font-[fam-bold] text-[#081032] pt-6 pb-6">Daily Room Cleaning</h2>
+                            <h2 class="text-5xl font-[fam-bold] text-[#081032] pt-6 pb-6">{{ __('landing.services.daily_room_cleaning') }}</h2>
 
                             <!-- Badges -->
                             <div id="badges-container"
                                 class="grid grid-cols-3 items-center gap-3 mt-3 mb-3 justify-items-center">
                                 <!-- Row 1 -->
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Light Cleaning
+                                    {{ __('landing.services.badge_light_cleaning') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Emptying Trash Bins
+                                    {{ __('landing.services.badge_emptying_trash') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Sweeping & Dusting
+                                    {{ __('landing.services.badge_sweeping_dusting') }}
                                 </span>
                                 <!-- Row 2 (centered between 2nd and 3rd col) -->
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-center-2 justify-self-center">
-                                    Replacing Amenities
+                                    {{ __('landing.services.badge_replacing_amenities') }}
                                 </span>
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-center-1 justify-self-center">
-                                    Restocking Amenities
+                                    {{ __('landing.services.badge_restocking_amenities') }}
                                 </span>
                             </div>
 
                             <p class="mt-4 text-base text-[#081032] max-w-2xl text-justify">
-                                Complete <span class="font-[fam-bold]">room refresh tailored for guest
-                                    accommodations</span> . Includes bed-making, linen
-                                replacement, surface dusting, bathroom sanitizing, floor cleaning, and replenishment of
-                                amenities for a welcoming stay.
+                                {{ __('landing.services.complete_prefix') }} <span class="font-[fam-bold]">{{ __('landing.services.guest_accommodations') }}</span>{{ __('landing.services.guest_accommodations_desc') }}
 
                             </p>
                             <a href="#"
                                 class="mt-12 text-sm inline-block bg-[#081032] text-white px-9 py-3 rounded-full shadow hover:bg-indigo-400 transition">
-                                Book A Service
+                                {{ __('landing.services.book_button') }}
                             </a>
                         </div>
                     </div>
@@ -256,45 +250,42 @@
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
                             style="background-image: url('/images/backgrounds/services_carousel/snow-out-cleaning.svg');">
-                            <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
+                            <h3 class="text-base text-[#081032] pt-6">{{ __('landing.services.price_range_label') }}
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
-                            <h2 class="text-5xl font-[fam-bold] text-[#081032] pt-6 pb-6">Snow Out Cleaning</h2>
+                            <h2 class="text-5xl font-[fam-bold] text-[#081032] pt-6 pb-6">{{ __('landing.services.snow_out_cleaning') }}</h2>
 
                             <!-- Badges -->
                             <div id="badges-container"
                                 class="grid grid-cols-3 items-center gap-3 mt-3 mb-3 justify-items-center">
                                 <!-- Row 1 -->
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Light Cleaning
+                                    {{ __('landing.services.badge_light_cleaning') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Emptying Trash Bins
+                                    {{ __('landing.services.badge_emptying_trash') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Sweeping & Dusting
+                                    {{ __('landing.services.badge_sweeping_dusting') }}
                                 </span>
                                 <!-- Row 2 (centered between 2nd and 3rd col) -->
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-center-2 justify-self-center">
-                                    Replacing Amenities
+                                    {{ __('landing.services.badge_replacing_amenities') }}
                                 </span>
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-center-1 justify-self-center">
-                                    Restocking Amenities
+                                    {{ __('landing.services.badge_restocking_amenities') }}
                                 </span>
                             </div>
 
                             <p class="mt-4 text-base text-[#081032] max-w-2xl text-justify">
-                                Complete <span class="font-[fam-bold]">room refresh tailored for guest
-                                    accommodations</span> . Includes bed-making, linen
-                                replacement, surface dusting, bathroom sanitizing, floor cleaning, and replenishment of
-                                amenities for a welcoming stay.
+                                {{ __('landing.services.complete_prefix') }} <span class="font-[fam-bold]">{{ __('landing.services.guest_accommodations') }}</span>{{ __('landing.services.guest_accommodations_desc') }}
 
                             </p>
                             <a href="#"
                                 class="mt-12 text-sm inline-block bg-[#081032] text-white px-9 py-3 rounded-full shadow hover:bg-indigo-400 transition">
-                                Book A Service
+                                {{ __('landing.services.book_button') }}
                             </a>
                         </div>
                     </div>
@@ -303,45 +294,42 @@
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
                             style="background-image: url('/images/backgrounds/services_carousel/light-daily-cleaning.svg');">
-                            <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
+                            <h3 class="text-base text-[#081032] pt-6">{{ __('landing.services.price_range_label') }}
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
-                            <h2 class="text-5xl font-[fam-bold] text-[#081032] pt-6 pb-6">Light Daily Cleaning</h2>
+                            <h2 class="text-5xl font-[fam-bold] text-[#081032] pt-6 pb-6">{{ __('landing.services.light_daily_cleaning') }}</h2>
 
                             <!-- Badges -->
                             <div id="badges-container"
                                 class="grid grid-cols-3 items-center gap-3 mt-3 mb-3 justify-items-center">
                                 <!-- Row 1 -->
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Light Cleaning
+                                    {{ __('landing.services.badge_light_cleaning') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Emptying Trash Bins
+                                    {{ __('landing.services.badge_emptying_trash') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Sweeping & Dusting
+                                    {{ __('landing.services.badge_sweeping_dusting') }}
                                 </span>
                                 <!-- Row 2 (centered between 2nd and 3rd col) -->
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-center-2 justify-self-center">
-                                    Replacing Amenities
+                                    {{ __('landing.services.badge_replacing_amenities') }}
                                 </span>
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-center-1 justify-self-center">
-                                    Restocking Amenities
+                                    {{ __('landing.services.badge_restocking_amenities') }}
                                 </span>
                             </div>
 
                             <p class="mt-4 text-base text-[#081032] max-w-2xl text-justify">
-                                Complete <span class="font-[fam-bold]">room refresh tailored for guest
-                                    accommodations</span> . Includes bed-making, linen
-                                replacement, surface dusting, bathroom sanitizing, floor cleaning, and replenishment of
-                                amenities for a welcoming stay.
+                                {{ __('landing.services.complete_prefix') }} <span class="font-[fam-bold]">{{ __('landing.services.guest_accommodations') }}</span>{{ __('landing.services.guest_accommodations_desc') }}
 
                             </p>
                             <a href="#"
                                 class="mt-12 text-sm inline-block bg-[#081032] text-white px-9 py-3 rounded-full shadow hover:bg-indigo-400 transition">
-                                Book A Service
+                                {{ __('landing.services.book_button') }}
                             </a>
                         </div>
                     </div>
@@ -350,45 +338,42 @@
                     <div class="hidden duration-700 ease-in-out" data-carousel-item>
                         <div class="relative w-full h-full bg-cover bg-center flex flex-col justify-center items-center text-center px-6"
                             style="background-image: url('/images/backgrounds/services_carousel/full-daily-cleaning.svg');">
-                            <h3 class="text-base text-[#081032] pt-6">Estimated Price Range:
+                            <h3 class="text-base text-[#081032] pt-6">{{ __('landing.services.price_range_label') }}
                                 <span class="font-[fam-bold]">€ 120 - € 200</span>
                             </h3>
-                            <h2 class="text-5xl font-[fam-bold] text-[#081032] pt-6 pb-6">Full Daily Cleaning</h2>
+                            <h2 class="text-5xl font-[fam-bold] text-[#081032] pt-6 pb-6">{{ __('landing.services.full_daily_cleaning') }}</h2>
 
                             <!-- Badges -->
                             <div id="badges-container"
                                 class="grid grid-cols-3 items-center gap-3 mt-3 mb-3 justify-items-center">
                                 <!-- Row 1 -->
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Light Cleaning
+                                    {{ __('landing.services.badge_light_cleaning') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Emptying Trash Bins
+                                    {{ __('landing.services.badge_emptying_trash') }}
                                 </span>
                                 <span class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full">
-                                    Sweeping & Dusting
+                                    {{ __('landing.services.badge_sweeping_dusting') }}
                                 </span>
                                 <!-- Row 2 (centered between 2nd and 3rd col) -->
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-center-2 justify-self-center">
-                                    Replacing Amenities
+                                    {{ __('landing.services.badge_replacing_amenities') }}
                                 </span>
                                 <span
                                     class="bg-[#ffffff60] text-gray-900 text-xs px-6 py-1 rounded-full col-center-1 justify-self-center">
-                                    Restocking Amenities
+                                    {{ __('landing.services.badge_restocking_amenities') }}
                                 </span>
                             </div>
 
                             <p class="mt-4 text-base text-[#081032] max-w-2xl text-justify">
-                                Complete <span class="font-[fam-bold]">room refresh tailored for guest
-                                    accommodations</span> . Includes bed-making, linen
-                                replacement, surface dusting, bathroom sanitizing, floor cleaning, and replenishment of
-                                amenities for a welcoming stay.
+                                {{ __('landing.services.complete_prefix') }} <span class="font-[fam-bold]">{{ __('landing.services.guest_accommodations') }}</span>{{ __('landing.services.guest_accommodations_desc') }}
 
                             </p>
                             <a href="#"
                                 class="mt-12 text-sm inline-block bg-[#081032] text-white px-9 py-3 rounded-full shadow hover:bg-indigo-400 transition">
-                                Book A Service
+                                {{ __('landing.services.book_button') }}
                             </a>
                         </div>
                     </div>
@@ -573,35 +558,31 @@
 
                     <!-- Content -->
                     <div class="relative z-10 px-6 max-w-3xl">
-                        <p id="label-1" class="text-sm font-[fam-bold] text-[#2A6DFA] mt-6 pb-6">Our Service Coverage
+                        <p id="label-1" class="text-sm font-[fam-bold] text-[#2A6DFA] mt-6 pb-6">{{ __('landing.services.coverage_label') }}
                         </p>
-                        <h1 id="city-name" class="text-6xl font-[fam-bold] text-[#071957] mt-6">Just a <span
-                                class="text-[#2A6DFA] text-6xl font-[fam-bold]">click away</span>.</h1>
+                        <h1 id="city-name" class="text-6xl font-[fam-bold] text-[#071957] mt-6">{{ __('landing.services.coverage_title_prefix') }} <span
+                                class="text-[#2A6DFA] text-6xl font-[fam-bold]">{{ __('landing.services.coverage_title_highlight') }}</span>.</h1>
                         <p id="city-desc" class="text-sm sm:text-sm mt-6 leading-relaxed text-[#071957]">
-                            This is one of the municipalities inside Lapland, on the northernmost region, taking up
-                            roughly
-                            the entire top third of the country, above the Arctic Circle.
+                            {{ __('landing.services.coverage_description') }}
                         </p>
 
                         <!-- Services -->
                         <div class="flex flex-col sm:flex-row justify-center gap-10 mt-8">
                             <div>
-                                <p id="label-1" class="text-sm font-[fam-bold] mb-3 text-[#2A6DFA]">Available Services
+                                <p id="label-1" class="text-sm font-[fam-bold] mb-3 text-[#2A6DFA]">{{ __('landing.services.available_services') }}
                                 </p>
                                 <div id="services" class="flex flex-wrap justify-center gap-2">
                                     <span
-                                        class="bg-[#2A6DFA25] text-[#071957] text-xs px-5 py-1 rounded-full">All</span>
+                                        class="bg-[#2A6DFA25] text-[#071957] text-xs px-5 py-1 rounded-full">{{ __('landing.services.all') }}</span>
                                 </div>
                             </div>
                             <div>
-                                <p id="label-1" class="text-sm font-[fam-bold] mb-3 text-[#2A6DFA]">Included Cities</p>
+                                <p id="label-1" class="text-sm font-[fam-bold] mb-3 text-[#2A6DFA]">{{ __('landing.services.included_cities') }}</p>
                                 <div id="communities" class="flex flex-wrap justify-center gap-2">
-                                    <span class="bg-[#2A6DFA25] text-[#071957] text-xs px-5 py-1 rounded-full">Lapland
-                                        Region</span>
-                                    <span class="bg-[#2A6DFA25] text-[#071957] text-xs px-5 py-1 rounded-full">Inari
-                                        City</span>
+                                    <span class="bg-[#2A6DFA25] text-[#071957] text-xs px-5 py-1 rounded-full">{{ __('landing.services.lapland_region') }}</span>
+                                    <span class="bg-[#2A6DFA25] text-[#071957] text-xs px-5 py-1 rounded-full">{{ __('landing.services.inari_city') }}</span>
                                     <span
-                                        class="bg-[#2A6DFA25] text-[#071957] text-xs px-5 py-1 rounded-full">Saariselkä</span>
+                                        class="bg-[#2A6DFA25] text-[#071957] text-xs px-5 py-1 rounded-full">{{ __('landing.services.saariselka') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -616,8 +597,8 @@
                                         d="M8 0a5.53 5.53 0 0 0-5.5 5.5c0 3.038 4.05 8.008 5.047 9.202a.625.625 0 0 0 .906 0C9.45 13.508 13.5 8.538 13.5 5.5A5.53 5.53 0 0 0 8 0ZM8 7.5a2 2 0 1 1 0-4.001 2 2 0 0 1 0 4Z" />
                                 </svg>
                                 <div class="text-left">
-                                    <h3 class="text-base font-[fam-bold] leading-tight">Inari City</h3>
-                                    <p class="text-xs">See More →</p>
+                                    <h3 class="text-base font-[fam-bold] leading-tight">{{ __('landing.services.inari_city') }}</h3>
+                                    <p class="text-xs">{{ __('landing.services.see_more') }}</p>
                                 </div>
                             </button>
 
@@ -629,8 +610,8 @@
                                         d="M8 0a5.53 5.53 0 0 0-5.5 5.5c0 3.038 4.05 8.008 5.047 9.202a.625.625 0 0 0 .906 0C9.45 13.508 13.5 8.538 13.5 5.5A5.53 5.53 0 0 0 8 0ZM8 7.5a2 2 0 1 1 0-4.001 2 2 0 0 1 0 4Z" />
                                 </svg>
                                 <div class="text-left">
-                                    <h3 class="text-base font-[fam-bold] leading-tight">Lapland Region</h3>
-                                    <p class="text-xs">See More →</p>
+                                    <h3 class="text-base font-[fam-bold] leading-tight">{{ __('landing.services.lapland_region') }}</h3>
+                                    <p class="text-xs">{{ __('landing.services.see_more') }}</p>
                                 </div>
                             </button>
 
@@ -642,8 +623,8 @@
                                         d="M8 0a5.53 5.53 0 0 0-5.5 5.5c0 3.038 4.05 8.008 5.047 9.202a.625.625 0 0 0 .906 0C9.45 13.508 13.5 8.538 13.5 5.5A5.53 5.53 0 0 0 8 0ZM8 7.5a2 2 0 1 1 0-4.001 2 2 0 0 1 0 4Z" />
                                 </svg>
                                 <div class="text-left">
-                                    <h3 class="text-base font-[fam-bold] leading-tight">Saariselkä</h3>
-                                    <p class="text-xs">See More →</p>
+                                    <h3 class="text-base font-[fam-bold] leading-tight">{{ __('landing.services.saariselka') }}</h3>
+                                    <p class="text-xs">{{ __('landing.services.see_more') }}</p>
                                 </div>
                             </button>
                         </div>

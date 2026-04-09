@@ -1,6 +1,6 @@
 @extends('components.layouts.general-landing')
 
-@section('title', 'Terms and Conditions')
+@section('title', __('landing.terms.title'))
 
 @push('styles')
 <style>
@@ -204,127 +204,112 @@
 @section('content')
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="terms-container">
-        <p class="agreement-label">AGREEMENT</p>
-        <h1 class="terms-title text-4xl sm:text-5xl lg:text-6xl">Terms and Conditions</h1>
-        
+        <p class="agreement-label">{{ __('landing.terms.agreement_label') }}</p>
+        <h1 class="terms-title text-4xl sm:text-5xl lg:text-6xl">{{ __('landing.terms.title') }}</h1>
+
         <div class="terms-intro">
             <p class="mb-4 text-sm sm:text-xs lg:text-base text-justify">
-                These Terms and Conditions govern the relationship between the Service Provider (Fin-noys), 
-                the Employees, and the Clients. By using our Workforce Management & Booking System, CastCrew, for Fin-noys, you agree to 
-                comply with and be bound by the following terms.
+                {{ __('landing.terms.intro') }}
             </p>
         </div>
 
         <!-- Section 1: Service Agreement -->
-        <h2 class="section-title">1. Service Agreement</h2>
-        
-        <div class="subsection-title">1.1 For Clients</div>
+        <h2 class="section-title">{{ __('landing.terms.section_1') }}</h2>
+
+        <div class="subsection-title">{{ __('landing.terms.sub_1_1') }}</div>
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p class="mb-3">
-                By using the Service Booking feature, clients agree to provide accurate location 
-                data and access to premises.
+                {{ __('landing.terms.sub_1_1_p1') }}
             </p>
             <p>
-                <strong>Provisional Billing:</strong> Quotations generated via the Provisional Billing
-                tool are estimates based on client-provided data. Final costs may adjust if the on-site workload exceeds 
-                the initial request.
+                <strong>{{ __('landing.terms.sub_1_1_strong') }}</strong> {{ __('landing.terms.sub_1_1_p2') }}
             </p>
         </div>
 
-        <div class="subsection-title">1.2 Employee Obligations</div>
+        <div class="subsection-title">{{ __('landing.terms.sub_1_2') }}</div>
         <ul class="terms-list text-sm sm:text-xs lg:text-base">
             <li>
-                <strong>Task Execution:</strong> Employees must adhere to the Cleaning Checklists 
-                and time allocations provided by the system.
+                <strong>{{ __('landing.terms.sub_1_2_strong_1') }}</strong> {{ __('landing.terms.sub_1_2_li_1') }}
             </li>
             <li>
-                <strong>Attendance:</strong> Employees agree to use the Geofenced Attendance Tracker. Failure to 
-                clock in within the geofenced perimeter may result in unrecorded hours.
+                <strong>{{ __('landing.terms.sub_1_2_strong_2') }}</strong> {{ __('landing.terms.sub_1_2_li_2') }}
             </li>
         </ul>
 
-        <div class="subsection-title text-sm sm:text-xs lg:text-base">1.3 Cancellation & Rescheduling</div>
+        <div class="subsection-title text-sm sm:text-xs lg:text-base">{{ __('landing.terms.sub_1_3') }}</div>
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
-                Cancellations must be made via the Service Schedule at least 24 hours in advance 
-                to avoid a cancellation fee.
+                {{ __('landing.terms.sub_1_3_p') }}
             </p>
         </div>
 
         <!-- Section 2: User Responsibilities -->
-        <h2 class="section-title">2. User Responsibilities</h2>
-        
-        <div class="subsection-title text-sm sm:text-xs lg:text-base">2.1 Account Security</div>
+        <h2 class="section-title">{{ __('landing.terms.section_2') }}</h2>
+
+        <div class="subsection-title text-sm sm:text-xs lg:text-base">{{ __('landing.terms.sub_2_1') }}</div>
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
-                Users are responsible for maintaining the confidentiality of their account credentials. Any activities 
-                that occur under your account are your responsibility.
+                {{ __('landing.terms.sub_2_1_p') }}
             </p>
         </div>
 
-        <div class="subsection-title text-sm sm:text-xs lg:text-base">2.2 Accurate Information</div>
+        <div class="subsection-title text-sm sm:text-xs lg:text-base">{{ __('landing.terms.sub_2_2') }}</div>
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
-                All users agree to provide accurate and up-to-date information when using the platform. Inaccurate 
-                information may result in service disruptions or account suspension.
+                {{ __('landing.terms.sub_2_2_p') }}
             </p>
         </div>
 
         <!-- Section 3: Payment Terms -->
-        <h2 class="section-title">3. Payment Terms</h2>
-        
+        <h2 class="section-title">{{ __('landing.terms.section_3') }}</h2>
+
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <ul class="terms-list">
-                <li>Payment for services must be completed within the specified timeframe as outlined in the service agreement.</li>
-                <li>Late payments may incur additional fees as determined by the company's billing policies.</li>
-                <li>All prices are subject to change with prior notice to clients.</li>
+                <li>{{ __('landing.terms.section_3_li_1') }}</li>
+                <li>{{ __('landing.terms.section_3_li_2') }}</li>
+                <li>{{ __('landing.terms.section_3_li_3') }}</li>
             </ul>
         </div>
 
         <!-- Section 4: Limitation of Liability -->
-        <h2 class="section-title">4. Limitation of Liability</h2>
-        
+        <h2 class="section-title">{{ __('landing.terms.section_4') }}</h2>
+
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p class="mb-3">
-                The Service Provider shall not be held liable for any damages arising from:
+                {{ __('landing.terms.section_4_p') }}
             </p>
             <ul class="terms-list text-sm sm:text-xs lg:text-base">
-                <li>Unauthorized access to or use of our servers and/or personal information stored therein</li>
-                <li>Interruption or cessation of transmission to or from the platform</li>
-                <li>Bugs, viruses, or similar items that may be transmitted through the platform by third parties</li>
-                <li>Errors or omissions in content or for any loss or damage incurred from the use of content posted via the platform</li>
+                <li>{{ __('landing.terms.section_4_li_1') }}</li>
+                <li>{{ __('landing.terms.section_4_li_2') }}</li>
+                <li>{{ __('landing.terms.section_4_li_3') }}</li>
+                <li>{{ __('landing.terms.section_4_li_4') }}</li>
             </ul>
         </div>
 
         <!-- Section 5: Dispute Resolution -->
-        <h2 class="section-title">5. Dispute Resolution</h2>
-        
+        <h2 class="section-title">{{ __('landing.terms.section_5') }}</h2>
+
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
-                In case of problems or disagreements, users are encouraged to first contact the System Administrator 
-                through the Help Center. If disputes cannot be resolved through direct communication, parties agree to 
-                seek mediation before pursuing legal action.
+                {{ __('landing.terms.section_5_p') }}
             </p>
         </div>
 
         <!-- Section 6: Modifications to Terms -->
-        <h2 class="section-title">6. Modifications to Terms</h2>
-        
+        <h2 class="section-title">{{ __('landing.terms.section_6') }}</h2>
+
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
-                The company reserves the right to modify these Terms and Conditions at any time. Users will be notified 
-                of significant changes via the System Notifications panel on their dashboard. Continued use of the platform 
-                after such modifications constitutes acceptance of the updated terms.
+                {{ __('landing.terms.section_6_p') }}
             </p>
         </div>
 
         <!-- Section 7: Contact Information -->
-        <h2 class="section-title">7. Contact Information</h2>
-        
+        <h2 class="section-title">{{ __('landing.terms.section_7') }}</h2>
+
         <div class="terms-content text-sm sm:text-xs lg:text-base">
             <p>
-                If you have questions regarding these Terms and Conditions, please contact the System Administrator 
-                through the Help Center or the provided contact details in your Account Management tab.
+                {{ __('landing.terms.section_7_p') }}
             </p>
         </div>
 

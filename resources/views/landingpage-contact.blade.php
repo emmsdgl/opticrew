@@ -1,6 +1,6 @@
 @extends('components.layouts.general-landing')
 
-@section('title', 'Contact Us')
+@section('title', __('landing.contact.page_title'))
 @push ('styles')
 <style>
     body {
@@ -24,15 +24,15 @@
             <div class="rounded-3xl p-12 text-blue-950 dark:text-white dark:bg-gradient-to-br dark:from-violet-900 dark:to-violet-800 flex flex-col justify-between">
                 <div class="mb-8">
                     <p class="text-sm font-medium uppercase tracking-wider my-6 opacity-90">
-                        WE'RE HERE TO HELP YOU
+                        {{ __('landing.contact.subtitle') }}
                     </p>
                     <h1 class="text-3xl lg:text-4xl font-bold leading-tight mb-3">
-                        Discuss Your<br>
-                        Cleaning Service
-                        Needs
+                        {{ __('landing.contact.title_line_1') }}<br>
+                        {{ __('landing.contact.title_line_2') }}
+                        {{ __('landing.contact.title_line_3') }}
                     </h1>
                     <p class="text-md opacity-90 leading-relaxed">
-                        Are you looking for top-quality cleaning solutions tailored to your needs? Reach out to us.
+                        {{ __('landing.contact.description') }}
                     </p>
                 </div>
 
@@ -46,7 +46,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm opacity-80 mb-1">E-mail</p>
+                            <p class="text-sm opacity-80 mb-1">{{ __('landing.contact.email_label') }}</p>
                             <p class="text-sm font-medium">info@finnoys.com</p>
                         </div>
                     </div>
@@ -59,7 +59,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm opacity-80 mb-1">Phone number</p>
+                            <p class="text-sm opacity-80 mb-1">{{ __('landing.contact.phone_label') }}</p>
                             <p class="text-sm font-medium">+358 123 456 789</p>
                         </div>
                     </div>
@@ -85,10 +85,10 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm opacity-80 mb-1">Business Hours</p>
-                            <p class="text-sm font-medium">Monday - Friday: 8:00 AM - 6:00 PM</p>
-                            <p class="text-sm font-medium">Saturday: 9:00 AM - 4:00 PM</p>
-                            <p class="text-sm font-medium">Sunday: Closed</p>
+                            <p class="text-sm opacity-80 mb-1">{{ __('landing.contact.business_hours_label') }}</p>
+                            <p class="text-sm font-medium">{{ __('landing.contact.hours_weekdays') }}</p>
+                            <p class="text-sm font-medium">{{ __('landing.contact.hours_saturday') }}</p>
+                            <p class="text-sm font-medium">{{ __('landing.contact.hours_sunday') }}</p>
                         </div>
                     </div>
                 </div>
@@ -100,13 +100,13 @@
                 submitting: false,
                 showConfirm: false,
                 serviceLabels: {
-                    'Final Cleaning': 'Final Cleaning',
-                    'Deep Cleaning': 'Deep Cleaning',
-                    'Daily Cleaning': 'Daily Cleaning',
-                    'Snowout Cleaning': 'Snow Out Cleaning',
-                    'General Cleaning': 'General Cleaning',
-                    'Hotel Cleaning': 'Hotel Cleaning',
-                    'Others': 'Others'
+                    'Final Cleaning': @json(__('landing.contact.svc_final')),
+                    'Deep Cleaning': @json(__('landing.contact.svc_deep')),
+                    'Daily Cleaning': @json(__('landing.contact.svc_daily')),
+                    'Snowout Cleaning': @json(__('landing.contact.svc_snowout')),
+                    'General Cleaning': @json(__('landing.contact.svc_general')),
+                    'Hotel Cleaning': @json(__('landing.contact.svc_hotel')),
+                    'Others': @json(__('landing.contact.svc_others'))
                 },
                 submitContact() {
                     if (this.submitting) return;
@@ -165,21 +165,21 @@
                 <form @submit.prevent="submitContact()" class="space-y-6 pt-8">
                     <!-- Name -->
                     <x-material-ui.input-field
-                        label="Name"
+                        :label="__('landing.contact.name')"
                         type="text"
                         model="form.name"
                         icon="fa-solid fa-user"
-                        placeholder="e.g. Juan Dela Cruz"
+                        :placeholder="__('landing.contact.name_placeholder')"
                         required
                     />
 
                     <!-- Email -->
                     <x-material-ui.input-field
-                        label="Email"
+                        :label="__('landing.contact.email')"
                         type="email"
                         model="form.email"
                         icon="fa-solid fa-envelope"
-                        placeholder="email@example.com"
+                        :placeholder="__('landing.contact.email_placeholder')"
                         required
                     />
 
@@ -197,7 +197,7 @@
                                 <i class="fa-solid fa-briefcase text-sm"></i>
                             </span>
                             <span :class="form.service ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'"
-                                  x-text="form.service ? serviceLabels[form.service] : 'Service Type *'"></span>
+                                  x-text="form.service ? serviceLabels[form.service] : @json(__('landing.contact.service_type'))"></span>
                             <svg class="w-2.5 h-2.5 transition-transform duration-300 text-gray-500 dark:text-gray-400"
                                  :class="{ 'rotate-180': serviceOpen }"
                                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
@@ -230,13 +230,13 @@
                     <!-- Message -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fa-solid fa-comment-dots text-blue-600 mr-1.5"></i>Detailed Concern <span class="text-red-500">*</span>
+                            <i class="fa-solid fa-comment-dots text-blue-600 mr-1.5"></i>{{ __('landing.contact.detailed_concern') }} <span class="text-red-500">*</span>
                         </label>
                         <textarea
                             x-model="form.message"
                             rows="5"
                             required
-                            placeholder="Tell us about your cleaning needs..."
+                            placeholder="{{ __('landing.contact.message_placeholder') }}"
                             class="w-full pl-4 pr-4 py-3 text-sm
                                    border border-gray-400 dark:border-gray-700 rounded-xl
                                    bg-white dark:bg-gray-800 text-gray-900 dark:text-white
@@ -255,7 +255,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
-                        <span x-text="submitting ? 'Sending...' : 'Get a Solution'"></span>
+                        <span x-text="submitting ? @json(__('landing.contact.sending')) : @json(__('landing.contact.get_solution'))"></span>
                     </button>
                 </form>
 
@@ -265,13 +265,13 @@
                     icon="fa-solid fa-paper-plane"
                     iconBg="bg-blue-50 dark:bg-blue-900/30"
                     iconColor="text-blue-500"
-                    title="Send your inquiry?"
-                    cancelText="Cancel"
-                    confirmText="Yes, Send"
+                    :title="__('landing.contact.send_inquiry')"
+                    :cancelText="__('landing.contact.cancel')"
+                    :confirmText="__('landing.contact.yes_send')"
                     onCancel="showConfirm = false"
                     onConfirm="sendContact()"
                 >
-                    Please confirm that you'd like to send this message to our team.
+                    {{ __('landing.contact.confirm_message') }}
                 </x-dialogs.confirm-dialog>
             </div>
 
