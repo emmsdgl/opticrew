@@ -517,6 +517,319 @@
                 </div>
             </div>
         </div>
+
+        <!-- Divider -->
+        <hr class="my-6 border-gray-300 dark:border-gray-700">
+
+        <!-- Team Configuration Section -->
+        <div class="flex flex-col gap-4 w-full px-4" x-data="teamConfiguration()">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Team Configuration</h2>
+                <div class="flex items-center gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Select Date</label>
+                        <input type="date"
+                               x-model="tcSelectedDate"
+                               @change="tcFetchTeams()"
+                               class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div x-show="tcLoading" class="flex items-center justify-center py-8">
+                <div class="flex flex-col items-center gap-3">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500"></i>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Loading teams...</p>
+                </div>
+            </div>
+
+            <!-- Teams Grid -->
+            <div x-show="!tcLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <template x-for="team in tcTeams" :key="team.id">
+                    <div class="relative bg-white dark:bg-gray-800 rounded-lg flex border-l-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors cursor-pointer h-16 group shadow-sm"
+                         :style="'border-left-color: ' + tcGetTeamColor(team.team_index)"
+                         x-data="{ showTip: false }"
+                         @mouseenter="showTip = true" @mouseleave="showTip = false"
+                         @click="tcEditTeam(team)">
+
+                        <!-- Tooltip -->
+                        <div x-show="showTip" x-cloak
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 translate-y-1"
+                             class="absolute bottom-full left-0 mb-2 w-56 bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-3 z-50 pointer-events-none">
+                            <p class="text-xs font-semibold text-white mb-1.5" x-text="team.team_name"></p>
+                            <template x-if="team.members && team.members.length > 0">
+                                <ul class="space-y-1">
+                                    <template x-for="(member, i) in team.members.slice(0, 6)" :key="i">
+                                        <li class="flex items-start gap-1.5 text-[11px] text-gray-400">
+                                            <i class="fa-solid fa-user text-[9px] mt-0.5 text-gray-500 flex-shrink-0"></i>
+                                            <span x-text="member.name" class="line-clamp-1"></span>
+                                            <template x-if="member.has_driving_license">
+                                                <i class="fa-solid fa-car text-[9px] mt-0.5 text-green-400 flex-shrink-0" title="Driver"></i>
+                                            </template>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
+                            <template x-if="team.tasks && team.tasks.length > 0">
+                                <div class="mt-2 pt-2 border-t border-gray-700">
+                                    <p class="text-[10px] text-gray-500" x-text="team.tasks.length + ' task(s) assigned'"></p>
+                                </div>
+                            </template>
+                            <div class="absolute -bottom-1 left-6 w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
+                        </div>
+
+                        <!-- Color Badge with Team Index -->
+                        <div class="flex items-center justify-center w-14 h-full rounded-l-lg"
+                             :style="'background-color: ' + tcGetTeamColor(team.team_index)">
+                            <span class="text-white font-bold text-sm" x-text="'T' + team.team_index"></span>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-1 flex items-center justify-between px-4 py-3">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1" x-text="team.team_name"></h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="team.members.length + ' Member' + (team.members.length !== 1 ? 's' : '')"></p>
+                            </div>
+                            <div class="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors opacity-0 group-hover:opacity-100">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty State -->
+                <div x-show="!tcLoading && tcTeams.length === 0"
+                     class="col-span-full p-8 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                    <i class="fa-solid fa-people-group text-3xl mb-3 opacity-50"></i>
+                    <p class="font-semibold">No teams found</p>
+                    <p class="text-sm">No teams have been created for this date. Teams are generated by the optimization system.</p>
+                </div>
+            </div>
+
+            <!-- Edit Team Modal -->
+            <div x-show="tcShowEditModal"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                 @click.self="tcCloseModal()">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                 :style="'background-color: ' + (tcEditingTeam ? tcGetTeamColor(tcEditingTeam.team_index) : '#3b82f6')">
+                                <span class="text-white font-bold text-sm" x-text="tcEditingTeam ? 'T' + tcEditingTeam.team_index : ''"></span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white" x-text="tcEditingTeam ? tcEditingTeam.team_name : ''"></h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'Date: ' + tcSelectedDate"></p>
+                            </div>
+                        </div>
+                        <button @click="tcCloseModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <i class="fa-solid fa-times text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="flex-1 overflow-y-auto p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Left Column: Team Info -->
+                            <div class="space-y-6">
+                                <div class="space-y-4">
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Team Details</h4>
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-3">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid fa-car text-gray-400 w-5 text-center"></i>
+                                            <span class="text-sm text-gray-600 dark:text-gray-400">Vehicle:</span>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white"
+                                                  x-text="tcEditingTeam && tcEditingTeam.car ? tcEditingTeam.car.name : 'No vehicle assigned'"></span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid fa-list-check text-gray-400 w-5 text-center"></i>
+                                            <span class="text-sm text-gray-600 dark:text-gray-400">Tasks:</span>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white"
+                                                  x-text="tcEditingTeam ? tcEditingTeam.tasks.length + ' task(s)' : '0 tasks'"></span>
+                                        </div>
+                                    </div>
+
+                                    <template x-if="tcEditingTeam && tcEditingTeam.tasks.length > 0">
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Assigned Tasks</h4>
+                                            <div class="space-y-2 max-h-[200px] overflow-y-auto">
+                                                <template x-for="task in tcEditingTeam.tasks" :key="task.id">
+                                                    <div class="flex items-center gap-3 p-2.5 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                                        <span class="w-2 h-2 rounded-full flex-shrink-0"
+                                                              :class="{
+                                                                  'bg-green-500': task.status === 'completed',
+                                                                  'bg-blue-500': task.status === 'in_progress',
+                                                                  'bg-yellow-500': task.status === 'pending',
+                                                                  'bg-gray-400': !['completed','in_progress','pending'].includes(task.status)
+                                                              }"></span>
+                                                        <div class="flex-1 min-w-0">
+                                                            <p class="text-sm text-gray-700 dark:text-gray-300 line-clamp-1" x-text="task.description || 'No description'"></p>
+                                                            <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1" x-text="task.location || 'No location'"></p>
+                                                        </div>
+                                                        <span class="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                                                              :class="{
+                                                                  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': task.status === 'completed',
+                                                                  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': task.status === 'in_progress',
+                                                                  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400': task.status === 'pending',
+                                                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400': !['completed','in_progress','pending'].includes(task.status)
+                                                              }"
+                                                              x-text="task.status"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Team Members (Editable) -->
+                            <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 min-h-[200px] max-h-[440px] overflow-hidden">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                        Team Members
+                                        <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full"
+                                              x-text="tcEditingTeam ? tcEditingTeam.members.length : 0"></span>
+                                    </h4>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Click to replace</span>
+                                </div>
+
+                                <div class="space-y-2 max-h-[350px] overflow-y-auto">
+                                    <template x-if="tcEditingTeam">
+                                        <template x-for="(member, index) in tcEditingTeam.members" :key="member.member_id">
+                                            <div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow group">
+                                                <div class="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                                                    <template x-if="member.profile_picture">
+                                                        <img :src="member.profile_picture" class="w-full h-full object-cover" :alt="member.name">
+                                                    </template>
+                                                    <template x-if="!member.profile_picture">
+                                                        <span class="text-xs font-bold text-gray-500 dark:text-gray-300" x-text="tcGetInitials(member.name)"></span>
+                                                    </template>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 line-clamp-1" x-text="member.name"></p>
+                                                    <div class="flex items-center gap-2">
+                                                        <template x-if="member.has_driving_license">
+                                                            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                                                <i class="fa-solid fa-car mr-0.5"></i> Driver
+                                                            </span>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <button @click.stop="tcOpenReplacePicker(member, index)"
+                                                        class="text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+                                                        title="Replace member">
+                                                    <i class="fa-solid fa-arrow-right-arrow-left text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </template>
+
+                                    <div x-show="tcEditingTeam && tcEditingTeam.members.length === 0"
+                                         class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+                                        <i class="fa-solid fa-users text-3xl mb-3 opacity-50"></i>
+                                        <p class="text-sm font-medium">No members assigned</p>
+                                        <p class="text-xs">This team has no members yet</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                            <span x-text="tcEditingTeam ? tcEditingTeam.members.length : 0"></span> member(s) in team
+                        </span>
+                        <button @click="tcCloseModal()"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Replace Member Modal -->
+            <div x-show="tcShowReplaceModal"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+                 @click.self="tcCloseReplacePicker()">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Replace Team Member</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        Replacing: <span class="font-medium text-gray-700 dark:text-gray-300" x-text="tcReplacingMember ? tcReplacingMember.name : ''"></span>
+                    </p>
+
+                    <div class="mb-4">
+                        <input type="text"
+                               x-model="tcEmployeeSearch"
+                               placeholder="Search employees..."
+                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="max-h-[300px] overflow-y-auto space-y-1">
+                        <template x-for="emp in tcFilteredEmployees" :key="emp.employee_id">
+                            <button @click="tcConfirmReplace(emp)"
+                                    class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                    :class="{ 'opacity-50 cursor-not-allowed': tcIsInCurrentTeam(emp.employee_id) }"
+                                    :disabled="tcIsInCurrentTeam(emp.employee_id)">
+                                <div class="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                                    <template x-if="emp.profile_picture">
+                                        <img :src="emp.profile_picture" class="w-full h-full object-cover" :alt="emp.name">
+                                    </template>
+                                    <template x-if="!emp.profile_picture">
+                                        <span class="text-xs font-bold text-gray-500 dark:text-gray-300" x-text="tcGetInitials(emp.name)"></span>
+                                    </template>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 line-clamp-1" x-text="emp.name"></p>
+                                    <div class="flex items-center gap-2">
+                                        <template x-if="emp.has_driving_license">
+                                            <span class="text-[10px] text-green-600 dark:text-green-400">
+                                                <i class="fa-solid fa-car mr-0.5"></i> Driver
+                                            </span>
+                                        </template>
+                                        <template x-if="tcIsInCurrentTeam(emp.employee_id)">
+                                            <span class="text-[10px] text-orange-500">Already in team</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </button>
+                        </template>
+
+                        <div x-show="tcFilteredEmployees.length === 0"
+                             class="p-6 text-center text-gray-500 dark:text-gray-400">
+                            <p class="text-sm">No employees found</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button @click="tcCloseReplacePicker()"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </section>
     </x-skeleton-page>
 
@@ -889,6 +1202,153 @@
                     this.formData = { name: '', color: '#22c55e', defaultFor: '', enabledItems: [] };
                 }
             }
+        }
+        function teamConfiguration() {
+            return {
+                tcSelectedDate: new Date().toISOString().split('T')[0],
+                tcTeams: [],
+                tcAllEmployees: [],
+                tcLoading: false,
+                tcShowEditModal: false,
+                tcShowReplaceModal: false,
+                tcEditingTeam: null,
+                tcReplacingMember: null,
+                tcReplacingIndex: null,
+                tcEmployeeSearch: '',
+                tcReplacing: false,
+
+                tcTeamColors: [
+                    '#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#ef4444',
+                    '#14b8a6', '#ec4899', '#6366f1', '#f97316', '#06b6d4',
+                ],
+
+                init() {
+                    this.tcFetchTeams();
+                    this.tcFetchEmployees();
+                },
+
+                tcGetTeamColor(teamIndex) {
+                    return this.tcTeamColors[(teamIndex - 1) % this.tcTeamColors.length];
+                },
+
+                tcGetInitials(name) {
+                    if (!name) return '?';
+                    const parts = name.trim().split(/\s+/);
+                    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+                    return name.substring(0, 2).toUpperCase();
+                },
+
+                async tcFetchTeams() {
+                    this.tcLoading = true;
+                    try {
+                        const res = await fetch(`{{ route('admin.team-configuration.teams') }}?date=${this.tcSelectedDate}`, {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        const data = await res.json();
+                        this.tcTeams = data.teams || [];
+                    } catch (e) {
+                        console.error('Failed to fetch teams:', e);
+                        this.tcTeams = [];
+                    }
+                    this.tcLoading = false;
+                },
+
+                async tcFetchEmployees() {
+                    try {
+                        const res = await fetch(`{{ route('admin.team-configuration.employees') }}`, {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        const data = await res.json();
+                        this.tcAllEmployees = data.employees || [];
+                    } catch (e) {
+                        console.error('Failed to fetch employees:', e);
+                    }
+                },
+
+                tcEditTeam(team) {
+                    this.tcEditingTeam = JSON.parse(JSON.stringify(team));
+                    this.tcShowEditModal = true;
+                },
+
+                tcCloseModal() {
+                    this.tcShowEditModal = false;
+                    this.tcEditingTeam = null;
+                },
+
+                tcOpenReplacePicker(member, index) {
+                    this.tcReplacingMember = member;
+                    this.tcReplacingIndex = index;
+                    this.tcEmployeeSearch = '';
+                    this.tcShowReplaceModal = true;
+                },
+
+                tcCloseReplacePicker() {
+                    this.tcShowReplaceModal = false;
+                    this.tcReplacingMember = null;
+                    this.tcReplacingIndex = null;
+                    this.tcEmployeeSearch = '';
+                },
+
+                get tcFilteredEmployees() {
+                    const search = this.tcEmployeeSearch.toLowerCase().trim();
+                    if (!search) return this.tcAllEmployees;
+                    return this.tcAllEmployees.filter(e => e.name.toLowerCase().includes(search));
+                },
+
+                tcIsInCurrentTeam(employeeId) {
+                    if (!this.tcEditingTeam) return false;
+                    return this.tcEditingTeam.members.some(m => m.employee_id === employeeId);
+                },
+
+                async tcConfirmReplace(newEmployee) {
+                    if (this.tcIsInCurrentTeam(newEmployee.employee_id)) return;
+                    if (this.tcReplacing) return;
+
+                    const oldName = this.tcReplacingMember.name;
+                    const newName = newEmployee.name;
+
+                    try {
+                        await window.showConfirmDialog(
+                            'Replace Team Member',
+                            `Are you sure you want to replace "${oldName}" with "${newName}"? This will not affect any existing task progress or checklist completions.`,
+                            'Replace',
+                            'Cancel'
+                        );
+                    } catch { return; }
+
+                    this.tcReplacing = true;
+                    try {
+                        const res = await fetch('{{ route("admin.team-configuration.replace-member") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                member_id: this.tcReplacingMember.member_id,
+                                new_employee_id: newEmployee.employee_id,
+                            }),
+                        });
+                        const data = await res.json();
+
+                        if (res.ok && data.success) {
+                            this.tcEditingTeam.members[this.tcReplacingIndex] = data.member;
+                            const teamIdx = this.tcTeams.findIndex(t => t.id === this.tcEditingTeam.id);
+                            if (teamIdx !== -1) {
+                                this.tcTeams[teamIdx].members[this.tcReplacingIndex] = data.member;
+                            }
+                            this.tcCloseReplacePicker();
+                            window.showSuccessDialog('Member Replaced', `"${oldName}" has been replaced with "${newName}" successfully.`);
+                        } else {
+                            window.showErrorDialog('Replace Failed', data.message || 'Something went wrong.');
+                        }
+                    } catch (e) {
+                        window.showErrorDialog('Replace Failed', 'A network error occurred. Please try again.');
+                    }
+                    this.tcReplacing = false;
+                },
+            };
         }
     </script>
     @endpush
