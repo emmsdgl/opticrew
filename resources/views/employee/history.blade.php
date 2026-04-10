@@ -11,7 +11,7 @@
                 {{-- Activity List --}}
                 <div class="flex flex-col flex-1 overflow-hidden gap-2">
                     <div class="history-header sticky top-0 z-10 pb-2">
-                        <div class="flex flex-col gap-1 w-full px-8 py-3">
+                        <div class="flex flex-col gap-1 w-full px-8 py-8">
                             <p class="text-base font-bold text-blue-950 dark:text-white">Activity History</p>
                             <p class="text-sm text-gray-700 dark:text-gray-500">View and track your past tasks and activities.</p>
                         </div>
@@ -62,34 +62,36 @@
                         </div>
                     </div>
 
-                    {{-- Activity Cards Container (height fits 3 items) --}}
-                    <div class="space-y-3 h-[26rem] overflow-y-auto my-3">
+                    {{-- Activity Cards Container --}}
+                    <div class="my-3">
 
                         {{-- All Tab Content --}}
                         <div x-show="activeTab === 'all'" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 transform translate-y-2"
-                            x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-1">
+                            x-transition:enter-end="opacity-100 transform translate-y-0">
 
-                            <template x-for="(activity, index) in activities" :key="index">
-                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
-                                    @click="selectActivity(index)">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
+                            <div class="space-y-1">
+                                <template x-for="(activity, index) in paginatedItems(activities, pages.all)" :key="index">
+                                    <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
+                                        @click="selectActivity(activities.indexOf(activity))">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                                <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title + ' - ' + activity.location"></h3>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
+                                            </div>
+                                            <div class="text-xs font-medium"
+                                                :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
+                                                        activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
+                                                        activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
+                                                        'text-orange-600 dark:text-orange-400'"
+                                                x-text="activity.status"></div>
                                         </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title + ' - ' + activity.location"></h3>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
-                                        </div>
-                                        <div class="text-xs font-medium"
-                                            :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
-                                                    activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
-                                                    activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
-                                                    'text-orange-600 dark:text-orange-400'"
-                                            x-text="activity.status"></div>
                                     </div>
-                                </div>
-                            </template>
+                                </template>
+                            </div>
 
                             <template x-if="activities.length === 0">
                                 <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
@@ -106,33 +108,54 @@
                                     </p>
                                 </div>
                             </template>
+
+                            <template x-if="activities.length > perPage">
+                                <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Showing <span x-text="((pages.all - 1) * perPage) + 1"></span>-<span x-text="Math.min(pages.all * perPage, activities.length)"></span> of <span x-text="activities.length"></span>
+                                    </p>
+                                    <div class="flex items-center gap-1">
+                                        <button @click="pages.all = Math.max(1, pages.all - 1)" :disabled="pages.all === 1"
+                                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                            Prev
+                                        </button>
+                                        <span class="px-2 text-xs text-gray-500 dark:text-gray-400" x-text="pages.all + ' / ' + totalPages(activities)"></span>
+                                        <button @click="pages.all = Math.min(totalPages(activities), pages.all + 1)" :disabled="pages.all >= totalPages(activities)"
+                                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
                         {{-- Assigned Tasks Tab Content --}}
                         <div x-show="activeTab === 'services'" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 transform translate-y-2"
-                            x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-1">
+                            x-transition:enter-end="opacity-100 transform translate-y-0">
 
-                            <template x-for="(activity, index) in activities.filter(a => a.type === 'task')" :key="'task-' + index">
-                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
-                                    @click="selectActivity(activities.indexOf(activity))">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
+                            <div class="space-y-1">
+                                <template x-for="(activity, index) in paginatedItems(activities.filter(a => a.type === 'task'), pages.services)" :key="'task-' + index">
+                                    <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
+                                        @click="selectActivity(activities.indexOf(activity))">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                                <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title + ' - ' + activity.location"></h3>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
+                                            </div>
+                                            <div class="text-xs font-medium"
+                                                :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
+                                                        activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
+                                                        activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
+                                                        'text-orange-600 dark:text-orange-400'"
+                                                x-text="activity.status"></div>
                                         </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title + ' - ' + activity.location"></h3>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
-                                        </div>
-                                        <div class="text-xs font-medium"
-                                            :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
-                                                    activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
-                                                    activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
-                                                    'text-orange-600 dark:text-orange-400'"
-                                            x-text="activity.status"></div>
                                     </div>
-                                </div>
-                            </template>
+                                </template>
+                            </div>
 
                             <template x-if="activities.filter(a => a.type === 'task').length === 0">
                                 <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
@@ -149,33 +172,54 @@
                                     </p>
                                 </div>
                             </template>
+
+                            <template x-if="activities.filter(a => a.type === 'task').length > perPage">
+                                <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Showing <span x-text="((pages.services - 1) * perPage) + 1"></span>-<span x-text="Math.min(pages.services * perPage, activities.filter(a => a.type === 'task').length)"></span> of <span x-text="activities.filter(a => a.type === 'task').length"></span>
+                                    </p>
+                                    <div class="flex items-center gap-1">
+                                        <button @click="pages.services = Math.max(1, pages.services - 1)" :disabled="pages.services === 1"
+                                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                            Prev
+                                        </button>
+                                        <span class="px-2 text-xs text-gray-500 dark:text-gray-400" x-text="pages.services + ' / ' + totalPages(activities.filter(a => a.type === 'task'))"></span>
+                                        <button @click="pages.services = Math.min(totalPages(activities.filter(a => a.type === 'task')), pages.services + 1)" :disabled="pages.services >= totalPages(activities.filter(a => a.type === 'task'))"
+                                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
                         {{-- To Rate Tab Content --}}
                         <div x-show="activeTab === 'to_rate'" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 transform translate-y-2"
-                            x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-1">
+                            x-transition:enter-end="opacity-100 transform translate-y-0">
 
-                            <template x-for="(activity, index) in activities.filter(a => a.needsRating)" :key="'rate-' + index">
-                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
-                                    @click="openRateModal(activities.indexOf(activity))">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
+                            <div class="space-y-1">
+                                <template x-for="(activity, index) in paginatedItems(activities.filter(a => a.needsRating), pages.to_rate)" :key="'rate-' + index">
+                                    <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 cursor-pointer"
+                                        @click="openRateModal(activities.indexOf(activity))">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                                <img :src="activity.icon" alt="Service Icon" class="w-4 h-4">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title + ' - ' + activity.location"></h3>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
+                                            </div>
+                                            <div class="text-xs font-medium"
+                                                :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
+                                                        activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
+                                                        activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
+                                                        'text-orange-600 dark:text-orange-400'"
+                                                x-text="activity.status"></div>
                                         </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="activity.title + ' - ' + activity.location"></h3>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="activity.date"></p>
-                                        </div>
-                                        <div class="text-xs font-medium"
-                                            :class="activity.status === 'Completed' ? 'text-green-600 dark:text-green-400' :
-                                                    activity.status === 'In Progress' ? 'text-blue-600 dark:text-blue-400' :
-                                                    activity.status === 'Cancelled' ? 'text-red-600 dark:text-red-400' :
-                                                    'text-orange-600 dark:text-orange-400'"
-                                            x-text="activity.status"></div>
                                     </div>
-                                </div>
-                            </template>
+                                </template>
+                            </div>
 
                             <template x-if="activities.filter(a => a.needsRating).length === 0">
                                 <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
@@ -192,36 +236,77 @@
                                     </p>
                                 </div>
                             </template>
+
+                            <template x-if="activities.filter(a => a.needsRating).length > perPage">
+                                <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Showing <span x-text="((pages.to_rate - 1) * perPage) + 1"></span>-<span x-text="Math.min(pages.to_rate * perPage, activities.filter(a => a.needsRating).length)"></span> of <span x-text="activities.filter(a => a.needsRating).length"></span>
+                                    </p>
+                                    <div class="flex items-center gap-1">
+                                        <button @click="pages.to_rate = Math.max(1, pages.to_rate - 1)" :disabled="pages.to_rate === 1"
+                                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                            Prev
+                                        </button>
+                                        <span class="px-2 text-xs text-gray-500 dark:text-gray-400" x-text="pages.to_rate + ' / ' + totalPages(activities.filter(a => a.needsRating))"></span>
+                                        <button @click="pages.to_rate = Math.min(totalPages(activities.filter(a => a.needsRating)), pages.to_rate + 1)" :disabled="pages.to_rate >= totalPages(activities.filter(a => a.needsRating))"
+                                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
                         {{-- Ratings Tab Content --}}
                         <div x-show="activeTab === 'ratings'" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 transform translate-y-2"
-                            x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-1">
+                            x-transition:enter-end="opacity-100 transform translate-y-0">
 
-                            <template x-for="(rating, index) in ratings" :key="'rating-' + index">
-                                <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                            <img :src="rating.icon" alt="Service Icon" class="w-4 h-4">
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="rating.taskName + ' - ' + rating.location"></h3>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="rating.submitted_at"></p>
-                                        </div>
-                                        <div class="flex items-center gap-1">
-                                            <template x-for="star in 5" :key="star">
-                                                <svg :class="star <= rating.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
-                                                    class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                    </svg>
-                                                </template>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400 ml-1" x-text="rating.rating + '/5'"></span>
+                            <div class="space-y-1">
+                                <template x-for="(rating, index) in paginatedItems(ratings, pages.ratings)" :key="'rating-' + index">
+                                    <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
+                                                <img :src="rating.icon" alt="Service Icon" class="w-4 h-4">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <h3 class="text-xs font-semibold text-gray-900 dark:text-white" x-text="rating.taskName + ' - ' + rating.location"></h3>
+                                                    <span x-show="rating.feedbackType === 'client'"
+                                                        class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300">
+                                                        Client Feedback
+                                                    </span>
+                                                    <span x-show="rating.feedbackType === 'employee'"
+                                                        class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                                                        Your Feedback
+                                                    </span>
+                                                </div>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="rating.submitted_at"></p>
+                                            </div>
+                                            <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                                <div class="flex items-center gap-1">
+                                                    <template x-for="star in 5" :key="star">
+                                                        <svg :class="star <= rating.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                                                            class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                            </svg>
+                                                        </template>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-1" x-text="rating.rating + '/5'"></span>
+                                                </div>
+                                                <div x-show="rating.keywords && rating.keywords.length > 0" class="flex flex-wrap justify-end gap-1">
+                                                    <template x-for="keyword in rating.keywords" :key="keyword">
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium border"
+                                                            :class="rating.feedbackType === 'client'
+                                                                ? 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-300 dark:border-yellow-700'
+                                                                : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700'"
+                                                            x-text="keyword"></span>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </template>
+                                </template>
+                            </div>
 
                             <template x-if="ratings.length === 0">
                                 <div class="flex flex-col items-center justify-center py-2 px-6 text-center">
@@ -236,6 +321,25 @@
                                     <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
                                         Your submitted ratings will appear here.
                                     </p>
+                                </div>
+                            </template>
+
+                            <template x-if="ratings.length > perPage">
+                                <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Showing <span x-text="((pages.ratings - 1) * perPage) + 1"></span>-<span x-text="Math.min(pages.ratings * perPage, ratings.length)"></span> of <span x-text="ratings.length"></span>
+                                    </p>
+                                    <div class="flex items-center gap-1">
+                                        <button @click="pages.ratings = Math.max(1, pages.ratings - 1)" :disabled="pages.ratings === 1"
+                                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                            Prev
+                                        </button>
+                                        <span class="px-2 text-xs text-gray-500 dark:text-gray-400" x-text="pages.ratings + ' / ' + totalPages(ratings)"></span>
+                                        <button @click="pages.ratings = Math.min(totalPages(ratings), pages.ratings + 1)" :disabled="pages.ratings >= totalPages(ratings)"
+                                            class="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                            Next
+                                        </button>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -410,6 +514,17 @@
             ratingActivityIndex: null,
             activities: @json($activities ?? []),
             ratings: @json($ratings ?? []),
+            perPage: 5,
+            pages: { all: 1, services: 1, to_rate: 1, ratings: 1 },
+
+            paginatedItems(items, page) {
+                const start = (page - 1) * this.perPage;
+                return items.slice(start, start + this.perPage);
+            },
+
+            totalPages(items) {
+                return Math.ceil(items.length / this.perPage);
+            },
 
             selectActivity(index) {
                 // Store the actual activity object

@@ -397,6 +397,58 @@
     <x-click-spark />
     @auth
         <x-material-ui.sonner />
+
+        {{-- Session Inactivity Timeout (30 minutes) --}}
+        <script>
+        (function() {
+            const TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+            let inactivityTimer;
+
+            function resetTimer() {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = setTimeout(handleSessionExpired, TIMEOUT_MS);
+            }
+
+            function handleSessionExpired() {
+                // Remove activity listeners to prevent further resets
+                ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(function(evt) {
+                    document.removeEventListener(evt, resetTimer);
+                });
+
+                // Show error dialog then redirect to logout
+                if (typeof window.showErrorDialog === 'function') {
+                    window.showErrorDialog(
+                        'Session Expired',
+                        'Your session has expired due to 30 minutes of inactivity. Please log in again.',
+                        'Log In',
+                        null
+                    );
+                }
+
+                // Submit logout form after a short delay to let dialog show
+                setTimeout(function() {
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route("logout") }}';
+                    var csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrf);
+                    document.body.appendChild(form);
+                    form.submit();
+                }, 1500);
+            }
+
+            // Listen for user activity
+            ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(function(evt) {
+                document.addEventListener(evt, resetTimer, { passive: true });
+            });
+
+            // Start the timer
+            resetTimer();
+        })();
+        </script>
     @endauth
     @stack('modals')
 

@@ -133,10 +133,24 @@ class EmployeeTasksController extends Controller
                 ->first();
         }
 
+        // Fetch client feedback for completed tasks via matching appointments
+        $clientFeedbacks = collect();
+        if ($task->status === 'Completed') {
+            $clientFeedbacks = \App\Models\Feedback::where('user_type', 'client')
+                ->whereHas('appointment', function ($query) use ($task) {
+                    $query->where('client_id', $task->client_id)
+                        ->whereDate('service_date', $task->scheduled_date);
+                })
+                ->with('client')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
         return view('employee.tasks.show', [
             'employee' => $employee,
             'task' => $task,
             'companyChecklist' => $companyChecklist,
+            'clientFeedbacks' => $clientFeedbacks,
         ]);
     }
 

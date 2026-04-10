@@ -911,7 +911,20 @@ class TaskController extends Controller
             'checklistCompletions'
         ])->findOrFail($id);
 
-        return view('admin.tasks.show', compact('task'));
+        // Fetch client feedback for completed tasks via matching appointments
+        $clientFeedbacks = collect();
+        if ($task->status === 'Completed') {
+            $clientFeedbacks = \App\Models\Feedback::where('user_type', 'client')
+                ->whereHas('appointment', function ($query) use ($task) {
+                    $query->where('client_id', $task->client_id)
+                        ->whereDate('service_date', $task->scheduled_date);
+                })
+                ->with('client')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('admin.tasks.show', compact('task', 'clientFeedbacks'));
     }
 
     /**

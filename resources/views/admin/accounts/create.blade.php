@@ -379,23 +379,28 @@
                     </div>
 
                     <dl>
-                        <!-- Skills -->
+                        <!-- Skills & Driving License -->
                         <div class="px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center bg-gray-50 dark:bg-gray-800/50">
                             <dt class="text-sm font-semibold text-gray-900 dark:text-white">Skills</dt>
                             <dd class="mt-1 sm:col-span-2 sm:mt-0">
-                                <div class="flex gap-6">
+                                <div class="flex items-center gap-4">
+                                    {{-- Cleaning is always a default skill --}}
+                                    <input type="hidden" name="skills[]" value="Cleaning">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-default grayscale">
+                                        Cleaning
+                                    </span>
+
+                                    {{-- Driving license checkbox --}}
                                     <label class="flex items-center space-x-2">
-                                        <input type="checkbox" name="skills[]" value="Driving" {{ is_array(old('skills')) && in_array('Driving', old('skills')) ? 'checked' : '' }}
+                                        <input type="checkbox" name="has_driving_license" value="1" {{ old('has_driving_license') ? 'checked' : '' }}
                                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Driving</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" name="skills[]" value="Cleaning" {{ is_array(old('skills')) && in_array('Cleaning', old('skills')) ? 'checked' : '' }}
-                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Cleaning</span>
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Has driving license</span>
                                     </label>
                                 </div>
                                 @error('skills')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                                @error('has_driving_license')
                                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
                             </dd>
@@ -447,20 +452,6 @@
                             </dd>
                         </div>
 
-                        <!-- Driving License -->
-                        <div class="px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:items-center bg-gray-50 dark:bg-gray-800/50">
-                            <dt class="text-sm font-semibold text-gray-900 dark:text-white">Driving license</dt>
-                            <dd class="mt-1 sm:col-span-2 sm:mt-0">
-                                <label class="flex items-center space-x-2">
-                                    <input type="checkbox" name="has_driving_license" value="1" {{ old('has_driving_license') ? 'checked' : '' }}
-                                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">Has driving license</span>
-                                </label>
-                                @error('has_driving_license')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </dd>
-                        </div>
                     </dl>
                 </div>
 
