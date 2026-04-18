@@ -484,6 +484,13 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
         Route::patch('/{id}/toggle-ban', [\App\Http\Controllers\Admin\AccountController::class, 'toggleBan'])->name('toggle-ban');
     });
 
+    // --- ADMIN TEAM CONFIGURATION ROUTES (AJAX for dashboard) ---
+    Route::prefix('admin/team-configuration')->name('admin.team-configuration.')->group(function () {
+        Route::get('/teams', [\App\Http\Controllers\Admin\TeamConfigurationController::class, 'getTeams'])->name('teams');
+        Route::get('/employees', [\App\Http\Controllers\Admin\TeamConfigurationController::class, 'getEmployees'])->name('employees');
+        Route::post('/replace-member', [\App\Http\Controllers\Admin\TeamConfigurationController::class, 'replaceMember'])->name('replace-member');
+    });
+
     Route::get('/admin/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('admin.analytics');
 
     // Redirect old courses URL to training page

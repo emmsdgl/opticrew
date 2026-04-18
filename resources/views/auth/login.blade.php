@@ -587,30 +587,73 @@
             </div>
             <div class="p-5 overflow-y-auto flex-1" id="privacy-modal-content">
                 <div class="space-y-4 text-gray-700 dark:text-gray-300">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Last updated: January 2024</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">1. Information We Collect
-                    </h3>
-                    <p class="text-sm leading-relaxed">We collect information you provide directly to us, including
-                        your name, email address, phone number, payment information, and service preferences.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">2. How We Use Your
-                        Information</h3>
-                    <p class="text-sm leading-relaxed">We use the information we collect to provide, maintain, and
-                        improve our services, to process your bookings, and to communicate with you.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">3. Information Sharing</h3>
-                    <p class="text-sm leading-relaxed">We do not sell or rent your personal information to third
-                        parties. We may share your information with service providers who assist us.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">4. Data Security</h3>
-                    <p class="text-sm leading-relaxed">We implement appropriate technical and organizational measures
-                        to protect your personal information.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">5. Your Rights</h3>
-                    <p class="text-sm leading-relaxed">You have the right to access, update, or delete your personal
-                        information. You may also opt-out of promotional communications.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">6. Cookies and Tracking</h3>
-                    <p class="text-sm leading-relaxed">We use cookies and similar tracking technologies to improve our
-                        services. You can control cookies through your browser settings.</p>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">7. Contact Us</h3>
-                    <p class="text-sm leading-relaxed">If you have any questions about this Privacy Policy, please
-                        contact us at privacy@finnoys.com.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Last Updated: January 2024 &nbsp;|&nbsp; Effective Date: January 2024 &nbsp;|&nbsp; GDPR-Compliant Version</p>
+                    <p class="text-sm leading-relaxed">Finnoys Cleaning Services ("we", "us", or "our") is committed to protecting your personal data in full compliance with Regulation (EU) 2016/679 — the General Data Protection Regulation (GDPR). This Privacy Policy applies to all personal data we collect when you use our services, visit our website, or communicate with us.</p>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">1. Information We Collect</h3>
+                    <p class="text-sm leading-relaxed">In accordance with the data minimisation principle (Article 5(1)(c) GDPR), we only collect personal data that is adequate, relevant, and limited to what is necessary. This includes:</p>
+                    <ul class="list-disc ml-5 space-y-1 text-sm leading-relaxed">
+                        <li><strong>Identity &amp; Contact Data:</strong> Full name, email address, phone number, and postal address provided directly by you.</li>
+                        <li><strong>Payment &amp; Billing Information:</strong> Payment details processed securely via PCI-DSS compliant third-party processors. We do not store raw card data.</li>
+                        <li><strong>Service Preferences &amp; Booking Details:</strong> Information related to the services you request, scheduling preferences, and booking history.</li>
+                        <li><strong>Technical &amp; Usage Data:</strong> IP address, browser and device information, website usage data, and cookie identifiers — collected automatically and only where consent has been obtained for non-essential purposes.</li>
+                    </ul>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">2. How We Use Your Information</h3>
+                    <p class="text-sm leading-relaxed">Your personal data is processed for the following purposes (Article 5(1)(b) GDPR):</p>
+                    <ul class="list-disc ml-5 space-y-1 text-sm leading-relaxed">
+                        <li><strong>Service Delivery (Art. 6(1)(b)):</strong> To provide, manage, and deliver our cleaning services, including processing and confirming bookings.</li>
+                        <li><strong>Payments (Art. 6(1)(b)):</strong> To process transactions, issue invoices, and manage billing securely.</li>
+                        <li><strong>Communications (Art. 6(1)(b)):</strong> To send booking confirmations, receipts, service updates, and respond to your enquiries.</li>
+                        <li><strong>Legal Compliance (Art. 6(1)(c)):</strong> To fulfil our obligations under applicable tax, accounting, employment, and regulatory law.</li>
+                        <li><strong>Marketing (Art. 6(1)(a)):</strong> To send promotional communications — only where you have provided prior, freely given, and specific consent.</li>
+                    </ul>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">3. Data Storage and Security</h3>
+                    <p class="text-sm leading-relaxed">We implement appropriate technical and organisational security measures to protect your personal data in accordance with Article 32 GDPR, including:</p>
+                    <ul class="list-disc ml-5 space-y-1 text-sm leading-relaxed">
+                        <li>TLS/SSL encryption for all data transmitted over the internet, and encryption of personal data at rest.</li>
+                        <li>Role-based access control, limiting data access to authorised personnel only.</li>
+                        <li>Incident response procedures compliant with Article 33 GDPR — breach notification to the supervisory authority within 72 hours.</li>
+                    </ul>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">4. Data Sharing and Disclosure</h3>
+                    <p class="text-sm leading-relaxed">We do not sell, rent, or trade your personal data. We may share it only in the following circumstances:</p>
+                    <ul class="list-disc ml-5 space-y-1 text-sm leading-relaxed">
+                        <li><strong>Authorised Data Processors (Art. 28 GDPR):</strong> Third-party service providers acting under written Data Processing Agreements.</li>
+                        <li><strong>Legal Disclosures (Art. 6(1)(c)):</strong> When required by applicable law, court order, or to establish, exercise, or defend legal claims.</li>
+                        <li><strong>Business Transfers:</strong> In the event of a merger, acquisition, or sale of assets, with prior notice to you.</li>
+                    </ul>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">5. Your Rights Under GDPR (Articles 15–22)</h3>
+                    <p class="text-sm leading-relaxed">As a data subject, you have the following rights:</p>
+                    <ul class="list-disc ml-5 space-y-1 text-sm leading-relaxed">
+                        <li><strong>Right of Access (Art. 15):</strong> Request a copy of all personal data we hold about you.</li>
+                        <li><strong>Right to Rectification (Art. 16):</strong> Request correction of inaccurate or incomplete personal data.</li>
+                        <li><strong>Right to Erasure (Art. 17):</strong> Request deletion of your data where it is no longer necessary or consent is withdrawn.</li>
+                        <li><strong>Right to Restriction &amp; Right to Object (Arts. 18 &amp; 21):</strong> Request restriction of processing or object to processing based on legitimate interests.</li>
+                        <li><strong>Right to Data Portability (Art. 20):</strong> Receive your data in a structured, machine-readable format.</li>
+                        <li><strong>Right to Withdraw Consent (Art. 7(3)):</strong> Withdraw consent at any time without affecting the lawfulness of prior processing.</li>
+                        <li><strong>Right to Lodge a Complaint:</strong> Lodge a complaint with your national supervisory authority.</li>
+                    </ul>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">6. Geolocation Data</h3>
+                    <p class="text-sm leading-relaxed">Where our services involve geolocation tracking, such data is collected only where explicit consent has been obtained or where strictly necessary for the performance of your service agreement. You may withdraw consent at any time.</p>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">7. Data Retention</h3>
+                    <p class="text-sm leading-relaxed">We retain personal data only for as long as necessary in accordance with the storage limitation principle (Article 5(1)(e) GDPR). Once the applicable retention period expires, personal data is securely deleted or anonymised.</p>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">8. Cookies and Tracking Technologies</h3>
+                    <p class="text-sm leading-relaxed">We use cookies and similar tracking technologies in accordance with the ePrivacy Directive and GDPR. Non-essential cookies are only stored with your prior consent.</p>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">9. International Data Transfers</h3>
+                    <p class="text-sm leading-relaxed">We primarily store and process data within the European Economic Area (EEA). Where transfers to third countries are necessary, we ensure adequate protection through Standard Contractual Clauses (Art. 46(2)(c)) or Adequacy Decisions (Art. 45).</p>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">10. Changes to This Policy</h3>
+                    <p class="text-sm leading-relaxed">We may update this Privacy Policy from time to time. We will notify you of material changes at least 30 days before they take effect.</p>
+
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mt-4">11. Contact Us</h3>
+                    <p class="text-sm leading-relaxed">For any questions, concerns, or to exercise your data subject rights, please contact us at <strong>privacy@finnoys.com</strong>.</p>
                 </div>
             </div>
             <div class="p-4 border-t border-gray-200 dark:border-gray-700" x-data="{ alreadyAccepted: document.cookie.includes('finnoys_policy_accepted=1') }">

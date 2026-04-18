@@ -346,21 +346,45 @@
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">The scheduled date has passed. This task can no longer be accepted or declined.</p>
                         </div>
                     @else
+                        @php
+                            $isScheduledToday = \Carbon\Carbon::parse($task->scheduled_date)->isSameDay(\Carbon\Carbon::today());
+                        @endphp
                         {{-- Approval Buttons - Show when task needs approval --}}
                         <div class="flex gap-3">
-                            <button type="button" onclick="handleTaskAction('Accept Task', 'Are you sure you want to accept this task?', 'Accept', 'approve-task-form')"
-                                class="flex-1 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20">
+                            <button type="button"
+                                @if($isScheduledToday)
+                                    onclick="handleTaskAction('Accept Task', 'Are you sure you want to accept this task?', 'Accept', 'approve-task-form')"
+                                    class="flex-1 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-green-600/30 dark:shadow-green-600/20"
+                                @else
+                                    disabled
+                                    class="flex-1 bg-gray-400 cursor-not-allowed text-white font-semibold py-4 rounded-full"
+                                @endif
+                            >
                                 <i class="fas fa-check mr-2"></i>Accept
                             </button>
-                            <button type="button" onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
-                                class="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-red-600/30 dark:shadow-red-600/20">
+                            <button type="button"
+                                @if($isScheduledToday)
+                                    onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
+                                    class="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-red-600/30 dark:shadow-red-600/20"
+                                @else
+                                    disabled
+                                    class="flex-1 bg-gray-400 cursor-not-allowed text-white font-semibold py-4 rounded-full"
+                                @endif
+                            >
                                 <i class="fas fa-times mr-2"></i>Decline
                             </button>
                         </div>
-                        <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Please accept or decline this task
-                        </p>
+                        @if($isScheduledToday)
+                            <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Please accept or decline this task
+                            </p>
+                        @else
+                            <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                                <i class="fas fa-clock mr-1"></i>
+                                You can accept or decline this task on {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
+                            </p>
+                        @endif
                     @endif
                 @elseif($task->employee_approved === true)
                     {{-- Task Action Buttons - Show when task is approved --}}
@@ -446,6 +470,15 @@
                                 class="task-tab-button pb-4 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
                                 Team
                             </button>
+                            @if($task->status === 'Completed')
+                            <button onclick="switchTaskTab('ratings')" id="task-tab-ratings"
+                                class="task-tab-button pb-4 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
+                                Ratings
+                                @if($clientFeedbacks->count() > 0)
+                                    <span class="ml-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-yellow-800 bg-yellow-100 dark:bg-yellow-900/40 dark:text-yellow-300 rounded-full">{{ $clientFeedbacks->count() }}</span>
+                                @endif
+                            </button>
+                            @endif
                         </nav>
                     </div>
 
@@ -1039,6 +1072,69 @@
                                 </div>
                             @endif
                         </div>
+
+                        @if($task->status === 'Completed')
+                        <!-- Ratings Tab -->
+                        <div id="task-content-ratings" class="task-tab-content hidden">
+                            @if($clientFeedbacks->count() > 0)
+                                <div class="space-y-4">
+                                    @foreach($clientFeedbacks as $feedback)
+                                        <div class="rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                            <div class="flex items-start gap-4">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                                                    {{ strtoupper(substr($feedback->client->first_name ?? 'C', 0, 1)) }}
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-start justify-between gap-4">
+                                                        <div class="min-w-0">
+                                                            <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                                {{ $feedback->client ? $feedback->client->full_name : 'Unknown Client' }}
+                                                            </p>
+                                                            <span class="text-xs text-gray-400 dark:text-gray-500">
+                                                                {{ \Carbon\Carbon::parse($feedback->created_at)->format('M d, Y \a\t g:i A') }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                                            <div class="flex items-center gap-1">
+                                                                @for($i = 1; $i <= 5; $i++)
+                                                                    <svg class="w-4 h-4 {{ $i <= ($feedback->rating ?? $feedback->overall_rating ?? 0) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600' }}" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                                    </svg>
+                                                                @endfor
+                                                                <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">{{ $feedback->rating ?? $feedback->overall_rating ?? 0 }}/5</span>
+                                                            </div>
+                                                            @if(!empty($feedback->keywords) && is_array($feedback->keywords))
+                                                                <div class="flex flex-wrap justify-end gap-1">
+                                                                    @foreach($feedback->keywords as $keyword)
+                                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-300 dark:border-yellow-700">
+                                                                            {{ $keyword }}
+                                                                        </span>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    @if($feedback->feedback_text || $feedback->comments)
+                                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                                            "{{ $feedback->feedback_text ?? $feedback->comments }}"
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                    <div class="text-center py-12">
+                                        <i class="fas fa-star text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                                        <p class="text-gray-500 dark:text-gray-400 text-sm">No client feedback yet</p>
+                                        <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Client ratings will appear here once submitted.</p>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -1208,24 +1304,48 @@
                                 </div>
                             </div>
                         @else
+                            @php
+                                $isScheduledTodayDesktop = \Carbon\Carbon::parse($task->scheduled_date)->isSameDay(\Carbon\Carbon::today());
+                            @endphp
                             <!-- Approval Action Buttons - Show when task needs approval -->
                             <div class="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                <button type="button" onclick="handleTaskAction('Accept Task', 'Are you sure you want to accept this task?', 'Accept', 'approve-task-form')"
-                                    class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                                <button type="button"
+                                    @if($isScheduledTodayDesktop)
+                                        onclick="handleTaskAction('Accept Task', 'Are you sure you want to accept this task?', 'Accept', 'approve-task-form')"
+                                        class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                                    @else
+                                        disabled
+                                        class="w-full px-4 py-2.5 bg-gray-400 cursor-not-allowed text-white font-medium rounded-lg text-sm flex items-center justify-center gap-2"
+                                    @endif
+                                >
                                     <i class="fas fa-check"></i>
                                     Accept Task
                                 </button>
-                                <button type="button" onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
-                                    class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2">
+                                <button type="button"
+                                    @if($isScheduledTodayDesktop)
+                                        onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
+                                        class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2"
+                                    @else
+                                        disabled
+                                        class="w-full px-4 py-2.5 bg-gray-400 cursor-not-allowed text-white font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-sm flex items-center justify-center gap-2"
+                                    @endif
+                                >
                                     <i class="fas fa-times"></i>
                                     Decline Task
                                 </button>
                             </div>
 
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Please accept or decline this task
-                            </p>
+                            @if($isScheduledTodayDesktop)
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Please accept or decline this task
+                                </p>
+                            @else
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    You can accept or decline on {{ \Carbon\Carbon::parse($task->scheduled_date)->format('M d, Y') }}
+                                </p>
+                            @endif
                         @endif
 
                     @elseif($task->employee_approved === true)

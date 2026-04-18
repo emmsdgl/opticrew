@@ -31,10 +31,12 @@ class ProcessTaskApprovalGracePeriod extends Command
         $today = Carbon::today();
 
         // SCENARIO #19: Find tasks that were assigned but not approved within grace period
+        // Only flag tasks whose scheduled date has already passed (past tasks).
+        // Today's and future tasks stay in "To Be Approved" so employees can still act on them.
         $expiredApprovalTasks = Task::whereNull('employee_approved')
             ->whereNotNull('assigned_team_id')
             ->whereNotIn('status', ['Completed', 'Cancelled'])
-            ->whereDate('scheduled_date', '>=', $today)
+            ->whereDate('scheduled_date', '<', $today)
             ->get()
             ->filter(function ($task) use ($gracePeriod) {
                 // Check if grace period has passed since assignment

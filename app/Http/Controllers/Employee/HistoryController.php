@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\Feedback;
 use App\Models\Employee;
+use App\Models\ClientAppointment;
 use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -213,10 +214,11 @@ class HistoryController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $ratings = $feedbacks->map(function ($feedback) {
+        $employeeRatings = $feedbacks->map(function ($feedback) {
             return [
                 'id' => $feedback->id,
                 'task_id' => $feedback->task_id,
+                'feedbackType' => 'employee',
                 'taskName' => $feedback->task ? $feedback->task->task_description : 'Unknown Task',
                 'location' => $feedback->task && $feedback->task->location ? $feedback->task->location->location_name : 'N/A',
                 'clientName' => $feedback->task && $feedback->task->client ? $feedback->task->client->name : 'Unknown',
@@ -227,6 +229,45 @@ class HistoryController extends Controller
                 'icon' => $this->getServiceIcon($feedback->task ? $feedback->task->task_description : ''),
             ];
         });
+
+        // Fetch client feedback for completed tasks assigned to this employee
+        $completedTaskIds = $tasks->where('status', 'Completed')->pluck('id')->toArray();
+
+        $clientFeedbacks = collect();
+        if (!empty($completedTaskIds)) {
+            // Get completed tasks with their client_id, scheduled_date, and task_description
+            $completedTasks = $tasks->where('status', 'Completed');
+
+            // Find appointments that match the employee's completed tasks
+            foreach ($completedTasks as $task) {
+                $appointmentFeedbacks = Feedback::where('user_type', 'client')
+                    ->whereHas('appointment', function ($query) use ($task) {
+                        $query->where('client_id', $task->client_id)
+                            ->whereDate('service_date', $task->scheduled_date);
+                    })
+                    ->with(['appointment', 'client'])
+                    ->get();
+
+                foreach ($appointmentFeedbacks as $feedback) {
+                    $clientFeedbacks->push([
+                        'id' => $feedback->id,
+                        'task_id' => $task->id,
+                        'feedbackType' => 'client',
+                        'taskName' => $task->task_description,
+                        'location' => $task->location ? $task->location->location_name : 'N/A',
+                        'clientName' => $feedback->client ? $feedback->client->full_name : ($task->client ? $task->client->full_name : 'Unknown'),
+                        'rating' => $feedback->rating ?? $feedback->overall_rating,
+                        'keywords' => $feedback->keywords ?? [],
+                        'feedback_text' => $feedback->feedback_text ?? $feedback->comments,
+                        'submitted_at' => Carbon::parse($feedback->created_at)->format('d M Y, g:i a'),
+                        'icon' => $this->getServiceIcon($task->task_description),
+                    ]);
+                }
+            }
+        }
+
+        // Merge employee and client ratings, sorted by submitted date (most recent first)
+        $ratings = $employeeRatings->concat($clientFeedbacks)->sortByDesc('submitted_at')->values();
 
         return view('employee.history', [
             'activities' => $activities->toArray(),

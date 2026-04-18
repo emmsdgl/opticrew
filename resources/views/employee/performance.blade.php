@@ -23,17 +23,23 @@
                 :trend="$completionRate . '%'"
                 :trendUp="$completionRate > 50"
             />
+            @php
+                $effPercent = round(($employee->efficiency ?? 1.0) * 100);
+                $effTrendLabel = $effPercent >= 90 ? 'On track' : ($effPercent >= 75 ? 'Needs improvement' : 'Below standard');
+            @endphp
             <x-employee-components.kpi-stat-card
-                label="In Progress"
-                :value="(string)$incompleteTasks"
-                icon="fas fa-spinner"
-                trend="Active"
+                label="Efficiency Score"
+                :value="$effPercent . '%'"
+                icon="fas fa-gauge-high"
+                :trend="$effTrendLabel"
+                :trendUp="$effPercent >= 75"
             />
             <x-employee-components.kpi-stat-card
-                label="Pending Tasks"
-                :value="(string)$pendingTasks"
-                icon="fas fa-hourglass-half"
-                trend="Queued"
+                label="Latest Evaluation"
+                :value="$latestEvaluation ? number_format($latestEvaluation->overall_rating, 1) . '/5' : 'N/A'"
+                icon="fas fa-star"
+                :trend="$latestEvaluation ? $latestEvaluation->getRatingLabel() : 'No evaluation yet'"
+                :trendUp="$latestEvaluation && $latestEvaluation->overall_rating >= 3.5"
             />
             <x-employee-components.kpi-stat-card
                 label="Attendance Rate"
@@ -113,35 +119,13 @@
                     <x-employee-components.task-overview-list
                         :items="$completedTasksFormatted"
                         fixedHeight="auto"
-                        maxHeight="17.5rem"
+                        maxHeight="20rem"
                         emptyTitle="No completed tasks yet"
                         emptyMessage="Your completed tasks will appear here once you finish them." />
             </div>
 
             <!-- Right: Task Efficiency -->
             <div class="flex flex-col gap-6 w-full lg:w-1/3 [&>div:last-child]:flex-1">
-                {{-- ✅ STAGE 3: Employee Efficiency Score --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-5">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Your Efficiency Score</p>
-                    @php
-                        $effPercent = round(($employee->efficiency ?? 1.0) * 100);
-                        $effColor = $effPercent >= 90 ? 'text-green-500' : ($effPercent >= 75 ? 'text-yellow-500' : 'text-red-500');
-                        $effBg = $effPercent >= 90 ? 'bg-green-500' : ($effPercent >= 75 ? 'bg-yellow-500' : 'bg-red-500');
-                    @endphp
-                    <div class="flex items-end gap-2 mb-3">
-                        <span class="text-3xl font-bold {{ $effColor }}">{{ $effPercent }}%</span>
-                        <span class="text-xs text-gray-400 dark:text-gray-500 mb-1">
-                            @if($effPercent >= 90) On track @elseif($effPercent >= 75) Needs improvement @else Below standard @endif
-                        </span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div class="{{ $effBg }} h-2 rounded-full transition-all duration-500" style="width: {{ $effPercent }}%"></div>
-                    </div>
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-2">
-                        Updated automatically after each completed task based on your checklist performance.
-                    </p>
-                </div>
-
                 <div>
                     <x-labelwithvalue label="Task Efficiency" count="" />
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Overall task performance metrics</p>
