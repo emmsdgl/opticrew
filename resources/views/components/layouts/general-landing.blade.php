@@ -12,7 +12,9 @@
         document.addEventListener('alpine:init', () => {
             Alpine.store('mobileMenu', {
                 open: false,
-                toggle() { this.open = !this.open; },
+                toggle() {
+                    this.open = !this.open;
+                },
             });
         });
     </script>
@@ -62,7 +64,7 @@
         /* Light mode text color */
 
         body {
-            background-image: url('{{ asset('images/backgrounds/landing-page-2.svg') }}');
+            background-image: url("{{ asset('images/backgrounds/landing-page-2.svg') }}");
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -165,8 +167,15 @@
         }
 
         @keyframes pageFadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         #header-1,
@@ -224,19 +233,23 @@
             width: 100%;
             height: 100%;
         }
-        .gradual-blur-inner > div {
+
+        .gradual-blur-inner>div {
             -webkit-backdrop-filter: inherit;
             backdrop-filter: inherit;
         }
+
         .gradual-blur {
             isolation: isolate;
         }
+
         @supports not (backdrop-filter: blur(1px)) {
-            .gradual-blur-inner > div {
+            .gradual-blur-inner>div {
                 background: rgba(0, 0, 0, 0.3);
                 opacity: 0.5;
             }
         }
+
         .gradual-blur-fixed {
             position: fixed !important;
             left: 0;
@@ -244,8 +257,16 @@
             pointer-events: none;
             z-index: 60;
         }
-        .gradual-blur-fixed.top-0 { top: 0; bottom: auto; }
-        .gradual-blur-fixed.bottom-0 { bottom: 0; top: auto; }
+
+        .gradual-blur-fixed.top-0 {
+            top: 0;
+            bottom: auto;
+        }
+
+        .gradual-blur-fixed.bottom-0 {
+            bottom: 0;
+            top: auto;
+        }
 
         @yield('additional-styles')
     </style>
@@ -275,8 +296,12 @@
                 <div class="flex lg:hidden items-center gap-2" x-data>
                     <button id="mobile-header-theme-toggle" type="button"
                         class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2 transition-colors">
-                        <svg class="w-4 h-4 mobile-header-dark-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                        <svg class="w-4 h-4 mobile-header-light-icon hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                        <svg class="w-4 h-4 mobile-header-dark-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg class="w-4 h-4 mobile-header-light-icon hidden" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </svg>
                     </button>
                     <a href="/login"
                         class="group text-[10px] font-bold text-blue-950 bg-white border border-blue-950 px-3 py-1.5 rounded-full dark:text-gray-200 dark:bg-gray-700 dark:border-transparent hover:text-blue-600 hover:border-blue-600 dark:hover:text-blue-400 dark:hover:bg-gray-600 transition-colors">
@@ -288,11 +313,11 @@
                         <span class="sr-only" x-text="$store.mobileMenu.open ? 'Close menu' : 'Open menu'"></span>
                         <div class="w-6 h-6 relative flex items-center justify-center">
                             <span class="absolute h-0.5 w-5 bg-current rounded transition-all duration-300 ease-in-out"
-                                  :class="$store.mobileMenu.open ? 'rotate-45' : '-translate-y-1.5'"></span>
+                                :class="$store.mobileMenu.open ? 'rotate-45' : '-translate-y-1.5'"></span>
                             <span class="absolute h-0.5 w-5 bg-current rounded transition-all duration-300 ease-in-out"
-                                  :class="$store.mobileMenu.open ? 'opacity-0 scale-0' : 'opacity-100'"></span>
+                                :class="$store.mobileMenu.open ? 'opacity-0 scale-0' : 'opacity-100'"></span>
                             <span class="absolute h-0.5 w-5 bg-current rounded transition-all duration-300 ease-in-out"
-                                  :class="$store.mobileMenu.open ? '-rotate-45' : 'translate-y-1.5'"></span>
+                                :class="$store.mobileMenu.open ? '-rotate-45' : 'translate-y-1.5'"></span>
                         </div>
                     </button>
                 </div>
@@ -342,11 +367,11 @@
                         <button id="language-toggle"
                             class="flex items-center gap-1.5 xl:gap-2 text-xs xl:text-sm text-blue-950 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                             @if(app()->getLocale() == 'fi')
-                                <span class="text-base xl:text-lg">🇫🇮</span>
-                                <span>Suomi</span>
+                            <span class="text-base xl:text-lg">🇫🇮</span>
+                            <span>Suomi</span>
                             @else
-                                <span class="text-base xl:text-lg">🇬🇧</span>
-                                <span>English</span>
+                            <span class="text-base xl:text-lg">🇬🇧</span>
+                            <span>English</span>
                             @endif
                             <i class="fas fa-chevron-down text-xs"></i>
                         </button>
@@ -394,24 +419,24 @@
             <div x-data class="lg:hidden" x-show="$store.mobileMenu.open" x-cloak>
                 {{-- Backdrop --}}
                 <div x-show="$store.mobileMenu.open"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     @click="$store.mobileMenu.open = false"
-                     class="fixed inset-0 z-40 bg-black/50"></div>
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    @click="$store.mobileMenu.open = false"
+                    class="fixed inset-0 z-40 bg-black/50"></div>
 
                 {{-- Slide-in Panel --}}
                 <div x-show="$store.mobileMenu.open"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="translate-x-full"
-                     x-transition:enter-end="translate-x-0"
-                     x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="translate-x-0"
-                     x-transition:leave-end="translate-x-full"
-                     class="fixed inset-y-0 right-0 z-50 w-[85%] max-w-sm overflow-y-auto bg-white dark:bg-gray-900 shadow-2xl">
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="translate-x-full"
+                    x-transition:enter-end="translate-x-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="translate-x-0"
+                    x-transition:leave-end="translate-x-full"
+                    class="fixed inset-y-0 right-0 z-50 w-[85%] max-w-sm overflow-y-auto bg-white dark:bg-gray-900 shadow-2xl">
 
                     {{-- Header --}}
                     <div class="flex items-center justify-end px-5 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -454,9 +479,9 @@
                                 <span>Language</span>
                                 <span class="text-xs text-gray-500 dark:text-gray-400">
                                     @if(app()->getLocale() == 'fi')
-                                        🇫🇮 Suomi
+                                    🇫🇮 Suomi
                                     @else
-                                        🇬🇧 English
+                                    🇬🇧 English
                                     @endif
                                 </span>
                             </button>
@@ -561,12 +586,12 @@
             history.scrollRestoration = 'manual';
         }
 
-        window.addEventListener('beforeunload', function () {
+        window.addEventListener('beforeunload', function() {
             window.scrollTo(0, 0);
         });
 
-        window.addEventListener('load', function () {
-            setTimeout(function () {
+        window.addEventListener('load', function() {
+            setTimeout(function() {
                 window.scrollTo(0, 0);
             }, 0);
         });
@@ -630,18 +655,18 @@
     </script>
     <script>
         // LANGUAGE DROPDOWN TOGGLE
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const languageToggle = document.getElementById('language-toggle');
             const languageDropdown = document.getElementById('language-dropdown');
 
             if (languageToggle && languageDropdown) {
-                languageToggle.addEventListener('click', function (e) {
+                languageToggle.addEventListener('click', function(e) {
                     e.stopPropagation();
                     languageDropdown.classList.toggle('hidden');
                 });
 
                 // Close dropdown when clicking outside
-                document.addEventListener('click', function () {
+                document.addEventListener('click', function() {
                     languageDropdown.classList.add('hidden');
                 });
             }
@@ -651,7 +676,7 @@
             const mobileLanguageDropdown = document.getElementById('mobile-language-dropdown');
 
             if (mobileLanguageToggle && mobileLanguageDropdown) {
-                mobileLanguageToggle.addEventListener('click', function (e) {
+                mobileLanguageToggle.addEventListener('click', function(e) {
                     e.stopPropagation();
                     mobileLanguageDropdown.classList.toggle('hidden');
                 });

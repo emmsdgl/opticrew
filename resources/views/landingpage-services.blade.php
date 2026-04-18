@@ -276,6 +276,8 @@
         </div>
     </section>
 
+    <x-landing-page-components.testimonials-slider class="mt-8 sm:mt-12 lg:mt-16" />
+
     <!-- SECTION 2: EXPANDING CARDS CAROUSEL -->
     <section class="w-full sm:py-6 lg:py-8 transition-colors duration-300">
         <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

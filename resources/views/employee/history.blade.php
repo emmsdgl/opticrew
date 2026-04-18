@@ -501,8 +501,24 @@
 
     </div>
 
+    <script type="application/json" id="employee-history-activities-json">@json($activities ?? [])</script>
+    <script type="application/json" id="employee-history-ratings-json">@json($ratings ?? [])</script>
+
     <script>
     function employeeHistoryData() {
+        const parseJsonNode = (id, fallback = []) => {
+            const node = document.getElementById(id);
+            if (!node) return fallback;
+            try {
+                return JSON.parse(node.textContent || 'null') ?? fallback;
+            } catch (error) {
+                return fallback;
+            }
+        };
+
+        const initialActivities = parseJsonNode('employee-history-activities-json', []);
+        const initialRatings = parseJsonNode('employee-history-ratings-json', []);
+
         return {
             activeTab: 'all',
             selectedTask: null,
@@ -512,8 +528,8 @@
             feedbackText: '',
             selectedKeywords: [],
             ratingActivityIndex: null,
-            activities: @json($activities ?? []),
-            ratings: @json($ratings ?? []),
+            activities: initialActivities,
+            ratings: initialRatings,
             perPage: 5,
             pages: { all: 1, services: 1, to_rate: 1, ratings: 1 },
 

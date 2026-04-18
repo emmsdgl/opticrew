@@ -3,208 +3,246 @@
 @section('title', 'About')
 
 @push('styles')
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <style>
-        /* Aurora text effect */
-        @keyframes auroraShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .aurora-text {
-            background: linear-gradient(135deg, #60a5fa, #3b82f6, #818cf8, #6366f1, #3b82f6, #60a5fa);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: auroraShift 6s ease-in-out infinite;
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+    /* Aurora text effect */
+    @keyframes auroraShift {
+        0% {
+            background-position: 0% 50%;
         }
 
-        /* Leaflet custom marker styles */
-        .leaflet-marker-custom {
-            width: 16px !important;
-            height: 16px !important;
-            border-radius: 50%;
-            background: #3b82f6;
-            border: 3px solid #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            margin-left: -8px !important;
-            margin-top: -8px !important;
-        }
-        .leaflet-marker-custom.marker-primary {
-            width: 20px !important;
-            height: 20px !important;
-            background: #2563eb;
-            border: 3px solid #fff;
-            box-shadow: 0 2px 12px rgba(37,99,235,0.5);
-            margin-left: -10px !important;
-            margin-top: -10px !important;
-        }
-        .leaflet-popup-content-wrapper {
-            border-radius: 12px !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
-            padding: 0 !important;
-        }
-        .leaflet-popup-content {
-            margin: 12px 14px !important;
-            font-family: inherit !important;
-        }
-        .leaflet-popup-tip {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
-        }
-        .dark .leaflet-popup-content-wrapper {
-            background: #1e293b !important;
-            color: #e2e8f0 !important;
-        }
-        .dark .leaflet-popup-tip {
-            background: #1e293b !important;
-        }
-        .dark .leaflet-tile {
-            filter: brightness(0.7) contrast(1.1) saturate(0.8);
-        }
-        .leaflet-tooltip {
-            border-radius: 8px !important;
-            padding: 6px 10px !important;
-            font-size: 12px !important;
-            font-weight: 500 !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-        }
-        .dark .leaflet-tooltip {
-            background: #1e293b !important;
-            color: #e2e8f0 !important;
-            border-color: #334155 !important;
-        }
-        .dark .leaflet-tooltip::before {
-            border-right-color: #1e293b !important;
-        }
-        body {
-            background-image: url('{{ asset('images/backgrounds/aboutpage-bg.svg') }}');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-                /* Smooth scroll zoom animation */
-        .scroll-zoom {
-            opacity: 0;
-            transform: scale(0.85);
-            transition: opacity 1s ease-out, transform 1s ease-out;
-        }
-        
-        .scroll-zoom.visible {
-            opacity: 1;
-            transform: scale(1);
-        }
-        
-        /* Stagger animation delays for child elements */
-        .scroll-zoom-child {
-            opacity: 0;
-            transform: scale(0.9) translateY(20px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-        
-        .scroll-zoom-child.visible {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-        
-        .scroll-zoom-child:nth-child(1) { transition-delay: 0.1s; }
-        .scroll-zoom-child:nth-child(2) { transition-delay: 0.2s; }
-        .scroll-zoom-child:nth-child(3) { transition-delay: 0.3s; }
-        .scroll-zoom-child:nth-child(4) { transition-delay: 0.4s; }
-        .scroll-zoom-child:nth-child(5) { transition-delay: 0.5s; }
-
-        /* Frosted glass effect */
-        .frosted-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        50% {
+            background-position: 100% 50%;
         }
 
-        .dark .frosted-card {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .aurora-text {
+        background: linear-gradient(135deg, #60a5fa, #3b82f6, #818cf8, #6366f1, #3b82f6, #60a5fa);
+        background-size: 300% 300%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: auroraShift 6s ease-in-out infinite;
+    }
+
+    /* Leaflet custom marker styles */
+    .leaflet-marker-custom {
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 50%;
+        background: #3b82f6;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        margin-left: -8px !important;
+        margin-top: -8px !important;
+    }
+
+    .leaflet-marker-custom.marker-primary {
+        width: 20px !important;
+        height: 20px !important;
+        background: #2563eb;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 12px rgba(37, 99, 235, 0.5);
+        margin-left: -10px !important;
+        margin-top: -10px !important;
+    }
+
+    .leaflet-popup-content-wrapper {
+        border-radius: 12px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        padding: 0 !important;
+    }
+
+    .leaflet-popup-content {
+        margin: 12px 14px !important;
+        font-family: inherit !important;
+    }
+
+    .leaflet-popup-tip {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .dark .leaflet-popup-content-wrapper {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+    }
+
+    .dark .leaflet-popup-tip {
+        background: #1e293b !important;
+    }
+
+    .dark .leaflet-tile {
+        filter: brightness(0.7) contrast(1.1) saturate(0.8);
+    }
+
+    .leaflet-tooltip {
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .dark .leaflet-tooltip {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+    }
+
+    .dark .leaflet-tooltip::before {
+        border-right-color: #1e293b !important;
+    }
+
+    body {
+        background-image: url("{{ asset('images/backgrounds/aboutpage-bg.svg') }}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    /* Smooth scroll zoom animation */
+    .scroll-zoom {
+        opacity: 0;
+        transform: scale(0.85);
+        transition: opacity 1s ease-out, transform 1s ease-out;
+    }
+
+    .scroll-zoom.visible {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* Stagger animation delays for child elements */
+    .scroll-zoom-child {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .scroll-zoom-child.visible {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
+    .scroll-zoom-child:nth-child(1) {
+        transition-delay: 0.1s;
+    }
+
+    .scroll-zoom-child:nth-child(2) {
+        transition-delay: 0.2s;
+    }
+
+    .scroll-zoom-child:nth-child(3) {
+        transition-delay: 0.3s;
+    }
+
+    .scroll-zoom-child:nth-child(4) {
+        transition-delay: 0.4s;
+    }
+
+    .scroll-zoom-child:nth-child(5) {
+        transition-delay: 0.5s;
+    }
+
+    /* Frosted glass effect */
+    .frosted-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .dark .frosted-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Animation for cards */
+    .card-float {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px);
         }
 
-        /* Animation for cards */
-        .card-float {
-            animation: float 3s ease-in-out infinite;
+        50% {
+            transform: translateY(-10px);
         }
+    }
 
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
+    /* Flip card styling */
+    .flip-card {
+        perspective: 1000px;
+    }
 
-        /* Flip card styling */
-        .flip-card {
-            perspective: 1000px;
-        }
+    .flip-card:hover .flip-inner {
+        transform: rotateY(180deg);
+    }
 
-        .flip-card:hover .flip-inner {
-            transform: rotateY(180deg);
-        }
+    .flip-inner {
+        transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-        .flip-inner {
-            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    .rotate-y-180 {
+        transform: rotateY(180deg);
+    }
 
-        .rotate-y-180 {
-            transform: rotateY(180deg);
-        }
+    /* Add glow effect on hover */
+    .flip-card:hover {
+        filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
+    }
 
-        /* Add glow effect on hover */
-        .flip-card:hover {
-            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
-        }
+    .dark .flip-card:hover {
+        filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.4));
+    }
 
-        .dark .flip-card:hover {
-            filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.4));
-        }
+    /* Full height map styling */
+    #container-3 .map-full-height {
+        height: 100vh;
+    }
 
-        /* Full height map styling */
+    @media (max-width: 1023px) {
         #container-3 .map-full-height {
-            height: 100vh;
+            height: 60vh;
+            min-height: 400px;
         }
+    }
 
-        @media (max-width: 1023px) {
-            #container-3 .map-full-height {
-                height: 60vh;
-                min-height: 400px;
-            }
-        }
+    /* Enhanced map edge glow effects */
+    #container-3 .map-edge-glow {
+        box-shadow:
+            inset -60px 0 80px -20px rgba(255, 255, 255, 0.8),
+            inset -40px 0 60px -10px rgba(255, 255, 255, 0.6);
+    }
 
-        /* Enhanced map edge glow effects */
-        #container-3 .map-edge-glow {
-            box-shadow: 
-                inset -60px 0 80px -20px rgba(255, 255, 255, 0.8),
-                inset -40px 0 60px -10px rgba(255, 255, 255, 0.6);
-        }
+    .dark #container-3 .map-edge-glow {
+        box-shadow:
+            inset -60px 0 80px -20px rgba(15, 23, 42, 0.9),
+            inset -40px 0 60px -10px rgba(15, 23, 42, 0.7);
+    }
 
-        .dark #container-3 .map-edge-glow {
-            box-shadow: 
-                inset -60px 0 80px -20px rgba(15, 23, 42, 0.9),
-                inset -40px 0 60px -10px rgba(15, 23, 42, 0.7);
-        }
-
-        /* Smooth color transition animation */
-        #container-3 .map-full-height * {
-            transition: opacity 0.5s ease, filter 0.5s ease;
-        }
-    </style>
+    /* Smooth color transition animation */
+    #container-3 .map-full-height * {
+        transition: opacity 0.5s ease, filter 0.5s ease;
+    }
+</style>
 @endpush
 
 @section('content')
-    <div class="overflow-x-hidden">
+<div class="overflow-x-hidden">
     <!-- Section 1: Original About Section -->
     <section id="container-1"
         class="scroll-zoom relative flex flex-col items-center justify-center text-center w-full mx-auto px-6 sm:px-8 md:px-12 lg:px-16 py-12 sm:py-24 min-h-[80vh] overflow-hidden">
-        
+
         <!-- Main Content - Centered Container -->
         <div class="z-10 w-full max-w-4xl mx-auto">
             <!-- Hello there text -->
@@ -274,7 +312,7 @@
     <!-- Section 2: Development Team with Flip Card -->
     <section id="container-2" class="scroll-zoom relative w-full bg-gradient-to-b from-transparent via-white/60 to-white/80
                dark:via-slate-900/60 dark:to-slate-900/80
-               backdrop-blur-sm py-8 sm:py-16 lg:py-20 xl:py-24 mt-10 sm:mt-20 lg:mt-32 min-h-screen transition-all duration-700 flex items-center">
+               backdrop-blur-sm py-8 mt-10 sm:mt-20 lg:mt-32 min-h-screen transition-all duration-700 flex items-center">
 
         <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white/70 dark:from-slate-900/70 to-transparent pointer-events-none">
         </div>
@@ -296,11 +334,11 @@
                             <img src="{{ asset('images/icons/single-sparkle.svg') }}" alt="sparkle"
                                 class="inline-block h-4 sm:h-5 md:h-6 lg:h-7 xl:h-9 align-middle ml-1 sm:ml-2">
                         </h1>
-                        
+
                         <p class="scroll-zoom-child font-[fam-bold] text-[10px] sm:text-xs md:text-sm lg:text-base text-blue-500 dark:text-blue-400 italic">
                             {{ __('about.section2.tagline') }} <span class="not-italic">{{ __('about.section2.tagline_sub') }}</span>
                         </p>
-                        
+
                         <div class="scroll-zoom-child flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 lg:gap-8 xl:gap-10 justify-center lg:justify-start pt-2 sm:pt-4">
                             <div class="flex flex-col items-center lg:items-start min-w-[100px] sm:min-w-[120px] lg:min-w-[140px]">
                                 <p class="font-[fam-bold] text-[#071957] dark:text-white text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1">
@@ -370,7 +408,6 @@
             </div>
         </div>
     </section>
-
     <!-- Section 3: Contact Section with Full Height Map -->
     <section id="container-3"
         class="scroll-zoom relative flex flex-col lg:flex-row items-stretch
@@ -407,7 +444,7 @@
         <div class="w-full lg:w-1/2 py-16 sm:py-20 lg:py-24 px-6 sm:px-8 md:px-12 lg:px-16">
             <div class="max-w-2xl mx-auto">
                 <div class="space-y-8 sm:px-6">
-                    
+
                     <!-- Header -->
                     <div class="scroll-zoom-child mb-6 text-center lg:text-left">
                         <h3 data-typing data-typing-duration="1.2" class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#071957] dark:text-white mb-3 sm:mb-4">
@@ -420,7 +457,7 @@
 
                     <!-- Contact List -->
                     <ul class="space-y-6 sm:space-y-8 flex flex-col items-center lg:items-start">
-                        
+
                         <!-- Head Office -->
                         <li class="scroll-zoom-child flex flex-row items-start gap-3 sm:gap-4 group w-full max-w-md lg:max-w-none">
                             <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -445,8 +482,8 @@
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
                                     {{ __('about.contact.email_us') }}
                                 </span>
-                                <a href="mailto:finnoys0823@gmail.com" 
-                                   class="text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+                                <a href="mailto:finnoys0823@gmail.com"
+                                    class="text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                                     finnoys0823@gmail.com
                                 </a>
                             </div>
@@ -461,8 +498,8 @@
                                 <span class="block font-[fam-bold] text-base sm:text-lg text-gray-900 dark:text-white mb-1">
                                     {{ __('about.contact.contact_us') }}
                                 </span>
-                                <a href="tel:09288515619" 
-                                   class="text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+                                <a href="tel:09288515619"
+                                    class="text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                                     Service Center: 09288515619
                                 </a>
                             </div>
@@ -476,16 +513,16 @@
                                 </span>
                                 <div class="flex flex-row gap-4 sm:gap-6">
                                     <!-- Facebook -->
-                                    <a href="#" 
-                                       class="w-10 h-10 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-500 dark:text-blue-400 hover:bg-blue-500 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transform hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl"
-                                       aria-label="Follow us on Facebook">
+                                    <a href="#"
+                                        class="w-10 h-10 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-500 dark:text-blue-400 hover:bg-blue-500 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transform hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl"
+                                        aria-label="Follow us on Facebook">
                                         <i class="fa-brands fa-facebook text-2xl sm:text-3xl"></i>
                                     </a>
-                                    
+
                                     <!-- WhatsApp -->
-                                    <a href="#" 
-                                       class="w-10 h-10 sm:w-14 sm:h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-500 dark:text-green-400 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:hover:text-white transform hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl"
-                                       aria-label="Contact us on WhatsApp">
+                                    <a href="#"
+                                        class="w-10 h-10 sm:w-14 sm:h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-500 dark:text-green-400 hover:bg-green-500 dark:hover:bg-green-500 hover:text-white dark:hover:text-white transform hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl"
+                                        aria-label="Contact us on WhatsApp">
                                         <i class="fa-brands fa-whatsapp text-2xl sm:text-3xl"></i>
                                     </a>
                                 </div>
@@ -497,150 +534,156 @@
             </div>
         </div>
     </section>
-    </div>
+</div>
 @endsection
 
 @push('scripts')
-    <script>
-        // Force scroll to top on page load/refresh
-        if (history.scrollRestoration) {
-            history.scrollRestoration = 'manual';
-        }
-        
-        window.addEventListener('beforeunload', function() {
+<script>
+    // Force scroll to top on page load/refresh
+    if (history.scrollRestoration) {
+        history.scrollRestoration = 'manual';
+    }
+
+    window.addEventListener('beforeunload', function() {
+        window.scrollTo(0, 0);
+    });
+
+    window.addEventListener('load', function() {
+        setTimeout(function() {
             window.scrollTo(0, 0);
+        }, 0);
+    });
+
+    // Additional fallback
+    document.addEventListener('DOMContentLoaded', function() {
+        window.scrollTo(0, 0);
+    });
+
+    // Smooth scroll zoom-in animation
+    const zoomObserverOptions = {
+        threshold: 0.15,
+        rootMargin: '0px 0px -100px 0px'
+    };
+
+    const zoomObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
         });
-        
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                window.scrollTo(0, 0);
-            }, 0);
+    }, zoomObserverOptions);
+
+    // Observe all scroll-zoom elements
+    document.querySelectorAll('.scroll-zoom, .scroll-zoom-child').forEach(element => {
+        zoomObserver.observe(element);
+    });
+
+    // Smooth scroll animations for frosted cards
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
         });
-        
-        // Additional fallback
-        document.addEventListener('DOMContentLoaded', function() {
-            window.scrollTo(0, 0);
+    }, observerOptions);
+
+    // Observe frosted cards
+    document.querySelectorAll('.frosted-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+</script>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const locations = [{
+                id: 1,
+                name: 'Fin-noys Head Office',
+                description: 'Saariselantie 6 C10, Saariselka 99830 Finland',
+                lat: 68.4101,
+                lng: 27.4132,
+                primary: true
+            },
+            {
+                id: 2,
+                name: 'Saariselka Service Area',
+                description: 'Saariselka resort area coverage',
+                lat: 68.4185,
+                lng: 27.4310,
+                primary: false
+            },
+            {
+                id: 3,
+                name: 'Ivalo Service Area',
+                description: 'Ivalo district coverage',
+                lat: 68.6573,
+                lng: 27.5890,
+                primary: false
+            },
+        ];
+
+        const isDark = document.documentElement.classList.contains('dark');
+
+        // Tile layers
+        const lightTile = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        const darkTile = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+        const map = L.map('leaflet-map', {
+            center: [68.42, 27.43],
+            zoom: 10,
+            zoomControl: false,
+            attributionControl: false
         });
 
-        // Smooth scroll zoom-in animation
-        const zoomObserverOptions = {
-            threshold: 0.15,
-            rootMargin: '0px 0px -100px 0px'
-        };
+        // Add zoom control to bottom-left
+        L.control.zoom({
+            position: 'bottomleft'
+        }).addTo(map);
 
-        const zoomObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
+        // Add attribution (small)
+        L.control.attribution({
+                position: 'bottomright',
+                prefix: false
+            })
+            .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a> &copy; <a href="https://carto.com/" target="_blank">CARTO</a>')
+            .addTo(map);
+
+        L.tileLayer(isDark ? darkTile : lightTile, {
+            maxZoom: 19,
+            subdomains: 'abcd'
+        }).addTo(map);
+
+        // Add markers
+        locations.forEach(loc => {
+            const markerIcon = L.divIcon({
+                className: 'leaflet-marker-custom' + (loc.primary ? ' marker-primary' : ''),
+                iconSize: loc.primary ? [20, 20] : [16, 16]
             });
-        }, zoomObserverOptions);
 
-        // Observe all scroll-zoom elements
-        document.querySelectorAll('.scroll-zoom, .scroll-zoom-child').forEach(element => {
-            zoomObserver.observe(element);
-        });
-
-        // Smooth scroll animations for frosted cards
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe frosted cards
-        document.querySelectorAll('.frosted-card').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(card);
-        });
-    </script>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const locations = [
-                {
-                    id: 1,
-                    name: 'Fin-noys Head Office',
-                    description: 'Saariselantie 6 C10, Saariselka 99830 Finland',
-                    lat: 68.4101,
-                    lng: 27.4132,
-                    primary: true
-                },
-                {
-                    id: 2,
-                    name: 'Saariselka Service Area',
-                    description: 'Saariselka resort area coverage',
-                    lat: 68.4185,
-                    lng: 27.4310,
-                    primary: false
-                },
-                {
-                    id: 3,
-                    name: 'Ivalo Service Area',
-                    description: 'Ivalo district coverage',
-                    lat: 68.6573,
-                    lng: 27.5890,
-                    primary: false
-                },
-            ];
-
-            const isDark = document.documentElement.classList.contains('dark');
-
-            // Tile layers
-            const lightTile = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-            const darkTile = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-
-            const map = L.map('leaflet-map', {
-                center: [68.42, 27.43],
-                zoom: 10,
-                zoomControl: false,
-                attributionControl: false
-            });
-
-            // Add zoom control to bottom-left
-            L.control.zoom({ position: 'bottomleft' }).addTo(map);
-
-            // Add attribution (small)
-            L.control.attribution({ position: 'bottomright', prefix: false })
-                .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a> &copy; <a href="https://carto.com/" target="_blank">CARTO</a>')
-                .addTo(map);
-
-            L.tileLayer(isDark ? darkTile : lightTile, {
-                maxZoom: 19,
-                subdomains: 'abcd'
+            const marker = L.marker([loc.lat, loc.lng], {
+                icon: markerIcon
             }).addTo(map);
 
-            // Add markers
-            locations.forEach(loc => {
-                const markerIcon = L.divIcon({
-                    className: 'leaflet-marker-custom' + (loc.primary ? ' marker-primary' : ''),
-                    iconSize: loc.primary ? [20, 20] : [16, 16]
-                });
+            // Tooltip (hover)
+            marker.bindTooltip(loc.name, {
+                direction: 'top',
+                offset: [0, -12],
+                opacity: 0.95
+            });
 
-                const marker = L.marker([loc.lat, loc.lng], { icon: markerIcon }).addTo(map);
-
-                // Tooltip (hover)
-                marker.bindTooltip(loc.name, {
-                    direction: 'top',
-                    offset: [0, -12],
-                    opacity: 0.95
-                });
-
-                // Popup (click)
-                marker.bindPopup(`
+            // Popup (click)
+            marker.bindPopup(`
                     <div style="min-width: 160px;">
                         <p style="font-weight: 600; font-size: 13px; margin: 0 0 4px 0;">${loc.name}</p>
                         <p style="font-size: 11px; color: #64748b; margin: 0;">${loc.description}</p>
@@ -648,32 +691,38 @@
                             ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}
                         </p>
                     </div>
-                `, { closeButton: false, offset: [0, -8] });
+                `, {
+                closeButton: false,
+                offset: [0, -8]
             });
-
-            // Listen for dark mode changes
-            const darkObserver = new MutationObserver(() => {
-                const nowDark = document.documentElement.classList.contains('dark');
-                map.eachLayer(layer => {
-                    if (layer instanceof L.TileLayer) map.removeLayer(layer);
-                });
-                L.tileLayer(nowDark ? darkTile : lightTile, {
-                    maxZoom: 19,
-                    subdomains: 'abcd'
-                }).addTo(map);
-            });
-            darkObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-            // Fix map sizing on scroll into view
-            const mapSection = document.getElementById('container-3');
-            if (mapSection) {
-                const resizeObserver = new IntersectionObserver(entries => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) map.invalidateSize();
-                    });
-                });
-                resizeObserver.observe(mapSection);
-            }
         });
-    </script>
+
+        // Listen for dark mode changes
+        const darkObserver = new MutationObserver(() => {
+            const nowDark = document.documentElement.classList.contains('dark');
+            map.eachLayer(layer => {
+                if (layer instanceof L.TileLayer) map.removeLayer(layer);
+            });
+            L.tileLayer(nowDark ? darkTile : lightTile, {
+                maxZoom: 19,
+                subdomains: 'abcd'
+            }).addTo(map);
+        });
+        darkObserver.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        // Fix map sizing on scroll into view
+        const mapSection = document.getElementById('container-3');
+        if (mapSection) {
+            const resizeObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) map.invalidateSize();
+                });
+            });
+            resizeObserver.observe(mapSection);
+        }
+    });
+</script>
 @endpush
