@@ -27,6 +27,8 @@ class ManagerHistoryController extends Controller
         if (!$contractedClient) {
             return view('manager.history', [
                 'services' => collect(),
+                'activities' => collect(),
+                'accountLogs' => collect(),
                 'filter' => 'all',
                 'sort' => 'recent',
                 'reviewStats' => 0,
@@ -57,25 +59,32 @@ class ManagerHistoryController extends Controller
 
         $completedTasks = $query->paginate(10);
 
-        $services = $completedTasks->map(function ($task) {
+        $services = collect($completedTasks->items())->map(function ($task) {
             $type = 'default';
             $icon = 'broom';
+            $color = '#6366f1'; // indigo
 
             if (stripos($task->task_description ?? '', 'deep clean') !== false) {
-                $type = 'deep_clean'; $icon = 'broom';
+                $type = 'deep_clean'; $icon = 'broom'; $color = '#8b5cf6'; // purple
             } elseif (stripos($task->task_description ?? '', 'snow') !== false) {
-                $type = 'snow'; $icon = 'snowflake';
+                $type = 'snow'; $icon = 'snowflake'; $color = '#06b6d4'; // cyan
             } elseif (stripos($task->task_description ?? '', 'daily') !== false) {
-                $type = 'daily'; $icon = 'calendar-day';
+                $type = 'daily'; $icon = 'calendar-day'; $color = '#10b981'; // emerald
             }
 
             return [
                 'id' => $task->id,
                 'name' => $task->location->name ?? 'Service',
+                'room' => $task->location->name ?? 'Room',
+                'category' => $type === 'deep_clean' ? 'Deep Clean' : ($type === 'snow' ? 'Snow Removal' : ($type === 'daily' ? 'Daily Cleaning' : 'Service')),
+                'task' => $type === 'deep_clean' ? 'Deep Clean' : ($type === 'snow' ? 'Snow Removal' : ($type === 'daily' ? 'Daily Cleaning' : 'Service')),
                 'type' => $type,
                 'icon' => $icon,
+                'color' => $color,
                 'location' => $task->location->address ?? '',
                 'date' => Carbon::parse($task->scheduled_date)->format('M d, Y'),
+                'started_at' => $task->started_at ? Carbon::parse($task->started_at)->format('M d, Y g:i A') : null,
+                'ended_at' => $task->completed_at ? Carbon::parse($task->completed_at)->format('M d, Y g:i A') : null,
                 'price' => number_format($task->price ?? 0, 2) . ' EUR',
                 'status' => strtolower($task->status),
                 'reviewed' => $task->review !== null,
@@ -87,13 +96,38 @@ class ManagerHistoryController extends Controller
             ];
         });
 
+        $activities = $services->map(function ($service) {
+            return [
+                'id' => $service['id'],
+                'title' => $service['name'],
+                'room' => $service['room'] ?? $service['name'],
+                'task' => $service['task'] ?? $service['name'],
+                'category' => $service['category'] ?? $service['task'] ?? $service['name'],
+                'description' => $service['location'],
+                'time' => $service['date'],
+                'started_at' => $service['started_at'] ?? null,
+                'ended_at' => $service['ended_at'] ?? null,
+                'type' => 'task',
+                'status' => $service['status'],
+                'icon' => $service['icon'],
+                'color' => $service['color'] ?? '#6366f1',
+                'price' => $service['price'],
+                'date' => $service['date'],
+                'statusRaw' => $service['status'],
+                'reviewed' => $service['reviewed'] ?? false,
+                'review' => $service['review'] ?? null,
+            ];
+        })->values();
+
+        $accountLogs = collect();
+
         $reviewStats = TaskReview::where('contracted_client_id', $contractedClient->id)->count();
         $toReviewCount = Task::whereIn('location_id', $locationIds)
             ->where('status', 'Completed')
             ->whereDoesntHave('review')
             ->count();
 
-        return view('manager.history', compact('services', 'filter', 'sort', 'reviewStats', 'toReviewCount'));
+        return view('manager.history', compact('services', 'activities', 'accountLogs', 'filter', 'sort', 'reviewStats', 'toReviewCount'));
     }
 
     /**
@@ -138,7 +172,7 @@ class ManagerHistoryController extends Controller
             'metadata' => [
                 'task_description' => $task->task_description,
                 'location_name' => $task->location->name ?? null,
-                'scheduled_date' => $task->scheduled_date ? $task->scheduled_date->format('Y-m-d') : null,
+                'scheduled_date' => $task->scheduled_date ? Carbon::parse($task->scheduled_date)->format('Y-m-d') : null,
                 'submitted_at' => now()->toIso8601String(),
             ],
         ]);

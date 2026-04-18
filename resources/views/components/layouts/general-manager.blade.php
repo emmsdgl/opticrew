@@ -8,7 +8,7 @@
             ['label' => 'Checklist', 'icon' => 'fa-clipboard-list', 'href' => route('manager.checklist')],
             ['label' => 'Employees', 'icon' => 'fa-users', 'href' => route('manager.employees')],
             ['label' => 'Reports', 'icon' => 'fa-chart-line', 'href' => route('manager.reports')],
-            ['label' => 'Activity', 'icon' => 'fa-bell', 'href' => route('manager.activity')],
+            // ['label' => 'Activity', 'icon' => 'fa-bell', 'href' => route('manager.activity')],
             ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('manager.history')],
         ];
 
@@ -69,19 +69,33 @@
         </template>
     </div>
 
+    {{-- Hidden data container for JavaScript --}}
+    <div id="profile-data"
+        data-has-password="{{ $hasPassword ? 'true' : 'false' }}"
+        data-phone="{{ $profileUser->phone ?? '' }}"
+        data-username="{{ $profileUser->username ?? '' }}"
+        data-location="{{ $profileUser->location ?? '' }}"
+        style="display: none;"></div>
+
     @push('scripts')
     <script>
     function managerProfileModal() {
+        const profileEl = document.getElementById('profile-data');
+        const hasPassword = profileEl.dataset.hasPassword === 'true';
+        const phone = profileEl.dataset.phone || '';
+        const username = profileEl.dataset.username || '';
+        const location = profileEl.dataset.location || '';
+
         return {
             profileOpen: false, editing: false, saving: false,
-            hasPassword: @json($hasPassword),
+            hasPassword: hasPassword,
             showCurrentPw: false, showNewPw: false, showConfirmPw: false,
             phonePrefix: '+358', phoneLocal: '', phoneMaxLen: 9, phoneDropOpen: false, phoneError: '',
             phoneStore: { '+63': '', '+358': '' },
             form: {
-                phone: @json($profileUser->phone ?? ''),
-                username: @json($profileUser->username ?? ''),
-                location: @json($profileUser->location ?? ''),
+                phone: phone,
+                username: username,
+                location: location,
                 current_password: '', new_password: '', new_password_confirmation: '',
             },
             original: {},
