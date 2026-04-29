@@ -131,7 +131,7 @@ class DashboardController extends Controller
                 ->where('evaluation_period_start', $evalMonth->toDateString())
                 ->where('status', 'completed')
                 ->orderByDesc('overall_rating')
-                ->take(5)
+                ->take(3)
                 ->get();
         }
 

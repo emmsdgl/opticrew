@@ -7,7 +7,7 @@
     'bgClass' => 'bg-blue-300/20',
 ])
 
-<div class="w-full" x-data="{ openMenuId: null }">
+<div class="w-full h-full" x-data="{ openMenuId: null }">
     @if(empty($items))
         <!-- Empty State - Auto Height -->
         <div class="flex flex-col items-center justify-center py-16 px-8 text-center h-auto {{ $bgClass }} {{ $bgClass === 'bg-transparent' ? '' : 'dark:bg-gray-800/30 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800' }}">
@@ -24,9 +24,13 @@
             </p>
         </div>
     @else
+        @php
+            $containerStyle = ($fixedHeight !== 'auto' ? "height: {$fixedHeight}; " : '') . "max-height: {$maxHeight};";
+            $styleAttr = 'style="' . e($containerStyle) . '"';
+        @endphp
         <!-- Scrollable container (only when items exist) -->
         <div class="overflow-y-auto {{ $bgClass }} {{ $bgClass === 'bg-transparent' ? 'dark:bg-transparent' : 'bg-white dark:bg-transparent rounded-2xl shadow-sm border border-gray-200 dark:border-none' }}"
-             style="{{ $fixedHeight !== 'auto' ? 'height: ' . $fixedHeight . ';' : '' }} max-height: {{ $maxHeight }};"
+             {!! $styleAttr !!}
              @scroll.window="openMenuId = null"
              @scroll="openMenuId = null">
             @foreach($items as $index => $item)
@@ -46,23 +50,18 @@
                             </h3>
                             
                             @if(isset($item['status']))
-                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-md
-                                @if($item['status'] === 'Complete' || $item['status'] === 'Completed')
-                                    bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
-                                @elseif($item['status'] === 'In progress')
-                                    bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
-                                @elseif($item['status'] === 'Archived')
-                                    bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400
-                                @elseif($item['status'] === 'Required')
-                                    bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
-                                @elseif($item['status'] === 'Optional')
-                                    bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400
-                                @elseif($item['status'] === 'Draft')
-                                    bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400
-                                @else
-                                    bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300
-                                @endif
-                            ">
+                            @php
+                                $statusClass = match($item['status']) {
+                                    'Complete', 'Completed' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                                    'In progress' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                                    'Archived' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                    'Required' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                    'Optional' => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+                                    'Draft' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                    default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                                };
+                            @endphp
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-md {{ $statusClass }}">
                                 {{ $item['status'] }}
                             </span>
                             @endif
@@ -97,9 +96,10 @@
                     <!-- Action Buttons -->
                     <div class="flex items-center gap-2 ml-4">
                         @if(isset($item['action_url']) || isset($item['action_onclick']))
-                            <button 
+                            <button
                                 @if(isset($item['action_url']))
-                                onclick="window.location.href='{{ $item['action_url'] }}'"
+                                data-href="{{ $item['action_url'] }}"
+                                onclick="window.location.href = this.dataset.href"
                                 @elseif(isset($item['action_onclick']))
                                 @click="{{ $item['action_onclick'] }}"
                                 @endif

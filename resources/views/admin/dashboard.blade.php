@@ -144,12 +144,12 @@
                         return { completed, total, percentage };
                     }
                 }">
-                    <div id="tour-task-overview gap-6">
+                    <div id="tour-task-overview" class="gap-6">
                         <x-labelwithvalue label="Task Overview" :count="'(' . $taskCount . ')'" />
 
-                        <div class="h-72 overflow-y-auto w-full rounded-lg my-3 bg-white shadow-sm dark:bg-gray-800/40">
-                            <x-employee-components.task-overview-list :items="$tasks" fixedHeight="18rem"
-                                maxHeight="24rem" emptyTitle="No tasks this month"
+                        <div id="task-overview-box" class="min-h-72 overflow-hidden w-full rounded-lg my-3 bg-white shadow-sm dark:bg-gray-800/40 flex flex-col">
+                            <x-employee-components.task-overview-list :items="$tasks" fixedHeight="100%"
+                                maxHeight="100%" emptyTitle="No tasks this month"
                                 emptyMessage="There are no tasks scheduled for this month."
                                 bgClass="bg-white dark:bg-transparent" />
                         </div>
@@ -493,80 +493,85 @@
                 {{-- LIVEWIRE ATTENDANCE CHART - AUTO REFRESHES --}}
                 @livewire('admin.attendance-chart')
 
+                {{-- RECENT ARRIVALS + TOP PERFORMERS STACK (height drives Task Overview on the left) --}}
+                <div id="right-bottom-stack" class="flex flex-col gap-6">
                 {{-- LIVEWIRE RECENT ARRIVALS - AUTO REFRESHES --}}
                 <x-labelwithvalue label="Recent Arrivals" :count="'(' . $recentArrivals->count() . ')'" />
-                <div class="h-72 overflow-y-auto w-full rounded-lg my-3 bg-white shadow-sm dark:bg-gray-800/40">
+                <div id="arrivals-box" class="w-full rounded-lg bg-white shadow-sm dark:bg-transparent">
                     @livewire('admin.recent-arrivals')
                 </div>
 
                 {{-- TOP PERFORMERS WIDGET --}}
                 @if ($topPerformers->count() > 0)
-                    <div class="flex flex-col gap-3">
+                    <div id="performers-box" class="flex flex-col gap-3">
                         <div class="flex items-center justify-between">
-                            <p class="text-sm font-sans font-bold text-gray-800 dark:text-gray-200">
-                                Top Performers
-                                <span class="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">
-                                    {{ $evalMonth->format('F Y') }}
-                                </span>
-                            </p>
+                            <x-labelwithvalue label="Top Performers" :count="'(' . $topPerformers->count() . ')'" />
                             <a href="{{ route('admin.reports.performance.index', ['month' => $evalMonth->month, 'year' => $evalMonth->year]) }}"
                                 class="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 font-medium">
                                 View All
                             </a>
                         </div>
-                        <div class="bg-white dark:bg-gray-800/40 rounded-lg shadow-sm overflow-hidden">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 -mt-2">{{ $evalMonth->format('F Y') }}</p>
+                        <x-applicant-components.stack-list maxHeight="max-h-64">
                             @foreach ($topPerformers as $index => $eval)
-                                <div class="flex items-center gap-3 px-4 py-3 {{ !$loop->last ? 'border-b border-gray-100 dark:border-gray-700/50' : '' }}">
-                                    {{-- Rank --}}
-                                    <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
-                                        {{ $index === 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                                           ($index === 1 ? 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300' :
-                                           ($index === 2 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                           'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400')) }}">
-                                        {{ $index + 1 }}
-                                    </div>
-
-                                    {{-- Avatar --}}
+                                @if ($eval->employee)
                                     @php
-                                        $pic = $eval->employee->user->profile_picture ?? null;
-                                        $avatarUrl = $pic
-                                            ? (str_starts_with($pic, 'http') ? $pic : (str_starts_with($pic, 'profile_pictures/') ? asset('storage/'.$pic) : asset($pic)))
-                                            : asset('images/default-avatar.jpg');
+                                        $rating = number_format($eval->overall_rating, 1);
+                                        $ratingColor = $eval->getRatingColor();
                                     @endphp
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden">
-                                        <img src="{{ $avatarUrl }}" alt="{{ $eval->employee->fullName }}"
-                                            class="w-8 h-8 rounded-full object-cover"
-                                            onerror="this.src='{{ asset('images/default-avatar.jpg') }}'">
-                                    </div>
-
-                                    {{-- Name --}}
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                            {{ $eval->employee->fullName }}
-                                        </p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                                            {{ $eval->getRatingLabel() }}
-                                        </p>
-                                    </div>
-
-                                    {{-- Rating --}}
-                                    <div class="flex-shrink-0 text-right">
-                                        <p class="text-sm font-bold text-{{ $eval->getRatingColor() }}-600 dark:text-{{ $eval->getRatingColor() }}-400">
-                                            {{ number_format($eval->overall_rating, 1) }}
-                                        </p>
-                                        <div class="flex items-center gap-0.5 justify-end">
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                <i class="fi fi-{{ $i <= round($eval->overall_rating) ? 'sr' : 'rr' }}-star text-amber-400" style="font-size: 8px;"></i>
-                                            @endfor
-                                        </div>
-                                    </div>
-                                </div>
+                                    <x-applicant-components.stack-item
+                                        :colorIndex="$index"
+                                        :initials="strtoupper(substr($eval->employee->full_name, 0, 1))"
+                                        :title="$eval->employee->full_name"
+                                        :detail="$eval->getRatingLabel()"
+                                        :badge="$rating"
+                                        :badgeClass="'bg-' . $ratingColor . '-100 dark:bg-' . $ratingColor . '-900/40 text-' . $ratingColor . '-600 dark:text-' . $ratingColor . '-300'"
+                                    >
+                                        <x-slot name="extra">
+                                            <div class="flex items-center gap-0.5 mt-1">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <i class="fi fi-{{ $i <= round($eval->overall_rating) ? 'sr' : 'rr' }}-star text-amber-400" style="font-size: 9px;"></i>
+                                                @endfor
+                                            </div>
+                                        </x-slot>
+                                    </x-applicant-components.stack-item>
+                                @endif
                             @endforeach
-                        </div>
+                        </x-applicant-components.stack-list>
                     </div>
                 @endif
+                </div>{{-- /right-bottom-stack --}}
             </div>
         </section>
+
+        <script>
+            (function () {
+                const stack = document.getElementById('right-bottom-stack');
+                const taskBox = document.getElementById('task-overview-box');
+                if (!stack || !taskBox) return;
+
+                const lg = window.matchMedia('(min-width: 1024px)');
+
+                function sync() {
+                    if (lg.matches) {
+                        taskBox.style.height = stack.getBoundingClientRect().height + 'px';
+                    } else {
+                        taskBox.style.height = '';
+                    }
+                }
+
+                if ('ResizeObserver' in window) {
+                    new ResizeObserver(sync).observe(stack);
+                }
+                window.addEventListener('resize', sync);
+                lg.addEventListener?.('change', sync);
+                document.addEventListener('livewire:update', sync);
+
+                sync();
+                setTimeout(sync, 200);
+                setTimeout(sync, 1000);
+            })();
+        </script>
 
     </x-skeleton-page>
 

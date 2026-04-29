@@ -72,7 +72,17 @@
       "Bash(ls -la /c/xampp/htdocs/opticrew/database/migrations/*task*)",
       "Bash(grep -E \"\\\\.\\(blade\\\\.php|php\\)$\")",
       "Bash(php -r ':*)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(awk 'NR>=600 && NR<=720 && /->name\\\\\\(|->group\\\\\\(|->prefix\\\\\\(|Route::middleware|Route::name|Route::prefix/' routes/web.php)",
+      "Bash(awk 'NR>=695 && NR<=712' routes/web.php)",
+      "Bash(awk 'NR>=688 && NR<=700' storage/framework/views/68f539de0a6ca62f691cb9758cd07a199b28a572.php)",
+      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $app = require_once '\\\\''bootstrap/app.php'\\\\''; $app->make\\('\\\\''Illuminate\\\\Contracts\\\\Console\\\\Kernel'\\\\''\\)->bootstrap\\(\\); try { $compiled = view\\(\\)->getEngineResolver\\(\\)->resolve\\('\\\\''blade'\\\\''\\)->getCompiler\\(\\)->compileString\\(file_get_contents\\('\\\\''resources/views/employee/dashboard.blade.php'\\\\''\\)\\); echo \"COMPILED OK\\\\n\"; } catch \\(\\\\Throwable $e\\) { echo \"BLADE ERROR: \" . $e->getMessage\\(\\) . \"\\\\n\"; }')",
+      "Bash(php -r \"require 'vendor/autoload.php'; echo \\\\Carbon\\\\Carbon::class . ' v' . \\\\Carbon\\\\Carbon::VERSION . PHP_EOL;\")",
+      "Bash(git -C c:/xampp/htdocs/opticrew diff resources/views/components/employee-components/task-overview-list.blade.php)",
+      "Bash(git -C c:/xampp/htdocs/opticrew show 34a2251 --stat)",
+      "Bash(git -C c:/xampp/htdocs/opticrew show 34a2251)",
+      "Bash(php -r ' *)",
+      "Bash(git -C c:/xampp/htdocs/opticrew diff .claude/settings.local.json app/Http/Controllers/DashboardController.php resources/views/admin/dashboard.blade.php resources/views/livewire/admin/recent-arrivals.blade.php)"
     ],
     "deny": [],
     "ask": []

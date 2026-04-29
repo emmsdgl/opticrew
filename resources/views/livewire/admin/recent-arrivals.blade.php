@@ -7,7 +7,7 @@
             <p class="text-[10px] text-gray-300 dark:text-gray-600 mt-1">Employee clock-ins will appear here</p>
         </div>
     @else
-        <x-applicant-components.stack-list maxHeight="max-h-64">
+        <x-applicant-components.stack-list maxHeight="max-h-[14rem]">
             @foreach ($recentArrivals as $index => $arrival)
                 @if($arrival->employee)
                     <x-applicant-components.stack-item
