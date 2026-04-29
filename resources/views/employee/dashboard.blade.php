@@ -8,7 +8,6 @@
         {{-- DESKTOP LAYOUT (≥ 768px) - Hidden on small screens --}}
         <section role="status"
             class="hidden md:flex flex-col lg:flex-row gap-6 p-4 md:p-6"
-            x-init="setInterval(() => currentTime = new Date(), 30000)"
             x-data="{
                 showAttendanceDrawer: false,
                 showRequestModal: false,
@@ -21,6 +20,10 @@
                 dinnerBreakStatus: '{{ $dinnerBreakStatus ?? '' }}',
                 isProcessingBreak: false,
                 currentTime: new Date(),
+
+                init() {
+                    setInterval(() => { this.currentTime = new Date(); }, 30000);
+                },
 
                 currentBreakWindow() {
                     const mins = this.currentTime.getHours() * 60 + this.currentTime.getMinutes();
@@ -259,12 +262,24 @@
 
                 <!-- Log Your Attendance Card -->
                 <div id="attendance-card"
-                    class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl py-4 bg-white shadow-sm dark:bg-gray-800/40">
+                    class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl py-4 bg-white shadow-sm dark:bg-gray-800/40"
+                    data-bg-light="{{ asset('images/backgrounds/log-attendance-bg.svg') }}"
+                    data-bg-dark="{{ asset('images/backgrounds/log-attendance-bg-dark.svg') }}">
                     <!-- Background Image for Light Mode -->
-                    <div class="absolute inset-0 bg-cover bg-center block dark:hidden" style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg.svg') }}');"></div>
+                    <div id="attendance-bg-light" class="absolute inset-0 bg-cover bg-center block dark:hidden"></div>
 
                     <!-- Background Image for Dark Mode -->
-                    <div class="absolute inset-0 bg-cover bg-center hidden dark:block" style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg-dark.svg') }}');"></div>
+                    <div id="attendance-bg-dark" class="absolute inset-0 bg-cover bg-center hidden dark:block"></div>
+                    <script>
+                        (function () {
+                            var card = document.getElementById('attendance-card');
+                            if (!card) return;
+                            var l = document.getElementById('attendance-bg-light');
+                            var d = document.getElementById('attendance-bg-dark');
+                            if (l) l.style.backgroundImage = 'url(' + card.dataset.bgLight + ')';
+                            if (d) d.style.backgroundImage = 'url(' + card.dataset.bgDark + ')';
+                        })();
+                    </script>
 
                     <!-- Content -->
                     <div class="relative px-6 py-2 h-full">
