@@ -83,6 +83,44 @@
         @endif
     </div>
 
+    @if($isClockedIn)
+        {{-- Break Card --}}
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="fa-solid fa-mug-hot text-[#2A6DFA]"></i>
+                <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">Breaks</h3>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+                @foreach (['lunch', 'dinner'] as $type)
+                    @php
+                        $bStatus = $todayAttendance->{$type . '_break_status'} ?? null;
+                        $bMin = $todayAttendance ? $todayAttendance->breakMinutesFor($type) : 0;
+                        $window = $type === 'lunch' ? '12:00–13:00' : '18:00–19:00';
+                    @endphp
+                    <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                        <div class="font-semibold text-gray-700 dark:text-gray-300 capitalize">{{ $type }} <span class="text-gray-400 font-normal">{{ $window }}</span></div>
+                        @if ($bStatus === 'in_progress')
+                            <div class="text-blue-600 dark:text-blue-400">On break</div>
+                        @elseif ($bStatus === 'ended')
+                            <div class="text-green-600 dark:text-green-400">{{ $bMin }} min</div>
+                        @elseif ($bStatus === 'auto_ended')
+                            <div class="text-orange-600 dark:text-orange-400">{{ $bMin }} min · Auto-ended</div>
+                        @else
+                            <div class="text-gray-400">Not taken</div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+            <button id="mobile-break-button" type="button"
+                class="w-full text-sm px-4 py-3 rounded-full font-medium flex items-center justify-center gap-2 transition-colors"
+                disabled>
+                <i id="mobile-break-icon" class="fa-solid fa-mug-hot"></i>
+                <span id="mobile-break-text">Start Break</span>
+            </button>
+            <p id="mobile-break-hint" class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2"></p>
+        </div>
+    @endif
+
     {{-- Quick Stats Cards - 2 Column Grid --}}
     <div class="grid grid-cols-2 gap-3">
         {{-- Today's Tasks --}}
@@ -529,6 +567,98 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateClock(); // Update immediately
             setInterval(updateClock, 1000); // Update every second
+        });
+    })();
+
+    // Break button (lunch 12:00–13:00, dinner 18:00–19:00)
+    (function() {
+        const btn = document.getElementById('mobile-break-button');
+        if (!btn) return;
+
+        const text = document.getElementById('mobile-break-text');
+        const icon = document.getElementById('mobile-break-icon');
+        const hint = document.getElementById('mobile-break-hint');
+
+        let isOnBreak = {{ $activeBreakType ? 'true' : 'false' }};
+        let activeBreakType = '{{ $activeBreakType ?? '' }}';
+        const lunchTaken = {!! $lunchBreakStatus ? 'true' : 'false' !!};
+        const dinnerTaken = {!! $dinnerBreakStatus ? 'true' : 'false' !!};
+
+        function currentWindow() {
+            const d = new Date();
+            const m = d.getHours() * 60 + d.getMinutes();
+            if (m >= 720 && m < 780) return 'lunch';
+            if (m >= 1080 && m < 1140) return 'dinner';
+            return null;
+        }
+
+        function render() {
+            const w = currentWindow();
+            const canStart = !isOnBreak && w && !((w === 'lunch' && lunchTaken) || (w === 'dinner' && dinnerTaken));
+
+            btn.classList.remove('bg-amber-600', 'hover:bg-amber-700', 'bg-emerald-600', 'hover:bg-emerald-700', 'bg-gray-200', 'dark:bg-gray-700', 'text-white', 'text-gray-500', 'cursor-not-allowed');
+
+            if (isOnBreak) {
+                text.textContent = 'End ' + (activeBreakType.charAt(0).toUpperCase() + activeBreakType.slice(1)) + ' Break';
+                icon.className = 'fa-solid fa-stop';
+                btn.classList.add('bg-amber-600', 'hover:bg-amber-700', 'text-white');
+                btn.disabled = false;
+                hint.textContent = '';
+            } else if (canStart) {
+                text.textContent = 'Start ' + (w.charAt(0).toUpperCase() + w.slice(1)) + ' Break';
+                icon.className = 'fa-solid fa-mug-hot';
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'text-white');
+                btn.disabled = false;
+                hint.textContent = '';
+            } else {
+                text.textContent = 'Start Break';
+                icon.className = 'fa-solid fa-mug-hot';
+                btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-500', 'cursor-not-allowed');
+                btn.disabled = true;
+                if (lunchTaken && dinnerTaken) {
+                    hint.textContent = 'Both breaks already taken';
+                } else if (w === 'lunch' && lunchTaken) {
+                    hint.textContent = 'Lunch break already taken';
+                } else if (w === 'dinner' && dinnerTaken) {
+                    hint.textContent = 'Dinner break already taken';
+                } else {
+                    hint.textContent = 'Available 12:00–13:00 (lunch) or 18:00–19:00 (dinner)';
+                }
+            }
+        }
+
+        btn.addEventListener('click', async function() {
+            if (btn.disabled) return;
+            btn.disabled = true;
+            const url = isOnBreak
+                ? '{{ route('employee.attendance.break.end') }}'
+                : '{{ route('employee.attendance.break.start') }}';
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Unable to update break');
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                alert('An error occurred. Please try again.');
+                btn.disabled = false;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            render();
+            setInterval(render, 30000);
         });
     })();
 </script>

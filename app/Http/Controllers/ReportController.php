@@ -250,10 +250,17 @@ class ReportController extends Controller
                 $totalRegularHours = 0;
                 $totalPremiumHours = 0;
                 $totalOvertimeHours = 0;
+                $totalLunchBreakMinutes = 0;
+                $totalDinnerBreakMinutes = 0;
 
                 foreach ($attendances as $date => $dayRecords) {
                     $dailyMinutes = $dayRecords->sum('total_minutes_worked');
                     $dailyHours = $dailyMinutes / 60;
+
+                    foreach ($dayRecords as $rec) {
+                        $totalLunchBreakMinutes += $rec->breakMinutesFor(\App\Models\Attendance::LUNCH);
+                        $totalDinnerBreakMinutes += $rec->breakMinutesFor(\App\Models\Attendance::DINNER);
+                    }
                     $clockInDate = Carbon::parse($date);
                     $isPremium = $clockInDate->dayOfWeek === 0 || in_array($date, $holidays);
 
@@ -286,6 +293,8 @@ class ReportController extends Controller
                 $employee->overtime_hours = round($totalOvertimeHours, 2);
                 $employee->total_hours = round($totalRegularHours + $totalPremiumHours, 2);
                 $employee->gross_salary = round($totalRegularPay + $totalPremiumPay, 2);
+                $employee->lunch_break_minutes = $totalLunchBreakMinutes;
+                $employee->dinner_break_minutes = $totalDinnerBreakMinutes;
 
                 return $employee;
             });
@@ -295,6 +304,8 @@ class ReportController extends Controller
         $totalRegularHours = $employees->sum('regular_hours');
         $totalPremiumHours = $employees->sum('premium_hours');
         $totalSalary = $employees->sum('gross_salary');
+        $totalLunchBreakMinutes = $employees->sum('lunch_break_minutes');
+        $totalDinnerBreakMinutes = $employees->sum('dinner_break_minutes');
         $totalEmployees = $employees->count();
         $averageHoursPerEmployee = $totalEmployees > 0 ? round($totalHours / $totalEmployees, 2) : 0;
 
@@ -304,6 +315,8 @@ class ReportController extends Controller
             'totalRegularHours',
             'totalPremiumHours',
             'totalSalary',
+            'totalLunchBreakMinutes',
+            'totalDinnerBreakMinutes',
             'totalEmployees',
             'averageHoursPerEmployee',
             'startDate',
@@ -712,10 +725,17 @@ class ReportController extends Controller
                 $totalRegularHours = 0;
                 $totalPremiumHours = 0;
                 $totalOvertimeHours = 0;
+                $totalLunchBreakMinutes = 0;
+                $totalDinnerBreakMinutes = 0;
 
                 foreach ($attendances as $date => $dayRecords) {
                     $dailyMinutes = $dayRecords->sum('total_minutes_worked');
                     $dailyHours = $dailyMinutes / 60;
+
+                    foreach ($dayRecords as $rec) {
+                        $totalLunchBreakMinutes += $rec->breakMinutesFor(\App\Models\Attendance::LUNCH);
+                        $totalDinnerBreakMinutes += $rec->breakMinutesFor(\App\Models\Attendance::DINNER);
+                    }
                     $clockInDate = Carbon::parse($date);
                     $isPremium = $clockInDate->dayOfWeek === 0 || in_array($date, $holidays);
 
@@ -748,6 +768,8 @@ class ReportController extends Controller
                 $employee->overtime_hours = round($totalOvertimeHours, 2);
                 $employee->total_hours = round($totalRegularHours + $totalPremiumHours, 2);
                 $employee->gross_salary = round($totalRegularPay + $totalPremiumPay, 2);
+                $employee->lunch_break_minutes = $totalLunchBreakMinutes;
+                $employee->dinner_break_minutes = $totalDinnerBreakMinutes;
 
                 return $employee;
             });

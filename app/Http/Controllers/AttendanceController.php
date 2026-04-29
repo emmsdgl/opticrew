@@ -92,6 +92,26 @@ class AttendanceController extends Controller
 
             $employeeName = $attendance->employee?->fullName ?? 'Unknown';
 
+            $breaks = [];
+            foreach ([Attendance::LUNCH, Attendance::DINNER] as $type) {
+                $bStatus = $attendance->{"{$type}_break_status"};
+                $bStart  = $attendance->{"{$type}_break_start"};
+                $bEnd    = $attendance->{"{$type}_break_end"};
+                $breaks[$type] = [
+                    'status'  => $bStatus,
+                    'minutes' => $attendance->breakMinutesFor($type),
+                    'start'   => $bStart ? Carbon::parse($bStart)->format('h:i A') : null,
+                    'end'     => $bEnd ? Carbon::parse($bEnd)->format('h:i A') : null,
+                ];
+            }
+
+            // An active break overrides present/late status while it's in progress
+            if ($attendance->lunch_break_status === Attendance::STATUS_IN_PROGRESS) {
+                $status = 'on_break_1';
+            } elseif ($attendance->dinner_break_status === Attendance::STATUS_IN_PROGRESS) {
+                $status = 'on_break_2';
+            }
+
             return [
                 'status' => $status,
                 'date' => $clockIn->format('F d') . ' - ' . $employeeName,
@@ -101,6 +121,7 @@ class AttendanceController extends Controller
                 'timeOut' => $clockOut ? $clockOut->format('g:i a') : null,
                 'timeOutNote' => $timeOutNote,
                 'hoursWorked' => $hoursWorkedText,
+                'breaks' => $breaks,
                 'timedIn' => true,
                 'isTimedOut' => $clockOut !== null
             ];
@@ -647,8 +668,27 @@ class AttendanceController extends Controller
             return $geoCheck;
         }
 
-        // Calculate total minutes worked
-        $totalMinutes = $clockOut->diffInMinutes($clockIn);
+        // Auto-end any in-progress break whose window has closed (e.g., employee
+        // forgot to click End Break). This is a no-op if no break is in progress.
+        $attendance->autoEndExpiredBreaks();
+
+        // If a break is still in progress at clock-out (within window), end it
+        // now and mark as auto_ended — duration runs from break_start to clock_out
+        // since the employee never clicked End Break themselves.
+        if ($activeType = $attendance->activeBreakType()) {
+            $attendance->update([
+                "{$activeType}_break_end"    => $clockOut,
+                "{$activeType}_break_status" => Attendance::STATUS_AUTO_ENDED,
+            ]);
+            $attendance->refresh();
+        }
+
+        // Total minutes worked = elapsed - breaks, capped at 12h (720 min) for payroll.
+        // Raw clock_in/clock_out are preserved untouched for audit.
+        $elapsedMinutes = $clockOut->diffInMinutes($clockIn);
+        $breakMinutes = $attendance->totalBreakMinutes();
+        $netMinutes = max(0, $elapsedMinutes - $breakMinutes);
+        $totalMinutes = min(Attendance::MAX_PAYABLE_MINUTES, $netMinutes);
 
         // Update attendance record
         $attendance->update([
@@ -667,6 +707,133 @@ class AttendanceController extends Controller
         }
 
         return redirect()->back()->with('success', 'Clocked out successfully');
+    }
+
+    /**
+     * Start a break (lunch or dinner). The break type is auto-detected from the
+     * current time — Start Break can only be clicked inside one of the two windows.
+     */
+    public function startBreak(Request $request)
+    {
+        $user = Auth::user();
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        if (!$employee) {
+            return $this->breakError($request, 'Employee profile not found');
+        }
+
+        $attendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('clock_in', now()->toDateString())
+            ->whereNull('clock_out')
+            ->first();
+
+        if (!$attendance) {
+            return $this->breakError($request, 'You must be clocked in to start a break');
+        }
+
+        // Sweep any expired in-progress break first (safety net for forgotten ends)
+        $attendance->autoEndExpiredBreaks();
+        $attendance->refresh();
+
+        if ($attendance->activeBreakType()) {
+            return $this->breakError($request, 'You already have an active break');
+        }
+
+        // Detect which break window we're in
+        $type = $this->currentBreakType();
+        if (!$type) {
+            return $this->breakError($request, 'Breaks can only be started during lunch (12:00–13:00) or dinner (18:00–19:00)');
+        }
+
+        // Prevent re-taking the same break twice
+        if ($attendance->{"{$type}_break_status"} !== null) {
+            return $this->breakError($request, ucfirst($type) . ' break has already been taken today');
+        }
+
+        $attendance->update([
+            "{$type}_break_start"  => now(),
+            "{$type}_break_status" => Attendance::STATUS_IN_PROGRESS,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success'    => true,
+                'message'    => ucfirst($type) . ' break started',
+                'break_type' => $type,
+                'attendance' => $attendance->fresh(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', ucfirst($type) . ' break started');
+    }
+
+    /**
+     * End the currently active break. If the window has already closed, the
+     * autoEnd helper will have stamped it 'auto_ended' before this runs.
+     */
+    public function endBreak(Request $request)
+    {
+        $user = Auth::user();
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        if (!$employee) {
+            return $this->breakError($request, 'Employee profile not found');
+        }
+
+        $attendance = Attendance::where('employee_id', $employee->id)
+            ->whereDate('clock_in', now()->toDateString())
+            ->whereNull('clock_out')
+            ->first();
+
+        if (!$attendance) {
+            return $this->breakError($request, 'No active attendance found');
+        }
+
+        // Auto-end any expired break first; if that handled it, we're done
+        $attendance->autoEndExpiredBreaks();
+        $attendance->refresh();
+
+        $type = $attendance->activeBreakType();
+        if (!$type) {
+            return $this->breakError($request, 'No active break to end');
+        }
+
+        $attendance->update([
+            "{$type}_break_end"    => now(),
+            "{$type}_break_status" => Attendance::STATUS_ENDED,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success'    => true,
+                'message'    => ucfirst($type) . ' break ended',
+                'break_type' => $type,
+                'attendance' => $attendance->fresh(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', ucfirst($type) . ' break ended');
+    }
+
+    private function currentBreakType(): ?string
+    {
+        $now = Carbon::now();
+        foreach (Attendance::BREAK_WINDOWS as $type => $w) {
+            $start = Carbon::today()->setTimeFromTimeString($w['start']);
+            $end   = Carbon::today()->setTimeFromTimeString($w['end']);
+            if ($now->between($start, $end, false)) {
+                return $type;
+            }
+        }
+        return null;
+    }
+
+    private function breakError(Request $request, string $message)
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['success' => false, 'message' => $message], 400);
+        }
+        return redirect()->back()->with('error', $message);
     }
 
     /**

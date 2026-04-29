@@ -71,7 +71,8 @@
       "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DELETE FROM performance_evaluations WHERE id BETWEEN 421 AND 440;\")",
       "Bash(ls -la /c/xampp/htdocs/opticrew/database/migrations/*task*)",
       "Bash(grep -E \"\\\\.\\(blade\\\\.php|php\\)$\")",
-      "Bash(php -r ':*)"
+      "Bash(php -r ':*)",
+      "Bash(xargs grep *)"
     ],
     "deny": [],
     "ask": []

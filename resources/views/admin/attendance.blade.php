@@ -43,6 +43,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Clock In</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Clock Out</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Breaks</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Hours Worked</th>
                             </tr>
                         </thead>
@@ -68,6 +69,10 @@
                                             <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">Late</span>
                                         @elseif($record['status'] === 'absent')
                                             <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Absent</span>
+                                        @elseif($record['status'] === 'on_break_1')
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">On Break 1</span>
+                                        @elseif($record['status'] === 'on_break_2')
+                                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">On Break 2</span>
                                         @else
                                             <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400">{{ ucfirst($record['status']) }}</span>
                                         @endif
@@ -83,6 +88,28 @@
                                         @if(!empty($record['timeOutNote']))
                                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ $record['timeOutNote'] }}</p>
                                         @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php $breaks = $record['breaks'] ?? []; @endphp
+                                        <div class="flex flex-col gap-1">
+                                            @foreach (['lunch' => 'Lunch', 'dinner' => 'Dinner'] as $bType => $bLabel)
+                                                @php $b = $breaks[$bType] ?? null; @endphp
+                                                <div class="flex items-center gap-1.5 text-xs">
+                                                    <span class="text-gray-500 dark:text-gray-400 w-12">{{ $bLabel }}:</span>
+                                                    @if (!$b || !$b['status'])
+                                                        <span class="text-gray-400 dark:text-gray-500">—</span>
+                                                    @elseif ($b['status'] === 'in_progress')
+                                                        <span class="px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-semibold">On break</span>
+                                                    @elseif ($b['status'] === 'auto_ended')
+                                                        <span class="text-gray-700 dark:text-gray-300">{{ $b['minutes'] }} min</span>
+                                                        <span class="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-semibold">Auto-ended</span>
+                                                    @else
+                                                        <span class="text-gray-700 dark:text-gray-300">{{ $b['minutes'] }} min</span>
+                                                        <span class="px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-semibold">Ended</span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="text-sm font-semibold text-blue-600 dark:text-blue-400">{{ $record['hoursWorked'] ?? '-' }}</span>

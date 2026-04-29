@@ -8,12 +8,73 @@
         {{-- DESKTOP LAYOUT (≥ 768px) - Hidden on small screens --}}
         <section role="status"
             class="hidden md:flex flex-col lg:flex-row gap-6 p-4 md:p-6"
+            x-init="setInterval(() => currentTime = new Date(), 30000)"
             x-data="{
                 showAttendanceDrawer: false,
                 showRequestModal: false,
                 selectedRequest: null,
                 isCancelling: false,
                 employeeRequests: {{ Js::from($employeeRequests) }},
+                isOnBreak: {{ $activeBreakType ? 'true' : 'false' }},
+                activeBreakType: '{{ $activeBreakType ?? '' }}',
+                lunchBreakStatus: '{{ $lunchBreakStatus ?? '' }}',
+                dinnerBreakStatus: '{{ $dinnerBreakStatus ?? '' }}',
+                isProcessingBreak: false,
+                currentTime: new Date(),
+
+                currentBreakWindow() {
+                    const mins = this.currentTime.getHours() * 60 + this.currentTime.getMinutes();
+                    if (mins >= 720 && mins < 780) return 'lunch';
+                    if (mins >= 1080 && mins < 1140) return 'dinner';
+                    return null;
+                },
+
+                canStartBreak() {
+                    if (this.isOnBreak) return false;
+                    const w = this.currentBreakWindow();
+                    if (!w) return false;
+                    if (w === 'lunch' && this.lunchBreakStatus) return false;
+                    if (w === 'dinner' && this.dinnerBreakStatus) return false;
+                    return true;
+                },
+
+                breakButtonHint() {
+                    if (this.isOnBreak) return '';
+                    if (this.lunchBreakStatus && this.dinnerBreakStatus) return 'Both breaks already taken';
+                    const w = this.currentBreakWindow();
+                    if (!w) return 'Available 12:00–13:00 (lunch) or 18:00–19:00 (dinner)';
+                    if (w === 'lunch' && this.lunchBreakStatus) return 'Lunch break already taken';
+                    if (w === 'dinner' && this.dinnerBreakStatus) return 'Dinner break already taken';
+                    return '';
+                },
+
+                async toggleBreak() {
+                    if (this.isProcessingBreak) return;
+                    this.isProcessingBreak = true;
+                    const url = this.isOnBreak
+                        ? '{{ route('employee.attendance.break.end') }}'
+                        : '{{ route('employee.attendance.break.start') }}';
+                    try {
+                        const res = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            window.showErrorDialog('Break Action Failed', data.message || 'Unable to update break');
+                            this.isProcessingBreak = false;
+                        }
+                    } catch (e) {
+                        window.showErrorDialog('Break Action Failed', 'An error occurred. Please try again.');
+                        this.isProcessingBreak = false;
+                    }
+                },
             
                 openAttendanceDrawer() {
                     this.showAttendanceDrawer = true;
@@ -75,7 +136,7 @@
 
                 <!-- Inner Up - Dashboard Header -->
                     <div id="tour-emp-welcome">
-                        <x-herocard :headerName="$employee->user->name ?? 'Employee'" :headerDesc="'Welcome to the employee dashboard. Track tasks and manage them'" :headerIcon="'hero-employee'" />
+                        <x-herocard :headerName="is_array($employee) ? ($employee['user']['name'] ?? 'Employee') : ($employee->user->name ?? 'Employee')" :headerDesc="'Welcome to the employee dashboard. Track tasks and manage them'" :headerIcon="'hero-employee'" />
                     </div>
                 <!-- Inner Middle - Calendar -->
                 <div class="mt-3">
@@ -146,7 +207,7 @@
                     const dateLabel = document.getElementById('todo-list-date-label');
                     if (!section) return;
 
-                    const endpoint = @js(route('employee.dashboard.tasks-by-date'));
+                    const endpoint = "{{ route('employee.dashboard.tasks-by-date') }}";
                     const csrf = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
                     let inflight = null;
 
@@ -200,14 +261,10 @@
                 <div id="attendance-card"
                     class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl py-4 bg-white shadow-sm dark:bg-gray-800/40">
                     <!-- Background Image for Light Mode -->
-                    <div class="absolute inset-0 bg-cover bg-center block dark:hidden"
-                        style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg.svg') }}');">
-                    </div>
+                    <div class="absolute inset-0 bg-cover bg-center block dark:hidden" style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg.svg') }}');"></div>
 
                     <!-- Background Image for Dark Mode -->
-                    <div class="absolute inset-0 bg-cover bg-center hidden dark:block"
-                        style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg-dark.svg') }}');">
-                    </div>
+                    <div class="absolute inset-0 bg-cover bg-center hidden dark:block" style="background-image: url('{{ asset('images/backgrounds/log-attendance-bg-dark.svg') }}');"></div>
 
                     <!-- Content -->
                     <div class="relative px-6 py-2 h-full">
@@ -457,7 +514,7 @@
                                         <div class="flex justify-between items-center">
                                             <span class="text-gray-500 dark:text-gray-400">Employee Name</span>
                                             <span class="font-medium text-gray-900 dark:text-white text-right">
-                                                {{ $employee->user->name ?? 'N/A' }}
+                                                {{ is_array($employee) ? ($employee['user']['name'] ?? 'N/A') : ($employee->user->name ?? 'N/A') }}
                                             </span>
                                         </div>
 
@@ -471,8 +528,9 @@
                                         <div class="flex justify-between items-center">
                                             <span class="text-gray-500 dark:text-gray-400">Clock In Time</span>
                                             <span class="font-medium text-gray-900 dark:text-white text-right">
-                                                @if ($hasAttendanceToday)
-                                                    {{ \Carbon\Carbon::parse(\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_in)->format('h:i A') }}
+                                                @php $attendance = \App\Models\Attendance::where('employee_id', is_array($employee) ? $employee['id'] : $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first(); @endphp
+                                                @if ($hasAttendanceToday && $attendance && $attendance->clock_in)
+                                                    {{ \Carbon\Carbon::parse($attendance->clock_in)->format('h:i A') }}
                                                 @else
                                                     <span class="text-gray-400 dark:text-gray-500">Not clocked
                                                         in</span>
@@ -483,42 +541,76 @@
                                         <div class="flex justify-between items-center">
                                             <span class="text-gray-500 dark:text-gray-400">Clock Out Time</span>
                                             <span class="font-medium text-gray-900 dark:text-white text-right">
-                                                @if (
-                                                    $hasAttendanceToday &&
-                                                        !\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)
+                                                @if ($hasAttendanceToday && $attendance && !$attendance->clock_out)
                                                     <span class="text-blue-500 dark:text-blue-400">Still
                                                         working...</span>
-                                                @elseif($hasAttendanceToday)
-                                                    {{ \Carbon\Carbon::parse(\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)->format('h:i A') }}
+                                                @elseif($hasAttendanceToday && $attendance && $attendance->clock_out)
+                                                    {{ \Carbon\Carbon::parse($attendance->clock_out)->format('h:i A') }}
                                                 @else
                                                     <span class="text-gray-400 dark:text-gray-500">N/A</span>
                                                 @endif
                                             </span>
                                         </div>
 
-                                        @if (
-                                            $hasAttendanceToday &&
-                                                \App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)
+                                        @if ($hasAttendanceToday && $attendance && $attendance->clock_out)
                                             @php
-                                                $attendance = \App\Models\Attendance::where(
-                                                    'employee_id',
-                                                    $employee->id,
-                                                )
-                                                    ->whereDate('clock_in', \Carbon\Carbon::today())
-                                                    ->first();
                                                 $clockIn = \Carbon\Carbon::parse($attendance->clock_in);
                                                 $clockOut = \Carbon\Carbon::parse($attendance->clock_out);
-                                                $duration = $clockOut->diff($clockIn);
+                                                $elapsedMinutes = $clockOut->diffInMinutes($clockIn);
+                                                $breakMinutes = ($todayAttendance ? $todayAttendance->totalBreakMinutes() : 0);
+                                                $netMinutes = max(0, $elapsedMinutes - $breakMinutes);
+                                                $payableMinutes = min(\App\Models\Attendance::MAX_PAYABLE_MINUTES, $netMinutes);
                                             @endphp
                                             <div class="flex justify-between items-center">
                                                 <span class="text-gray-500 dark:text-gray-400">Total Hours</span>
                                                 <span class="font-medium text-gray-900 dark:text-white text-right">
-                                                    {{ $duration->h }}h {{ $duration->i }}m
+                                                    {{ intdiv($payableMinutes, 60) }}h {{ $payableMinutes % 60 }}m
+                                                    @if ($netMinutes > \App\Models\Attendance::MAX_PAYABLE_MINUTES)
+                                                        <span class="text-xs text-orange-500 dark:text-orange-400 block">capped at 12h</span>
+                                                    @endif
                                                 </span>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
+
+                                <!-- Breaks Information Section -->
+                                @if ($hasAttendanceToday && $todayAttendance)
+                                    <div class="mb-5">
+                                        <div class="py-3">
+                                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Breaks</h4>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Lunch (12:00–13:00) and dinner (18:00–19:00)</p>
+                                        </div>
+
+                                        <div class="space-y-4 text-sm py-2.5 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                            @foreach ([['type' => 'lunch', 'label' => 'Lunch'], ['type' => 'dinner', 'label' => 'Dinner']] as $b)
+                                                @php
+                                                    $bStart = $todayAttendance->{$b['type'] . '_break_start'};
+                                                    $bEnd = $todayAttendance->{$b['type'] . '_break_end'};
+                                                    $bStatus = $todayAttendance->{$b['type'] . '_break_status'};
+                                                    $bMinutes = $todayAttendance->breakMinutesFor($b['type']);
+                                                @endphp
+                                                <div class="flex justify-between items-center">
+                                                    <span class="text-gray-500 dark:text-gray-400">{{ $b['label'] }}</span>
+                                                    <span class="font-medium text-gray-900 dark:text-white text-right text-xs">
+                                                        @if ($bStatus === \App\Models\Attendance::STATUS_IN_PROGRESS)
+                                                            <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-semibold">On break since {{ \Carbon\Carbon::parse($bStart)->format('h:i A') }}</span>
+                                                        @elseif ($bStatus === \App\Models\Attendance::STATUS_ENDED || $bStatus === \App\Models\Attendance::STATUS_AUTO_ENDED)
+                                                            {{ \Carbon\Carbon::parse($bStart)->format('h:i A') }} – {{ \Carbon\Carbon::parse($bEnd)->format('h:i A') }}
+                                                            <span class="block">{{ $bMinutes }} min
+                                                                @if ($bStatus === \App\Models\Attendance::STATUS_AUTO_ENDED)
+                                                                    <span class="px-1.5 py-0.5 ml-1 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-semibold">Auto-ended</span>
+                                                                @endif
+                                                            </span>
+                                                        @else
+                                                            <span class="text-gray-400 dark:text-gray-500">Not taken</span>
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <!-- Status Notice -->
                                 <div class="rounded-lg p-4 my-6 border-t border-gray-200 dark:border-gray-700">
@@ -545,6 +637,19 @@
                             <!-- Drawer Footer (Sticky) -->
                             <div
                                 class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50">
+                                @if ($isClockedIn)
+                                    <div class="mb-3" x-show="isOnBreak || canStartBreak() || breakButtonHint()">
+                                        <button type="button" @click="toggleBreak()"
+                                            :disabled="isProcessingBreak || (!isOnBreak && !canStartBreak())"
+                                            :class="isOnBreak ? 'bg-amber-600 hover:bg-amber-700 text-white' : (canStartBreak() ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed')"
+                                            class="w-full text-sm px-4 py-2.5 rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
+                                            <i :class="isOnBreak ? 'fi fi-rr-stop' : 'fi fi-rr-mug-hot'" class="text-sm"></i>
+                                            <span x-text="isOnBreak ? ('End ' + (activeBreakType.charAt(0).toUpperCase() + activeBreakType.slice(1)) + ' Break') : 'Start Break'"></span>
+                                        </button>
+                                        <p x-show="!isOnBreak && breakButtonHint()" x-text="breakButtonHint()"
+                                            class="text-xs text-gray-500 dark:text-gray-400 text-center mt-1.5"></p>
+                                    </div>
+                                @endif
                                 <div class="flex gap-3">
                                     @if (!$hasAttendanceToday)
                                         <form id="dashboard-clockin-form" action="{{ route('employee.attendance.clockin') }}" method="POST"
@@ -566,7 +671,9 @@
                                             <input type="hidden" name="longitude" class="geo-longitude">
                                         </form>
                                         <button type="button" onclick="handleClockAction('dashboard-clockout-form', 'Clock Out', 'Are you sure you want to clock out?', 'Clocked Out', 'You have successfully clocked out.')"
-                                            class="flex-1 text-sm px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
+                                            :disabled="isOnBreak"
+                                            :class="isOnBreak ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'"
+                                            class="flex-1 text-sm px-4 py-2.5 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
                                             <i class="fi fi-rr-stop text-sm"></i>
                                             Clock Out
                                         </button>
@@ -791,45 +898,45 @@
             @once
                 <script src="{{ asset('js/geofencing.js') }}"></script>
             @endonce
+            @if (!auth()->user()->google_id)
             <script>
-                // Gmail Account Linking Reminder (via Sonner toast)
-                @if (!auth()->user()->google_id)
-                    document.addEventListener('DOMContentLoaded', function() {
-                        setTimeout(function() {
-                            const sonnerEl = document.querySelector('[x-data="sonnerToast()"]');
-                            if (sonnerEl && sonnerEl._x_dataStack) {
-                                Alpine.$data(sonnerEl).show(
-                                    'Link Your Gmail Account',
-                                    'For account verification and security, please link your personal Gmail account. This allows you to sign in with Google.',
-                                    'warning', {
-                                        actionUrl: '{{ route('employee.link-google') }}',
-                                        actionLabel: 'Link Gmail',
-                                        persistent: true,
-                                    }
-                                );
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    const sonnerEl = document.querySelector('[x-data="sonnerToast()"]');
+                    if (sonnerEl && sonnerEl._x_dataStack) {
+                        Alpine.$data(sonnerEl).show(
+                            'Link Your Gmail Account',
+                            'For account verification and security, please link your personal Gmail account. This allows you to sign in with Google.',
+                            'warning', {
+                                actionUrl: "{{ route('employee.link-google') }}",
+                                actionLabel: 'Link Gmail',
+                                persistent: true
                             }
-                        }, 2000);
-                    });
-                @endif
-
-                // Clock-In Reminder (persistent sonner when not yet clocked in)
-                @if (!$hasAttendanceToday)
-                    document.addEventListener('DOMContentLoaded', function() {
-                        setTimeout(function() {
-                            const sonnerEl = document.querySelector('[x-data="sonnerToast()"]');
-                            if (sonnerEl && sonnerEl._x_dataStack) {
-                                Alpine.$data(sonnerEl).show(
-                                    'Clock In Required',
-                                    'You haven\'t clocked in yet today. Your shift starts at {{ \Carbon\Carbon::parse($shiftStart)->format("g:i A") }} and ends at {{ \Carbon\Carbon::parse($shiftEnd)->format("g:i A") }}. Use the attendance drawer to clock in.',
-                                    'warning', {
-                                        persistent: true,
-                                    }
-                                );
-                            }
-                        }, 3000);
-                    });
-                @endif
+                        );
+                    }
+                }, 2000);
+            });
             </script>
+            @endif
+
+            @if (!$hasAttendanceToday)
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    const sonnerEl = document.querySelector('[x-data="sonnerToast()"]');
+                    if (sonnerEl && sonnerEl._x_dataStack) {
+                        Alpine.$data(sonnerEl).show(
+                            'Clock In Required',
+                            'You haven\'t clocked in yet today. Your shift starts at {{ \Carbon\Carbon::parse($shiftStart)->format("g:i A") }} and ends at {{ \Carbon\Carbon::parse($shiftEnd)->format("g:i A") }}. Use the attendance drawer to clock in.',
+                            'warning', {
+                                persistent: true
+                            }
+                        );
+                    }
+                }, 3000);
+            });
+            </script>
+            @endif
             <script>
                 // Align Course Progress label with My Calendar label
                 function alignCourseProgressWithCalendar() {
@@ -866,8 +973,6 @@
                 window.addEventListener('resize', function() {
                     const card = document.getElementById('attendance-card');
                     if (card) card.style.minHeight = '';
-                    }
-                    setTimeout(alignCourseProgressWithCalendar, 100);
                 });
             </script>
             <script>

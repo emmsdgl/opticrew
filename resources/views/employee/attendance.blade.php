@@ -72,8 +72,8 @@
         <!-- Clock In Status Banner -->
         @if($isClockedIn)
             @php
-                $todayAttendanceRecord = \App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first();
-                $clockInTimeFormatted = $todayAttendanceRecord ? \Carbon\Carbon::parse($todayAttendanceRecord->clock_in)->format('g:i A') : '';
+                $todayAttendanceRecord = \App\Models\Attendance::where('employee_id', is_array($employee) ? $employee['id'] : $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first();
+                $clockInTimeFormatted = $todayAttendanceRecord && $todayAttendanceRecord->clock_in ? \Carbon\Carbon::parse($todayAttendanceRecord->clock_in)->format('g:i A') : '';
             @endphp
             <div class="flex items-center gap-2 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
                 <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
@@ -88,8 +88,8 @@
             <x-labelwithvalue label="Summary" count="" />
 
             @php
-                $shiftStart = $employee->shift_start ?? '11:00';
-                $shiftEnd = $employee->shift_end ?? '19:00';
+                $shiftStart = is_array($employee) ? ($employee['shift_start'] ?? '11:00') : ($employee->shift_start ?? '11:00');
+                $shiftEnd = is_array($employee) ? ($employee['shift_end'] ?? '19:00') : ($employee->shift_end ?? '19:00');
 
                 // Calculate time values
                 $now = \Carbon\Carbon::now();
@@ -118,8 +118,8 @@
                     $shiftEndSubtitle = $remainingHours . 'h ' . $remainingMins . 'm remaining';
                 }
 
-                $shiftStartValue = \Carbon\Carbon::createFromFormat('H:i', $shiftStart)->format('g:i A');
-                $shiftEndValue = \Carbon\Carbon::createFromFormat('H:i', $shiftEnd)->format('g:i A');
+            $shiftStartValue = \Carbon\Carbon::parse($shiftStart)->format('g:i A');
+            $shiftEndValue = \Carbon\Carbon::parse($shiftEnd)->format('g:i A');
             @endphp
 
             <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
@@ -549,7 +549,7 @@
                                 <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
                                     <span class="text-sm text-gray-500 dark:text-gray-400">Employee Name</span>
                                     <span class="text-sm font-medium text-gray-900 dark:text-white text-right">
-                                        {{ $employee->user->name ?? 'N/A' }}
+                                        {{ is_array($employee) ? ($employee['user']['name'] ?? 'N/A') : ($employee->user->name ?? 'N/A') }}
                                     </span>
                                 </div>
 
@@ -563,8 +563,9 @@
                                 <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
                                     <span class="text-sm text-gray-500 dark:text-gray-400">Clock In Time</span>
                                     <span class="text-sm font-medium text-gray-900 dark:text-white text-right">
-                                        @if($hasAttendanceToday)
-                                            {{ \Carbon\Carbon::parse(\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_in)->format('h:i A') }}
+                                        @php $attendance = \App\Models\Attendance::where('employee_id', is_array($employee) ? $employee['id'] : $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first(); @endphp
+                                        @if($hasAttendanceToday && $attendance && $attendance->clock_in)
+                                            {{ \Carbon\Carbon::parse($attendance->clock_in)->format('h:i A') }}
                                         @else
                                             <span class="text-gray-400 dark:text-gray-500">Not clocked in</span>
                                         @endif
@@ -574,19 +575,18 @@
                                 <div class="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
                                     <span class="text-sm text-gray-500 dark:text-gray-400">Clock Out Time</span>
                                     <span class="text-sm font-medium text-gray-900 dark:text-white text-right">
-                                        @if($hasAttendanceToday && !\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)
+                                        @if($hasAttendanceToday && $attendance && !$attendance->clock_out)
                                             <span class="text-blue-500 dark:text-blue-400">Still working...</span>
-                                        @elseif($hasAttendanceToday)
-                                            {{ \Carbon\Carbon::parse(\App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)->format('h:i A') }}
+                                        @elseif($hasAttendanceToday && $attendance && $attendance->clock_out)
+                                            {{ \Carbon\Carbon::parse($attendance->clock_out)->format('h:i A') }}
                                         @else
                                             <span class="text-gray-400 dark:text-gray-500">N/A</span>
                                         @endif
                                     </span>
                                 </div>
 
-                                @if($hasAttendanceToday && \App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first()->clock_out)
+                                @if($hasAttendanceToday && $attendance && $attendance->clock_out)
                                     @php
-                                        $attendance = \App\Models\Attendance::where('employee_id', $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first();
                                         $clockIn = \Carbon\Carbon::parse($attendance->clock_in);
                                         $clockOut = \Carbon\Carbon::parse($attendance->clock_out);
                                         $duration = $clockOut->diff($clockIn);
@@ -710,7 +710,9 @@
 <script>
     // Initialize geofencing for desktop attendance page
     (function() {
-        const hasAttendanceToday = {{ ($hasAttendanceToday && !$isClockedIn) ? 'true' : 'false' }};
+        const hasAttendanceToday = "{{ ($hasAttendanceToday && !$isClockedIn) ? 'true' : 'false' }}";
+        // If you want a string, use:
+        // const hasAttendanceToday = "{{ ($hasAttendanceToday && !$isClockedIn) ? 'true' : 'false' }}";
         if (hasAttendanceToday) return; // Already completed, no need for geofencing
 
         if (window.geofencingInitialized) return;

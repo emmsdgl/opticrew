@@ -119,11 +119,22 @@ class EmployeeDashboardController extends Controller
             ->whereDate('clock_in', Carbon::today())
             ->first();
 
+        // Sweep any in-progress break whose window has closed (auto-ends at 13:00 / 19:00)
+        if ($todayAttendance) {
+            $todayAttendance->autoEndExpiredBreaks();
+            $todayAttendance->refresh();
+        }
+
         // Check if there's an active clock-in (not clocked out yet)
         $isClockedIn = $todayAttendance && $todayAttendance->clock_out === null;
 
         // Check if employee already has attendance record for today (prevents duplicate clock-ins)
         $hasAttendanceToday = $todayAttendance !== null;
+
+        // --- Break state for dashboard buttons ---
+        $activeBreakType   = $todayAttendance?->activeBreakType();
+        $lunchBreakStatus  = $todayAttendance->lunch_break_status ?? null;
+        $dinnerBreakStatus = $todayAttendance->dinner_break_status ?? null;
 
         // --- Fetch Recent Employee Requests (exclude cancelled) ---
         $employeeRequests = EmployeeRequest::where('employee_id', $employee->id)
@@ -186,6 +197,10 @@ class EmployeeDashboardController extends Controller
             'holidays' => $holidays,
             'isClockedIn' => $isClockedIn,
             'hasAttendanceToday' => $hasAttendanceToday,
+            'activeBreakType' => $activeBreakType,
+            'lunchBreakStatus' => $lunchBreakStatus,
+            'dinnerBreakStatus' => $dinnerBreakStatus,
+            'todayAttendance' => $todayAttendance,
             'employeeRequests' => $employeeRequests,
             'watchedLessons' => $watchedLessons,
             'shiftStart' => $shiftStart,

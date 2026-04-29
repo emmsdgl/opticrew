@@ -558,6 +558,12 @@ Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
     Route::post('/employee/attendance/clockout', [AttendanceController::class, 'clockOut'])
         ->name('employee.attendance.clockout');
 
+    Route::post('/employee/attendance/break/start', [AttendanceController::class, 'startBreak'])
+        ->name('employee.attendance.break.start');
+
+    Route::post('/employee/attendance/break/end', [AttendanceController::class, 'endBreak'])
+        ->name('employee.attendance.break.end');
+
     Route::get('/employee/tasks', [EmployeeTasksController::class, 'index'])
         ->name('employee.tasks');
 

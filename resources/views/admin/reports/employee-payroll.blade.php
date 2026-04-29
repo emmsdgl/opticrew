@@ -60,6 +60,8 @@
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Days</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Regular Hrs</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Sun/Holiday Hrs</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Lunch Break</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Dinner Break</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Total Hrs</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Gross Salary</th>
                                 <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
@@ -90,6 +92,18 @@
                                         <div class="text-xs text-gray-500 dark:text-gray-400">€{{ number_format($employee->premium_pay, 2) }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-200">
+                                            {{ intdiv($employee->lunch_break_minutes, 60) }}h {{ $employee->lunch_break_minutes % 60 }}m
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $employee->lunch_break_minutes }} min</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-200">
+                                            {{ intdiv($employee->dinner_break_minutes, 60) }}h {{ $employee->dinner_break_minutes % 60 }}m
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $employee->dinner_break_minutes }} min</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ number_format($employee->total_hours, 2) }} hrs</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -109,6 +123,12 @@
                                 <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white" colspan="3">TOTAL</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-blue-600 dark:text-blue-400">{{ number_format($totalRegularHours, 2) }}</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-orange-600 dark:text-orange-400">{{ number_format($totalPremiumHours, 2) }}</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">
+                                    {{ intdiv($totalLunchBreakMinutes, 60) }}h {{ $totalLunchBreakMinutes % 60 }}m
+                                </td>
+                                <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">
+                                    {{ intdiv($totalDinnerBreakMinutes, 60) }}h {{ $totalDinnerBreakMinutes % 60 }}m
+                                </td>
                                 <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">{{ number_format($totalHours, 2) }} hrs</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-green-600 dark:text-green-400">€{{ number_format($totalSalary, 2) }}</td>
                                 <td></td>
