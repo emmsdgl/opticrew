@@ -169,6 +169,7 @@ class AuthController extends Controller
                             'client_type' => 'personal',
                             'first_name' => $nameParts[0],
                             'last_name' => $nameParts[1] ?? '',
+                            'email' => $email,
                             'is_active' => true,
                         ]);
 
