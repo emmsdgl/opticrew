@@ -151,19 +151,32 @@ class LeaveRequestController extends Controller
             $this->notificationService->notifyAdminsLeaveRequest($leaveRequest, $employeeName);
 
             // SCENARIO #11: For emergency leave, immediately notify manager with escalation
+            $activeRecoveryTriggered = false;
+            $tasksAffected = 0;
             if ($isEmergency) {
                 $this->notificationService->notifyManagerEmergencyLeave($leaveRequest, $employeeName, 1);
                 $leaveRequest->update([
                     'escalation_level' => 1,
                     'escalation_notified_at' => now(),
                 ]);
+
+                // SCENARIO #13: If the emergency leave overlaps with an already-assigned
+                // task, immediately move from Passive Management → Active Recovery instead
+                // of waiting for the next ProcessUnstaffedTasks tick.
+                $tasksAffected = $this->triggerActiveRecovery($leaveRequest, $employee);
+                $activeRecoveryTriggered = $tasksAffected > 0;
+            }
+
+            $message = $isEmergency
+                ? 'Emergency leave request submitted. Manager has been notified immediately.'
+                : 'Leave request submitted successfully.';
+            if ($activeRecoveryTriggered) {
+                $message .= " Active Recovery initiated for {$tasksAffected} affected task(s) — replacement search has started.";
             }
 
             return response()->json([
                 'success' => true,
-                'message' => $isEmergency
-                    ? 'Emergency leave request submitted. Manager has been notified immediately.'
-                    : 'Leave request submitted successfully.',
+                'message' => $message,
                 'leave_request' => [
                     'id' => $leaveRequest->id,
                     'date' => $leaveRequest->date->format('Y-m-d'),
@@ -173,6 +186,8 @@ class LeaveRequestController extends Controller
                     'status' => $leaveRequest->status,
                     'is_emergency' => $isEmergency,
                     'duration_days' => $leaveRequest->duration_days,
+                    'active_recovery_triggered' => $activeRecoveryTriggered,
+                    'tasks_affected' => $tasksAffected,
                 ]
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -188,6 +203,68 @@ class LeaveRequestController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * SCENARIO #13: Active Recovery — when emergency leave overlaps with already-assigned
+     * tasks, immediately push job-opportunity notifications to qualified replacements
+     * and re-evaluate the affected teams' staffing (instead of waiting for the next
+     * ProcessUnstaffedTasks cron tick). Returns the number of tasks that triggered recovery.
+     */
+    protected function triggerActiveRecovery(DayOff $leave, Employee $employee): int
+    {
+        $startDate = Carbon::parse($leave->date);
+        $endDate = $leave->end_date ? Carbon::parse($leave->end_date) : $startDate;
+
+        $tasks = Task::whereBetween('scheduled_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->whereHas('optimizationTeam.members', function ($q) use ($employee) {
+                $q->where('employee_id', $employee->id);
+            })
+            ->whereNotIn('status', ['Completed', 'Cancelled'])
+            ->with('optimizationTeam')
+            ->get();
+
+        if ($tasks->isEmpty()) {
+            return 0;
+        }
+
+        $notifiedTeamIds = [];
+        $availableReplacements = Employee::where('is_active', true)
+            ->where('is_day_off', false)
+            ->where('id', '!=', $employee->id)
+            ->whereDoesntHave('dayOffs', function ($q) use ($startDate, $endDate) {
+                $q->where('status', 'approved')
+                  ->where('date', '<=', $endDate->toDateString())
+                  ->where(function ($qq) use ($startDate) {
+                      $qq->where('end_date', '>=', $startDate->toDateString())
+                         ->orWhereNull('end_date');
+                  });
+            })
+            ->with('user')
+            ->get();
+
+        foreach ($tasks as $task) {
+            if ($availableReplacements->isNotEmpty()) {
+                $this->notificationService->notifyEmployeesJobOpportunity($task, $availableReplacements);
+            }
+
+            $team = $task->optimizationTeam;
+            if ($team && !in_array($team->id, $notifiedTeamIds, true)) {
+                if ($team->evaluateStaffing()) {
+                    $this->notificationService->notifyAdminsTeamIncompleteStaffing($team);
+                }
+                $notifiedTeamIds[] = $team->id;
+            }
+        }
+
+        Log::info('Active Recovery initiated for emergency leave', [
+            'leave_id' => $leave->id,
+            'employee_id' => $employee->id,
+            'tasks_count' => $tasks->count(),
+            'replacements_notified' => $availableReplacements->count(),
+        ]);
+
+        return $tasks->count();
     }
 
     /**

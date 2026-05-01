@@ -1204,6 +1204,66 @@ class NotificationService
     }
 
     /**
+     * SCENARIO #9: Notify admins when a team becomes incompletely staffed
+     * (e.g. a reassignment, leave approval, or escalation hard-lock leaves it with < 2 active members).
+     */
+    public function notifyAdminsTeamIncompleteStaffing($team): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $team->service_date instanceof \Carbon\Carbon
+            ? $team->service_date->format('M j, Y')
+            : (string) $team->service_date;
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_CRITICAL_WARNING,
+            'CRITICAL WARNING: Incomplete Staffing',
+            "Team {$team->team_index} on {$serviceDate} is now Pending - Incomplete Staffing. Add a second member to restore the team.",
+            [
+                'team_id' => $team->id,
+                'team_index' => $team->team_index,
+                'service_date' => (string) $team->service_date,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-circle',
+                'color' => 'red',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #22: Notify admins about a late clock-in event with structured payload
+     * so the admin UI can render action buttons (manual reassign, mark resolved, etc.).
+     */
+    public function notifyAdminsLateClockIn($task, $employee, $scheduledStart, int $minutesLate): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $employeeName = $employee->user->name ?? ($employee->fullName ?? 'Employee');
+        $startStr = $scheduledStart instanceof \Carbon\Carbon
+            ? $scheduledStart->format('g:i A')
+            : (string) $scheduledStart;
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LAST_MINUTE_DECLINE,
+            'Late Clock-In Detected',
+            "Employee {$employeeName} is {$minutesLate} min late for task \"{$task->task_description}\" (scheduled {$startStr}). Reassign or wait for late clock-in.",
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'team_id' => $task->assigned_team_id,
+                'employee_id' => $employee->id,
+                'employee_name' => $employeeName,
+                'scheduled_start' => $scheduledStart instanceof \Carbon\Carbon ? $scheduledStart->toIso8601String() : (string) $scheduledStart,
+                'minutes_late' => $minutesLate,
+                'urgency' => 'high',
+                'icon' => 'clock',
+                'color' => 'amber',
+                'action' => 'late_clock_in',
+            ]
+        );
+    }
+
+    /**
      * SCENARIO #14: Notify qualified employees about an unstaffed job opportunity.
      */
     public function notifyEmployeesJobOpportunity($task, $employees): Collection

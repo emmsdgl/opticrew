@@ -110,7 +110,9 @@
       "Bash(python -c \"import json; json.load\\(open\\('.claude/settings.local.json'\\)\\)\")",
       "Bash(\"C:/xampp/mysql/bin/mysql.exe\" -u root opticrew -e \"DESCRIBE clients\")",
       "Bash(\"C:/xampp/mysql/bin/mysql.exe\" -u root opticrew -e \"SELECT COUNT\\(*\\) AS total_clients, SUM\\(email IS NULL\\) AS null_email, SUM\\(email IS NOT NULL\\) AS has_email FROM clients;\")",
-      "Bash(C:/xampp/mysql/bin/mysql.exe -u root opticrew -e ' *)"
+      "Bash(C:/xampp/mysql/bin/mysql.exe -u root opticrew -e ' *)",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE optimization_teams\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE optimization_team_members\")"
     ],
     "deny": [],
     "ask": []

@@ -136,6 +136,14 @@ class TeamConfigurationController extends Controller
             'replaced_by' => auth()->id(),
         ]);
 
+        // SCENARIO #9: re-evaluate staffing after the swap. If the new employee has an
+        // approved/locked leave for the service date, the team may now be solo.
+        $team = OptimizationTeam::find($member->optimization_team_id);
+        if ($team && $team->evaluateStaffing()) {
+            app(\App\Services\Notification\NotificationService::class)
+                ->notifyAdminsTeamIncompleteStaffing($team);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Team member replaced successfully.',

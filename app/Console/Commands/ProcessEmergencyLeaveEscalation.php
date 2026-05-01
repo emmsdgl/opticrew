@@ -91,7 +91,9 @@ class ProcessEmergencyLeaveEscalation extends Command
     }
 
     /**
-     * Mark assigned tasks as needing reassignment when employee is on emergency leave
+     * Mark assigned tasks as needing reassignment when employee is on emergency leave.
+     * SCENARIO #9: also re-evaluate the affected teams; if any drops below 2 active
+     * members, fire a CRITICAL_WARNING and persist the "incomplete_staffing" status.
      */
     protected function markTasksUnstaffed(DayOff $leave)
     {
@@ -99,8 +101,12 @@ class ProcessEmergencyLeaveEscalation extends Command
             ->whereHas('optimizationTeam.members', function ($q) use ($leave) {
                 $q->where('employee_id', $leave->employee_id);
             })
+            ->with('optimizationTeam')
             ->whereNotIn('status', ['Completed', 'Cancelled'])
             ->get();
+
+        $notifiedTeamIds = [];
+        $notificationService = app(\App\Services\Notification\NotificationService::class);
 
         foreach ($tasks as $task) {
             Log::warning('Task marked as understaffed due to emergency leave', [
@@ -108,6 +114,14 @@ class ProcessEmergencyLeaveEscalation extends Command
                 'employee_id' => $leave->employee_id,
                 'leave_id' => $leave->id,
             ]);
+
+            $team = $task->optimizationTeam;
+            if ($team && !in_array($team->id, $notifiedTeamIds, true)) {
+                if ($team->evaluateStaffing()) {
+                    $notificationService->notifyAdminsTeamIncompleteStaffing($team);
+                }
+                $notifiedTeamIds[] = $team->id;
+            }
         }
     }
 }
