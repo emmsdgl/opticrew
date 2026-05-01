@@ -40,6 +40,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('opticrew:monthly-evaluation-reminder')
             ->monthlyOn(1, '09:00')
             ->withoutOverlapping();
+
+        // Backup & Restore: Weekly full backup every Sunday at 2:00 AM, keep last 4
+        $schedule->command('opticrew:auto-backup --keep=4')
+            ->weeklyOn(0, '02:00')
+            ->withoutOverlapping();
     }
 
     /**

@@ -26,6 +26,7 @@
             ['label' => 'Attendance', 'icon' => 'fa-solid fa-calendar-check', 'href' => route('admin.attendance')],
             ['label' => 'History', 'icon' => 'fa-clock-rotate-left', 'href' => route('admin.history')],
             ['label' => 'Analytics', 'icon' => 'fa-chart-line', 'href' => route('admin.analytics')],
+            ['label' => 'Backup & Restore', 'icon' => 'fa-shield-halved', 'href' => route('admin.backup.index')],
         ];
 
         // Only show Optimization Result in local development environment
