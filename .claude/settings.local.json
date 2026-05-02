@@ -112,7 +112,11 @@
       "Bash(\"C:/xampp/mysql/bin/mysql.exe\" -u root opticrew -e \"SELECT COUNT\\(*\\) AS total_clients, SUM\\(email IS NULL\\) AS null_email, SUM\\(email IS NOT NULL\\) AS has_email FROM clients;\")",
       "Bash(C:/xampp/mysql/bin/mysql.exe -u root opticrew -e ' *)",
       "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE optimization_teams\")",
-      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE optimization_team_members\")"
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE optimization_team_members\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE client_appointments\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE employee_requests\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"SHOW COLUMNS FROM day_offs WHERE Field='type'\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"SELECT id, employee_id, date, type, status, is_emergency, escalation_level, created_at FROM day_offs ORDER BY id DESC LIMIT 3\")"
     ],
     "deny": [],
     "ask": []
