@@ -460,6 +460,8 @@ class ClientAppointmentController extends Controller
             'service_time' => 'required',
             'is_sunday' => 'required|boolean',
             'is_holiday' => 'nullable|boolean',
+            'is_urgent' => 'nullable|boolean',
+            'premium_surge_accepted' => 'nullable|boolean',
             'units' => 'required|integer|min:1|max:20',
             'unit_size' => 'required|string|in:20-50,51-70,71-90,91-120,121-140,141-160,161-180,181-220',
             'room_identifier' => 'required|string|max:255',
@@ -467,25 +469,48 @@ class ClientAppointmentController extends Controller
             'special_requests.*' => 'string|max:255'
         ]);
 
-        // SCENARIO #1: Minimum booking notice requirement
+        // SCENARIO #1 + #8: Minimum booking notice requirement
         // - Standard booking: 3 days advance notice
         // - Priority Clean: 2 days advance notice (client opts in)
+        // - Urgent booking (#8): bypasses 3-day rule, but ONLY if either:
+        //     (a) requester is admin/manager, OR
+        //     (b) client explicitly accepted the Premium Surge price
+        //   Standard clients cannot bypass on their own.
         // - Admin/Manager: no restriction
-        // - Tomorrow (1 day): always blocked for non-privileged users
+        // - Tomorrow (1 day): always blocked for non-privileged, non-urgent users
         $serviceDate = Carbon::parse($request->service_date);
         $daysUntilService = Carbon::today()->diffInDays($serviceDate, false);
         $user = Auth::user();
         $isPrivileged = $user && in_array($user->role, ['admin', 'manager']);
         $isPriority = $request->boolean('is_priority');
+        $isUrgent = $request->boolean('is_urgent');
+        $premiumAccepted = $request->boolean('premium_surge_accepted');
+        $surgeMultiplier = (float) \App\Services\CompanySettingService::get('premium_surge_multiplier', 1.5);
 
-        if (!$isPrivileged) {
+        // SCENARIO #8: Urgent booking gating
+        $urgentBypassAllowed = $isUrgent && ($isPrivileged || $premiumAccepted);
+        if ($isUrgent && !$urgentBypassAllowed) {
+            return response()->json([
+                'success' => false,
+                'message' => "Urgent bookings require either admin/manager approval or accepting the Premium Surge price ({$surgeMultiplier}× standard rate).",
+                'error_code' => 'URGENT_REQUIRES_APPROVAL_OR_PREMIUM',
+                'surge_multiplier' => $surgeMultiplier,
+                'paths' => [
+                    'admin_approval' => 'Wait for an admin or manager to book on your behalf.',
+                    'premium_surge' => "Resubmit with premium_surge_accepted=true to bypass the 3-day rule at {$surgeMultiplier}× the standard quotation.",
+                ],
+            ], 422);
+        }
+
+        if (!$isPrivileged && !$urgentBypassAllowed) {
             if ($daysUntilService < 2) {
                 // Tomorrow or today — always blocked
                 return response()->json([
                     'success' => false,
-                    'message' => 'This date is too soon. Bookings require at least 2 days advance notice.',
+                    'message' => 'This date is too soon. Bookings require at least 2 days advance notice. For same-day or next-day bookings, mark as Urgent and accept the Premium Surge price.',
                     'error_code' => 'DATE_TOO_SOON',
                     'minimum_date' => Carbon::today()->addDays(2)->format('Y-m-d'),
+                    'urgent_option' => "Pass is_urgent=true with premium_surge_accepted=true to bypass at {$surgeMultiplier}× rate.",
                 ], 422);
             } elseif ($daysUntilService < 3 && !$isPriority) {
                 // 2 days out but Priority Clean not selected
@@ -712,6 +737,13 @@ class ClientAppointmentController extends Controller
                 $quotation += count($specialRequests) * $extraTaskPrice;
             }
 
+            // SCENARIO #8: Apply Premium Surge multiplier when client accepted urgent + premium
+            $appliedSurgeMultiplier = null;
+            if ($isUrgent && $premiumAccepted && !$isPrivileged) {
+                $appliedSurgeMultiplier = $surgeMultiplier;
+                $quotation = round($quotation * $surgeMultiplier, 2);
+            }
+
             // Prices are already VAT inclusive
             $totalAmount = $quotation;
             $vatAmount = 0;  // VAT already included in pricing
@@ -741,6 +773,9 @@ class ClientAppointmentController extends Controller
                 'service_time' => $request->service_time,
                 'is_sunday' => $isSunday,
                 'is_holiday' => $isHoliday,
+                'is_urgent' => $isUrgent,
+                'premium_surge_accepted' => $isUrgent && $premiumAccepted && !$isPrivileged,
+                'surge_multiplier' => $appliedSurgeMultiplier,
                 'number_of_units' => $request->units,
                 'unit_size' => $firstUnitSize,
                 'cabin_name' => $firstUnitName,

@@ -1319,7 +1319,9 @@ class NotificationService
     }
 
     /**
-     * SCENARIO #11: Notify manager about emergency leave request.
+     * SCENARIO #11/#12: Notify manager about emergency leave request.
+     * Includes one-click approve/deny signed URLs (Scenario #12) and a
+     * dashboard_flag so the manager dashboard can render the leave RED.
      */
     public function notifyManagerEmergencyLeave($leaveRequest, $employeeName, $escalationLevel): Collection
     {
@@ -1329,6 +1331,19 @@ class NotificationService
             2 => 'ALERT: Emergency Leave Pending',
             3 => 'CRITICAL: Emergency Leave - System Action Required',
         ];
+
+        // SCENARIO #12: signed URLs that don't require login. Expire in 7 days
+        // so a leftover notification can't be exploited indefinitely.
+        $approveUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'leave.quick-approve',
+            now()->addDays(7),
+            ['leaveId' => $leaveRequest->id]
+        );
+        $denyUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'leave.quick-deny',
+            now()->addDays(7),
+            ['leaveId' => $leaveRequest->id]
+        );
 
         return $this->createMany(
             $admins,
@@ -1342,6 +1357,11 @@ class NotificationService
                 'urgency' => $escalationLevel >= 3 ? 'critical' : 'high',
                 'icon' => 'user-clock',
                 'color' => $escalationLevel >= 3 ? 'red' : 'yellow',
+                // SCENARIO #12: dashboard hint — manager UI uses this to render the row red/highlighted
+                'dashboard_flag' => $escalationLevel >= 2 ? 'red_alert' : 'yellow_warning',
+                // SCENARIO #12: One-Click action links (signed, no login needed)
+                'quick_approve_url' => $approveUrl,
+                'quick_deny_url' => $denyUrl,
             ]
         );
     }

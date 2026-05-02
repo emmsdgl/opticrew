@@ -92,8 +92,11 @@ class ProcessEmergencyLeaveEscalation extends Command
 
     /**
      * Mark assigned tasks as needing reassignment when employee is on emergency leave.
-     * SCENARIO #9: also re-evaluate the affected teams; if any drops below 2 active
-     * members, fire a CRITICAL_WARNING and persist the "incomplete_staffing" status.
+     * SCENARIO #9: re-evaluate the affected teams; if any drops below 2 active
+     *   members, fire a CRITICAL_WARNING and persist the "incomplete_staffing" status.
+     * SCENARIO #12: trigger Active Recovery — push job-opportunity notifications to
+     *   qualified replacement employees so the search starts immediately on Hard Lock
+     *   instead of waiting for the next ProcessUnstaffedTasks tick.
      */
     protected function markTasksUnstaffed(DayOff $leave)
     {
@@ -105,15 +108,35 @@ class ProcessEmergencyLeaveEscalation extends Command
             ->whereNotIn('status', ['Completed', 'Cancelled'])
             ->get();
 
+        if ($tasks->isEmpty()) {
+            return;
+        }
+
         $notifiedTeamIds = [];
         $notificationService = app(\App\Services\Notification\NotificationService::class);
 
+        // SCENARIO #12: find qualified replacement employees once, reuse per task
+        $replacements = Employee::where('is_active', true)
+            ->where('is_day_off', false)
+            ->where('id', '!=', $leave->employee_id)
+            ->whereDoesntHave('dayOffs', function ($q) use ($leave) {
+                $q->where('status', 'approved')
+                  ->whereDate('date', $leave->date);
+            })
+            ->with('user')
+            ->get();
+
         foreach ($tasks as $task) {
-            Log::warning('Task marked as understaffed due to emergency leave', [
+            Log::warning('Task marked as understaffed due to emergency leave hard lock', [
                 'task_id' => $task->id,
                 'employee_id' => $leave->employee_id,
                 'leave_id' => $leave->id,
             ]);
+
+            // SCENARIO #12: push job opportunity to qualified replacements (Active Recovery)
+            if ($replacements->isNotEmpty()) {
+                $notificationService->notifyEmployeesJobOpportunity($task, $replacements);
+            }
 
             $team = $task->optimizationTeam;
             if ($team && !in_array($team->id, $notifiedTeamIds, true)) {
@@ -123,5 +146,11 @@ class ProcessEmergencyLeaveEscalation extends Command
                 $notifiedTeamIds[] = $team->id;
             }
         }
+
+        Log::info('Hard Lock Active Recovery completed', [
+            'leave_id' => $leave->id,
+            'tasks_count' => $tasks->count(),
+            'replacements_notified' => $replacements->count(),
+        ]);
     }
 }

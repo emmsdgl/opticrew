@@ -159,6 +159,15 @@ Route::get('/castcrew', function () {
     return view('landingpage-castcrew');
 })->name('castcrew');
 
+// SCENARIO #12: One-Click Approve/Deny links for emergency leave escalation notifications.
+// Public routes protected by Laravel's signed URL middleware (HMAC).
+Route::get('/leave/{leaveId}/quick-approve', [\App\Http\Controllers\LeaveQuickActionController::class, 'approve'])
+    ->name('leave.quick-approve')
+    ->middleware('signed');
+Route::get('/leave/{leaveId}/quick-deny', [\App\Http\Controllers\LeaveQuickActionController::class, 'deny'])
+    ->name('leave.quick-deny')
+    ->middleware('signed');
+
 // Authentication Routes
 Route::get('/login', function () {
     return view('auth.login');
