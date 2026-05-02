@@ -11,6 +11,7 @@ use App\Models\Task;
 use App\Models\OptimizationTeamMember;
 use App\Services\PushNotificationService;
 use App\Services\Notification\NotificationService;
+use App\Services\Leave\EmergencyLeaveService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -18,11 +19,16 @@ class LeaveRequestController extends Controller
 {
     protected $pushService;
     protected $notificationService;
+    protected $emergencyLeaveService;
 
-    public function __construct(PushNotificationService $pushService, NotificationService $notificationService)
-    {
+    public function __construct(
+        PushNotificationService $pushService,
+        NotificationService $notificationService,
+        EmergencyLeaveService $emergencyLeaveService
+    ) {
         $this->pushService = $pushService;
         $this->notificationService = $notificationService;
+        $this->emergencyLeaveService = $emergencyLeaveService;
     }
     /**
      * Get all leave requests for employee (their own requests)
@@ -163,7 +169,7 @@ class LeaveRequestController extends Controller
                 // SCENARIO #13: If the emergency leave overlaps with an already-assigned
                 // task, immediately move from Passive Management → Active Recovery instead
                 // of waiting for the next ProcessUnstaffedTasks tick.
-                $tasksAffected = $this->triggerActiveRecovery($leaveRequest, $employee);
+                $tasksAffected = $this->emergencyLeaveService->triggerActiveRecovery($leaveRequest, $employee);
                 $activeRecoveryTriggered = $tasksAffected > 0;
             }
 
@@ -203,68 +209,6 @@ class LeaveRequestController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * SCENARIO #13: Active Recovery — when emergency leave overlaps with already-assigned
-     * tasks, immediately push job-opportunity notifications to qualified replacements
-     * and re-evaluate the affected teams' staffing (instead of waiting for the next
-     * ProcessUnstaffedTasks cron tick). Returns the number of tasks that triggered recovery.
-     */
-    protected function triggerActiveRecovery(DayOff $leave, Employee $employee): int
-    {
-        $startDate = Carbon::parse($leave->date);
-        $endDate = $leave->end_date ? Carbon::parse($leave->end_date) : $startDate;
-
-        $tasks = Task::whereBetween('scheduled_date', [$startDate->toDateString(), $endDate->toDateString()])
-            ->whereHas('optimizationTeam.members', function ($q) use ($employee) {
-                $q->where('employee_id', $employee->id);
-            })
-            ->whereNotIn('status', ['Completed', 'Cancelled'])
-            ->with('optimizationTeam')
-            ->get();
-
-        if ($tasks->isEmpty()) {
-            return 0;
-        }
-
-        $notifiedTeamIds = [];
-        $availableReplacements = Employee::where('is_active', true)
-            ->where('is_day_off', false)
-            ->where('id', '!=', $employee->id)
-            ->whereDoesntHave('dayOffs', function ($q) use ($startDate, $endDate) {
-                $q->where('status', 'approved')
-                  ->where('date', '<=', $endDate->toDateString())
-                  ->where(function ($qq) use ($startDate) {
-                      $qq->where('end_date', '>=', $startDate->toDateString())
-                         ->orWhereNull('end_date');
-                  });
-            })
-            ->with('user')
-            ->get();
-
-        foreach ($tasks as $task) {
-            if ($availableReplacements->isNotEmpty()) {
-                $this->notificationService->notifyEmployeesJobOpportunity($task, $availableReplacements);
-            }
-
-            $team = $task->optimizationTeam;
-            if ($team && !in_array($team->id, $notifiedTeamIds, true)) {
-                if ($team->evaluateStaffing()) {
-                    $this->notificationService->notifyAdminsTeamIncompleteStaffing($team);
-                }
-                $notifiedTeamIds[] = $team->id;
-            }
-        }
-
-        Log::info('Active Recovery initiated for emergency leave', [
-            'leave_id' => $leave->id,
-            'employee_id' => $employee->id,
-            'tasks_count' => $tasks->count(),
-            'replacements_notified' => $availableReplacements->count(),
-        ]);
-
-        return $tasks->count();
     }
 
     /**

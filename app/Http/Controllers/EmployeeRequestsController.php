@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Services\Notification\NotificationService;
+use App\Services\Leave\EmergencyLeaveService;
+use App\Models\DayOff;
 use App\Models\Task;
 use App\Models\Employee;
 use Carbon\Carbon;
@@ -65,7 +67,33 @@ class EmployeeRequestsController extends Controller
             $proofPath = $request->file('proof_document')->store('employee-requests', 'public');
         }
 
+        // Mirror to day_offs so the emergency-leave automation pipeline (escalation,
+        // One-Click Approve/Deny, Active Recovery) sees web-submitted leaves too.
+        // See memory: Dual Leave Storage Tables — needs unification post-thesis.
+        $isEmergency = $validated['absence_type'] === 'Emergency Leave';
+        $dayOffTypeMap = [
+            'Sick Leave' => 'sick',
+            'Vacation Leave' => 'vacation',
+            'Emergency Leave' => 'emergency',
+            'Maternity/Paternity Leave' => 'personal',
+            'Unpaid Leave' => 'other',
+            'Other' => 'other',
+        ];
+        $dayOffType = $dayOffTypeMap[$validated['absence_type']] ?? 'other';
+
+        $dayOff = DayOff::create([
+            'employee_id' => $employee->id,
+            'date' => $validated['absence_date'],
+            'end_date' => $validated['absence_date'],
+            'reason' => $validated['reason'] . ($validated['description'] ? ' — ' . $validated['description'] : ''),
+            'type' => $dayOffType,
+            'status' => 'pending',
+            'is_emergency' => $isEmergency,
+            'escalation_level' => 0,
+        ]);
+
         $employeeRequest = \App\Models\EmployeeRequest::create([
+            'day_off_id' => $dayOff->id,
             'employee_id' => $employee->id,
             'absence_type' => $validated['absence_type'],
             'absence_date' => $validated['absence_date'],
@@ -83,10 +111,33 @@ class EmployeeRequestsController extends Controller
         $employeeName = Auth::user()->name;
         $notificationService->notifyAdminsEmployeeRequest($employeeRequest, $employeeName);
 
+        // SCENARIO #11/#12/#13: Emergency leave path — fire escalation level 1 + Active Recovery
+        $activeRecoveryTriggered = false;
+        $tasksAffected = 0;
+        if ($isEmergency) {
+            $notificationService->notifyManagerEmergencyLeave($dayOff, $employeeName, 1);
+            $dayOff->update([
+                'escalation_level' => 1,
+                'escalation_notified_at' => now(),
+            ]);
+            $tasksAffected = app(EmergencyLeaveService::class)->triggerActiveRecovery($dayOff, $employee);
+            $activeRecoveryTriggered = $tasksAffected > 0;
+        }
+
+        $message = $isEmergency
+            ? 'Your emergency absence request has been submitted. Manager has been notified immediately.'
+            : 'Your absence request has been submitted successfully!';
+        if ($activeRecoveryTriggered) {
+            $message .= " Active Recovery initiated for {$tasksAffected} affected task(s).";
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'Your absence request has been submitted successfully!',
-            'redirect_url' => route('employee.dashboard')
+            'message' => $message,
+            'redirect_url' => route('employee.dashboard'),
+            'is_emergency' => $isEmergency,
+            'active_recovery_triggered' => $activeRecoveryTriggered,
+            'tasks_affected' => $tasksAffected,
         ]);
     }
 
@@ -118,6 +169,13 @@ class EmployeeRequestsController extends Controller
         $employeeRequest->update([
             'status' => 'Cancelled'
         ]);
+
+        // Mirror cancel into the linked day_offs row so automation stays in sync.
+        if ($employeeRequest->day_off_id) {
+            DayOff::where('id', $employeeRequest->day_off_id)
+                ->where('status', 'pending')
+                ->update(['status' => 'cancelled']);
+        }
 
         // Notify all admins about the cancelled leave request
         $notificationService = app(NotificationService::class);

@@ -10,6 +10,7 @@ class EmployeeRequest extends Model
     use HasFactory;
 
     protected $fillable = [
+        'day_off_id',
         'employee_id',
         'absence_type',
         'absence_date',
