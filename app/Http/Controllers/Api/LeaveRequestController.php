@@ -11,6 +11,7 @@ use App\Models\Task;
 use App\Models\OptimizationTeamMember;
 use App\Services\PushNotificationService;
 use App\Services\Notification\NotificationService;
+use App\Services\Leave\EmergencyLeaveService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -18,11 +19,16 @@ class LeaveRequestController extends Controller
 {
     protected $pushService;
     protected $notificationService;
+    protected $emergencyLeaveService;
 
-    public function __construct(PushNotificationService $pushService, NotificationService $notificationService)
-    {
+    public function __construct(
+        PushNotificationService $pushService,
+        NotificationService $notificationService,
+        EmergencyLeaveService $emergencyLeaveService
+    ) {
         $this->pushService = $pushService;
         $this->notificationService = $notificationService;
+        $this->emergencyLeaveService = $emergencyLeaveService;
     }
     /**
      * Get all leave requests for employee (their own requests)
@@ -151,19 +157,32 @@ class LeaveRequestController extends Controller
             $this->notificationService->notifyAdminsLeaveRequest($leaveRequest, $employeeName);
 
             // SCENARIO #11: For emergency leave, immediately notify manager with escalation
+            $activeRecoveryTriggered = false;
+            $tasksAffected = 0;
             if ($isEmergency) {
                 $this->notificationService->notifyManagerEmergencyLeave($leaveRequest, $employeeName, 1);
                 $leaveRequest->update([
                     'escalation_level' => 1,
                     'escalation_notified_at' => now(),
                 ]);
+
+                // SCENARIO #13: If the emergency leave overlaps with an already-assigned
+                // task, immediately move from Passive Management → Active Recovery instead
+                // of waiting for the next ProcessUnstaffedTasks tick.
+                $tasksAffected = $this->emergencyLeaveService->triggerActiveRecovery($leaveRequest, $employee);
+                $activeRecoveryTriggered = $tasksAffected > 0;
+            }
+
+            $message = $isEmergency
+                ? 'Emergency leave request submitted. Manager has been notified immediately.'
+                : 'Leave request submitted successfully.';
+            if ($activeRecoveryTriggered) {
+                $message .= " Active Recovery initiated for {$tasksAffected} affected task(s) — replacement search has started.";
             }
 
             return response()->json([
                 'success' => true,
-                'message' => $isEmergency
-                    ? 'Emergency leave request submitted. Manager has been notified immediately.'
-                    : 'Leave request submitted successfully.',
+                'message' => $message,
                 'leave_request' => [
                     'id' => $leaveRequest->id,
                     'date' => $leaveRequest->date->format('Y-m-d'),
@@ -173,6 +192,8 @@ class LeaveRequestController extends Controller
                     'status' => $leaveRequest->status,
                     'is_emergency' => $isEmergency,
                     'duration_days' => $leaveRequest->duration_days,
+                    'active_recovery_triggered' => $activeRecoveryTriggered,
+                    'tasks_affected' => $tasksAffected,
                 ]
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {

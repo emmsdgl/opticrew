@@ -1204,6 +1204,66 @@ class NotificationService
     }
 
     /**
+     * SCENARIO #9: Notify admins when a team becomes incompletely staffed
+     * (e.g. a reassignment, leave approval, or escalation hard-lock leaves it with < 2 active members).
+     */
+    public function notifyAdminsTeamIncompleteStaffing($team): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $team->service_date instanceof \Carbon\Carbon
+            ? $team->service_date->format('M j, Y')
+            : (string) $team->service_date;
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_CRITICAL_WARNING,
+            'CRITICAL WARNING: Incomplete Staffing',
+            "Team {$team->team_index} on {$serviceDate} is now Pending - Incomplete Staffing. Add a second member to restore the team.",
+            [
+                'team_id' => $team->id,
+                'team_index' => $team->team_index,
+                'service_date' => (string) $team->service_date,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-circle',
+                'color' => 'red',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #22: Notify admins about a late clock-in event with structured payload
+     * so the admin UI can render action buttons (manual reassign, mark resolved, etc.).
+     */
+    public function notifyAdminsLateClockIn($task, $employee, $scheduledStart, int $minutesLate): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+        $employeeName = $employee->user->name ?? ($employee->fullName ?? 'Employee');
+        $startStr = $scheduledStart instanceof \Carbon\Carbon
+            ? $scheduledStart->format('g:i A')
+            : (string) $scheduledStart;
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LAST_MINUTE_DECLINE,
+            'Late Clock-In Detected',
+            "Employee {$employeeName} is {$minutesLate} min late for task \"{$task->task_description}\" (scheduled {$startStr}). Reassign or wait for late clock-in.",
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'team_id' => $task->assigned_team_id,
+                'employee_id' => $employee->id,
+                'employee_name' => $employeeName,
+                'scheduled_start' => $scheduledStart instanceof \Carbon\Carbon ? $scheduledStart->toIso8601String() : (string) $scheduledStart,
+                'minutes_late' => $minutesLate,
+                'urgency' => 'high',
+                'icon' => 'clock',
+                'color' => 'amber',
+                'action' => 'late_clock_in',
+            ]
+        );
+    }
+
+    /**
      * SCENARIO #14: Notify qualified employees about an unstaffed job opportunity.
      */
     public function notifyEmployeesJobOpportunity($task, $employees): Collection
@@ -1259,7 +1319,9 @@ class NotificationService
     }
 
     /**
-     * SCENARIO #11: Notify manager about emergency leave request.
+     * SCENARIO #11/#12: Notify manager about emergency leave request.
+     * Includes one-click approve/deny signed URLs (Scenario #12) and a
+     * dashboard_flag so the manager dashboard can render the leave RED.
      */
     public function notifyManagerEmergencyLeave($leaveRequest, $employeeName, $escalationLevel): Collection
     {
@@ -1269,6 +1331,19 @@ class NotificationService
             2 => 'ALERT: Emergency Leave Pending',
             3 => 'CRITICAL: Emergency Leave - System Action Required',
         ];
+
+        // SCENARIO #12: signed URLs that don't require login. Expire in 7 days
+        // so a leftover notification can't be exploited indefinitely.
+        $approveUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'leave.quick-approve',
+            now()->addDays(7),
+            ['leaveId' => $leaveRequest->id]
+        );
+        $denyUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'leave.quick-deny',
+            now()->addDays(7),
+            ['leaveId' => $leaveRequest->id]
+        );
 
         return $this->createMany(
             $admins,
@@ -1282,6 +1357,11 @@ class NotificationService
                 'urgency' => $escalationLevel >= 3 ? 'critical' : 'high',
                 'icon' => 'user-clock',
                 'color' => $escalationLevel >= 3 ? 'red' : 'yellow',
+                // SCENARIO #12: dashboard hint — manager UI uses this to render the row red/highlighted
+                'dashboard_flag' => $escalationLevel >= 2 ? 'red_alert' : 'yellow_warning',
+                // SCENARIO #12: One-Click action links (signed, no login needed)
+                'quick_approve_url' => $approveUrl,
+                'quick_deny_url' => $denyUrl,
             ]
         );
     }

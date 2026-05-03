@@ -821,6 +821,7 @@ class AccountController extends Controller
                 Client::create([
                     'user_id' => $user->id,
                     'client_type' => 'personal',
+                    'email' => $user->email,
                 ]);
             }
 

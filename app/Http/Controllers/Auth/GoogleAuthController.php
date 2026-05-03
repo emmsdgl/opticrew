@@ -182,6 +182,7 @@ class GoogleAuthController extends Controller
                             'client_type' => 'personal',
                             'first_name' => $firstName,
                             'last_name' => $lastName,
+                            'email' => $googleUser->getEmail(),
                             'is_active' => true,
                         ]);
 
@@ -746,6 +747,7 @@ class GoogleAuthController extends Controller
                             'client_type' => 'personal',
                             'first_name' => $nameParts[0],
                             'last_name' => $nameParts[1] ?? '',
+                            'email' => $googleUser->getEmail(),
                             'is_active' => true,
                         ]);
 

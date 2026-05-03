@@ -159,6 +159,15 @@ Route::get('/castcrew', function () {
     return view('landingpage-castcrew');
 })->name('castcrew');
 
+// SCENARIO #12: One-Click Approve/Deny links for emergency leave escalation notifications.
+// Public routes protected by Laravel's signed URL middleware (HMAC).
+Route::get('/leave/{leaveId}/quick-approve', [\App\Http\Controllers\LeaveQuickActionController::class, 'approve'])
+    ->name('leave.quick-approve')
+    ->middleware('signed');
+Route::get('/leave/{leaveId}/quick-deny', [\App\Http\Controllers\LeaveQuickActionController::class, 'deny'])
+    ->name('leave.quick-deny')
+    ->middleware('signed');
+
 // Authentication Routes
 Route::get('/login', function () {
     return view('auth.login');
@@ -510,6 +519,14 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::post('/admin/settings/company', [ProfileController::class, 'updateCompanySettings'])->name('admin.settings.update-company');
     Route::post('/admin/settings/salary', [ProfileController::class, 'updateSalarySettings'])->name('admin.settings.update-salary');
     Route::post('/admin/settings/absences', [ProfileController::class, 'updateAbsencesSettings'])->name('admin.settings.update-absences');
+
+    // Backup & Restore
+    Route::get('/admin/backup', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('admin.backup.index');
+    Route::post('/admin/backup/create', [\App\Http\Controllers\Admin\BackupController::class, 'create'])->name('admin.backup.create');
+    Route::get('/admin/backup/download/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('admin.backup.download');
+    Route::post('/admin/backup/restore', [\App\Http\Controllers\Admin\BackupController::class, 'restore'])->name('admin.backup.restore');
+    Route::post('/admin/backup/toggle-auto', [\App\Http\Controllers\Admin\BackupController::class, 'toggleAuto'])->name('admin.backup.toggle-auto');
+    Route::delete('/admin/backup/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'delete'])->name('admin.backup.delete');
 
     // Analytics dashboard for optimization metrics
     Route::get('/optimization-result', EmployeeAnalytics::class)->name('optimization.result');

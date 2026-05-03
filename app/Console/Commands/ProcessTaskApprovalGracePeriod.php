@@ -130,19 +130,26 @@ class ProcessTaskApprovalGracePeriod extends Command
 
                         if (!$alreadyNotified) {
                             $employeeName = $member->employee->user->name ?? 'Employee';
+                            $minutesLate = abs($minutesUntilStart);
 
-                            $notificationService->notifyAdminsCriticalWarning(
+                            // SCENARIO #22: structured late-clock-in notification (replaces
+                            // the generic CRITICAL_WARNING) so admin UI can render action buttons.
+                            $notificationService->notifyAdminsLateClockIn(
                                 $task,
-                                "Employee {$employeeName} has not clocked in for task \"{$task->task_description}\" (scheduled at {$scheduledStart->format('g:i A')}). Consider reassignment."
+                                $member->employee,
+                                $scheduledStart,
+                                $minutesLate
                             );
 
                             Log::warning('Employee late for task - not clocked in', [
                                 'task_id' => $task->id,
+                                'team_id' => $task->assigned_team_id,
                                 'employee_id' => $member->employee_id,
                                 'scheduled_time' => $scheduledStart->format('H:i'),
+                                'minutes_late' => $minutesLate,
                             ]);
 
-                            $this->warn("Task #{$task->id}: Employee {$employeeName} is late (not clocked in).");
+                            $this->warn("Task #{$task->id}: Employee {$employeeName} is {$minutesLate} min late.");
                         }
                     }
                 }
