@@ -1,4 +1,20 @@
+@php
+    /**
+     * @var array  $locationTypes
+     * @var int    $totalLocations
+     * @var string $companyAddress
+     * @var string $companyCityState
+     * @var string $companyStreetAddress
+     * @var array  $locationsByType
+     * @var int    $typesAddedLastMonth
+     * @var int    $locationsAddedLastMonth
+     * @var int    $minimumBookingNoticeDays
+     * @var array  $checklists
+     * @var array  $predefinedCategories
+     */
+@endphp
 <x-layouts.general-manager :title="'Schedule'">
+    <div id="schedule-bootstrap-data" data-checklists="{{ json_encode($checklists ?? []) }}" hidden></div>
     <div class="flex flex-col gap-8 p-8 w-full" x-data="scheduleManager()" x-init="init()" @keydown.escape.window="showCreateModal = false; showTaskModal = false; showLocationPicker = false; showEmployeePicker = false; clShowAddModal = false; clShowEditModal = false">
 
         {{-- ============================================================ --}}
@@ -353,7 +369,7 @@
         <div class="flex flex-col gap-4 w-full">
             <div class="flex items-center justify-between">
                 <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Task Checklist Templates</h2>
-                <button @click="clShowAddModal = true"
+                <button @click="clOpenAddTemplate()"
                         class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1">
                     <i class="fa-solid fa-plus text-xs"></i>
                     Add Template
@@ -384,21 +400,21 @@
                                     <p class="text-[11px] text-gray-400 line-clamp-2" x-text="template.reminders"></p>
                                 </div>
                             </template>
-                            <template x-if="template.enabledItems && template.enabledItems.length > 0">
+                            <template x-if="(template.categories || []).length > 0">
                                 <ul class="space-y-1">
-                                    <template x-for="(itemId, i) in template.enabledItems.slice(0, 6)" :key="i">
+                                    <template x-for="(cat, i) in (template.categories || []).slice(0, 6)" :key="cat.id">
                                         <li class="flex items-start gap-1.5 text-[11px] text-gray-400">
-                                            <i class="fa-regular fa-circle-check text-[9px] mt-0.5 text-gray-500 flex-shrink-0"></i>
-                                            <span x-text="clGetItemName(itemId)" class="line-clamp-1"></span>
+                                            <i class="fa-regular fa-folder text-[9px] mt-0.5 text-gray-500 flex-shrink-0"></i>
+                                            <span class="line-clamp-1" x-text="cat.name + ' (' + (cat.items || []).length + ')'"></span>
                                         </li>
                                     </template>
-                                    <template x-if="template.enabledItems.length > 6">
-                                        <li class="text-[11px] text-gray-500 italic" x-text="'+ ' + (template.enabledItems.length - 6) + ' more...'"></li>
+                                    <template x-if="(template.categories || []).length > 6">
+                                        <li class="text-[11px] text-gray-500 italic" x-text="'+ ' + ((template.categories || []).length - 6) + ' more...'"></li>
                                     </template>
                                 </ul>
                             </template>
-                            <template x-if="!template.enabledItems || template.enabledItems.length === 0">
-                                <p class="text-[11px] text-gray-500 italic">No checklist items</p>
+                            <template x-if="(template.categories || []).length === 0">
+                                <p class="text-[11px] text-gray-500 italic">No categories yet</p>
                             </template>
                             <div class="absolute -bottom-1 left-6 w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
                         </div>
@@ -453,7 +469,7 @@
             <div x-show="clShowAddModal"
                  x-transition
                  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                 @click.self="clCloseModal()">
+                 @click.self="clCloseModal()" style="display: none;">
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add New Template</h3>
                     <div class="space-y-4">
@@ -470,8 +486,10 @@
                     </div>
                     <div class="flex justify-end gap-3 mt-6">
                         <button @click="clCloseModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
-                        <button @click="clSaveTemplate()" :disabled="!clFormData.name.trim()"
-                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Create</button>
+                        <button @click="clCreateTemplate()" :disabled="clSubmitting || !clFormData.name.trim()"
+                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-text="clSubmitting ? 'Creating...' : 'Create'"></span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -480,8 +498,8 @@
             <div x-show="clShowEditModal"
                  x-transition
                  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                 @click.self="clCloseModal()">
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                 @click.self="clCloseModal()" style="display: none;">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
                     <!-- Header -->
                     <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Template</h3>
@@ -491,103 +509,214 @@
                     </div>
 
                     <!-- Body -->
-                    <div class="flex-1 overflow-y-auto p-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <!-- Left: Settings & Available Items -->
-                            <div class="space-y-6">
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Template Name</label>
-                                        <input type="text" x-model="clFormData.name" placeholder="e.g., Daily Room Cleaning"
-                                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Important Reminders</label>
-                                        <textarea x-model="clFormData.reminders" rows="3" placeholder="Add any important reminders..."
-                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
-                                    </div>
-                                </div>
-
-                                <!-- Available Checklist Items -->
-                                <div>
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Available Task Items</h4>
-                                        <button @click="clShowNewItemInput = !clShowNewItemInput"
-                                                class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium">
-                                            <i class="fa-solid fa-plus mr-1"></i> Add Item
-                                        </button>
-                                    </div>
-                                    <!-- Add New Item -->
-                                    <div x-show="clShowNewItemInput" x-collapse class="mb-3">
-                                        <div class="flex gap-2">
-                                            <input type="text" x-model="clNewItem" @keydown.enter="clAddItem()" placeholder="Enter new item name"
-                                                   class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
-                                            <button @click="clAddItem()" :disabled="!clNewItem.trim()"
-                                                    class="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">Add</button>
-                                        </div>
-                                    </div>
-                                    <!-- Pill-style Items -->
-                                    <div class="flex flex-wrap gap-2 max-h-[150px] overflow-y-auto p-1">
-                                        <template x-for="item in clAvailableItems" :key="item.id">
-                                            <label class="inline-flex items-center px-3 py-1.5 rounded-full border cursor-pointer transition-all duration-200 select-none"
-                                                   :class="clFormData.enabledItems.includes(item.id)
-                                                       ? 'bg-blue-100 border-blue-300 dark:bg-blue-900/40 dark:border-blue-600'
-                                                       : 'bg-gray-100 border-gray-200 dark:bg-gray-700/50 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700'">
-                                                <input type="checkbox" :checked="clFormData.enabledItems.includes(item.id)" @change="clToggleItem(item.id)" class="sr-only">
-                                                <i class="fa-solid fa-check text-xs mr-1.5"
-                                                   :class="clFormData.enabledItems.includes(item.id) ? 'text-blue-600 dark:text-blue-400' : 'text-transparent'"></i>
-                                                <span class="text-sm"
-                                                      :class="clFormData.enabledItems.includes(item.id) ? 'text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-600 dark:text-gray-400'"
-                                                      x-text="item.name"></span>
-                                            </label>
-                                        </template>
-                                    </div>
-                                </div>
+                    <div class="flex-1 overflow-y-auto p-6 space-y-5">
+                        <!-- Template Name + Reminders -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Template Name</label>
+                                <input type="text" x-model="clFormData.name" @blur="clUpdateChecklistDetails()" placeholder="e.g., Daily Room Cleaning"
+                                       class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Important Reminders</label>
+                                <textarea x-model="clFormData.reminders" @blur="clUpdateChecklistDetails()" rows="3" placeholder="Add any important reminders..."
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                            </div>
+                        </div>
 
-                            <!-- Right: Enabled Items (Reorderable) -->
-                            <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 min-h-[200px] max-h-[440px] overflow-hidden">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                        Checklist Order
-                                        <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full"
-                                              x-text="clFormData.enabledItems.length"></span>
-                                    </h4>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">Drag to reorder</span>
-                                </div>
-                                <div x-ref="clSortableList" class="space-y-2 min-h-[200px] max-h-[350px] overflow-y-auto">
-                                    <template x-for="(itemId, index) in clFormData.enabledItems" :key="itemId">
-                                        <div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-move hover:shadow-md transition-shadow group"
-                                             :data-id="itemId">
-                                            <i class="fa-solid fa-grip-vertical text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"></i>
-                                            <span class="text-xs text-gray-400 w-5" x-text="index + 1 + '.'"></span>
-                                            <span class="flex-1 text-sm text-gray-700 dark:text-gray-300" x-text="clGetItemName(itemId)"></span>
-                                            <button @click="clRemoveItem(itemId)"
-                                                    class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
-                                                <i class="fa-solid fa-times"></i>
+                        <!-- Categories Header -->
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Categories</h4>
+                            <button @click="clOpenAddCategoryModal()"
+                                    class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium">
+                                <i class="fa-solid fa-folder-plus mr-1"></i> Add Category
+                            </button>
+                        </div>
+
+                        <!-- Categories list -->
+                        <div class="space-y-3">
+                            <template x-for="category in clFormData.categories" :key="category.id">
+                                <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                    <!-- Category header -->
+                                    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900/40 flex items-center justify-between cursor-pointer"
+                                         @click="clToggleCategory(category.id)">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid fa-chevron-right text-gray-400 text-xs transition-transform duration-200"
+                                               :class="{ 'rotate-90': clExpandedCategories.includes(category.id) }"></i>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="category.name"></span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full"
+                                                  x-text="(category.items || []).length + ' items'"></span>
+                                        </div>
+                                        <div class="flex items-center gap-1" @click.stop>
+                                            <button @click="clOpenEditCategory(category)"
+                                                    class="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors text-gray-500 hover:text-blue-600">
+                                                <i class="fa-solid fa-pen text-xs"></i>
+                                            </button>
+                                            <button @click="clConfirmDeleteCategory(category)"
+                                                    class="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors text-gray-500 hover:text-red-600">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                            <button @click="clOpenAddItem(category)"
+                                                    class="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors text-gray-500 hover:text-green-600">
+                                                <i class="fa-solid fa-plus text-xs"></i>
                                             </button>
                                         </div>
-                                    </template>
-                                    <div x-show="clFormData.enabledItems.length === 0"
-                                         class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
-                                        <i class="fa-solid fa-list-check text-3xl mb-3 opacity-50"></i>
-                                        <p class="text-sm font-medium">No items selected</p>
-                                        <p class="text-xs">Select items from the left to add them here</p>
+                                    </div>
+
+                                    <!-- Items list (expandable) -->
+                                    <div x-show="clExpandedCategories.includes(category.id)" x-collapse>
+                                        <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                                            <template x-for="item in (category.items || [])" :key="item.id">
+                                                <div class="px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-7 h-7 rounded-md bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                                            <i class="fa-solid fa-check text-blue-600 dark:text-blue-400 text-xs"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="item.name"></p>
+                                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'Qty: ' + (item.quantity || '1')"></p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <button @click="clOpenEditItem(category, item)"
+                                                                class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-500 hover:text-blue-600">
+                                                            <i class="fa-solid fa-pen text-xs"></i>
+                                                        </button>
+                                                        <button @click="clConfirmDeleteItem(category, item)"
+                                                                class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-500 hover:text-red-600">
+                                                            <i class="fa-solid fa-trash text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <template x-if="!(category.items || []).length">
+                                                <div class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                                                    No items in this category.
+                                                    <button @click="clOpenAddItem(category)" class="text-blue-600 dark:text-blue-400 hover:underline">Add one</button>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
+                            </template>
+
+                            <!-- Empty state -->
+                            <div x-show="!(clFormData.categories || []).length"
+                                 class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                                No categories yet. Add your first category to start building this template.
                             </div>
                         </div>
                     </div>
 
                     <!-- Footer -->
-                    <div class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
-                            <span x-text="clFormData.enabledItems.length"></span> items in checklist
-                        </span>
-                        <div class="flex gap-3">
-                            <button @click="clCloseModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
-                            <button @click="clSaveTemplate()" :disabled="!clFormData.name.trim()"
-                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Save Changes</button>
+                    <div class="flex items-center justify-end p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                        <button @click="clCloseModal()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">Done</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Category Sub-Modal -->
+            <div x-show="clShowAddCategoryModal" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+                 @click.self="clShowAddCategoryModal = false" style="display: none;">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md" @click.stop>
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Category</h3>
+                        <button @click="clShowAddCategoryModal = false" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><i class="fa-solid fa-xmark text-gray-500"></i></button>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Select</label>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($predefinedCategories ?? [] as $cat)
+                                    <button type="button" @click="clCategoryForm.name = '{{ $cat }}'"
+                                            :class="{ 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700': clCategoryForm.name === '{{ $cat }}' }"
+                                            class="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                                        {{ $cat }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Or Custom Name</label>
+                            <input type="text" x-model="clCategoryForm.name" placeholder="Category name"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                        <button @click="clShowAddCategoryModal = false" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+                        <button @click="clAddCategory()" :disabled="clSubmitting || !clCategoryForm.name"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50">
+                            <span x-text="clSubmitting ? 'Adding...' : 'Add Category'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Category Sub-Modal -->
+            <div x-show="clShowEditCategoryModal" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+                 @click.self="clShowEditCategoryModal = false" style="display: none;">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md" @click.stop>
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Category</h3>
+                        <button @click="clShowEditCategoryModal = false" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><i class="fa-solid fa-xmark text-gray-500"></i></button>
+                    </div>
+                    <div class="p-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category Name</label>
+                        <input type="text" x-model="clEditCategoryForm.name"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                        <button @click="clShowEditCategoryModal = false" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+                        <button @click="clUpdateCategory()" :disabled="clSubmitting || !clEditCategoryForm.name"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit Item Sub-Modal -->
+            <div x-show="clShowItemModal" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+                 @click.self="clShowItemModal = false" style="display: none;">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md" @click.stop>
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white" x-text="clItemForm.id ? 'Edit Item' : 'Add Item'"></h3>
+                        <button @click="clShowItemModal = false" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><i class="fa-solid fa-xmark text-gray-500"></i></button>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item Name</label>
+                            <input type="text" x-model="clItemForm.name" placeholder="e.g. Mop floors"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
+                            <input type="text" x-model="clItemForm.quantity" placeholder="1"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                        <button @click="clShowItemModal = false" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+                        <button @click="clSaveItem()" :disabled="clSubmitting || !clItemForm.name"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50">
+                            <span x-text="clSubmitting ? 'Saving...' : (clItemForm.id ? 'Update' : 'Add Item')"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Sub-Modal -->
+            <div x-show="clShowDeleteModal" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+                 @click.self="clShowDeleteModal = false" style="display: none;">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm" @click.stop>
+                    <div class="p-6 text-center">
+                        <div class="w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-trash text-red-600 dark:text-red-400"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Confirm Delete</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6" x-text="clDeleteMessage"></p>
+                        <div class="flex gap-3 justify-center">
+                            <button @click="clShowDeleteModal = false" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Cancel</button>
+                            <button @click="clExecuteDelete()" :disabled="clSubmitting"
+                                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium disabled:opacity-50">Delete</button>
                         </div>
                     </div>
                 </div>
@@ -737,7 +866,7 @@
                             class="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                         Previous
                     </button>
-                    <template x-for="page in taskListTotalPages" :key="page">
+                    <template x-for="page in visibleTaskListPages" :key="page">
                         <button @click="taskListPage = page"
                                 class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
                                 :class="taskListPage === page ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
@@ -1306,16 +1435,7 @@
                 init() {
                     this.pickerYear = this.calendarDate.getFullYear();
                     this.updateCalendarView();
-
-                    // Checklist: init sortable when edit modal opens
-                    this.$watch('clShowEditModal', (value) => {
-                        if (value) {
-                            this.$nextTick(() => this.clInitSortable());
-                        } else if (this.clSortableInstance) {
-                            this.clSortableInstance.destroy();
-                            this.clSortableInstance = null;
-                        }
-                    });
+                    this.clInitTemplates();
                 },
 
                 showToast(message, type = 'success') {
@@ -1538,6 +1658,23 @@
                     return this.filteredTaskList.slice(start, start + this.taskListPerPage);
                 },
 
+                // Sliding window of up to 5 page numbers around the current page
+                get visibleTaskListPages() {
+                    const total = this.taskListTotalPages;
+                    if (total < 1) return [];
+                    const windowSize = 5;
+                    if (total < windowSize + 1) {
+                        return Array.from({ length: total }, (_, i) => i + 1);
+                    }
+                    let start = Math.max(1, this.taskListPage - 2);
+                    let end = start + windowSize - 1;
+                    if (end > total) {
+                        end = total;
+                        start = end - windowSize + 1;
+                    }
+                    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+                },
+
                 // ===============================
                 // Task rendering helpers
                 // ===============================
@@ -1711,12 +1848,12 @@
 
                 getLocationIcon(type) {
                     switch ((type || '').toLowerCase()) {
-                        case 'small': return '\u{1F3E0}';
-                        case 'medium': return '\u{1F3E1}';
-                        case 'big': return '\u{1F3D8}\u{FE0F}';
-                        case 'queen': return '\u{1F451}';
-                        case 'igloo': return '\u{1F9CA}';
-                        default: return '\u{1F4CD}';
+                        case 'small': return '🏠';
+                        case 'medium': return '🏡';
+                        case 'big': return '🏘️';
+                        case 'queen': return '👑';
+                        case 'igloo': return '🧊';
+                        default: return '📍';
                     }
                 },
 
@@ -1985,211 +2122,327 @@
                 },
 
                 // ===============================
-                // Checklist Templates
+                // Checklist Templates (CompanyChecklist-backed)
                 // ===============================
                 clShowAddModal: false,
                 clShowEditModal: false,
-                clShowNewItemInput: false,
+                clShowAddCategoryModal: false,
+                clShowEditCategoryModal: false,
+                clShowItemModal: false,
+                clShowDeleteModal: false,
                 clEditingId: null,
-                clNewItem: '',
-                clSortableInstance: null,
-                clFormData: { name: '', color: '#22c55e', reminders: '', enabledItems: [] },
-                clAvailableItems: [
-                    { id: 1, name: 'Sweep and mop floors' },
-                    { id: 2, name: 'Vacuum carpets/rugs' },
-                    { id: 3, name: 'Dust furniture and surfaces' },
-                    { id: 4, name: 'Wipe tables and countertops' },
-                    { id: 5, name: 'Empty trash bins' },
-                    { id: 6, name: 'Wipe kitchen counters' },
-                    { id: 7, name: 'Clean sink' },
-                    { id: 8, name: 'Wash visible dishes' },
-                    { id: 9, name: 'Wipe appliance exteriors' },
-                    { id: 10, name: 'Clean toilet and sink' },
-                    { id: 11, name: 'Wipe mirrors' },
-                    { id: 12, name: 'Mop floor' },
-                    { id: 13, name: 'Organize cluttered areas' },
-                    { id: 14, name: 'Light deodorizing' },
-                    { id: 15, name: 'Remove mud, water, and debris' },
-                    { id: 16, name: 'Clean door mats' },
-                    { id: 17, name: 'Mop and dry floors' },
-                    { id: 18, name: 'Deep vacuum carpets' },
-                    { id: 19, name: 'Mop with disinfectant solution' },
-                    { id: 20, name: 'Wipe walls near entrances' },
-                    { id: 21, name: 'Dry wet surfaces' },
-                    { id: 22, name: 'Check for water accumulation' },
-                    { id: 23, name: 'Clean and sanitize affected areas' },
-                    { id: 24, name: 'Dispose of tracked-in debris' },
-                    { id: 25, name: 'Replace trash liners' },
-                    { id: 26, name: 'Dust high and low areas (vents, corners, baseboards)' },
-                    { id: 27, name: 'Clean behind and under furniture' },
-                    { id: 28, name: 'Wash walls and remove stains' },
-                    { id: 29, name: 'Deep vacuum carpets' },
-                    { id: 30, name: 'Clean inside microwave' },
-                    { id: 31, name: 'Degrease stove and range hood' },
-                    { id: 32, name: 'Clean inside refrigerator (if included)' },
-                    { id: 33, name: 'Scrub tile grout' },
-                    { id: 34, name: 'Remove limescale and mold buildup' },
-                    { id: 35, name: 'Deep scrub tiles and grout' },
-                    { id: 36, name: 'Sanitize all fixtures thoroughly' },
-                    { id: 37, name: 'Clean window interiors' },
-                    { id: 38, name: 'Polish handles and knobs' },
-                    { id: 39, name: 'Disinfect frequently touched surfaces' },
-                    { id: 40, name: 'Dust surfaces' },
-                    { id: 41, name: 'Sweep/vacuum floors' },
-                    { id: 42, name: 'Mop hard floors' },
-                    { id: 43, name: 'Clean glass and mirrors' },
-                    { id: 44, name: 'Wipe countertops' },
-                    { id: 45, name: 'Clean sink' },
-                    { id: 46, name: 'Take out trash' },
-                    { id: 47, name: 'Clean toilet, sink, and mirror' },
-                    { id: 48, name: 'Mop floor' },
-                    { id: 49, name: 'Arrange items neatly' },
-                    { id: 50, name: 'Dispose of garbage' },
-                    { id: 51, name: 'Light air freshening' },
-                    { id: 52, name: 'Make bed with fresh linens' },
-                    { id: 53, name: 'Replace pillowcases and sheets' },
-                    { id: 54, name: 'Dust all surfaces (tables, headboard, shelves)' },
-                    { id: 55, name: 'Vacuum carpet / sweep & mop floor' },
-                    { id: 56, name: 'Clean mirrors and glass surfaces' },
-                    { id: 57, name: 'Check under bed for trash/items' },
-                    { id: 58, name: 'Empty trash bins and replace liners' },
-                    { id: 59, name: 'Clean and disinfect toilet' },
-                    { id: 60, name: 'Scrub shower walls, tub, and floor' },
-                    { id: 61, name: 'Clean sink and countertop' },
-                    { id: 62, name: 'Polish fixtures' },
-                    { id: 63, name: 'Replace towels, bath mat, tissue, and toiletries' },
-                    { id: 64, name: 'Mop bathroom floor' },
-                    { id: 65, name: 'Refill water, coffee, and room amenities' },
-                    { id: 66, name: 'Replace slippers and hygiene kits' },
-                    { id: 67, name: 'Check minibar (if applicable)' },
-                    { id: 68, name: 'Ensure lights, AC, TV working' },
-                    { id: 69, name: 'Arrange curtains neatly' },
-                    { id: 70, name: 'Deodorize room' },
-                ],
-                clTemplates: [
-                    { id: 1, name: 'Daily Cleaning Service', initials: 'DC', color: '#22c55e', itemCount: 14, reminders: 'Always check under furniture and behind doors. Ensure all trash is disposed of properly.', enabledItems: [1,2,3,4,5,6,7,8,9,10,11,12,13,14] },
-                    { id: 2, name: 'Snowout Cleaning Service', initials: 'SC', color: '#a855f7', itemCount: 11, reminders: 'Wear proper footwear. Be careful of wet/slippery surfaces.', enabledItems: [15,16,17,18,19,20,21,22,23,24,25] },
-                    { id: 3, name: 'Deep Cleaning Service', initials: 'DP', color: '#3b82f6', itemCount: 14, reminders: 'Use appropriate cleaning agents for each surface type. Ventilate rooms after chemical use.', enabledItems: [26,27,28,29,30,31,32,33,34,35,36,37,38,39] },
-                    { id: 4, name: 'General Cleaning Service', initials: 'GC', color: '#14b8a6', itemCount: 12, reminders: '', enabledItems: [40,41,42,43,44,45,46,47,48,49,50,51] },
-                    { id: 5, name: 'Hotel Cleaning Service', initials: 'HC', color: '#f59e0b', itemCount: 19, reminders: 'Check for guest belongings before cleaning. Report any damages immediately.', enabledItems: [52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70] },
-                ],
+                clSubmitting: false,
+                clExpandedCategories: [],
+                clFormData: { name: '', reminders: '', categories: [] },
+                clCategoryForm: { name: '' },
+                clEditCategoryForm: { id: null, name: '' },
+                clItemForm: { id: null, category_id: null, name: '', quantity: '1' },
+                clDeleteTarget: { type: null, id: null, parentId: null },
+                clDeleteMessage: '',
+                clColorPalette: ['#22c55e', '#a855f7', '#3b82f6', '#14b8a6', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6', '#ec4899', '#10b981'],
+                clTemplates: [],
 
-                clGetInitials(name) {
-                    return name.split(' ').map(w => w.charAt(0).toUpperCase()).slice(0, 2).join('');
+                clInitTemplates() {
+                    let raw = [];
+                    try {
+                        const node = document.getElementById('schedule-bootstrap-data');
+                        if (node && node.dataset.checklists) {
+                            raw = JSON.parse(node.dataset.checklists) || [];
+                        }
+                    } catch (e) { raw = []; }
+                    this.clTemplates = raw.map(c => this.clDecorateTemplate({
+                        id: c.id,
+                        name: c.name,
+                        reminders: c.important_reminders || '',
+                        categories: c.categories || [],
+                    }));
                 },
 
-                clGetItemName(itemId) {
-                    const item = this.clAvailableItems.find(i => i.id === itemId);
-                    return item ? item.name : 'Unknown';
+                clDecorateTemplate(t) {
+                    return {
+                        ...t,
+                        initials: this.clGetInitials(t.name || ''),
+                        color: this.clGetColor(t.id),
+                        itemCount: this.clCountItems(t.categories || []),
+                    };
+                },
+
+                clRefreshTemplate(id) {
+                    const idx = this.clTemplates.findIndex(t => t.id === id);
+                    if (idx !== -1) {
+                        this.clTemplates[idx] = this.clDecorateTemplate(this.clTemplates[idx]);
+                    }
+                },
+
+                clGetInitials(name) {
+                    return (name || '').split(/\s+/).filter(Boolean).map(w => w.charAt(0).toUpperCase()).slice(0, 2).join('') || 'CL';
+                },
+
+                clGetColor(id) {
+                    const i = ((id || 0) - 1) % this.clColorPalette.length;
+                    return this.clColorPalette[(i + this.clColorPalette.length) % this.clColorPalette.length];
+                },
+
+                clCountItems(categories) {
+                    return (categories || []).reduce((sum, c) => sum + ((c.items || []).length), 0);
+                },
+
+                clCurrentTemplate() {
+                    return this.clTemplates.find(t => t.id === this.clEditingId) || null;
                 },
 
                 clEditTemplate(template) {
                     this.clEditingId = template.id;
                     this.clFormData = {
                         name: template.name,
-                        color: template.color,
                         reminders: template.reminders || '',
-                        enabledItems: [...(template.enabledItems || [])]
+                        categories: template.categories || []
                     };
-                    this.clShowNewItemInput = false;
-                    this.clNewItem = '';
+                    this.clExpandedCategories = [];
                     this.clShowEditModal = true;
-                    this.$nextTick(() => this.clInitSortable());
+                },
+
+                clOpenAddTemplate() {
+                    this.clEditingId = null;
+                    this.clFormData = { name: '', reminders: '', categories: [] };
+                    this.clShowAddModal = true;
+                },
+
+                async clCreateTemplate() {
+                    if (!this.clFormData.name.trim() || this.clSubmitting) return;
+                    this.clSubmitting = true;
+                    try {
+                        const res = await fetch('/manager/checklist', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrfToken, 'Accept': 'application/json' },
+                            body: JSON.stringify({ name: this.clFormData.name, important_reminders: this.clFormData.reminders })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            const created = this.clDecorateTemplate({
+                                id: data.checklist.id,
+                                name: data.checklist.name,
+                                reminders: data.checklist.important_reminders || '',
+                                categories: data.checklist.categories || [],
+                            });
+                            this.clTemplates.push(created);
+                            this.clShowAddModal = false;
+                            this.showToast('Template created');
+                        } else {
+                            this.showToast(data.message || 'Failed to create template', 'error');
+                        }
+                    } catch (e) { this.showToast('Failed to create template', 'error'); }
+                    this.clSubmitting = false;
                 },
 
                 async clDeleteTemplate(id) {
+                    const tpl = this.clTemplates.find(t => t.id === id);
+                    if (!tpl) return;
+                    this.clDeleteTarget = { type: 'template', id, parentId: null };
+                    this.clDeleteMessage = `Delete "${tpl.name}" and all its categories and items?`;
+                    this.clShowDeleteModal = true;
+                },
+
+                async clUpdateChecklistDetails() {
+                    if (!this.clEditingId) return;
                     try {
-                        await window.showConfirmDialog('Delete Template', 'Are you sure you want to delete this checklist template?', 'Delete', 'Cancel');
-                        this.clTemplates = this.clTemplates.filter(t => t.id !== id);
-                        setTimeout(() => window.showSuccessDialog('Template Deleted', 'The checklist template has been deleted.'), 350);
-                    } catch (e) {}
-                },
-
-                clToggleItem(itemId) {
-                    const idx = this.clFormData.enabledItems.indexOf(itemId);
-                    if (idx > -1) { this.clFormData.enabledItems.splice(idx, 1); }
-                    else { this.clFormData.enabledItems.push(itemId); }
-                    this.$nextTick(() => this.clInitSortable());
-                },
-
-                clRemoveItem(itemId) {
-                    const idx = this.clFormData.enabledItems.indexOf(itemId);
-                    if (idx > -1) this.clFormData.enabledItems.splice(idx, 1);
-                },
-
-                clAddItem() {
-                    if (!this.clNewItem.trim()) return;
-                    const newId = this.clAvailableItems.length > 0 ? Math.max(...this.clAvailableItems.map(i => i.id)) + 1 : 1;
-                    this.clAvailableItems.push({ id: newId, name: this.clNewItem.trim() });
-                    this.clNewItem = '';
-                },
-
-                clInitSortable() {
-                    if (this.clSortableInstance) this.clSortableInstance.destroy();
-                    const el = this.$refs.clSortableList;
-                    if (el) {
-                        this.clSortableInstance = new Sortable(el, {
-                            animation: 150,
-                            ghostClass: 'opacity-50',
-                            handle: '.fa-grip-vertical',
-                            onEnd: (evt) => {
-                                const items = [...this.clFormData.enabledItems];
-                                const [removed] = items.splice(evt.oldIndex, 1);
-                                items.splice(evt.newIndex, 0, removed);
-                                this.clFormData.enabledItems = items;
+                        const res = await fetch(`/manager/checklist/${this.clEditingId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrfToken, 'Accept': 'application/json' },
+                            body: JSON.stringify({ name: this.clFormData.name, important_reminders: this.clFormData.reminders })
+                        });
+                        if (res.ok) {
+                            const tpl = this.clCurrentTemplate();
+                            if (tpl) {
+                                tpl.name = this.clFormData.name;
+                                tpl.reminders = this.clFormData.reminders;
+                                this.clRefreshTemplate(tpl.id);
                             }
+                        }
+                    } catch (e) { /* silent */ }
+                },
+
+                clToggleCategory(id) {
+                    const idx = this.clExpandedCategories.indexOf(id);
+                    if (idx > -1) this.clExpandedCategories.splice(idx, 1);
+                    else this.clExpandedCategories.push(id);
+                },
+
+                clOpenAddCategoryModal() {
+                    this.clCategoryForm = { name: '' };
+                    this.clShowAddCategoryModal = true;
+                },
+
+                async clAddCategory() {
+                    if (!this.clEditingId || !this.clCategoryForm.name.trim() || this.clSubmitting) return;
+                    this.clSubmitting = true;
+                    try {
+                        const res = await fetch(`/manager/checklist/${this.clEditingId}/categories`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrfToken, 'Accept': 'application/json' },
+                            body: JSON.stringify({ name: this.clCategoryForm.name })
                         });
+                        const data = await res.json();
+                        if (res.ok) {
+                            const newCat = { id: data.category.id, name: data.category.name, items: data.category.items || [] };
+                            this.clFormData.categories.push(newCat);
+                            const tpl = this.clCurrentTemplate();
+                            if (tpl) {
+                                tpl.categories = this.clFormData.categories;
+                                this.clRefreshTemplate(tpl.id);
+                            }
+                            this.clShowAddCategoryModal = false;
+                            this.showToast('Category added');
+                        } else {
+                            this.showToast(data.message || 'Failed to add category', 'error');
+                        }
+                    } catch (e) { this.showToast('Failed to add category', 'error'); }
+                    this.clSubmitting = false;
+                },
+
+                clOpenEditCategory(category) {
+                    this.clEditCategoryForm = { id: category.id, name: category.name };
+                    this.clShowEditCategoryModal = true;
+                },
+
+                async clUpdateCategory() {
+                    if (!this.clEditCategoryForm.name.trim() || this.clSubmitting) return;
+                    this.clSubmitting = true;
+                    try {
+                        const res = await fetch(`/manager/checklist/categories/${this.clEditCategoryForm.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrfToken, 'Accept': 'application/json' },
+                            body: JSON.stringify({ name: this.clEditCategoryForm.name })
+                        });
+                        if (res.ok) {
+                            const cat = this.clFormData.categories.find(c => c.id === this.clEditCategoryForm.id);
+                            if (cat) cat.name = this.clEditCategoryForm.name;
+                            this.clShowEditCategoryModal = false;
+                            this.showToast('Category updated');
+                        } else {
+                            this.showToast('Failed to update category', 'error');
+                        }
+                    } catch (e) { this.showToast('Failed to update category', 'error'); }
+                    this.clSubmitting = false;
+                },
+
+                clConfirmDeleteCategory(category) {
+                    this.clDeleteTarget = { type: 'category', id: category.id, parentId: null };
+                    this.clDeleteMessage = `Delete "${category.name}" and all its items?`;
+                    this.clShowDeleteModal = true;
+                },
+
+                clOpenAddItem(category) {
+                    this.clItemForm = { id: null, category_id: category.id, name: '', quantity: '1' };
+                    this.clShowItemModal = true;
+                    if (!this.clExpandedCategories.includes(category.id)) {
+                        this.clExpandedCategories.push(category.id);
                     }
                 },
 
-                async clSaveTemplate() {
-                    if (!this.clFormData.name.trim()) return;
-                    const isEditing = this.clShowEditModal && this.clEditingId;
-                    try {
-                        await window.showConfirmDialog(
-                            isEditing ? 'Update Template' : 'Create Template',
-                            isEditing ? `Update "${this.clFormData.name}"?` : `Create "${this.clFormData.name}"?`,
-                            isEditing ? 'Update' : 'Create', 'Cancel'
-                        );
-                    } catch (e) { return; }
+                clOpenEditItem(category, item) {
+                    this.clItemForm = { id: item.id, category_id: category.id, name: item.name, quantity: item.quantity || '1' };
+                    this.clShowItemModal = true;
+                },
 
-                    if (isEditing) {
-                        const idx = this.clTemplates.findIndex(t => t.id === this.clEditingId);
-                        if (idx !== -1) {
-                            this.clTemplates[idx].name = this.clFormData.name;
-                            this.clTemplates[idx].initials = this.clGetInitials(this.clFormData.name);
-                            this.clTemplates[idx].color = this.clFormData.color;
-                            this.clTemplates[idx].reminders = this.clFormData.reminders;
-                            this.clTemplates[idx].enabledItems = [...this.clFormData.enabledItems];
-                            this.clTemplates[idx].itemCount = this.clFormData.enabledItems.length;
-                        }
-                    } else {
-                        const newId = this.clTemplates.length > 0 ? Math.max(...this.clTemplates.map(t => t.id)) + 1 : 1;
-                        this.clTemplates.push({
-                            id: newId,
-                            name: this.clFormData.name,
-                            initials: this.clGetInitials(this.clFormData.name),
-                            color: '#3b82f6',
-                            reminders: this.clFormData.reminders,
-                            enabledItems: [],
-                            itemCount: 0
+                async clSaveItem() {
+                    if (!this.clItemForm.name.trim() || this.clSubmitting) return;
+                    this.clSubmitting = true;
+                    const isEdit = !!this.clItemForm.id;
+                    const url = isEdit
+                        ? `/manager/checklist/items/${this.clItemForm.id}`
+                        : `/manager/checklist/categories/${this.clItemForm.category_id}/items`;
+                    try {
+                        const res = await fetch(url, {
+                            method: isEdit ? 'PUT' : 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrfToken, 'Accept': 'application/json' },
+                            body: JSON.stringify({ name: this.clItemForm.name, quantity: this.clItemForm.quantity })
                         });
-                    }
-                    this.clCloseModal();
-                    setTimeout(() => window.showSuccessDialog(
-                        isEditing ? 'Template Updated' : 'Template Created',
-                        `The checklist template "${this.clFormData.name}" has been ${isEditing ? 'updated' : 'created'}.`
-                    ), 350);
+                        const data = await res.json();
+                        if (res.ok) {
+                            const cat = this.clFormData.categories.find(c => c.id === this.clItemForm.category_id);
+                            if (cat) {
+                                cat.items = cat.items || [];
+                                if (isEdit) {
+                                    const idx = cat.items.findIndex(i => i.id === this.clItemForm.id);
+                                    if (idx > -1) cat.items[idx] = data.item;
+                                } else {
+                                    cat.items.push(data.item);
+                                }
+                            }
+                            const tpl = this.clCurrentTemplate();
+                            if (tpl) this.clRefreshTemplate(tpl.id);
+                            this.clShowItemModal = false;
+                            this.showToast(isEdit ? 'Item updated' : 'Item added');
+                        } else {
+                            this.showToast(data.message || 'Failed to save item', 'error');
+                        }
+                    } catch (e) { this.showToast('Failed to save item', 'error'); }
+                    this.clSubmitting = false;
+                },
+
+                clConfirmDeleteItem(category, item) {
+                    this.clDeleteTarget = { type: 'item', id: item.id, parentId: category.id };
+                    this.clDeleteMessage = `Delete "${item.name}"?`;
+                    this.clShowDeleteModal = true;
+                },
+
+                async clExecuteDelete() {
+                    if (this.clSubmitting) return;
+                    const { type, id, parentId } = this.clDeleteTarget;
+                    let url = '';
+                    if (type === 'template') url = `/manager/checklist/${id}`;
+                    else if (type === 'category') url = `/manager/checklist/categories/${id}`;
+                    else if (type === 'item') url = `/manager/checklist/items/${id}`;
+                    else return;
+
+                    this.clSubmitting = true;
+                    try {
+                        const res = await fetch(url, {
+                            method: 'DELETE',
+                            headers: { 'X-CSRF-TOKEN': this.csrfToken, 'Accept': 'application/json' }
+                        });
+                        if (res.ok) {
+                            if (type === 'template') {
+                                this.clTemplates = this.clTemplates.filter(t => t.id !== id);
+                                if (this.clEditingId === id) this.clCloseModal();
+                            } else if (type === 'category') {
+                                this.clFormData.categories = this.clFormData.categories.filter(c => c.id !== id);
+                                const tpl = this.clCurrentTemplate();
+                                if (tpl) {
+                                    tpl.categories = this.clFormData.categories;
+                                    this.clRefreshTemplate(tpl.id);
+                                }
+                            } else if (type === 'item') {
+                                const cat = this.clFormData.categories.find(c => c.id === parentId);
+                                if (cat) cat.items = (cat.items || []).filter(i => i.id !== id);
+                                const tpl = this.clCurrentTemplate();
+                                if (tpl) this.clRefreshTemplate(tpl.id);
+                            }
+                            this.clShowDeleteModal = false;
+                            this.showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted`);
+                        } else {
+                            this.showToast('Failed to delete', 'error');
+                        }
+                    } catch (e) { this.showToast('Failed to delete', 'error'); }
+                    this.clSubmitting = false;
                 },
 
                 clCloseModal() {
                     this.clShowAddModal = false;
                     this.clShowEditModal = false;
-                    this.clShowNewItemInput = false;
+                    this.clShowAddCategoryModal = false;
+                    this.clShowEditCategoryModal = false;
+                    this.clShowItemModal = false;
+                    this.clShowDeleteModal = false;
                     this.clEditingId = null;
-                    this.clNewItem = '';
-                    this.clFormData = { name: '', color: '#22c55e', reminders: '', enabledItems: [] };
-                    if (this.clSortableInstance) { this.clSortableInstance.destroy(); this.clSortableInstance = null; }
+                    this.clExpandedCategories = [];
+                    this.clFormData = { name: '', reminders: '', categories: [] };
+                    this.clCategoryForm = { name: '' };
+                    this.clEditCategoryForm = { id: null, name: '' };
+                    this.clItemForm = { id: null, category_id: null, name: '', quantity: '1' };
+                    this.clDeleteTarget = { type: null, id: null, parentId: null };
+                    this.clDeleteMessage = '';
                 }
             };
         }

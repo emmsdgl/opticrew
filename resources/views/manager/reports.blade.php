@@ -1,21 +1,54 @@
 <x-layouts.general-manager :title="'Reports'">
-    <div class="flex flex-col gap-6 w-full" x-data="reportsManager()">
+    <div class="flex flex-col gap-6 w-full p-6" x-data="reportsManager()">
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Reports & Analytics</h1>
-                <p class="text-gray-600 dark:text-gray-400 mt-1">Track performance and generate billing reports</p>
+                <p class="text-sm font-sans font-bold text-gray-900 dark:text-white">Reports & Analytics</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Track performance and generate billing reports</p>
             </div>
+            @php
+                $periodOptions = [
+                    'week' => 'This Week',
+                    'month' => 'This Month',
+                    'quarter' => 'This Quarter',
+                    'year' => 'This Year',
+                ];
+                $currentPeriod = $period ?? 'month';
+                $currentPeriodLabel = $periodOptions[$currentPeriod] ?? 'This Month';
+            @endphp
             <div class="flex gap-3">
-                <select onchange="window.location.href = '{{ route('manager.reports') }}?period=' + this.value"
-                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="week" {{ ($period ?? 'month') === 'week' ? 'selected' : '' }}>This Week</option>
-                    <option value="month" {{ ($period ?? 'month') === 'month' ? 'selected' : '' }}>This Month</option>
-                    <option value="quarter" {{ ($period ?? 'month') === 'quarter' ? 'selected' : '' }}>This Quarter</option>
-                    <option value="year" {{ ($period ?? 'month') === 'year' ? 'selected' : '' }}>This Year</option>
-                </select>
-                <button @click="showBillingModal = true"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                {{-- Period Dropdown --}}
+                <div x-data="{ open: false }" class="relative inline-block">
+                    <button @click="open = !open" type="button"
+                            class="bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-3 inline-flex justify-between items-center gap-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-blue-800 transition-all duration-300">
+                        <span class="text-gray-700 dark:text-white text-xs font-normal">Show:</span>
+                        <span class="text-gray-700 dark:text-white text-xs font-normal">{{ $currentPeriodLabel }}</span>
+                        <svg class="w-2.5 h-2.5 ms-2 transition-transform duration-300 text-gray-600 dark:text-gray-400"
+                             :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 10 6">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+                        </svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-transition
+                         class="absolute right-0 top-full mt-2 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-lg min-w-[10rem] dark:bg-gray-700"
+                         style="display: none;">
+                        <ul class="py-2 text-xs text-gray-700 dark:text-white">
+                            @foreach($periodOptions as $value => $label)
+                                <li>
+                                    <button type="button"
+                                            data-url="{{ route('manager.reports', ['period' => $value]) }}"
+                                            @click="window.location.href = $el.dataset.url"
+                                            class="w-full text-left px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 {{ $currentPeriod === $value ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                        {{ $label }}
+                                    </button>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+
+                {{-- Generate Billing Report Button --}}
+                <button @click="showBillingModal = true" type="button"
+                        class="inline-flex items-center gap-2 px-4 py-3 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
                     <i class="fa-solid fa-file-invoice"></i>
                     Generate Billing Report
                 </button>
@@ -23,116 +56,173 @@
         </div>
 
         <!-- Summary Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-list-check text-blue-600 dark:text-blue-400"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Total Tasks</p>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ $summary['totalTasks'] ?? 0 }}</p>
-                    </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700 my-12 rounded-lg overflow-hidden">
+            {{-- Total Tasks --}}
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <div class="flex items-center gap-2 mb-2 ml-3">
+                    <i class="fa-solid fa-list-check" style="color: #3b82f6"></i>
+                    <p class="text-xs font-medium text-gray-500 dark:text-slate-400">Total Tasks</p>
                 </div>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $summary['totalTasks'] ?? 0 }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 ml-3">In selected period</p>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-check-circle text-green-600 dark:text-green-400"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Completion Rate</p>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ $summary['completionRate'] ?? 0 }}%</p>
-                    </div>
+
+            {{-- Completion Rate --}}
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <div class="flex items-center gap-2 mb-2 ml-3">
+                    <i class="fa-solid fa-check-circle" style="color: #10b981"></i>
+                    <p class="text-xs font-medium text-gray-500 dark:text-slate-400">Completion Rate</p>
                 </div>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $summary['completionRate'] ?? 0 }}%</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 ml-3">Of all tasks</p>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-spinner text-yellow-600 dark:text-yellow-400"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">In Progress</p>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ $summary['inProgress'] ?? 0 }}</p>
-                    </div>
+
+            {{-- In Progress --}}
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <div class="flex items-center gap-2 mb-2 ml-3">
+                    <i class="fa-solid fa-spinner" style="color: #f59e0b"></i>
+                    <p class="text-xs font-medium text-gray-500 dark:text-slate-400">In Progress</p>
                 </div>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $summary['inProgress'] ?? 0 }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 ml-3">Active right now</p>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-clock text-purple-600 dark:text-purple-400"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Total Hours</p>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ $summary['totalHours'] ?? 0 }}</p>
-                    </div>
+
+            {{-- Total Hours --}}
+            <div class="bg-white dark:bg-slate-900 px-6 py-5">
+                <div class="flex items-center gap-2 mb-2 ml-3">
+                    <i class="fa-solid fa-clock" style="color: #8b5cf6"></i>
+                    <p class="text-xs font-medium text-gray-500 dark:text-slate-400">Total Hours</p>
                 </div>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white ml-3">{{ $summary['totalHours'] ?? 0 }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 ml-3">Logged this period</p>
             </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                <div class="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Performance Overview</h2>
-                </div>
+        <!-- Performance Overview (full width) -->
+        <div class="flex flex-col gap-3">
+            <x-labelwithvalue label="Performance Overview" />
+            <div class="bg-white dark:bg-transparent rounded-xl border border-gray-200 dark:border-none">
                 <div class="p-4 md:p-5">
-                    <div id="performanceChart" class="h-64"></div>
-                </div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                <div class="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Tasks by Location</h2>
-                </div>
-                <div class="p-4 md:p-5 space-y-4">
-                    @forelse($tasksByLocation ?? [] as $location)
-                        <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $location['name'] }}</span>
-                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $location['count'] }} tasks</span>
+                    @if(empty($chartData['labels'] ?? []))
+                        <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
+                            <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                     alt="No performance data"
+                                     class="w-full h-full object-contain opacity-80 dark:opacity-60">
                             </div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $location['percentage'] }}%"></div>
-                            </div>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">No performance data yet</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">Performance metrics will appear here as tasks are completed in the selected period.</p>
                         </div>
-                    @empty
-                        <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
-                    @endforelse
+                    @else
+                        <div id="performanceChart" class="h-64"></div>
+                    @endif
                 </div>
             </div>
         </div>
 
-        <!-- Top Performers -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-            <div class="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Top Performers</h2>
-            </div>
-            <div class="p-4 md:p-5">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    @forelse($topPerformers ?? [] as $index => $performer)
-                        <div class="flex items-center gap-4 p-4 rounded-lg {{ $index === 0 ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800' : 'bg-gray-50 dark:bg-gray-700/50' }}">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold
-                                {{ $index === 0 ? 'bg-yellow-400 text-yellow-900' : ($index === 1 ? 'bg-gray-300 text-gray-700' : 'bg-orange-300 text-orange-900') }}">
-                                {{ $index + 1 }}
+        <!-- Tasks by Location + Top Performers -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Tasks by Location -->
+            <div class="flex flex-col gap-3">
+                <x-labelwithvalue label="Tasks by Location" :count="'(' . count($tasksByLocation ?? []) . ')'" />
+                <div class="bg-white dark:bg-transparent rounded-xl border border-gray-200 dark:border-none">
+                    <div class="p-4 md:p-5 space-y-4">
+                        @forelse($tasksByLocation ?? [] as $location)
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $location['name'] }}</span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $location['count'] }} tasks</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $location['percentage'] }}%"></div>
+                                </div>
                             </div>
-                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold">
-                                {{ strtoupper(substr($performer['name'], 0, 1)) }}
+                        @empty
+                            <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
+                                <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                    <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                         alt="No tasks by location"
+                                         class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">No tasks by location yet</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">Locations with tasks will appear here once assignments are made.</p>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ $performer['name'] }}</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $performer['tasksCompleted'] }} tasks completed</p>
-                            </div>
-                            <div class="flex-shrink-0 text-right">
-                                <p class="text-lg font-bold text-green-600 dark:text-green-400">{{ $performer['efficiency'] }}%</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">efficiency</p>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="col-span-full text-center py-8">
-                            <p class="text-gray-500 dark:text-gray-400">No performance data available</p>
-                        </div>
-                    @endforelse
+                        @endforelse
+                    </div>
                 </div>
+            </div>
+
+            <!-- Top Performers (StackList style) -->
+            <div class="flex flex-col gap-3">
+                <x-labelwithvalue label="Top Performers" :count="'(' . count($topPerformers ?? []) . ')'" />
+                <div class="bg-white dark:bg-transparent rounded-xl border border-gray-200 dark:border-none">
+                    <div class="p-4 md:p-5">
+                    @php $performers = collect($topPerformers ?? []); $initialVisible = 3; @endphp
+                    @if($performers->count() > 0)
+                        <div x-data="{ expanded: false, initialVisible: {{ $initialVisible }} }" class="bg-transparent">
+                            <div class="flex flex-col gap-4">
+                                @foreach($performers as $index => $performer)
+                                    @php
+                                        $rankBadgeClass = match($index) {
+                                            0 => 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                            1 => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+                                            2 => 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+                                            default => 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+                                        };
+                                    @endphp
+                                    <div x-show="expanded || {{ $index }} < initialVisible"
+                                         x-transition:enter="transition ease-out duration-300"
+                                         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                         x-transition:leave="transition ease-in duration-200"
+                                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                         x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+                                         class="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-2xl shadow-sm">
+                                        <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 {{ $rankBadgeClass }}">
+                                            @if($index < 3)
+                                                <i class="fa-solid {{ $index === 0 ? 'fa-trophy' : 'fa-medal' }} text-base"></i>
+                                            @else
+                                                <span class="font-bold text-sm">{{ $index + 1 }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-xs xl:text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                                {{ $performer['name'] }}
+                                            </div>
+                                            <div class="text-xs xl:text-sm text-gray-500 dark:text-gray-400">
+                                                {{ $performer['tasksCompleted'] }} tasks completed
+                                            </div>
+                                        </div>
+                                        <div class="text-xs xl:text-sm font-semibold text-gray-400 flex-shrink-0">
+                                            {{ $performer['efficiency'] }}%
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            @if($performers->count() > $initialVisible)
+                                <div class="mt-4 flex justify-center">
+                                    <button type="button" @click="expanded = !expanded"
+                                            class="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-full text-xs xl:text-sm font-medium text-gray-600 dark:text-gray-300 transition hover:bg-gray-100 dark:hover:bg-neutral-800">
+                                        <span x-text="expanded ? 'Hide' : 'Show All'"></span>
+                                        <i class="fa-solid fa-chevron-down w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': expanded }"></i>
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center py-16 px-6 text-center h-auto">
+                            <div class="w-48 h-48 mb-6 flex items-center justify-center">
+                                <img src="{{ asset('images/icons/no-items-found.svg') }}"
+                                     alt="No performance data"
+                                     class="w-full h-full object-contain opacity-80 dark:opacity-60">
+                            </div>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">No performance data available</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md">Top performers will be ranked here once tasks are completed in the selected period.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
             </div>
         </div>
 
@@ -308,8 +398,11 @@
                 }
             };
 
-            var performanceChart = new ApexCharts(document.querySelector("#performanceChart"), performanceOptions);
-            performanceChart.render();
+            var performanceChartEl = document.querySelector("#performanceChart");
+            if (performanceChartEl) {
+                var performanceChart = new ApexCharts(performanceChartEl, performanceOptions);
+                performanceChart.render();
+            }
         });
     </script>
     @endpush

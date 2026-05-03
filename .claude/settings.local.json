@@ -82,7 +82,18 @@
       "Bash(git -C c:/xampp/htdocs/opticrew show 34a2251 --stat)",
       "Bash(git -C c:/xampp/htdocs/opticrew show 34a2251)",
       "Bash(php -r ' *)",
-      "Bash(git -C c:/xampp/htdocs/opticrew diff .claude/settings.local.json app/Http/Controllers/DashboardController.php resources/views/admin/dashboard.blade.php resources/views/livewire/admin/recent-arrivals.blade.php)"
+      "Bash(git -C c:/xampp/htdocs/opticrew diff .claude/settings.local.json app/Http/Controllers/DashboardController.php resources/views/admin/dashboard.blade.php resources/views/livewire/admin/recent-arrivals.blade.php)",
+      "Bash(awk 'NR>=1224 && NR<=2213' resources/views/manager/schedule.blade.php)",
+      "Bash(node --check /tmp/schedule_script.js)",
+      "Bash(awk 'NR>=1225 && NR<=2212' resources/views/manager/schedule.blade.php)",
+      "Bash(php -r 'try { Illuminate\\\\Support\\\\Facades\\\\Blade::compileString\\(file_get_contents\\('\\\\''resources/views/manager/schedule.blade.php'\\\\''\\)\\); echo '\\\\''OK'\\\\''; } catch\\(Throwable $e\\) { echo '\\\\''ERROR: '\\\\''.$e->getMessage\\(\\); }')",
+      "Bash(awk 'NR>=1225 && NR<=2470' resources/views/manager/schedule.blade.php)",
+      "Bash(awk 'NR>=1353 && NR<=2449' resources/views/manager/schedule.blade.php)",
+      "Bash(awk 'NR>=1356 && NR<=2443' resources/views/manager/schedule.blade.php)",
+      "Bash(awk 'NR>=1352 && NR<=2440' resources/views/manager/schedule.blade.php)",
+      "Bash(awk 'NR>=1354 && NR<=2448' resources/views/manager/schedule.blade.php)",
+      "Bash(sed -E 's/\\\\{\\\\{[^}]+\\\\}\\\\}/null/g')",
+      "Bash(node --check /tmp/sch.js)"
     ],
     "deny": [],
     "ask": []

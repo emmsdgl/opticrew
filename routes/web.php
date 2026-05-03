@@ -687,6 +687,7 @@ Route::middleware(['auth', 'terms.accepted', 'manager'])->prefix('manager')->nam
     Route::get('/checklist', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'index'])->name('checklist');
     Route::post('/checklist', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'store'])->name('checklist.store');
     Route::put('/checklist/{checklistId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'update'])->name('checklist.update');
+    Route::delete('/checklist/{checklistId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'destroy'])->name('checklist.destroy');
     Route::post('/checklist/{checklistId}/categories', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'addCategory'])->name('checklist.categories.add');
     Route::put('/checklist/categories/{categoryId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'updateCategory'])->name('checklist.categories.update');
     Route::delete('/checklist/categories/{categoryId}', [\App\Http\Controllers\Manager\ManagerChecklistController::class, 'deleteCategory'])->name('checklist.categories.delete');

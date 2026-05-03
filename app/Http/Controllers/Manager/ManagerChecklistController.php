@@ -79,10 +79,6 @@ class ManagerChecklistController extends Controller
             'important_reminders' => 'nullable|string',
         ]);
 
-        // Deactivate existing checklists
-        CompanyChecklist::where('contracted_client_id', $contractedClient->id)
-            ->update(['is_active' => false]);
-
         $checklist = CompanyChecklist::create([
             'contracted_client_id' => $contractedClient->id,
             'name' => $request->name,
@@ -94,6 +90,25 @@ class ManagerChecklistController extends Controller
             'message' => 'Checklist created successfully',
             'checklist' => $checklist->load('categories.items'),
         ], 201);
+    }
+
+    /**
+     * Delete an entire checklist with its categories and items (AJAX).
+     */
+    public function destroy($checklistId)
+    {
+        $contractedClient = $this->getContractedClient();
+        if (!$contractedClient) {
+            return response()->json(['message' => 'No contracted client found'], 404);
+        }
+
+        $checklist = CompanyChecklist::where('id', $checklistId)
+            ->where('contracted_client_id', $contractedClient->id)
+            ->firstOrFail();
+
+        $checklist->delete();
+
+        return response()->json(['message' => 'Checklist deleted successfully']);
     }
 
     /**
