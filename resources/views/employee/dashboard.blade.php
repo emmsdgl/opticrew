@@ -322,6 +322,93 @@
                     </div>
                 </div>
 
+                <!-- SCENARIO #18: Urgent Leave (mid-shift exit) — locked unless currently clocked in -->
+                <div id="urgent-leave-card"
+                     x-data="urgentLeavePanel({{ $isClockedIn ? 'true' : 'false' }})"
+                     class="snap-start shrink-0 w-full relative overflow-hidden rounded-xl py-4 bg-white shadow-sm dark:bg-gray-800/40 border border-red-200 dark:border-red-900/40">
+                    <div class="relative px-6 py-2 h-full">
+                        <div class="flex flex-col items-start my-3">
+                            <h3 class="text-lg md:text-xl font-black text-gray-900 dark:text-white">
+                                Need to Leave<br>Right Now?
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 my-3">
+                                <span x-show="canSubmit">
+                                    <span class="font-bold text-red-600 dark:text-red-400 text-sm">Urgent Leave</span><br>
+                                    immediately clocks you out and notifies admin
+                                </span>
+                                <span x-show="!canSubmit" x-cloak>
+                                    <span class="font-bold text-gray-500 text-sm">Locked</span><br>
+                                    available only while you are clocked in
+                                </span>
+                            </p>
+
+                            <button type="button"
+                                    @click="confirmAndSubmit()"
+                                    :disabled="!canSubmit || submitting"
+                                    :class="canSubmit && !submitting
+                                        ? 'bg-red-600 hover:bg-red-700 text-white shadow-sm cursor-pointer'
+                                        : 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'"
+                                    class="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 mt-2 mb-3">
+                                <i x-show="!submitting" class="fa-solid fa-triangle-exclamation text-sm"></i>
+                                <i x-show="submitting" x-cloak class="fa-solid fa-spinner fa-spin text-sm"></i>
+                                <span x-show="!submitting">Urgent Leave</span>
+                                <span x-show="submitting" x-cloak>Submitting...</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                @push('scripts')
+                <script>
+                function urgentLeavePanel(isClockedIn) {
+                    return {
+                        canSubmit: isClockedIn,
+                        submitting: false,
+                        async confirmAndSubmit() {
+                            if (!this.canSubmit) return;
+                            let reason;
+                            try {
+                                reason = await window.showConfirmDialog(
+                                    'Submit Urgent Leave?',
+                                    'This will immediately clock you out and notify the admin. The system will assign a replacement for your remaining tasks. This action cannot be undone — only an admin can cancel it. Continue?',
+                                    'Yes, Submit', 'Cancel'
+                                );
+                            } catch (e) { return; }
+
+                            this.submitting = true;
+                            try {
+                                const res = await fetch('{{ route('employee.urgent-leave.submit') }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    },
+                                    body: JSON.stringify({ reason: '' })
+                                });
+                                const data = await res.json();
+                                if (res.ok && data.success) {
+                                    this.canSubmit = false;
+                                    window.showSuccessDialog(
+                                        'Urgent Leave Submitted',
+                                        data.message + ' Compensation will vary.',
+                                        'OK'
+                                    );
+                                    setTimeout(() => window.location.reload(), 1800);
+                                } else {
+                                    window.showErrorDialog('Submission Failed', data.message || 'Could not submit Urgent Leave.');
+                                }
+                            } catch (e) {
+                                window.showErrorDialog('Submission Failed', 'A network error occurred. Please try again.');
+                            } finally {
+                                this.submitting = false;
+                            }
+                        }
+                    };
+                }
+                </script>
+                @endpush
+
                 <!-- Course Progress List -->
                 <div id="course-progress-section" class="flex flex-col gap-6">
                     <div class="flex flex-row justify-between items-center w-full">

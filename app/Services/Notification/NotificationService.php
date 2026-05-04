@@ -1264,6 +1264,59 @@ class NotificationService
     }
 
     /**
+     * SCENARIO #18: Notify admins when an employee submits an Urgent Leave (mid-shift exit).
+     */
+    public function notifyAdminsUrgentLeave($urgentLeave, string $employeeName): Collection
+    {
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+        $graceMinutes = (int) \App\Services\CompanySettingService::get('reassignment_grace_period_minutes', 30);
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_URGENT_LEAVE,
+            'Urgent Leave Submitted',
+            "{$employeeName} has triggered an Urgent Leave and clocked out immediately. Assign a replacement and set compensation within {$graceMinutes} minutes, or the system will auto-assign.",
+            [
+                'urgent_leave_id' => $urgentLeave->id,
+                'employee_id' => $urgentLeave->employee_id,
+                'employee_name' => $employeeName,
+                'triggered_at' => $urgentLeave->triggered_at?->toIso8601String(),
+                'grace_minutes' => $graceMinutes,
+                'urgency' => 'high',
+                'icon' => 'user-minus',
+                'color' => 'red',
+                'dashboard_flag' => 'red_alert',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #18: Notify admins after the grace period expires and the system
+     * auto-assigns a replacement (Escalation 1).
+     */
+    public function notifyAdminsUrgentLeaveAutoAssigned($urgentLeave, string $employeeName, string $replacementName): Collection
+    {
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_URGENT_LEAVE_ESCALATED,
+            'Urgent Leave Auto-Assigned (Escalation 1)',
+            "Grace period expired for {$employeeName}'s Urgent Leave. System auto-assigned {$replacementName} (employee with no pending tasks). Set the compensation amount in the Urgent Leaves admin page.",
+            [
+                'urgent_leave_id' => $urgentLeave->id,
+                'employee_name' => $employeeName,
+                'replacement_name' => $replacementName,
+                'escalation_level' => 1,
+                'urgency' => 'critical',
+                'icon' => 'exclamation-triangle',
+                'color' => 'red',
+                'dashboard_flag' => 'red_alert',
+            ]
+        );
+    }
+
+    /**
      * SCENARIO #14: Notify qualified employees about an unstaffed job opportunity.
      */
     public function notifyEmployeesJobOpportunity($task, $employees): Collection

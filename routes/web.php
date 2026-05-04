@@ -520,6 +520,11 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::post('/admin/settings/salary', [ProfileController::class, 'updateSalarySettings'])->name('admin.settings.update-salary');
     Route::post('/admin/settings/absences', [ProfileController::class, 'updateAbsencesSettings'])->name('admin.settings.update-absences');
 
+    // SCENARIO #18: Urgent Leave admin endpoints
+    Route::get('/admin/urgent-leaves', [\App\Http\Controllers\UrgentLeaveController::class, 'index'])->name('admin.urgent-leaves.index');
+    Route::post('/admin/urgent-leaves/{id}/assign', [\App\Http\Controllers\UrgentLeaveController::class, 'assign'])->name('admin.urgent-leaves.assign');
+    Route::post('/admin/urgent-leaves/{id}/cancel', [\App\Http\Controllers\UrgentLeaveController::class, 'cancel'])->name('admin.urgent-leaves.cancel');
+
     // Backup & Restore
     Route::get('/admin/backup', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('admin.backup.index');
     Route::post('/admin/backup/create', [\App\Http\Controllers\Admin\BackupController::class, 'create'])->name('admin.backup.create');
@@ -563,6 +568,9 @@ Route::middleware(['auth', 'terms.accepted', 'employee'])->group(function () {
 
     Route::get('/employee/requests/create', [EmployeeRequestsController::class, 'create'])->name('employee.requests.create');
     Route::post('/employee/requests/store', [EmployeeRequestsController::class, 'store'])->name('employee.requests.store');
+
+    // SCENARIO #18: Urgent Leave (mid-shift exit) — locked unless employee has active clock-in
+    Route::post('/employee/urgent-leave', [\App\Http\Controllers\UrgentLeaveController::class, 'submit'])->name('employee.urgent-leave.submit');
     Route::post('/employee/requests/check-conflicts', [EmployeeRequestsController::class, 'checkConflicts'])->name('employee.requests.check-conflicts');
     Route::post('/employee/requests/{id}/cancel', [EmployeeRequestsController::class, 'cancel'])->name('employee.requests.cancel');
 

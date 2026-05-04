@@ -61,6 +61,8 @@ class Notification extends Model
     const TYPE_JOB_OPPORTUNITY = 'job_opportunity';
     const TYPE_EMERGENCY_LEAVE = 'emergency_leave';
     const TYPE_EMERGENCY_LEAVE_ESCALATION = 'emergency_leave_escalation';
+    const TYPE_URGENT_LEAVE = 'urgent_leave';
+    const TYPE_URGENT_LEAVE_ESCALATED = 'urgent_leave_escalated';
     const TYPE_TASK_UNSTAFFED = 'task_unstaffed';
     const TYPE_OVERTIME_ALERT = 'overtime_alert';
     const TYPE_DUPLICATE_APPLICANT = 'duplicate_applicant';

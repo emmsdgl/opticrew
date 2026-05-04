@@ -45,6 +45,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('opticrew:auto-backup --keep=4')
             ->weeklyOn(0, '02:00')
             ->withoutOverlapping();
+
+        // SCENARIO #18: Auto-escalate Urgent Leaves where the admin grace period expired
+        $schedule->command('opticrew:process-urgent-leave-grace')
+            ->everyFiveMinutes()
+            ->withoutOverlapping();
     }
 
     /**
