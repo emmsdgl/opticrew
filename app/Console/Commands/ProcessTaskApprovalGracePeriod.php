@@ -6,9 +6,12 @@ use Illuminate\Console\Command;
 use App\Models\Task;
 use App\Models\Employee;
 use App\Models\Notification;
+use App\Models\OptimizationTeamMember;
+use App\Models\User;
 use App\Services\Notification\NotificationService;
 use App\Services\CompanySettingService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -19,11 +22,16 @@ use Illuminate\Support\Facades\Log;
  * SCENARIO #21: Task Reassignment for late clock-in
  * If employee is running late and hasn't clocked in by the time their task
  * should start, the system notifies admin and may auto-reassign.
+ *
+ * IMMINENT-DECLINE AUTO-REASSIGN: when a declined task is starting within
+ * the grace period (default 30 min), don't wait for admin — find a free
+ * employee and swap them in so the task isn't left "inactive" at start time.
+ * Long-lead declines stay manual (admin retains control).
  */
 class ProcessTaskApprovalGracePeriod extends Command
 {
     protected $signature = 'opticrew:process-task-grace-periods';
-    protected $description = 'Process task approval grace period and late clock-in reassignment (Scenarios #19, #21)';
+    protected $description = 'Process task approval grace period, late clock-in, and imminent-decline auto-reassign (Scenarios #19, #21)';
 
     public function handle(NotificationService $notificationService)
     {
@@ -75,7 +83,144 @@ class ProcessTaskApprovalGracePeriod extends Command
         // SCENARIO #21: Check for late clock-ins on today's tasks
         $this->processLateClockIns($notificationService, $today);
 
-        $this->info("Processed {$expiredApprovalTasks->count()} expired approval tasks.");
+        // IMMINENT-DECLINE AUTO-REASSIGN
+        $reassignedCount = $this->processImminentDeclines($notificationService, $today, $gracePeriod);
+
+        $this->info("Processed {$expiredApprovalTasks->count()} expired approval tasks; {$reassignedCount} imminent-decline auto-reassigns.");
+    }
+
+    /**
+     * Find tasks that were declined and are starting within the imminent
+     * window (now to now + grace), and auto-reassign each to an employee
+     * with no pending tasks today. If no replacement is available, fall
+     * back to a CRITICAL_ESCALATION alert so admin sees the danger.
+     */
+    protected function processImminentDeclines(NotificationService $ns, Carbon $today, int $gracePeriod): int
+    {
+        $now = Carbon::now();
+        $cutoffEnd = $now->copy()->addMinutes($gracePeriod);
+
+        $imminent = Task::whereDate('scheduled_date', $today)
+            ->where('employee_approved', false)
+            ->whereNotNull('scheduled_time')
+            ->whereNotNull('assigned_team_id')
+            ->whereNotNull('approved_by')
+            ->whereIn('status', ['Pending', 'Scheduled'])
+            ->get()
+            ->filter(function ($task) use ($now, $cutoffEnd) {
+                $start = Carbon::parse($task->scheduled_date)->setTimeFromTimeString(
+                    Carbon::parse($task->scheduled_time)->format('H:i:s')
+                );
+                return $start->gte($now) && $start->lte($cutoffEnd);
+            });
+
+        $reassigned = 0;
+
+        foreach ($imminent as $task) {
+            $declinerUser = User::find($task->approved_by);
+            $decliner = $declinerUser?->employee;
+            if (!$decliner) {
+                Log::warning('Imminent decline auto-reassign: decliner has no employee record', [
+                    'task_id' => $task->id,
+                    'approved_by_user_id' => $task->approved_by,
+                ]);
+                continue;
+            }
+
+            $replacement = $this->findAvailableReplacement($decliner->id, $today);
+
+            if (!$replacement) {
+                $ns->notifyAdminsCriticalEscalation(
+                    $task,
+                    "Task \"{$task->task_description}\" is starting within {$gracePeriod} min and was declined, but no available replacement was found. Manual intervention required."
+                );
+                Log::warning('Imminent decline auto-reassign skipped: no replacement available', [
+                    'task_id' => $task->id,
+                    'decliner_employee_id' => $decliner->id,
+                ]);
+                continue;
+            }
+
+            try {
+                DB::transaction(function () use ($task, $decliner, $replacement) {
+                    OptimizationTeamMember::where('optimization_team_id', $task->assigned_team_id)
+                        ->where('employee_id', $decliner->id)
+                        ->delete();
+
+                    $alreadyOnTeam = OptimizationTeamMember::where('optimization_team_id', $task->assigned_team_id)
+                        ->where('employee_id', $replacement->id)
+                        ->exists();
+                    if (!$alreadyOnTeam) {
+                        OptimizationTeamMember::create([
+                            'optimization_team_id' => $task->assigned_team_id,
+                            'employee_id' => $replacement->id,
+                        ]);
+                    }
+
+                    $task->update([
+                        'employee_approved' => true,
+                        'employee_approved_at' => Carbon::now(),
+                        'approved_by' => $replacement->user_id,
+                        'status' => 'Scheduled',
+                    ]);
+                });
+
+                $ns->notifyAdminDeclineAutoReassigned($task, $decliner, $replacement);
+
+                Log::warning('Imminent decline auto-reassigned', [
+                    'task_id' => $task->id,
+                    'team_id' => $task->assigned_team_id,
+                    'decliner_employee_id' => $decliner->id,
+                    'replacement_employee_id' => $replacement->id,
+                ]);
+
+                $this->warn("Task #{$task->id}: imminent decline → auto-reassigned to employee #{$replacement->id}.");
+                $reassigned++;
+            } catch (\Throwable $e) {
+                Log::error('Imminent decline auto-reassign failed', [
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $reassigned;
+    }
+
+    /**
+     * Find an active employee with no pending/scheduled tasks today, not on
+     * approved leave, not soft-deleted. Excludes the decliner. Returns null
+     * if nobody qualifies.
+     */
+    protected function findAvailableReplacement(int $excludeEmployeeId, Carbon $date): ?Employee
+    {
+        $busyTeamIds = Task::whereDate('scheduled_date', $date)
+            ->whereIn('status', ['Pending', 'Scheduled'])
+            ->whereNotNull('assigned_team_id')
+            ->pluck('assigned_team_id')
+            ->unique()
+            ->toArray();
+
+        $busyEmployeeIds = empty($busyTeamIds)
+            ? []
+            : OptimizationTeamMember::whereIn('optimization_team_id', $busyTeamIds)
+                ->pluck('employee_id')
+                ->unique()
+                ->toArray();
+
+        $busyEmployeeIds[] = $excludeEmployeeId;
+
+        return Employee::where('is_active', true)
+            ->whereNotIn('id', $busyEmployeeIds)
+            ->whereDoesntHave('dayOffs', fn($q) =>
+                $q->where('date', '<=', $date)
+                  ->where(function ($sub) use ($date) {
+                      $sub->where('end_date', '>=', $date)
+                          ->orWhereNull('end_date');
+                  })
+            )
+            ->whereHas('user', fn($q) => $q->whereNull('deleted_at'))
+            ->first();
     }
 
     /**

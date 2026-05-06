@@ -1264,6 +1264,46 @@ class NotificationService
     }
 
     /**
+     * Imminent-decline auto-reassign (per leader's request 2026-05-06):
+     * notify admins when the system replaced a decliner on an imminent task
+     * because the task is starting within the grace period and admin hadn't
+     * acted yet. Distinct from #15 60-min escalation — this is time-to-start
+     * based, not assignment-age based.
+     */
+    public function notifyAdminDeclineAutoReassigned($task, $decliner, $replacement): Collection
+    {
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+        $declinerName = $decliner->user->name ?? ($decliner->fullName ?? 'Employee');
+        $replacementName = $replacement->user->name ?? ($replacement->fullName ?? 'Employee');
+        $startStr = $task->scheduled_time
+            ? \Carbon\Carbon::parse($task->scheduled_time)->format('g:i A')
+            : 'today';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LAST_MINUTE_DECLINE,
+            'Imminent Decline Auto-Reassigned',
+            "{$declinerName} declined task \"{$task->task_description}\" (starts {$startStr}). System auto-assigned {$replacementName} to keep the task covered.",
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'team_id' => $task->assigned_team_id,
+                'decliner_id' => $decliner->id,
+                'decliner_name' => $declinerName,
+                'replacement_id' => $replacement->id,
+                'replacement_name' => $replacementName,
+                'scheduled_time' => $task->scheduled_time,
+                'urgency' => 'high',
+                'icon' => 'shuffle',
+                'color' => 'amber',
+                'action' => 'imminent_decline_auto_reassigned',
+                'action_url' => '/tasks',
+                'action_text' => 'Review Schedule',
+            ]
+        );
+    }
+
+    /**
      * SCENARIO #21: Notify admins when a late employee clocks in and gets
      * auto-placed on the team with the most pending tasks for the day.
      * Carries enough context for the admin UI to show "confirm" or "reassign"

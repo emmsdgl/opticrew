@@ -93,9 +93,14 @@
                                         <div class="text-xs text-gray-500 dark:text-gray-400">€{{ number_format($employee->premium_pay, 2) }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($employee->urgent_compensation > 0)
+                                        @if($employee->urgent_compensation_count > 0)
                                             <div class="text-sm text-purple-600 dark:text-purple-400">€{{ number_format($employee->urgent_compensation, 2) }}</div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $employee->urgent_compensation_count }} replacement{{ $employee->urgent_compensation_count === 1 ? '' : 's' }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                of €{{ number_format($employee->urgent_compensation_agreed, 2) }} agreed
+                                                @if($employee->urgent_compensation < $employee->urgent_compensation_agreed)
+                                                    <span class="text-amber-500" title="Pro-rated by tasks actually completed">⚠</span>
+                                                @endif
+                                            </div>
                                         @else
                                             <div class="text-sm text-gray-400 dark:text-gray-500">—</div>
                                         @endif

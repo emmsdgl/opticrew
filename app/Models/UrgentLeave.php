@@ -106,4 +106,70 @@ class UrgentLeave extends Model
 
         return $affected;
     }
+
+    /**
+     * SCENARIO #22: Pro-rata compensation rule.
+     *
+     * The "agreed" compensation_amount is what admin promised to pay if the
+     * replacement covers the entire urgent leave. But the replacement is
+     * actually paid only for tasks they completed — if the late employee
+     * comes back and finishes some tasks themselves, the replacement gets
+     * a smaller share.
+     *
+     * compensation_per_task = compensation_amount / total_tasks_on_team_that_day
+     * earned = compensation_per_task × tasks_completed_by_replacement
+     *
+     * Returns 0 for cancelled, uncompensated, or pre-completion urgent leaves.
+     */
+    public function effectiveCompensation(): float
+    {
+        if (
+            $this->status === self::STATUS_CANCELLED ||
+            !$this->compensation_amount ||
+            !$this->replacement_employee_id
+        ) {
+            return 0.0;
+        }
+
+        $date = $this->triggered_at?->toDateString();
+        if (!$date) {
+            return 0.0;
+        }
+
+        $replacement = $this->replacement;
+        if (!$replacement) {
+            return 0.0;
+        }
+
+        // Find the team the replacement is on for that date (set by reassignTodaysTasks).
+        $teamId = OptimizationTeamMember::whereHas('team', fn($q) =>
+                $q->whereDate('service_date', $date)
+            )
+            ->where('employee_id', $replacement->id)
+            ->value('optimization_team_id');
+
+        if (!$teamId) {
+            return 0.0;
+        }
+
+        $totalTasks = Task::where('assigned_team_id', $teamId)
+            ->whereDate('scheduled_date', $date)
+            ->count();
+
+        if ($totalTasks === 0) {
+            return 0.0;
+        }
+
+        $completedByReplacement = Task::where('assigned_team_id', $teamId)
+            ->whereDate('scheduled_date', $date)
+            ->where('status', 'Completed')
+            ->where('completed_by', $replacement->user_id)
+            ->count();
+
+        if ($completedByReplacement === 0) {
+            return 0.0;
+        }
+
+        return round((float) $this->compensation_amount * ($completedByReplacement / $totalTasks), 2);
+    }
 }

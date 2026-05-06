@@ -94,7 +94,11 @@
         <div class="overflow-hidden">
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Urgent Leave Compensation</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Earned by replacing other employees on urgent leave during this period.</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Earned by replacing other employees on urgent leave during this period.
+                    <span class="text-purple-600 dark:text-purple-400">Earned</span> is pro-rated by the share of tasks actually completed —
+                    if the original employee returns and finishes some tasks, the replacement only gets paid for what they did.
+                </p>
             </div>
             <div class="w-full overflow-x-auto">
                 <table class="w-full">
@@ -103,7 +107,8 @@
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Replaced</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Compensation</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Agreed</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-purple-600 dark:text-purple-400">Earned</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,13 +119,20 @@
                                 <td class="px-6 py-3 text-xs">
                                     <span class="px-2 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">{{ str_replace('_', ' ', $leave->status) }}</span>
                                 </td>
-                                <td class="px-6 py-3 text-sm font-semibold text-purple-600 dark:text-purple-400 text-right">€{{ number_format($leave->compensation_amount, 2) }}</td>
+                                <td class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400 text-right">€{{ number_format($leave->compensation_amount, 2) }}</td>
+                                <td class="px-6 py-3 text-sm font-semibold text-purple-600 dark:text-purple-400 text-right">
+                                    €{{ number_format($leave->earned_compensation, 2) }}
+                                    @if($leave->earned_compensation < $leave->compensation_amount)
+                                        <span class="text-amber-500 text-xs ml-1" title="Pro-rated by completed tasks">⚠</span>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                            <td colspan="3" class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-white">Total Urgent Compensation</td>
+                            <td colspan="3" class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-white">Total</td>
+                            <td class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 text-right">€{{ number_format($stats['urgent_compensation_agreed'], 2) }}</td>
                             <td class="px-6 py-3 text-sm font-semibold text-purple-600 dark:text-purple-400 text-right">€{{ number_format($stats['urgent_compensation'], 2) }}</td>
                         </tr>
                     </tfoot>

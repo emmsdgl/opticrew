@@ -225,18 +225,27 @@ class ReportController extends Controller
             })
             ->toArray();
 
-        // SCENARIO #18: Sum urgent-leave compensation owed to each REPLACEMENT
-        // employee within the period. Filter out cancelled leaves and entries
-        // where admin hasn't set the compensation amount yet.
-        $urgentCompensationByEmployee = \App\Models\UrgentLeave::whereNotNull('replacement_employee_id')
+        // SCENARIO #18 + #22: Sum urgent-leave compensation owed to each
+        // REPLACEMENT employee within the period — pro-rated by the share of
+        // tasks they actually completed (effectiveCompensation()). Cancelled
+        // leaves and entries with no compensation amount are excluded.
+        $urgentLeavesInPeriod = \App\Models\UrgentLeave::whereNotNull('replacement_employee_id')
             ->whereNotNull('compensation_amount')
             ->where('status', '!=', \App\Models\UrgentLeave::STATUS_CANCELLED)
             ->whereDate('triggered_at', '>=', $startDate)
             ->whereDate('triggered_at', '<=', $endDate)
+            ->get();
+
+        $urgentCompensationByEmployee = $urgentLeavesInPeriod
             ->groupBy('replacement_employee_id')
-            ->selectRaw('replacement_employee_id, SUM(compensation_amount) as total_comp, COUNT(*) as comp_count')
-            ->get()
-            ->keyBy('replacement_employee_id');
+            ->map(function ($leaves) {
+                return (object) [
+                    'replacement_employee_id' => $leaves->first()->replacement_employee_id,
+                    'agreed_total' => (float) $leaves->sum('compensation_amount'),
+                    'earned_total' => (float) $leaves->sum(fn($l) => $l->effectiveCompensation()),
+                    'comp_count' => $leaves->count(),
+                ];
+            });
 
         // Get all employees with their attendance and salary calculations (with per-day overtime)
         $employees = Employee::select('employees.*', 'users.name', 'users.email')
@@ -300,7 +309,8 @@ class ReportController extends Controller
                 }
 
                 $urgentCompRow = $urgentCompensationByEmployee->get($employee->id);
-                $urgentCompensation = $urgentCompRow ? (float) $urgentCompRow->total_comp : 0.0;
+                $urgentCompensationEarned = $urgentCompRow ? (float) $urgentCompRow->earned_total : 0.0;
+                $urgentCompensationAgreed = $urgentCompRow ? (float) $urgentCompRow->agreed_total : 0.0;
                 $urgentCompensationCount = $urgentCompRow ? (int) $urgentCompRow->comp_count : 0;
 
                 $employee->regular_hours = round($totalRegularHours, 2);
@@ -309,9 +319,10 @@ class ReportController extends Controller
                 $employee->premium_pay = round($totalPremiumPay, 2);
                 $employee->overtime_hours = round($totalOvertimeHours, 2);
                 $employee->total_hours = round($totalRegularHours + $totalPremiumHours, 2);
-                $employee->urgent_compensation = round($urgentCompensation, 2);
+                $employee->urgent_compensation = round($urgentCompensationEarned, 2);
+                $employee->urgent_compensation_agreed = round($urgentCompensationAgreed, 2);
                 $employee->urgent_compensation_count = $urgentCompensationCount;
-                $employee->gross_salary = round($totalRegularPay + $totalPremiumPay + $urgentCompensation, 2);
+                $employee->gross_salary = round($totalRegularPay + $totalPremiumPay + $urgentCompensationEarned, 2);
                 $employee->lunch_break_minutes = $totalLunchBreakMinutes;
                 $employee->dinner_break_minutes = $totalDinnerBreakMinutes;
 
@@ -444,16 +455,22 @@ class ReportController extends Controller
         $totalRegularHoursWorked = $attendances->sum('regular_hours');
         $totalOvertimeHours = $attendances->sum('overtime_hours');
 
-        // SCENARIO #18: pull urgent-leave compensation owed to this employee as a replacement
-        $urgentLeavesAsReplacement = \App\Models\UrgentLeave::with(['employee.user'])
+        // SCENARIO #18 + #22: pull urgent-leave compensation owed to this
+        // employee as a replacement, pro-rated by tasks actually completed.
+        $urgentLeavesAsReplacement = \App\Models\UrgentLeave::with(['employee.user', 'replacement.user'])
             ->where('replacement_employee_id', $employeeId)
             ->whereNotNull('compensation_amount')
             ->where('status', '!=', \App\Models\UrgentLeave::STATUS_CANCELLED)
             ->whereDate('triggered_at', '>=', $startDate)
             ->whereDate('triggered_at', '<=', $endDate)
             ->orderByDesc('triggered_at')
-            ->get();
-        $urgentCompensation = (float) $urgentLeavesAsReplacement->sum('compensation_amount');
+            ->get()
+            ->map(function ($leave) {
+                $leave->earned_compensation = $leave->effectiveCompensation();
+                return $leave;
+            });
+        $urgentCompensationAgreed = (float) $urgentLeavesAsReplacement->sum('compensation_amount');
+        $urgentCompensation = (float) $urgentLeavesAsReplacement->sum('earned_compensation');
 
         $stats = [
             'total_days' => $attendances->count(),
@@ -468,6 +485,7 @@ class ReportController extends Controller
             'regular_pay' => round($regularPay, 2),
             'premium_pay' => round($premiumPay, 2),
             'urgent_compensation' => round($urgentCompensation, 2),
+            'urgent_compensation_agreed' => round($urgentCompensationAgreed, 2),
             'urgent_compensation_count' => $urgentLeavesAsReplacement->count(),
             'total_salary' => round($attendances->sum('daily_pay') + $urgentCompensation, 2),
             'average_hours_per_day' => $attendances->count() > 0
