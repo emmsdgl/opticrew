@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\ClientAppointment;
-use App\Models\Task;
+use App\Models\DayOff;
+use App\Models\Employee;
 use App\Models\OptimizationTeam;
+use App\Models\OptimizationTeamMember;
 use App\Models\OptimizationRun;
+use App\Models\Task;
 use App\Services\Optimization\OptimizationService;
 use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
@@ -748,11 +751,21 @@ class AppointmentController extends Controller
     }
 
     /**
-     * SCENARIO #17: Manual assignment with confirmation dialog
-     * Admin manually assigns an employee to a task with compensation info
+     * SCENARIO #17: Manual assignment with confirmation dialog.
+     *
+     * Admin manually adds an employee to a task's team, overriding the system's
+     * automatic assignment (typically used when a team has < 2 active members).
      *
      * POST /admin/appointments/{id}/manual-assign
      * Body: { employee_id, compensation_note, confirm: true }
+     *
+     * If `confirm=false`, returns rich context (current team size, what the
+     * size will be after assignment, validation warnings) so the frontend can
+     * render an informed "Are you sure?" dialog.
+     *
+     * Validates that the picked employee is not on approved leave for the
+     * service date and is not already a member of the same team. Actually
+     * inserts an `optimization_team_members` row, unlike the prior stub.
      */
     public function manualAssign(Request $request, $id)
     {
@@ -762,44 +775,108 @@ class AppointmentController extends Controller
             'compensation_note' => 'nullable|string|max:500',
         ]);
 
-        if (!$request->confirm) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Assignment not confirmed.',
-                'requires_confirmation' => true,
-            ], 400);
-        }
-
         try {
             $appointment = ClientAppointment::findOrFail($id);
-            $employee = \App\Models\Employee::with('user')->findOrFail($request->employee_id);
-
-            // Check if employee has less than 2 team members (warning)
+            $employee = Employee::with('user')->findOrFail($request->employee_id);
             $employeeName = $employee->user->name ?? 'Employee';
+            $serviceDate = $appointment->service_date instanceof Carbon
+                ? $appointment->service_date
+                : Carbon::parse($appointment->service_date);
+
+            // Find existing task for this appointment (don't create yet — wait for confirmation)
+            $task = Task::where('client_id', $appointment->client_id)
+                ->whereDate('scheduled_date', $serviceDate)
+                ->first();
+
+            $team = $task && $task->assigned_team_id
+                ? OptimizationTeam::with('members.employee.user')->find($task->assigned_team_id)
+                : null;
+
+            $currentTeamSize = $team ? $team->activeMemberCount() : 0;
+            $alreadyOnTeam = $team
+                ? $team->members->contains('employee_id', $employee->id)
+                : false;
+
+            $onLeaveToday = DayOff::where('employee_id', $employee->id)
+                ->where('status', 'approved')
+                ->where('date', '<=', $serviceDate)
+                ->where(function ($q) use ($serviceDate) {
+                    $q->where('end_date', '>=', $serviceDate)
+                      ->orWhereNull('end_date');
+                })
+                ->exists();
+
+            $warnings = [];
+            if ($onLeaveToday) {
+                $warnings[] = "{$employeeName} has approved leave for {$serviceDate->format('M d')}; assignment will likely conflict.";
+            }
+            if ($alreadyOnTeam) {
+                $warnings[] = "{$employeeName} is already a member of this team.";
+            }
+
+            // Pre-flight: return context for the confirmation dialog
+            if (!$request->confirm) {
+                return response()->json([
+                    'success' => false,
+                    'requires_confirmation' => true,
+                    'context' => [
+                        'employee_name' => $employeeName,
+                        'service_date' => $serviceDate->format('Y-m-d'),
+                        'current_team_size' => $currentTeamSize,
+                        'after_assignment_size' => $alreadyOnTeam ? $currentTeamSize : $currentTeamSize + 1,
+                        'team_id' => $team?->id,
+                        'task_id' => $task?->id,
+                        'warnings' => $warnings,
+                    ],
+                    'message' => $currentTeamSize < 2
+                        ? "Team currently has {$currentTeamSize} active member(s). Adding {$employeeName} will bring it to " . ($alreadyOnTeam ? $currentTeamSize : $currentTeamSize + 1) . ". Confirm to proceed."
+                        : "Are you sure you want to add {$employeeName} to this team?",
+                ], 400);
+            }
+
+            // Hard-fail validations — don't let admin override these even with confirm=true
+            if ($onLeaveToday) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Cannot assign {$employeeName} — they have approved leave for {$serviceDate->format('M d, Y')}.",
+                    'error_code' => 'EMPLOYEE_ON_LEAVE',
+                ], 422);
+            }
+            if ($alreadyOnTeam) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "{$employeeName} is already on this team.",
+                    'error_code' => 'ALREADY_ON_TEAM',
+                ], 422);
+            }
 
             DB::beginTransaction();
-
-            // Find or create task
-            $task = Task::where('client_id', $appointment->client_id)
-                ->whereDate('scheduled_date', $appointment->service_date)
-                ->first();
 
             if (!$task) {
                 $task = $this->createTaskFromAppointment($appointment);
             }
 
-            // Log manual assignment with compensation note
+            // Actually attach the employee to the team (the prior stub only logged)
+            if ($task->assigned_team_id) {
+                OptimizationTeamMember::firstOrCreate([
+                    'optimization_team_id' => $task->assigned_team_id,
+                    'employee_id' => $employee->id,
+                ]);
+            }
+
             Log::info('Manual task assignment by admin', [
                 'appointment_id' => $appointment->id,
                 'task_id' => $task->id,
+                'team_id' => $task->assigned_team_id,
                 'employee_id' => $employee->id,
                 'assigned_by' => Auth::id(),
                 'compensation_note' => $request->compensation_note,
+                'team_size_before' => $currentTeamSize,
+                'team_size_after' => $currentTeamSize + 1,
             ]);
 
             DB::commit();
 
-            // Notify the employee
             if ($employee->user) {
                 $this->notificationService->notifyEmployeeTaskAssigned(
                     $employee->user,
@@ -811,6 +888,7 @@ class AppointmentController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Task manually assigned to {$employeeName}. Compensation will vary.",
+                'team_size_after' => $currentTeamSize + 1,
             ]);
 
         } catch (\Exception $e) {

@@ -9,6 +9,8 @@ use App\Models\Task;
 use App\Models\Attendance;
 use App\Models\TaskChecklistCompletion;
 use App\Models\ClientAppointment;
+use App\Models\Employee;
+use App\Models\OptimizationTeamMember;
 use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
 
@@ -330,12 +332,63 @@ class EmployeeTasksController extends Controller
         $this->notificationService->notifyAdminsTaskDeclined($task, $user->name);
 
         // SCENARIO #10: For last-minute declines, send urgent push notifications
-        // to available staff in the region and notify dispatcher
+        // to available staff so anyone qualified can claim the shift, and notify
+        // dispatcher. (No region field exists in the data model — push goes to
+        // every available employee. Could be filtered by region post-thesis.)
         if ($isLastMinute) {
             $this->notificationService->notifyAdminsLastMinuteDecline($task, $user->name);
+
+            $availableEmployees = $this->findAvailableForJobOpportunity($task, $employee->id);
+            if ($availableEmployees->isNotEmpty()) {
+                $this->notificationService->notifyEmployeesJobOpportunity($task, $availableEmployees);
+            }
         }
 
         return redirect()->route('employee.tasks')->with('success', 'Task declined successfully.');
+    }
+
+    /**
+     * SCENARIO #10: find employees who can claim a last-minute declined shift.
+     * Active, not on approved leave for the task's date, not soft-deleted, not
+     * already busy with another team's pending tasks that day, and not the decliner.
+     */
+    protected function findAvailableForJobOpportunity(Task $task, int $excludeEmployeeId)
+    {
+        $date = $task->scheduled_date instanceof Carbon
+            ? $task->scheduled_date
+            : Carbon::parse($task->scheduled_date);
+
+        $busyTeamIds = Task::whereDate('scheduled_date', $date)
+            ->whereIn('status', ['Pending', 'Scheduled', 'In Progress'])
+            ->whereNotNull('assigned_team_id')
+            ->where('id', '!=', $task->id)
+            ->pluck('assigned_team_id')
+            ->unique()
+            ->toArray();
+
+        $busyEmployeeIds = empty($busyTeamIds)
+            ? []
+            : OptimizationTeamMember::whereIn('optimization_team_id', $busyTeamIds)
+                ->pluck('employee_id')
+                ->unique()
+                ->toArray();
+
+        $busyEmployeeIds[] = $excludeEmployeeId;
+
+        return Employee::where('is_active', true)
+            ->where('is_day_off', false)
+            ->whereNotIn('id', $busyEmployeeIds)
+            ->whereDoesntHave('dayOffs', fn($q) =>
+                $q->where('date', '<=', $date)
+                  ->where(function ($sub) use ($date) {
+                      $sub->where('end_date', '>=', $date)
+                          ->orWhereNull('end_date');
+                  })
+                  ->where('status', 'approved')
+            )
+            ->whereHas('user', fn($q) => $q->whereNull('deleted_at'))
+            ->with('user')
+            ->get();
     }
 
     /**
