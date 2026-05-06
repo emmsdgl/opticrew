@@ -1264,6 +1264,75 @@ class NotificationService
     }
 
     /**
+     * SCENARIO #21: Notify admins when a late employee clocks in and gets
+     * auto-placed on the team with the most pending tasks for the day.
+     * Carries enough context for the admin UI to show "confirm" or "reassign"
+     * options and link to the schedule view.
+     */
+    public function notifyAdminLateReassignment(
+        $employee,
+        $newTeam,
+        int $minutesLate,
+        int $pendingTaskCount,
+        ?int $previousTeamId = null
+    ): Collection {
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+        $employeeName = $employee->user->name ?? ($employee->fullName ?? 'Employee');
+        $teamLabel = $newTeam ? ('Team ' . $newTeam->team_index) : 'a team';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LATE_REASSIGNMENT,
+            'Late Clock-In Reassigned',
+            "{$employeeName} clocked in {$minutesLate} min late and was placed on {$teamLabel} ({$pendingTaskCount} pending task" . ($pendingTaskCount === 1 ? '' : 's') . "). Confirm or reassign elsewhere.",
+            [
+                'employee_id' => $employee->id,
+                'employee_name' => $employeeName,
+                'minutes_late' => $minutesLate,
+                'new_team_id' => $newTeam?->id,
+                'new_team_index' => $newTeam?->team_index,
+                'previous_team_id' => $previousTeamId,
+                'pending_task_count' => $pendingTaskCount,
+                'urgency' => 'medium',
+                'icon' => 'clock',
+                'color' => 'amber',
+                'action' => 'late_reassignment',
+                'action_url' => '/admin/optimization',
+                'action_text' => 'Review Schedule',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #21 fallback: Notify admins when a late employee clocks in but
+     * there are no pending tasks left to assign them to.
+     */
+    public function notifyAdminLateNoWork($employee, int $minutesLate): Collection
+    {
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+        $employeeName = $employee->user->name ?? ($employee->fullName ?? 'Employee');
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LATE_REASSIGNMENT,
+            'Late Clock-In — No Remaining Work',
+            "{$employeeName} clocked in {$minutesLate} min late, but there are no pending tasks for today. Please review.",
+            [
+                'employee_id' => $employee->id,
+                'employee_name' => $employeeName,
+                'minutes_late' => $minutesLate,
+                'pending_task_count' => 0,
+                'urgency' => 'medium',
+                'icon' => 'clock',
+                'color' => 'amber',
+                'action' => 'late_no_work',
+                'action_url' => '/admin/optimization',
+                'action_text' => 'Review Schedule',
+            ]
+        );
+    }
+
+    /**
      * SCENARIO #18: Notify admins when an employee submits an Urgent Leave (mid-shift exit).
      */
     public function notifyAdminsUrgentLeave($urgentLeave, string $employeeName): Collection

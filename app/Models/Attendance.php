@@ -42,6 +42,9 @@ class Attendance extends Model
         'dinner_break_start',
         'dinner_break_end',
         'dinner_break_status',
+        'is_late',
+        'minutes_late',
+        'reassigned_to_team_id',
     ];
 
     protected $casts = [
@@ -51,6 +54,7 @@ class Attendance extends Model
         'lunch_break_end'    => 'datetime',
         'dinner_break_start' => 'datetime',
         'dinner_break_end'   => 'datetime',
+        'is_late'            => 'boolean',
     ];
 
     public function employee()

@@ -415,9 +415,79 @@ class OptimizationService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             throw $e;
         }
+    }
+
+    /**
+     * Re-optimize an entire date after a standard leave is approved.
+     *
+     * Triggered when admin approves a leave for a future-dated day (≥ tomorrow).
+     * Resets that date's pending/scheduled tasks back to Pending, deletes
+     * existing optimization runs for the date, and re-runs the GA pipeline.
+     * The leave-taker is auto-excluded by optimizeSchedule's existing dayOffs
+     * and employeeRequests filters (which already see the just-approved leave).
+     *
+     * Same-day leaves are handled by the urgent leave path (Scenario #18),
+     * not this method.
+     */
+    public function reoptimizeForLeaveApproval(string $serviceDate, int $excludedEmployeeId): array
+    {
+        $hasTasks = Task::whereDate('scheduled_date', $serviceDate)
+            ->whereIn('status', ['Pending', 'Scheduled'])
+            ->exists();
+
+        if (!$hasTasks) {
+            Log::info('Re-optimization skipped: no pending/scheduled tasks for date', [
+                'service_date' => $serviceDate,
+                'excluded_employee_id' => $excludedEmployeeId,
+            ]);
+            return [
+                'status' => 'skipped',
+                'message' => 'No tasks to re-optimize for this date',
+            ];
+        }
+
+        Log::info('Re-optimization triggered after leave approval', [
+            'service_date' => $serviceDate,
+            'excluded_employee_id' => $excludedEmployeeId,
+        ]);
+
+        return DB::transaction(function () use ($serviceDate, $excludedEmployeeId) {
+            $existingRuns = OptimizationRun::where('service_date', $serviceDate)->get();
+            $runIds = $existingRuns->pluck('id')->toArray();
+
+            $resetCount = Task::whereDate('scheduled_date', $serviceDate)
+                ->whereIn('status', ['Pending', 'Scheduled'])
+                ->update([
+                    'status' => 'Pending',
+                    'assigned_team_id' => null,
+                    'optimization_run_id' => null,
+                    'optimized_start_minutes' => null,
+                    'optimized_end_minutes' => null,
+                ]);
+
+            Log::info('Reset tasks for re-optimization', [
+                'service_date' => $serviceDate,
+                'tasks_reset' => $resetCount,
+                'old_run_ids' => $runIds,
+            ]);
+
+            foreach ($existingRuns as $run) {
+                $run->delete();
+            }
+
+            $result = $this->optimizeSchedule($serviceDate);
+
+            Log::info('Re-optimization after leave approval completed', [
+                'service_date' => $serviceDate,
+                'excluded_employee_id' => $excludedEmployeeId,
+                'status' => $result['status'] ?? 'unknown',
+            ]);
+
+            return $result;
+        });
     }
 
 //             // PHASE 1: Rule-Based Pre-Processing

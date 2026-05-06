@@ -8,7 +8,10 @@ use App\Models\Employee;
 use App\Models\EmployeeRequest;
 use App\Models\Task;
 use App\Models\OptimizationTeamMember;
+use App\Services\Attendance\LateClockInService;
 use App\Services\CompanySettingService;
+use App\Services\Notification\NotificationService;
+use App\Services\Optimization\OptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -508,7 +511,7 @@ class AttendanceController extends Controller
         return view('employee.attendance', compact('stats', 'attendanceRecords', 'requestRecords', 'employee', 'isClockedIn', 'hasAttendanceToday'));
     }
 
-    public function clockIn(Request $request)
+    public function clockIn(Request $request, LateClockInService $lateClockInService)
     {
         $user = Auth::user();
         $employee = Employee::where('user_id', $user->id)->first();
@@ -580,11 +583,24 @@ class AttendanceController extends Controller
             'clock_in_longitude' => $request->input('longitude'),
         ]);
 
+        // SCENARIO #21: if employee is late, place them on the busiest team for today
+        $lateResult = null;
+        try {
+            $lateResult = $lateClockInService->handleLateClockIn($attendance);
+        } catch (\Throwable $e) {
+            Log::error('Late clock-in handling failed', [
+                'employee_id' => $employee->id,
+                'attendance_id' => $attendance->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Clocked in successfully',
-                'attendance' => $attendance
+                'attendance' => $attendance->fresh(),
+                'late_clock_in' => $lateResult,
             ]);
         }
 
@@ -930,8 +946,12 @@ class AttendanceController extends Controller
     /**
      * Approve an employee request (Admin only)
      */
-    public function approveRequest(Request $request, $id)
-    {
+    public function approveRequest(
+        Request $request,
+        $id,
+        OptimizationService $optimizationService,
+        NotificationService $notificationService
+    ) {
         $employeeRequest = EmployeeRequest::findOrFail($id);
 
         if ($employeeRequest->status !== 'Pending') {
@@ -951,6 +971,45 @@ class AttendanceController extends Controller
             $employeeRequest->employee_id,
             $employeeRequest->absence_date
         );
+
+        // Future-dated leave: trigger full GA re-optimization so workload stays
+        // balanced. Same-day leaves go through the urgent leave path (Scenario #18).
+        $absenceDate = Carbon::parse($employeeRequest->absence_date);
+        if ($absenceDate->isFuture()) {
+            try {
+                $optimizationService->reoptimizeForLeaveApproval(
+                    $absenceDate->toDateString(),
+                    $employeeRequest->employee_id
+                );
+            } catch (\Throwable $e) {
+                Log::error('Re-optimization after leave approval failed', [
+                    'employee_id' => $employeeRequest->employee_id,
+                    'date' => $absenceDate->toDateString(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Notify the employee (in-app). EmployeeRequest uses different field
+        // names than DayOff, so we shape an adapter object that matches what
+        // NotificationService::notifyEmployeeLeaveApproved expects.
+        $employee = Employee::with('user')->find($employeeRequest->employee_id);
+        if ($employee && $employee->user) {
+            $leaveAdapter = (object) [
+                'id' => $employeeRequest->id,
+                'date' => $absenceDate,
+                'end_date' => null,
+                'type' => $employeeRequest->request_type ?: 'Leave',
+            ];
+            try {
+                $notificationService->notifyEmployeeLeaveApproved($employee->user, $leaveAdapter);
+            } catch (\Throwable $e) {
+                Log::warning('Leave approval notification failed', [
+                    'employee_id' => $employeeRequest->employee_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,

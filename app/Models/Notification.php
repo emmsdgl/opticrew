@@ -66,6 +66,7 @@ class Notification extends Model
     const TYPE_TASK_UNSTAFFED = 'task_unstaffed';
     const TYPE_OVERTIME_ALERT = 'overtime_alert';
     const TYPE_DUPLICATE_APPLICANT = 'duplicate_applicant';
+    const TYPE_LATE_REASSIGNMENT = 'late_reassignment';
 
     // Performance management notification types
     const TYPE_MONTHLY_EVALUATION_REMINDER = 'monthly_evaluation_reminder';

@@ -12,6 +12,7 @@ use App\Models\OptimizationTeamMember;
 use App\Services\PushNotificationService;
 use App\Services\Notification\NotificationService;
 use App\Services\Leave\EmergencyLeaveService;
+use App\Services\Optimization\OptimizationService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -20,15 +21,18 @@ class LeaveRequestController extends Controller
     protected $pushService;
     protected $notificationService;
     protected $emergencyLeaveService;
+    protected $optimizationService;
 
     public function __construct(
         PushNotificationService $pushService,
         NotificationService $notificationService,
-        EmergencyLeaveService $emergencyLeaveService
+        EmergencyLeaveService $emergencyLeaveService,
+        OptimizationService $optimizationService
     ) {
         $this->pushService = $pushService;
         $this->notificationService = $notificationService;
         $this->emergencyLeaveService = $emergencyLeaveService;
+        $this->optimizationService = $optimizationService;
     }
     /**
      * Get all leave requests for employee (their own requests)
@@ -374,6 +378,26 @@ class LeaveRequestController extends Controller
 
                 for ($d = $startDate->copy(); $d->lte($endDate); $d->addDay()) {
                     $this->removeEmployeeFromScheduledTasks($employee->id, $d->toDateString());
+                }
+
+                // Future-dated leaves: trigger full GA re-optimization for each affected day
+                // so workload stays balanced. Same-day leaves go through the urgent leave
+                // path (Scenario #18), not this one.
+                for ($d = $startDate->copy(); $d->lte($endDate); $d->addDay()) {
+                    if ($d->isFuture()) {
+                        try {
+                            $this->optimizationService->reoptimizeForLeaveApproval(
+                                $d->toDateString(),
+                                $employee->id
+                            );
+                        } catch (\Throwable $e) {
+                            Log::error('Re-optimization after leave approval failed', [
+                                'employee_id' => $employee->id,
+                                'date' => $d->toDateString(),
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
                 }
             }
 

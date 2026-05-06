@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\Attendance\LateClockInService;
 use App\Services\CompanySettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\DayOff;
@@ -17,7 +19,7 @@ class AttendanceController extends Controller
     /**
      * Clock in
      */
-    public function clockIn(Request $request)
+    public function clockIn(Request $request, LateClockInService $lateClockInService)
     {
         $request->validate([
             'latitude' => 'required|numeric',
@@ -111,9 +113,22 @@ class AttendanceController extends Controller
             'status' => 'present',
         ]);
 
+        // SCENARIO #21: if employee is late, place them on the busiest team for today
+        $lateResult = null;
+        try {
+            $lateResult = $lateClockInService->handleLateClockIn($attendance);
+        } catch (\Throwable $e) {
+            Log::error('Late clock-in handling failed', [
+                'employee_id' => $employee->id,
+                'attendance_id' => $attendance->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         return response()->json([
             'message' => 'Clocked in successfully',
-            'attendance' => $attendance
+            'attendance' => $attendance->fresh(),
+            'late_clock_in' => $lateResult,
         ], 201);
     }
 
