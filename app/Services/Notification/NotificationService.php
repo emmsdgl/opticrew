@@ -1297,7 +1297,42 @@ class NotificationService
                 'icon' => 'clock',
                 'color' => 'amber',
                 'action' => 'late_reassignment',
-                'action_url' => '/admin/optimization',
+                'action_url' => '/tasks',
+                'action_text' => 'Review Schedule',
+            ]
+        );
+    }
+
+    /**
+     * SCENARIO #21: Notify admins when a late employee clocks in but is kept
+     * on their original team to preserve minimum staffing (would have created
+     * a solo team / Scenario #9 violation if moved).
+     */
+    public function notifyAdminLateStayedOriginal(
+        $employee,
+        $originalTeam,
+        int $minutesLate
+    ): Collection {
+        $admins = User::whereIn('role', ['admin', 'manager'])->get();
+        $employeeName = $employee->user->name ?? ($employee->fullName ?? 'Employee');
+        $teamLabel = $originalTeam ? ('Team ' . $originalTeam->team_index) : 'their team';
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_LATE_REASSIGNMENT,
+            'Late Clock-In Detected',
+            "{$employeeName} clocked in {$minutesLate} min late and was kept on {$teamLabel} to preserve staffing.",
+            [
+                'employee_id' => $employee->id,
+                'employee_name' => $employeeName,
+                'minutes_late' => $minutesLate,
+                'original_team_id' => $originalTeam?->id,
+                'original_team_index' => $originalTeam?->team_index,
+                'urgency' => 'medium',
+                'icon' => 'clock',
+                'color' => 'amber',
+                'action' => 'late_stayed_original',
+                'action_url' => '/tasks',
                 'action_text' => 'Review Schedule',
             ]
         );
@@ -1326,7 +1361,7 @@ class NotificationService
                 'icon' => 'clock',
                 'color' => 'amber',
                 'action' => 'late_no_work',
-                'action_url' => '/admin/optimization',
+                'action_url' => '/tasks',
                 'action_text' => 'Review Schedule',
             ]
         );

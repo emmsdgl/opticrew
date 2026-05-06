@@ -60,6 +60,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Days</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Regular Hrs</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Sun/Holiday Hrs</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Urgent Comp</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Lunch Break</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Dinner Break</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Total Hrs</th>
@@ -90,6 +91,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-orange-600 dark:text-orange-400">{{ number_format($employee->premium_hours, 2) }}</div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400">€{{ number_format($employee->premium_pay, 2) }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($employee->urgent_compensation > 0)
+                                            <div class="text-sm text-purple-600 dark:text-purple-400">€{{ number_format($employee->urgent_compensation, 2) }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $employee->urgent_compensation_count }} replacement{{ $employee->urgent_compensation_count === 1 ? '' : 's' }}</div>
+                                        @else
+                                            <div class="text-sm text-gray-400 dark:text-gray-500">—</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900 dark:text-gray-200">
@@ -123,6 +132,7 @@
                                 <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white" colspan="3">TOTAL</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-blue-600 dark:text-blue-400">{{ number_format($totalRegularHours, 2) }}</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-orange-600 dark:text-orange-400">{{ number_format($totalPremiumHours, 2) }}</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-purple-600 dark:text-purple-400">€{{ number_format($totalUrgentCompensation, 2) }}</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">
                                     {{ intdiv($totalLunchBreakMinutes, 60) }}h {{ $totalLunchBreakMinutes % 60 }}m
                                 </td>

@@ -84,8 +84,41 @@ class LateClockInService
             // a re-optimization (e.g. after a leave approval).
             $previousMembership = OptimizationTeamMember::where('employee_id', $employee->id)
                 ->whereHas('team.optimizationRun', fn($q) => $q->whereDate('service_date', $today))
+                ->with('team')
                 ->first();
+            $previousTeam = $previousMembership?->team;
             $previousTeamId = $previousMembership?->optimization_team_id;
+
+            // No-solo-team invariant (Scenario #9 takes precedence over #21):
+            // if removing this employee from their original team would leave it
+            // with fewer than 2 active members, keep them where they are. Admin
+            // is still notified that the employee is late.
+            if ($previousTeam && ($previousTeam->activeMemberCount() - 1) < 2) {
+                $attendance->update([
+                    'is_late' => true,
+                    'minutes_late' => $minutesLate,
+                ]);
+                $this->notificationService->notifyAdminLateStayedOriginal(
+                    $employee,
+                    $previousTeam,
+                    $minutesLate
+                );
+                Log::info('Late employee kept on original team to preserve staffing', [
+                    'employee_id' => $employee->id,
+                    'attendance_id' => $attendance->id,
+                    'minutes_late' => $minutesLate,
+                    'original_team_id' => $previousTeamId,
+                    'original_team_active_count' => $previousTeam->activeMemberCount(),
+                ]);
+
+                return [
+                    'was_late' => true,
+                    'minutes_late' => $minutesLate,
+                    'reassigned_to_team_id' => null,
+                    'reason' => 'kept_with_original_team_to_preserve_staffing',
+                    'original_team_id' => $previousTeamId,
+                ];
+            }
 
             $busiestTeam = $this->findBusiestTeam($today);
 

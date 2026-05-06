@@ -74,6 +74,13 @@
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         After 8hrs/day (+€0.50/hr)</p>
                 </div>
+                <div class="bg-purple-50 dark:bg-purple-900/10 rounded-lg p-4">
+                    <p class="text-sm text-purple-600 dark:text-purple-400 font-medium">Urgent Comp</p>
+                    <p class="text-2xl font-bold text-purple-700 dark:text-purple-300 mt-1">
+                        €{{ number_format($stats['urgent_compensation'] ?? 0, 2) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ $stats['urgent_compensation_count'] ?? 0 }} replacement{{ ($stats['urgent_compensation_count'] ?? 0) === 1 ? '' : 's' }}</p>
+                </div>
                 <div class="bg-green-50 dark:bg-green-900/10 rounded-lg p-4">
                     <p class="text-sm text-green-600 dark:text-green-400 font-medium">Total Salary</p>
                     <p class="text-2xl font-bold text-green-700 dark:text-green-300 mt-1">
@@ -81,6 +88,46 @@
                 </div>
             </div>
         </div>
+
+        @if(($stats['urgent_compensation_count'] ?? 0) > 0)
+        <!-- Urgent Leave Compensation Detail -->
+        <div class="overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Urgent Leave Compensation</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Earned by replacing other employees on urgent leave during this period.</p>
+            </div>
+            <div class="w-full overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Replaced</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Compensation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($urgentLeavesAsReplacement as $leave)
+                            <tr class="even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-200">{{ $leave->triggered_at?->format('M d, Y g:i A') }}</td>
+                                <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-200">{{ $leave->employee->user->name ?? '—' }}</td>
+                                <td class="px-6 py-3 text-xs">
+                                    <span class="px-2 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">{{ str_replace('_', ' ', $leave->status) }}</span>
+                                </td>
+                                <td class="px-6 py-3 text-sm font-semibold text-purple-600 dark:text-purple-400 text-right">€{{ number_format($leave->compensation_amount, 2) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                            <td colspan="3" class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-white">Total Urgent Compensation</td>
+                            <td class="px-6 py-3 text-sm font-semibold text-purple-600 dark:text-purple-400 text-right">€{{ number_format($stats['urgent_compensation'], 2) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        @endif
 
         <!-- Daily Breakdown -->
         <div class="overflow-hidden">
