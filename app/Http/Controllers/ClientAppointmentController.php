@@ -184,7 +184,8 @@ class ClientAppointmentController extends Controller
                         'ongoing' => ['value' => '0%', 'direction' => null, 'current' => 0, 'previous' => 0],
                         'completed' => ['value' => '0%', 'direction' => null, 'current' => 0, 'previous' => 0],
                     ],
-                ]
+                ],
+                'completedAppointments' => collect([]),
             ]);
         }
 
@@ -342,14 +343,12 @@ class ClientAppointmentController extends Controller
     {
         $request->validate(['service_type' => 'required|string']);
 
+        // generateReferenceNumber doesn't actually depend on the client id (queue is by service_type),
+        // so we can preview even if the user doesn't have a Client row yet (e.g. brand-new private account).
         $user = Auth::user();
-        $client = $user ? $user->client : null;
+        $clientId = ($user && $user->client) ? $user->client->id : 0;
 
-        if (!$client) {
-            return response()->json(['reference_number' => '-']);
-        }
-
-        $ref = ClientAppointment::generateReferenceNumber($request->service_type, $client->id);
+        $ref = ClientAppointment::generateReferenceNumber($request->service_type, $clientId);
 
         return response()->json(['reference_number' => $ref]);
     }
@@ -758,9 +757,10 @@ class ClientAppointmentController extends Controller
             }
 
             // Create appointment (NOT task yet - waits for admin approval)
-            // Use the previewed reference number if provided; generate new one as fallback
-            $referenceNumber = $request->reference_number;
-            if (empty($referenceNumber) || ClientAppointment::where('reference_number', $referenceNumber)->exists()) {
+            // Use the previewed reference number if provided; generate new one as fallback.
+            // Treat the placeholder "-" (form's loading fallback) as missing so we don't store it literally.
+            $referenceNumber = trim((string) $request->reference_number);
+            if ($referenceNumber === '' || $referenceNumber === '-' || ClientAppointment::where('reference_number', $referenceNumber)->exists()) {
                 $referenceNumber = ClientAppointment::generateReferenceNumber($request->service_type, $client->id);
             }
 

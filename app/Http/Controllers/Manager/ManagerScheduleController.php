@@ -87,6 +87,41 @@ class ManagerScheduleController extends Controller
         }
 
         $minimumBookingNoticeDays = \App\Services\CompanySettingService::get('minimum_booking_notice_days', 3);
+
+        $checklists = [];
+        if ($contractedClient) {
+            $checklists = \App\Models\CompanyChecklist::where('contracted_client_id', $contractedClient->id)
+                ->where('is_active', true)
+                ->with(['categories.items'])
+                ->get()
+                ->map(function ($cl) {
+                    return [
+                        'id' => $cl->id,
+                        'name' => $cl->name,
+                        'important_reminders' => $cl->important_reminders,
+                        'categories' => $cl->categories->map(function ($c) {
+                            return [
+                                'id' => $c->id,
+                                'name' => $c->name,
+                                'items' => $c->items->map(function ($i) {
+                                    return [
+                                        'id' => $i->id,
+                                        'name' => $i->name,
+                                        'quantity' => $i->quantity,
+                                    ];
+                                })->values()->toArray(),
+                            ];
+                        })->values()->toArray(),
+                    ];
+                })->values()->toArray();
+        }
+
+        $predefinedCategories = [
+            'Kitchen', 'Bathroom', 'Lavatory', 'Living Room', 'Bedroom',
+            'Dining Room', 'Outdoor', 'Garage', 'Office', 'Laundry',
+            'Storage', 'Chimney', 'Condiments', 'Supplies'
+        ];
+
         return view('manager.schedule', compact(
             'locationTypes',
             'totalLocations',
@@ -96,7 +131,9 @@ class ManagerScheduleController extends Controller
             'locationsByType',
             'typesAddedLastMonth',
             'locationsAddedLastMonth',
-            'minimumBookingNoticeDays'
+            'minimumBookingNoticeDays',
+            'checklists',
+            'predefinedCategories'
         ));
     }
 

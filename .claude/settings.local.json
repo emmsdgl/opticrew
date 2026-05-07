@@ -128,7 +128,20 @@
       "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"SELECT '---existing urgent leaves---' AS info; SELECT id, employee_id, triggered_at, status FROM urgent_leaves ORDER BY id DESC LIMIT 5; SELECT '---active clock-ins for team 3741---' AS info; SELECT id, employee_id, clock_in, clock_out FROM attendances WHERE employee_id IN \\(15, 20\\) AND clock_out IS NULL ORDER BY clock_in DESC\")",
       "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"SELECT '---today urgent_leaves---' AS info; SELECT id, employee_id, replacement_employee_id, status, compensation_amount, processed_at FROM urgent_leaves WHERE DATE\\(triggered_at\\) = CURDATE\\(\\); SELECT '---laura attendance today---' AS info; SELECT id, employee_id, clock_in, clock_out, total_minutes_worked FROM attendances WHERE employee_id = 15 AND DATE\\(clock_in\\) = CURDATE\\(\\); SELECT '---team 3741 membership now---' AS info; SELECT otm.id, otm.employee_id, u.name FROM optimization_team_members otm JOIN employees e ON e.id = otm.employee_id JOIN users u ON u.id = e.user_id WHERE otm.optimization_team_id = 3741\")",
       "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"SELECT '---team 3741 NOW---' AS info; SELECT otm.id, otm.employee_id, u.name FROM optimization_team_members otm JOIN employees e ON e.id = otm.employee_id JOIN users u ON u.id = e.user_id WHERE otm.optimization_team_id = 3741 ORDER BY otm.id; SELECT '---laura still on any teams today?---' AS info; SELECT ot.id AS team_id, ot.team_index, ot.service_date FROM optimization_teams ot JOIN optimization_team_members otm ON otm.optimization_team_id = ot.id WHERE otm.employee_id = 15 AND ot.service_date = CURDATE\\(\\); SELECT '---merlyn \\(find her id first\\)---' AS info; SELECT e.id AS employee_id, u.name FROM employees e JOIN users u ON u.id = e.user_id WHERE u.name LIKE '%Merlyn%'\")",
-      "Bash(awk -F':' '{print $1 \":\" $2}')"
+      "Bash(awk -F':' '{print $1 \":\" $2}')",
+      "Bash(git -C c:/xampp/htdocs/opticrew diff .claude/settings.local.json app/Http/Controllers/DashboardController.php resources/views/admin/dashboard.blade.php resources/views/livewire/admin/recent-arrivals.blade.php)",
+      "Bash(awk 'NR>=1224 && NR<=2213' resources/views/manager/schedule.blade.php)",
+      "Bash(node --check /tmp/schedule_script.js)",
+      "Bash(awk 'NR>=1225 && NR<=2212' resources/views/manager/schedule.blade.php)",
+      "Bash(php -r 'try { Illuminate\\\\Support\\\\Facades\\\\Blade::compileString\\(file_get_contents\\('\\\\''resources/views/manager/schedule.blade.php'\\\\''\\)\\); echo '\\\\''OK'\\\\''; } catch\\(Throwable $e\\) { echo '\\\\''ERROR: '\\\\''.$e->getMessage\\(\\); }')",
+      "Bash(awk 'NR>=1225 && NR<=2470' resources/views/manager/schedule.blade.php)",
+      "Bash(awk 'NR>=1353 && NR<=2449' resources/views/manager/schedule.blade.php)",
+      "Bash(awk 'NR>=1356 && NR<=2443' resources/views/manager/schedule.blade.php)",
+      "Bash(awk 'NR>=1352 && NR<=2440' resources/views/manager/schedule.blade.php)",
+      "Bash(awk 'NR>=1354 && NR<=2448' resources/views/manager/schedule.blade.php)",
+      "Bash(sed -E 's/\\\\{\\\\{[^}]+\\\\}\\\\}/null/g')",
+      "Bash(node --check /tmp/sch.js)",
+      "PowerShell(try { Get-Content c:\\\\xampp\\\\htdocs\\\\opticrew\\\\.claude\\\\settings.local.json -Raw | ConvertFrom-Json | Out-Null; \"JSON: VALID\" } catch { \"JSON: INVALID — $\\($_.Exception.Message\\)\" })"
     ],
     "deny": [],
     "ask": []
