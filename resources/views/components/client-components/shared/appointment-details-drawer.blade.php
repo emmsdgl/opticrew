@@ -81,6 +81,11 @@
                         </div>
 
                         <div class="space-y-4 text-sm py-2.5 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div class="flex justify-between items-center" x-show="getDrawerData('referenceNumber') || getDrawerData('reference_number')">
+                                <span class="text-gray-500 dark:text-gray-400">Reference Number</span>
+                                <span class="font-medium text-blue-600 dark:text-blue-400 text-right"
+                                    x-text="getDrawerData('referenceNumber') || getDrawerData('reference_number') || '-'"></span>
+                            </div>
                             <div class="flex justify-between items-center" x-show="getDrawerData('appointmentId') || getDrawerData('id')">
                                 <span class="text-gray-500 dark:text-gray-400">Appointment ID</span>
                                 <span class="font-medium text-gray-900 dark:text-white text-right"

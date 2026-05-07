@@ -8,7 +8,7 @@
 
                 {{-- Activity List --}}
                 <div class="space-y-8">
-                    <div class="flex flex-col gap-1 w-full px-8 py-3">
+                    <div class="flex flex-col gap-1 w-full px-4 py-2">
                         <p class="text-base font-bold text-blue-950 dark:text-white">Activity History</p>
                         <p class="text-sm text-gray-700 dark:text-gray-500">View and track past events, tasks, reports, and account activity.</p>
                     </div>

@@ -3,8 +3,8 @@
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <p class="text-sm font-sans font-bold text-gray-900 dark:text-white">Reports & Analytics</p>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Track performance and generate billing reports</p>
+                <p class="text-base font-sans font-bold text-gray-900 dark:text-white">Reports & Analytics</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Track performance and generate billing reports</p>
             </div>
             @php
                 $periodOptions = [

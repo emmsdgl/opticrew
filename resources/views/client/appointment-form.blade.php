@@ -1346,11 +1346,15 @@
                     const response = await fetch('{{ route("client.appointment.reference-preview") }}?service_type=' + encodeURIComponent(this.formData.service_type), {
                         headers: { 'Accept': 'application/json' }
                     });
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
                     const data = await response.json();
-                    this.referencePreview = data.reference_number || '-';
+                    // Treat empty / "-" as missing so the UI keeps showing "Generating..." rather than a dash,
+                    // and the backend will generate a fresh reference at submit time.
+                    const ref = (data && data.reference_number) ? String(data.reference_number).trim() : '';
+                    this.referencePreview = (ref === '' || ref === '-') ? '' : ref;
                 } catch (e) {
                     console.error('Failed to fetch reference preview:', e);
-                    this.referencePreview = '-';
+                    this.referencePreview = '';
                 }
             },
 
