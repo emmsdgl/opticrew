@@ -13,6 +13,12 @@
         <!-- Divider -->
         <hr class="my-6 border-gray-300 dark:border-gray-700">
 
+        <!-- Rejected Tasks Section -->
+        @include('admin.tasks.rejected')
+
+        <!-- Divider -->
+        <hr class="my-6 border-gray-300 dark:border-gray-700">
+
         <!-- Task Checklist Templates Section -->
         <div class="flex flex-col gap-4 w-full px-4" x-data="checklistTemplates()">
             <div class="flex items-center justify-between">

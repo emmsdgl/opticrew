@@ -141,9 +141,26 @@
       "Bash(awk 'NR>=1354 && NR<=2448' resources/views/manager/schedule.blade.php)",
       "Bash(sed -E 's/\\\\{\\\\{[^}]+\\\\}\\\\}/null/g')",
       "Bash(node --check /tmp/sch.js)",
-      "PowerShell(try { Get-Content c:\\\\xampp\\\\htdocs\\\\opticrew\\\\.claude\\\\settings.local.json -Raw | ConvertFrom-Json | Out-Null; \"JSON: VALID\" } catch { \"JSON: INVALID — $\\($_.Exception.Message\\)\" })"
+      "PowerShell(try { Get-Content c:\\\\xampp\\\\htdocs\\\\opticrew\\\\.claude\\\\settings.local.json -Raw | ConvertFrom-Json | Out-Null; \"JSON: VALID\" } catch { \"JSON: INVALID — $\\($_.Exception.Message\\)\" })",
+      "Bash(python -c \"import json; json.load\\(open\\('c:/xampp/htdocs/opticrew/.claude/settings.local.json'\\)\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/xampp/htdocs/opticrew/.claude/settings.local.json','utf8'\\)\\); console.log\\('OK'\\)\")",
+      "Bash(grep -E \"\\\\.php$\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const s=fs.readFileSync\\('c:/xampp/htdocs/opticrew/docs/booking-to-feedback-flow.svg','utf8'\\); const cnt=\\(s.match\\(/<rect|<polygon|<path|<text/g\\)||[]\\).length; console.log\\('shape/text count:',cnt,'bytes:',s.length\\)\")",
+      "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('c:/xampp/htdocs/opticrew/docs/booking-to-feedback-flow.svg','utf8'\\); console.log\\('valid:',s.endsWith\\('</svg>\\\\n'\\)||s.endsWith\\('</svg>'\\),'bytes:',s.length\\)\")",
+      "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('c:/xampp/htdocs/opticrew/docs/booking-to-feedback-flow.svg','utf8'\\); console.log\\('valid SVG:',s.trim\\(\\).endsWith\\('</svg>'\\),'bytes:',s.length\\)\")",
+      "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('c:/xampp/htdocs/opticrew/docs/booking-to-feedback-flow.svg','utf8'\\); console.log\\('valid SVG:',s.trim\\(\\).endsWith\\('</svg>'\\),'bytes:',s.length,'notify count:',\\(s.match\\(/NOTIFY/g\\)||[]\\).length\\)\")",
+      "Bash(grep -n \"fillable\\\\|protected \\\\$\" c:/xampp/htdocs/opticrew/app/Models/Task.php)",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE tasks\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE task_rejections; SHOW COLUMNS FROM tasks WHERE Field IN \\('rejection_reason','rejection_count','status'\\);\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"DESCRIBE optimization_teams; SHOW COLUMNS FROM tasks WHERE Field='assigned_team_id';\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql\" -u root opticrew -e \"SELECT id, status, scheduled_date, rejection_count FROM tasks WHERE status='Rejected' OR rejection_count > 0 ORDER BY id DESC LIMIT 5; SELECT COUNT\\(*\\) as total_rejections FROM task_rejections;\")",
+      "Bash(ls c:/xampp/htdocs/opticrew/docs 2>nul || echo \"docs folder check\")",
+      "Bash(echo \"---markers exit $?---\")"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "c:\\xampp\\htdocs\\opticrew"
+    ]
   }
 }

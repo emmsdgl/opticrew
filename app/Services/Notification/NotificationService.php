@@ -878,6 +878,139 @@ class NotificationService
     }
 
     /**
+     * Notify all admins when an employee rejects a task via the preference-based cascade.
+     *
+     * Different from notifyAdminsTaskDeclined: this fires from the API rejectTask endpoint
+     * for a *preference* rejection (with reason + budget tracking). Carries the reason,
+     * the employee's remaining monthly budget, and the per-task rejection count so admins
+     * see ceiling progress at a glance.
+     */
+    public function notifyAdminsTaskRejected(
+        $task,
+        string $employeeName,
+        string $reason,
+        int $budgetRemaining,
+        int $taskRejectionCount
+    ): Collection {
+        $admins = User::where('role', 'admin')->get();
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+        $ceiling = (int) config('rejection.per_task_ceiling', 3);
+
+        $message = "{$employeeName} rejected \"{$task->task_description}\" ({$serviceDate}). "
+                 . "Reason: {$reason}. "
+                 . "Task rejected {$taskRejectionCount}/{$ceiling} times.";
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_TASK_REJECTED,
+            'Task Rejected by Employee',
+            $message,
+            [
+                'task_id' => $task->id,
+                'employee_name' => $employeeName,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'reason' => $reason,
+                'rejected_at' => now()->format('g:i A'),
+                'budget_remaining' => $budgetRemaining,
+                'task_rejection_count' => $taskRejectionCount,
+                'task_rejection_ceiling' => $ceiling,
+                'icon' => 'arrow-rotate-left',
+                'color' => 'orange',
+            ]
+        );
+    }
+
+    /**
+     * Notify admins (FYI) when the cascade auto-resolved a rejection via Try 1
+     * (bilateral swap) or Try 2a (mid-day free-slot). Low priority — no action
+     * needed, just visibility.
+     */
+    public function notifyAdminsCascadeAutoResolved($task, string $resolution, string $details): Collection
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        return $this->createMany(
+            $admins,
+            Notification::TYPE_TASK_REJECTED,
+            'Rejection Auto-Resolved',
+            "{$resolution}: \"{$task->task_description}\" — {$details}",
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'resolution' => $resolution,
+                'details' => $details,
+                'icon' => 'circle-check',
+                'color' => 'green',
+                'priority' => 'low',
+            ]
+        );
+    }
+
+    /**
+     * Notify admins AND managers when the mass-rejection threshold is tripped.
+     * Critical priority — per-rejection cascade is paused and admin must
+     * decide whether to re-run optimization or handle manually.
+     */
+    public function notifyAdminsMassRejectionTripped(array $detectorSnapshot): Collection
+    {
+        $recipients = User::whereIn('role', ['admin', 'manager'])->get();
+
+        $count = $detectorSnapshot['rejection_count'] ?? 0;
+        $employeeCount = $detectorSnapshot['rejecting_employee_count'] ?? 0;
+        $window = $detectorSnapshot['window_hours'] ?? 4;
+        $reason = $detectorSnapshot['reason'] ?? 'Mass-rejection threshold reached.';
+
+        return $this->createMany(
+            $recipients,
+            Notification::TYPE_MASS_REJECTION,
+            'Mass-Rejection Detected',
+            "{$reason} Per-rejection cascade paused. Consider re-optimization or manual handling.",
+            [
+                'rejection_count' => $count,
+                'rejecting_employee_count' => $employeeCount,
+                'assigned_employee_count' => $detectorSnapshot['assigned_employee_count'] ?? 0,
+                'percent_rejecting' => $detectorSnapshot['percent_rejecting'] ?? 0,
+                'window_hours' => $window,
+                'icon' => 'siren',
+                'color' => 'red',
+                'priority' => 'critical',
+            ]
+        );
+    }
+
+    /**
+     * Notify admins AND managers when a task hits the per-task rejection ceiling.
+     * High-priority — the cascade is halted and manual handling is required.
+     */
+    public function notifyAdminsTaskRejectionCeilingReached($task): Collection
+    {
+        $recipients = User::whereIn('role', ['admin', 'manager'])->get();
+        $serviceDate = $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'N/A';
+        $ceiling = (int) config('rejection.per_task_ceiling', 3);
+
+        $message = "\"{$task->task_description}\" ({$serviceDate}) has been rejected {$ceiling} times. "
+                 . "Auto-cascade halted. Please handle manually: override-assign, reschedule, or cancel.";
+
+        return $this->createMany(
+            $recipients,
+            Notification::TYPE_TASK_REJECTION_CEILING,
+            'Task Rejection Ceiling Reached',
+            $message,
+            [
+                'task_id' => $task->id,
+                'task_description' => $task->task_description,
+                'service_date' => $serviceDate,
+                'task_rejection_count' => $task->rejection_count,
+                'task_rejection_ceiling' => $ceiling,
+                'icon' => 'triangle-exclamation',
+                'color' => 'red',
+                'priority' => 'high',
+            ]
+        );
+    }
+
+    /**
      * Notify all admins when an employee starts a task.
      */
     public function notifyAdminsTaskStarted($task, $employeeName): Collection

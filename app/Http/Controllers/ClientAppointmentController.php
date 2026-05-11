@@ -405,6 +405,14 @@ class ClientAppointmentController extends Controller
             $occupiedRanges[] = ['start' => $start, 'end' => $end];
         }
 
+        // Lunch (12:00–13:00) and dinner (18:00–19:00) break windows — no tasks may
+        // be scheduled across these. Tracked separately from $occupiedRanges so the
+        // dropdown can label these slots as "Break time" instead of "Booked".
+        $breakRanges = [
+            ['start' => \Carbon\Carbon::parse($date)->setTime(12, 0, 0), 'end' => \Carbon\Carbon::parse($date)->setTime(13, 0, 0)],
+            ['start' => \Carbon\Carbon::parse($date)->setTime(18, 0, 0), 'end' => \Carbon\Carbon::parse($date)->setTime(19, 0, 0)],
+        ];
+
         // Determine duration of the new service being booked (in minutes)
         $newDurationMinutes = 120; // default 2 hours
         if ($newEstimatedHours > 0) {
@@ -413,24 +421,49 @@ class ClientAppointmentController extends Controller
             $newDurationMinutes = $defaultDurations[$newServiceType] * 60;
         }
 
-        // Check each 15-min slot: would booking at this time overlap with any existing appointment?
-        $unavailable = [];
+        // Check each 15-min slot. A slot can be unavailable for two reasons:
+        //   - "break":  the slot's START TIME itself sits inside a break window
+        //               (only the four 15-min ticks inside 12:00–13:00 and 18:00–19:00
+        //               are blocked — tasks whose duration merely crosses the break
+        //               are allowed)
+        //   - "booked": the slot's full duration overlaps an existing appointment
+        // Break-window labelling takes priority when both apply.
+        $booked = [];
+        $breakSlots = [];
         for ($h = 6; $h <= 21; $h++) {
             for ($m = 0; $m < 60; $m += 15) {
                 $slotStart = \Carbon\Carbon::parse($date)->setTime($h, $m, 0);
                 $slotEnd = $slotStart->copy()->addMinutes($newDurationMinutes);
+                $label = sprintf('%02d:%02d', $h, $m);
 
-                // Check overlap with each occupied range: start1 < end2 AND end1 > start2
+                $startsInBreak = false;
+                foreach ($breakRanges as $range) {
+                    if ($slotStart->gte($range['start']) && $slotStart->lt($range['end'])) {
+                        $startsInBreak = true;
+                        break;
+                    }
+                }
+                if ($startsInBreak) {
+                    $breakSlots[] = $label;
+                    continue;
+                }
+
                 foreach ($occupiedRanges as $range) {
                     if ($slotStart->lt($range['end']) && $slotEnd->gt($range['start'])) {
-                        $unavailable[] = sprintf('%02d:%02d', $h, $m);
+                        $booked[] = $label;
                         break;
                     }
                 }
             }
         }
 
-        return response()->json(['booked' => array_values(array_unique($unavailable))]);
+        return response()->json([
+            // 'booked' must include break slots too — the existing dropdown logic
+            // disables every value in this array. The 'break_windows' key lets
+            // the dropdown render a distinct "Break time" label for those slots.
+            'booked' => array_values(array_unique(array_merge($booked, $breakSlots))),
+            'break_windows' => array_values(array_unique($breakSlots)),
+        ]);
     }
 
     /**
@@ -568,6 +601,25 @@ class ClientAppointmentController extends Controller
                         'success' => false,
                         'message' => 'This time slot overlaps with an existing booking (' . $existStart->format('h:i A') . ' - ' . $existEnd->format('h:i A') . '). Please choose a different time.',
                         'error_code' => 'TIME_CONFLICT',
+                    ], 422);
+                }
+            }
+
+            // Block bookings whose START TIME falls inside the lunch (12:00–13:00)
+            // or dinner (18:00–19:00) break windows. Tasks whose duration merely
+            // crosses a break window are allowed — only the start ticks inside
+            // the window are off-limits (matches the dropdown's disabled set).
+            foreach ([
+                ['label' => 'lunch break (12:00 PM – 1:00 PM)',  'start' => '12:00:00', 'end' => '13:00:00', 'code' => 'LUNCH_BREAK_CONFLICT'],
+                ['label' => 'dinner break (6:00 PM – 7:00 PM)',  'start' => '18:00:00', 'end' => '19:00:00', 'code' => 'DINNER_BREAK_CONFLICT'],
+            ] as $window) {
+                $wStart = Carbon::parse($request->service_date . ' ' . $window['start']);
+                $wEnd   = Carbon::parse($request->service_date . ' ' . $window['end']);
+                if ($newStart->gte($wStart) && $newStart->lt($wEnd)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'This time slot starts during the ' . $window['label'] . '. Please choose a different time.',
+                        'error_code' => $window['code'],
                     ], 422);
                 }
             }

@@ -24,7 +24,14 @@
         passwordConfirmButtonText: '',
         passwordConfirmCancelText: '',
         passwordConfirmValue: '',
-        passwordConfirmError: ''
+        passwordConfirmError: '',
+        showRejection: false,
+        rejectionTitle: '',
+        rejectionMessage: '',
+        rejectionReason: '',
+        rejectionReasonText: '',
+        rejectionConfirmText: 'Confirm',
+        rejectionCancelText: 'Cancel'
      }"
      x-on:show-success-dialog.window="
         successTitle = $event.detail.title || 'Success';
@@ -59,7 +66,16 @@
      "
      x-on:password-confirm-error.window="passwordConfirmError = $event.detail.error;"
      x-on:close-password-confirm.window="showPasswordConfirm = false;"
-     x-on:set-password-confirm-error.window="passwordConfirmError = $event.detail.error;">
+     x-on:set-password-confirm-error.window="passwordConfirmError = $event.detail.error;"
+     x-on:show-rejection-dialog.window="
+        rejectionTitle = $event.detail.title || 'Decline Task';
+        rejectionMessage = $event.detail.message || 'Pick a reason and confirm. This action cannot be undone.';
+        rejectionConfirmText = $event.detail.confirmText || 'Decline';
+        rejectionCancelText = $event.detail.cancelText || 'Cancel';
+        rejectionReason = '';
+        rejectionReasonText = '';
+        showRejection = true;
+     ">
 
     {{-- ── Success Dialog ── --}}
     <div x-show="showSuccess" style="display:none"
@@ -125,6 +141,58 @@
         </div>
     </div>
 
+    {{-- ── Rejection Reason Dialog ── --}}
+    {{-- Matches the Confirm Dialog visual style. Adds a reason picker that --}}
+    {{-- pulls its options from config('rejection.allowed_reasons'). --}}
+    <div x-show="showRejection" style="display:none"
+        class="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div x-show="showRejection" x-transition:enter="dialog-spring-in" x-transition:leave="dialog-spring-out"
+            class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+            <div class="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center mx-auto mb-3">
+                <i class="fa-solid fa-arrow-rotate-left text-orange-500 text-xl"></i>
+            </div>
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-1 text-center" x-text="rejectionTitle"></h3>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-4 text-center" x-text="rejectionMessage"></p>
+
+            {{-- Reason picker --}}
+            <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Reason</label>
+            <select x-model="rejectionReason"
+                class="w-full text-xs px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white mb-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <option value="">Select a reason…</option>
+                @foreach(config('rejection.allowed_reasons', []) as $key => $label)
+                    <option value="{{ $key }}">{{ $label }}</option>
+                @endforeach
+            </select>
+
+            {{-- Optional free-text note (shown when 'other' is picked, otherwise still allowed but secondary) --}}
+            <textarea x-show="rejectionReason === 'other'" x-model="rejectionReasonText" rows="2"
+                placeholder="Please specify (required for 'Other')…"
+                class="w-full text-xs px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white mb-3 focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+
+            <div class="flex gap-3 mt-4">
+                <button type="button"
+                    @click="showRejection = false; if (window.__rejectionReject) window.__rejectionReject();"
+                    class="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    x-text="rejectionCancelText"></button>
+                <button type="button"
+                    :disabled="!rejectionReason || (rejectionReason === 'other' && !rejectionReasonText.trim())"
+                    @click="
+                        if (!rejectionReason) return;
+                        if (rejectionReason === 'other' && !rejectionReasonText.trim()) return;
+                        showRejection = false;
+                        if (window.__rejectionResolve) {
+                            window.__rejectionResolve({ reason: rejectionReason, reason_text: rejectionReasonText });
+                        }
+                    "
+                    class="flex-1 py-2 rounded-xl text-xs font-bold bg-orange-600 text-white hover:bg-orange-700 disabled:bg-orange-300 disabled:cursor-not-allowed transition-colors"
+                    x-text="rejectionConfirmText"></button>
+            </div>
+        </div>
+    </div>
+
     {{-- ── Password Confirm Dialog (component) ── --}}
     <x-dialogs.password-confirm-dialog
         show="showPasswordConfirm"
@@ -179,6 +247,24 @@
             window.__confirmResolve = resolve;
             window.__confirmReject = reject;
             window.dispatchEvent(new CustomEvent('show-confirm-dialog', {
+                detail: { title, message, confirmText, cancelText }
+            }));
+        });
+    };
+
+    /**
+     * Open the rejection-reason dialog (same visual style as showConfirmDialog,
+     * but with a reason dropdown driven by config('rejection.allowed_reasons')
+     * and an optional free-text note).
+     *
+     * Resolves with { reason: '<key>', reason_text: '<note>' } on confirm,
+     * rejects on cancel.
+     */
+    window.showRejectionReasonDialog = function(title, message, confirmText, cancelText) {
+        return new Promise((resolve, reject) => {
+            window.__rejectionResolve = resolve;
+            window.__rejectionReject = reject;
+            window.dispatchEvent(new CustomEvent('show-rejection-dialog', {
                 detail: { title, message, confirmText, cancelText }
             }));
         });

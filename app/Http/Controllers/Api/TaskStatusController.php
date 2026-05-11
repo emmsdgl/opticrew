@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Task;
+use App\Models\TaskRejection;
 use App\Models\PerformanceFlag;
 use App\Models\Attendance;
 use App\Models\Feedback;
 use App\Services\Alert\AlertService;
+use App\Services\Notification\NotificationService;
+use App\Services\Reassignment\MassRejectionDetector;
+use App\Services\Reassignment\ReassignmentCascadeService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -21,10 +26,20 @@ use Carbon\Carbon;
 class TaskStatusController extends Controller
 {
     protected AlertService $alertService;
+    protected NotificationService $notificationService;
+    protected ReassignmentCascadeService $cascade;
+    protected MassRejectionDetector $massDetector;
 
-    public function __construct(AlertService $alertService)
-    {
+    public function __construct(
+        AlertService $alertService,
+        NotificationService $notificationService,
+        ReassignmentCascadeService $cascade,
+        MassRejectionDetector $massDetector
+    ) {
         $this->alertService = $alertService;
+        $this->notificationService = $notificationService;
+        $this->cascade = $cascade;
+        $this->massDetector = $massDetector;
     }
 
     /**
@@ -125,60 +140,253 @@ class TaskStatusController extends Controller
     }
 
     /**
-     * Reject a task (employee declines an assigned task)
+     * Reject a task (preference-based rejection — "I'd prefer a different task").
      *
      * POST /api/tasks/{taskId}/reject
-     * Body: { "reason": "Optional rejection reason" }
+     * Body: { "reason": "<key from config('rejection.allowed_reasons')>" }
      *
-     * @param Request $request
-     * @param int $taskId
-     * @return \Illuminate\Http\JsonResponse
+     * Enforces:
+     *   - Task must be Pending or Scheduled.
+     *   - Reject window: must be at least N hours before task start
+     *     (config: rejection.window_hours_before_start, default 24).
+     *     Past the window, employees must use the emergency-leave flow.
+     *   - Monthly budget: employee may reject at most N times per calendar month
+     *     (config: rejection.monthly_budget, default 3).
+     *   - Reason must be one of the keys in config('rejection.allowed_reasons').
+     *
+     * On success:
+     *   - Task: status='Rejected', employee_approved=false, rejection_reason set,
+     *     rejection_count incremented.
+     *   - Audit row written to task_rejections.
+     *   - Admins notified (notifyAdminsTaskRejected).
+     *   - If the task hits the per-task ceiling, admins+managers receive a
+     *     high-priority follow-up notification.
+     *
+     * Cascade (Try 1 / 2a / 2b / 3) is intentionally NOT invoked here yet —
+     * see docs/task-rejection-reassignment-policy.md §6 for the implementation
+     * roadmap. For now, rejection is visible to admin via notification and the
+     * existing TaskApprovalObserver still runs.
      */
     public function rejectTask(Request $request, $taskId)
     {
+        $allowedReasonKeys = array_keys(config('rejection.allowed_reasons', []));
+
+        $validated = $request->validate([
+            'reason' => 'required|string|in:' . implode(',', $allowedReasonKeys),
+            'reason_text' => 'nullable|string|max:500',
+        ]);
+
         try {
             $task = Task::findOrFail($taskId);
 
-            // Only allow rejecting tasks that are Scheduled or Pending
+            // Status gate.
             if (!in_array($task->status, ['Scheduled', 'Pending'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only pending or scheduled tasks can be rejected'
+                    'message' => 'Only pending or scheduled tasks can be rejected.',
+                    'error_code' => 'INVALID_STATUS',
                 ], 400);
             }
 
-            $task->update([
-                'status' => 'Rejected',
-                'employee_approved' => false,
-                'employee_approved_at' => now(),
+            // Resolve the rejecting employee from the authenticated user.
+            $user = $request->user();
+            $employee = $user ? $user->employee : null;
+            if (!$employee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No employee record linked to the current user.',
+                    'error_code' => 'NO_EMPLOYEE',
+                ], 403);
+            }
+
+            // Window check: at least window_hours_before_start before task start.
+            $windowHours = (int) config('rejection.window_hours_before_start', 24);
+            $taskStart = $this->resolveTaskStart($task);
+            if ($taskStart && now()->diffInMinutes($taskStart, false) < ($windowHours * 60)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Rejection window closed. Rejections must arrive at least {$windowHours}h before task start. For genuine impediments, please file an emergency leave.",
+                    'error_code' => 'WINDOW_CLOSED',
+                    'task_start' => $taskStart->toIso8601String(),
+                    'window_hours' => $windowHours,
+                ], 422);
+            }
+
+            // Budget check.
+            $budgetRemaining = $employee->rejectionBudgetRemaining();
+            if ($budgetRemaining <= 0) {
+                $budget = (int) config('rejection.monthly_budget', 3);
+                return response()->json([
+                    'success' => false,
+                    'message' => "Monthly rejection budget used ({$budget}/{$budget}). For genuine impediments, please file an emergency leave.",
+                    'error_code' => 'BUDGET_EXHAUSTED',
+                    'budget' => $budget,
+                    'budget_remaining' => 0,
+                ], 422);
+            }
+
+            // Compose human-readable reason: combine the picked-list label with optional free text.
+            $reasonLabel = config("rejection.allowed_reasons.{$validated['reason']}", $validated['reason']);
+            $reasonText = trim((string) ($validated['reason_text'] ?? ''));
+            $reasonForRecord = $reasonText !== ''
+                ? "{$reasonLabel}: {$reasonText}"
+                : $reasonLabel;
+
+            $newRejectionCount = ($task->rejection_count ?? 0) + 1;
+            $ceiling = (int) config('rejection.per_task_ceiling', 3);
+
+            // Atomically update the task and write the audit row.
+            DB::transaction(function () use ($task, $employee, $reasonForRecord, $newRejectionCount) {
+                $task->update([
+                    'status' => 'Rejected',
+                    'employee_approved' => false,
+                    'employee_approved_at' => now(),
+                    'rejection_reason' => $reasonForRecord,
+                    'rejection_count' => $newRejectionCount,
+                ]);
+
+                TaskRejection::create([
+                    'task_id' => $task->id,
+                    'employee_id' => $employee->id,
+                    'reason' => $reasonForRecord,
+                    'rejected_at' => now(),
+                ]);
+            });
+
+            // Refresh from DB so the notification sees the latest rejection_count.
+            $task->refresh();
+
+            // Notifications: always tell admins this happened.
+            $employeeName = trim(($user->name ?? '') ?: ($user->email ?? "Employee #{$employee->id}"));
+            $newBudgetRemaining = max(0, $budgetRemaining - 1);
+
+            $this->notificationService->notifyAdminsTaskRejected(
+                $task,
+                $employeeName,
+                $reasonForRecord,
+                $newBudgetRemaining,
+                $newRejectionCount
+            );
+
+            // Per-task ceiling: high-priority follow-up to admin + manager.
+            $ceilingReached = $newRejectionCount >= $ceiling;
+            if ($ceilingReached) {
+                $this->notificationService->notifyAdminsTaskRejectionCeilingReached($task);
+            }
+
+            // Mass-rejection meta-trigger: if too many rejections in the
+            // window, pause the per-rejection cascade and let admin decide
+            // whether to re-run optimization globally.
+            $massSnapshot = $this->massDetector->evaluate();
+            if ($massSnapshot['tripped']) {
+                $this->notificationService->notifyAdminsMassRejectionTripped($massSnapshot);
+            }
+
+            // Auto cascade (Try 1 → Try 2a → surface Try 2b candidates).
+            // Skip if the per-task ceiling is already reached OR if mass
+            // rejection has tripped — those cases require admin attention.
+            $cascadeResult = ['resolved' => null, 'stretch_candidates' => [], 'message' => 'Cascade skipped.'];
+            if (!$ceilingReached && !$massSnapshot['tripped']) {
+                $cascadeResult = $this->cascade->runAutoCascade($task);
+
+                if ($cascadeResult['resolved']) {
+                    // Notify admins that the cascade auto-resolved (FYI).
+                    $resolutionLabel = $cascadeResult['resolved'] === 'try_1'
+                        ? 'Try 1 (bilateral swap)'
+                        : 'Try 2a (mid-day free-slot)';
+                    $this->notificationService->notifyAdminsCascadeAutoResolved(
+                        $task,
+                        $resolutionLabel,
+                        $cascadeResult['message']
+                    );
+                }
+            }
+
+            Log::info('Task rejected by employee', [
+                'task_id' => $task->id,
+                'employee_id' => $employee->id,
+                'reason' => $reasonForRecord,
+                'rejection_count' => $newRejectionCount,
+                'ceiling_reached' => $ceilingReached,
+                'mass_rejection_tripped' => $massSnapshot['tripped'],
+                'budget_remaining' => $newBudgetRemaining,
+                'cascade_resolved' => $cascadeResult['resolved'],
             ]);
 
-            Log::info("Task rejected by employee", [
-                'task_id' => $task->id,
-                'rejected_by' => $request->user()->id ?? null,
-                'reason' => $request->reason,
-            ]);
+            // User-facing message reflects the most relevant outcome.
+            $message = match (true) {
+                $massSnapshot['tripped'] =>
+                    'Task rejected. Mass-rejection threshold tripped — admin will re-optimize.',
+                $ceilingReached =>
+                    'Task rejected. Per-task ceiling reached — admin will handle manually.',
+                $cascadeResult['resolved'] === 'try_1' =>
+                    'Task rejected and auto-resolved via bilateral swap.',
+                $cascadeResult['resolved'] === 'try_2a' =>
+                    'Task rejected and auto-resolved by placing into another team\'s mid-day gap.',
+                count($cascadeResult['stretch_candidates']) > 0 =>
+                    'Task rejected. No auto-resolution — admin can offer the task to a stretch candidate.',
+                default =>
+                    'Task rejected. No auto-resolution available — admin will handle manually.',
+            };
 
             return response()->json([
                 'success' => true,
-                'message' => 'Task rejected successfully',
+                'message' => $message,
                 'data' => [
                     'task_id' => $task->id,
-                    'status' => $task->status,
-                ]
+                    'status' => $task->fresh()->status, // 'Rejected' or 'Scheduled' if cascade resolved
+                    'rejection_count' => $newRejectionCount,
+                    'ceiling' => $ceiling,
+                    'ceiling_reached' => $ceilingReached,
+                    'budget_remaining' => $newBudgetRemaining,
+                    'mass_rejection_tripped' => $massSnapshot['tripped'],
+                    'cascade' => [
+                        'resolved' => $cascadeResult['resolved'],
+                        'stretch_candidate_count' => count($cascadeResult['stretch_candidates']),
+                        'detail' => $cascadeResult['message'],
+                    ],
+                ],
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
-            Log::error("Failed to reject task", [
+            Log::error('Failed to reject task', [
                 'task_id' => $taskId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to reject task: ' . $e->getMessage()
+                'message' => 'Failed to reject task: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Combine task.scheduled_date + task.scheduled_time into a single Carbon
+     * representing when the task is supposed to start. Returns null if either
+     * field is missing — in which case the window check is skipped (we can't
+     * compare against an unknown start time).
+     */
+    protected function resolveTaskStart(Task $task): ?Carbon
+    {
+        if (!$task->scheduled_date) {
+            return null;
+        }
+
+        $dateStr = $task->scheduled_date instanceof \DateTimeInterface
+            ? $task->scheduled_date->format('Y-m-d')
+            : (string) $task->scheduled_date;
+
+        $rawTime = $task->getRawOriginal('scheduled_time');
+        if (!$rawTime) {
+            // No time-of-day — fall back to start-of-day for the window check.
+            return Carbon::parse($dateStr)->startOfDay();
+        }
+
+        return Carbon::parse("{$dateStr} {$rawTime}");
     }
 
     /**

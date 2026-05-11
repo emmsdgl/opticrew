@@ -322,6 +322,18 @@ Route::middleware(['auth', 'terms.accepted', 'admin'])->group(function () {
     Route::post('/admin/employee-requests/{id}/approve', [AttendanceController::class, 'approveRequest'])->name('admin.employee-requests.approve');
     Route::post('/admin/employee-requests/{id}/reject', [AttendanceController::class, 'rejectRequest'])->name('admin.employee-requests.reject');
 
+    // Rejected tasks (manual reassignment cascade — Try 3) — see
+    // docs/task-rejection-reassignment-policy.md and
+    // app/Http/Controllers/Api/AdminTaskReassignmentController.php
+    Route::prefix('admin/rejected-tasks')->name('admin.rejected-tasks.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\AdminTaskReassignmentController::class, 'listRejected'])
+            ->name('list');
+        Route::get('/{taskId}/options', [\App\Http\Controllers\Api\AdminTaskReassignmentController::class, 'reassignmentOptions'])
+            ->name('options');
+        Route::post('/{taskId}/reassign', [\App\Http\Controllers\Api\AdminTaskReassignmentController::class, 'reassign'])
+            ->name('reassign');
+    });
+
     // Display task calendar and kanban board
     Route::get('/tasks', [TaskController::class, 'index'])->name('admin.tasks');
 

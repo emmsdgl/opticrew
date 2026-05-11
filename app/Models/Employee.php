@@ -38,6 +38,36 @@ class Employee extends Model
         'years_of_experience' => 'integer',
     ];
 
+    /**
+     * Audit rows written each time this employee rejected a task.
+     */
+    public function taskRejections()
+    {
+        return $this->hasMany(TaskRejection::class);
+    }
+
+    /**
+     * Number of rejections this employee has used in the current calendar month.
+     * Used to enforce the 3/month rejection budget.
+     */
+    public function rejectionsUsedThisMonth(): int
+    {
+        return $this->taskRejections()
+            ->whereYear('rejected_at', now()->year)
+            ->whereMonth('rejected_at', now()->month)
+            ->count();
+    }
+
+    /**
+     * Remaining rejections in the current calendar month.
+     * Returns the budget - rejections_used, floored at 0.
+     */
+    public function rejectionBudgetRemaining(): int
+    {
+        $budget = (int) config('rejection.monthly_budget', 3);
+        return max(0, $budget - $this->rejectionsUsedThisMonth());
+    }
+
     // EXISTING RELATIONSHIPS (Keep all of these)
     public function schedules()
     {

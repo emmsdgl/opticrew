@@ -89,7 +89,20 @@
                                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ $record['timeOutNote'] }}</p>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap"
+                                        x-data="{
+                                            showTip: false,
+                                            tipX: 0,
+                                            tipY: 0,
+                                            position($event) {
+                                                const r = $event.currentTarget.getBoundingClientRect();
+                                                this.tipX = r.left;
+                                                this.tipY = r.bottom + 4;
+                                                this.showTip = true;
+                                            }
+                                        }"
+                                        @mouseenter="position($event)"
+                                        @mouseleave="showTip = false">
                                         @php $breaks = $record['breaks'] ?? []; @endphp
                                         <div class="flex flex-col gap-1">
                                             @foreach (['lunch' => 'Lunch', 'dinner' => 'Dinner'] as $bType => $bLabel)
@@ -110,6 +123,42 @@
                                                 </div>
                                             @endforeach
                                         </div>
+
+                                        {{-- Hover tooltip — teleported to <body> so it escapes the table's --}}
+                                        {{-- overflow-x-auto clipping context. Positioned via fixed coords --}}
+                                        {{-- captured from the cell on mouseenter. --}}
+                                        <template x-teleport="body">
+                                            <div x-show="showTip" x-cloak
+                                                 x-transition:enter="transition ease-out duration-150"
+                                                 x-transition:enter-start="opacity-0 translate-y-1"
+                                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                                 x-transition:leave="transition ease-in duration-100"
+                                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                                 x-transition:leave-end="opacity-0 translate-y-1"
+                                                 :style="`left: ${tipX}px; top: ${tipY}px;`"
+                                                 class="fixed z-[9999] w-60 p-3 rounded-xl bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-700 text-xs pointer-events-none">
+                                                <div class="flex items-center gap-1.5 mb-2">
+                                                    <i class="fa-solid fa-clock text-[10px] text-blue-500"></i>
+                                                    <span class="font-bold text-gray-900 dark:text-white">Break Times</span>
+                                                </div>
+                                                @foreach (['lunch' => 'Lunch', 'dinner' => 'Dinner'] as $bType => $bLabel)
+                                                    @php $b = $breaks[$bType] ?? null; @endphp
+                                                    <div class="flex items-center justify-between gap-2 py-1 border-t border-gray-100 dark:border-gray-700/50 first:border-t-0">
+                                                        <span class="text-gray-500 dark:text-gray-400">{{ $bLabel }}</span>
+                                                        <span class="text-gray-900 dark:text-white text-right">
+                                                            @if (!$b || !$b['status'])
+                                                                <span class="text-gray-400 dark:text-gray-500 italic">Not taken</span>
+                                                            @elseif ($b['status'] === 'in_progress')
+                                                                {{ $b['start'] ?? '—' }} <span class="text-gray-400">→</span>
+                                                                <span class="text-blue-600 dark:text-blue-400 italic">in progress</span>
+                                                            @else
+                                                                {{ $b['start'] ?? '—' }} <span class="text-gray-400">→</span> {{ $b['end'] ?? '—' }}
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </template>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="text-sm font-semibold text-blue-600 dark:text-blue-400">{{ $record['hoursWorked'] ?? '-' }}</span>

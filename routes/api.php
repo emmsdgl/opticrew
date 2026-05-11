@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminAppointmentController;
 use App\Http\Controllers\Api\AdminFeedbackController;
+use App\Http\Controllers\Api\AdminTaskReassignmentController;
 use App\Http\Controllers\Api\MobileForgotPasswordController;
 
 /*
@@ -340,6 +341,17 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(fun
         ->name('api.admin.appointments.approve');
     Route::post('/appointments/{id}/reject', [AdminAppointmentController::class, 'reject'])
         ->name('api.admin.appointments.reject');
+
+    // Manual reassignment of rejected tasks (Try 3 of the rejection cascade —
+    // see docs/task-rejection-reassignment-policy.md).
+    Route::prefix('tasks')->group(function () {
+        Route::get('/rejected', [AdminTaskReassignmentController::class, 'listRejected'])
+            ->name('api.admin.tasks.rejected');
+        Route::get('/{taskId}/reassignment-options', [AdminTaskReassignmentController::class, 'reassignmentOptions'])
+            ->name('api.admin.tasks.reassignment-options');
+        Route::post('/{taskId}/reassign', [AdminTaskReassignmentController::class, 'reassign'])
+            ->name('api.admin.tasks.reassign');
+    });
 });
 
 /*

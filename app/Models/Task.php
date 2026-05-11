@@ -40,6 +40,8 @@ class Task extends Model
         'completed_at',           // When task was completed
         'reassigned_at',          // When task was reassigned
         'reassignment_reason',    // Why task was reassigned
+        'rejection_reason',       // Most recent rejection reason (preference cascade)
+        'rejection_count',        // Number of times this task has been rejected (per-task ceiling = 3)
         'optimization_run_id',    // Link to optimization run
         'assigned_by_generation', // GA generation that assigned this task
         'optimized_start_minutes', // ✅ STAGE 2: GA-computed start time (minutes since midnight)
@@ -59,12 +61,21 @@ class Task extends Model
         'travel_time' => 'integer',
         'estimated_duration_minutes' => 'integer',
         'actual_duration' => 'integer',
+        'rejection_count' => 'integer',
         'required_equipment' => 'array',
         'required_skills' => 'array',
         // Boolean casts
         'arrival_status' => 'boolean',
         'employee_approved' => 'boolean',
     ];
+
+    /**
+     * Audit rows written each time this task is rejected by an employee.
+     */
+    public function rejections()
+    {
+        return $this->hasMany(TaskRejection::class);
+    }
 
     // EXISTING RELATIONSHIPS (Keep all of these)
     public function location()

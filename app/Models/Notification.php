@@ -45,6 +45,9 @@ class Notification extends Model
     const TYPE_TASK_COMPLETED_ADMIN = 'task_completed_admin';
     const TYPE_TASK_APPROVED = 'task_approved';
     const TYPE_TASK_DECLINED = 'task_declined';
+    const TYPE_TASK_REJECTED = 'task_rejected';                        // Preference-based rejection (cascade trigger)
+    const TYPE_TASK_REJECTION_CEILING = 'task_rejection_ceiling';      // Per-task ceiling reached (3 rejections)
+    const TYPE_MASS_REJECTION = 'mass_rejection';                      // Mass-rejection threshold tripped
     const TYPE_TASK_STARTED_ADMIN = 'task_started_admin';
     const TYPE_TASK_PROGRESS_ADMIN = 'task_progress_admin';
     const TYPE_JOB_APPLICATION_SUBMITTED = 'job_application_submitted';

@@ -1,0 +1,413 @@
+<mxfile host="app.diagrams.net" modified="2026-05-10T00:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram name="DFD Level 0" id="dfd-level-0">
+    <mxGraphModel dx="2400" dy="2800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="3000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ========================================================== -->
+        <!-- TITLE                                                      -->
+        <!-- ========================================================== -->
+        <mxCell id="title" value="DATA FLOW DIAGRAM: LEVEL 0" style="text;html=1;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="800" y="20" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ========================================================== -->
+        <!-- EXTERNAL ENTITIES (rectangles)                             -->
+        <!-- ========================================================== -->
+        <mxCell id="visitor" value="Visitor / Guest" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="applicant" value="Applicant" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="100" y="220" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="employer" value="Employer / Admin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="100" y="600" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="manager" value="Manager&#10;(Contracted Client)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1100" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="client" value="Client" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1300" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="employee" value="Employee" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1700" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="googleoauth" value="GoogleOAuth API" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="220" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ========================================================== -->
+        <!-- PROCESSES (rounded rectangles, numbered with divider)      -->
+        <!-- ========================================================== -->
+        <mxCell id="P1" value="&lt;b&gt;1.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Authenticate &amp;amp;&lt;br&gt;Register" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="220" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P2" value="&lt;b&gt;2.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Manage Applicants&lt;br&gt;&amp;amp; Recruitment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="380" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P3" value="&lt;b&gt;3.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Manage Users &amp;amp;&lt;br&gt;Configuration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="600" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P7" value="&lt;b&gt;7.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Quotations &amp;amp;&lt;br&gt;Pricing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="900" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P4" value="&lt;b&gt;4.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Service Booking&lt;br&gt;&amp;amp; Scheduling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="1280" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P5" value="&lt;b&gt;5.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Task Management&lt;br&gt;&amp;amp; Assignment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="1680" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P6" value="&lt;b&gt;6.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Performance &amp;amp;&lt;br&gt;Training Mgmt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="2000" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P8" value="&lt;b&gt;8.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="2300" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="P9" value="&lt;b&gt;9.0&lt;/b&gt;&lt;hr size=&quot;1&quot;&gt;Analytics &amp;amp;&lt;br&gt;Reports" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=20;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="2600" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ========================================================== -->
+        <!-- DATA STORES (Gane-Sarson: D# label box + name box)         -->
+        <!-- ========================================================== -->
+        <mxCell id="D1a" value="D1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="320" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D1b" value="User Credentials" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="320" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D2a" value="D2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="380" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D2b" value="applicant" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="380" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D10a" value="D10" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="430" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D10b" value="job postings" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="430" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D3a" value="D3" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="600" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D3b" value="employee" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="600" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D4a" value="D4" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="650" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D4b" value="client" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="650" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D5a" value="D5" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="700" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D5b" value="system config" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="700" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D11a" value="D11" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="920" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D11b" value="quotations" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="920" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D6a" value="D6" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="1280" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D6b" value="service appointments" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="1280" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D14a" value="D14" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="1330" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D14b" value="feedback &amp; reviews" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="1330" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D7a" value="D7" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="1680" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D7b" value="task records" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="1680" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D12a" value="D12" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="1730" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D12b" value="attendance &amp; leave" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="1730" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D13a" value="D13" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="2020" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D13b" value="performance &amp; training" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="2020" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D9a" value="D9" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="2320" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D9b" value="notifications" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="2320" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="D8a" value="D8" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="2620" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="D8b" value="analytics &amp; report" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="2620" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ========================================================== -->
+        <!-- FLOWS                                                      -->
+        <!-- ========================================================== -->
+
+        <!-- 1.0 Authentication -->
+        <mxCell id="f1" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" edge="1" parent="1" source="applicant" target="P1">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell id="f1l" value="Login request" style="text;html=1;fontSize=10;" vertex="1" connectable="0" parent="1">
+            <mxGeometry x="-0.4" relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell id="f2" value="Login request" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="applicant" target="P1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" value="Auth response" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P1" target="applicant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" value="Login / Signup" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="visitor" target="P1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f5" value="Auth Request" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P1" target="googleoauth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f6" value="Verified OAuth token&#10;and Auth response" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="googleoauth" target="P1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f7" value="Store Credentials" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P1" target="D1b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f8" value="Retrieve Credentials" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D1b" target="P1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 2.0 Recruitment -->
+        <mxCell id="f10" value="Authenticated applicant" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P1" target="P2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f11" value="Application Data&#10;Resume File" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="applicant" target="P2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f12" value="Application Status&#10;Interview Schedule" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P2" target="applicant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f13" value="Browse jobs" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="visitor" target="P2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f14" value="Applicant data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P2" target="D2b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f15" value="Retrieve applicant data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D2b" target="P2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f16" value="Job posting data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P2" target="D10b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f17" value="Hired applicant data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P2" target="P3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 3.0 Manage Users -->
+        <mxCell id="f20" value="Manage Users&#10;Create employee account&#10;Monitor activities&#10;Config Inputs" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="employer" target="P3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f21" value="Employee data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P3" target="D3b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f22" value="Retrieve employee data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D3b" target="P3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f23" value="Client data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P3" target="D4b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f24" value="Retrieve client data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D4b" target="P3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f25" value="Store config" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P3" target="D5b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f26" value="Retrieve config" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D5b" target="P3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 7.0 Quotations -->
+        <mxCell id="f30" value="Quotation request&#10;Contact form" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="visitor" target="P7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f31" value="Quote / Confirmation" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P7" target="visitor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f32" value="Review / Update quotation" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="employer" target="P7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f33" value="Store quotation" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P7" target="D11b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f34" value="Retrieve quotation" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D11b" target="P7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 4.0 Booking -->
+        <mxCell id="f40" value="Service Booking&#10;Service feedback&#10;Cancel request" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="client" target="P4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f41" value="Service Schedule&#10;Progress Updates&#10;Service Recommendations" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P4" target="client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f42" value="Store Booking Details" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P4" target="D6b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f43" value="Retrieve Booking Details" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D6b" target="P4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f44" value="Feedback record" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P4" target="D14b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 5.0 Task Management -->
+        <mxCell id="f50" value="Task allocation constraints" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="employer" target="P5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f51" value="Manage tasks&#10;Checklist&#10;Cancel task" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="manager" target="P5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f52" value="Schedule&#10;Task list" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P5" target="manager">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f53" value="Attendance&#10;Task Checklist Progress&#10;Performance Data&#10;Leave request" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="employee" target="P5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f54" value="Task Assignment&#10;Training Materials" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P5" target="employee">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f55" value="Store Task Details" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P5" target="D7b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f56" value="Retrieve Task Details" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D7b" target="P5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f57" value="Store attendance / leave" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P5" target="D12b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f58" value="Retrieve attendance" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D12b" target="P5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 6.0 Performance & Training -->
+        <mxCell id="f60" value="Evaluate&#10;Create PIP" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="employer" target="P6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f61" value="Task review" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="manager" target="P6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f62" value="Course progress&#10;Watched videos" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="employee" target="P6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f63" value="Performance feedback&#10;PIP / Training materials" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P6" target="employee">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f64" value="Store performance / training" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P6" target="D13b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f65" value="Retrieve performance" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D13b" target="P6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f66" value="Store reviews" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P6" target="D14b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 8.0 Notifications -->
+        <mxCell id="f70" value="Recruitment events" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P2" target="P8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f71" value="Booking events" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P4" target="P8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f72" value="Task / Attendance events" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P5" target="P8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f73" value="Eval / PIP events" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P6" target="P8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f74" value="Store notification" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P8" target="D9b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f75" value="Push / In-app" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P8" target="employee">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f76" value="Push / In-app" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P8" target="client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f77" value="Push / In-app" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P8" target="manager">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f78" value="Push / In-app" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P8" target="employer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f79" value="Push / In-app" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P8" target="applicant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 9.0 Analytics & Reports -->
+        <mxCell id="f80" value="Task data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D7b" target="P9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f81" value="Booking data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D6b" target="P9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f82" value="Employee/Payroll data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D3b" target="P9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f83" value="Attendance data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D12b" target="P9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f84" value="Performance data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D13b" target="P9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f85" value="Feedback data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D14b" target="P9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f86" value="Store Analytics Data" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P9" target="D8b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f87" value="Retrieve Analytics Data&#10;(Performance, Payroll, Service)" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="D8b" target="P9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f88" value="Post-task report" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="employee" target="P9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f89" value="Performance report" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P9" target="employee">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f90" value="Performance report&#10;Service report&#10;Payroll report&#10;Attendance report" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P9" target="employer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f91" value="Billing report&#10;Activity report" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="P9" target="manager">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
