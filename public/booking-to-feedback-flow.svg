@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 3060" font-family="'Segoe UI', system-ui, sans-serif" font-size="13">
+  <style><![CDATA[
+    .title    { font-size: 22px; font-weight: 700; fill: #1f2937; }
+    .subtitle { font-size: 13px; fill: #475569; }
+    .label    { font-weight: 600; fill: #0f172a; }
+    .meta     { font-size: 11px; fill: #475569; }
+    .actor    { font-size: 10px; font-weight: 700; letter-spacing: 1px; fill: #475569; }
+    .branch   { font-size: 11px; font-weight: 600; fill: #be185d; }
+    .ok       { font-size: 11px; font-weight: 700; fill: #047857; }
+    .no       { font-size: 11px; font-weight: 700; fill: #b91c1c; }
+    .try      { font-size: 11px; font-weight: 700; fill: #0f172a; letter-spacing: 0.5px; }
+
+    .box-client { fill: rgba(59,130,246,0.16);  stroke: #3b82f6; stroke-width: 1.6; }
+    .box-admin  { fill: rgba(168,85,247,0.16);  stroke: #a855f7; stroke-width: 1.6; }
+    .box-system { fill: rgba(6,182,212,0.16);   stroke: #06b6d4; stroke-width: 1.6; }
+    .box-emp    { fill: rgba(245,158,11,0.16);  stroke: #f59e0b; stroke-width: 1.6; }
+    .box-decis  { fill: rgba(239,68,68,0.12);   stroke: #ef4444; stroke-width: 1.6; }
+    .box-fb     { fill: rgba(16,185,129,0.16);  stroke: #10b981; stroke-width: 1.6; }
+    .box-reass  { fill: rgba(236,72,153,0.10);  stroke: #ec4899; stroke-width: 1.6; stroke-dasharray: 6 4; }
+    .box-cascade{ fill: rgba(236,72,153,0.06);  stroke: #ec4899; stroke-width: 1.4; }
+    .box-end    { fill: rgba(100,116,139,0.18); stroke: #64748b; stroke-width: 1.6; }
+
+    .arrow      { stroke: #475569; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+    .arrow-no   { stroke: #ef4444; stroke-width: 1.6; fill: none; stroke-dasharray: 5 4; marker-end: url(#arrow-red); }
+    .arrow-loop { stroke: #ec4899; stroke-width: 1.8; fill: none; stroke-dasharray: 6 4; marker-end: url(#arrow-pink); }
+    .arrow-thin { stroke: #ec4899; stroke-width: 1.4; fill: none; marker-end: url(#arrow-pink); }
+
+    @media (prefers-color-scheme: dark) {
+      .title, .label, .try { fill: #f1f5f9; }
+      .subtitle, .meta, .actor { fill: #cbd5e1; }
+      .arrow           { stroke: #cbd5e1; }
+    }
+  ]]></style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+    </marker>
+    <marker id="arrow-pink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ec4899"/>
+    </marker>
+  </defs>
+
+  <!-- TITLE -->
+  <text x="750" y="40" text-anchor="middle" class="title">OptiCrew — Client Booking to Feedback Flow</text>
+  <text x="750" y="62" text-anchor="middle" class="subtitle">Booking · admin review · team allocation · rejection cascade · execution · dual feedback</text>
+
+  <!-- LEGEND -->
+  <g transform="translate(120, 90)">
+    <rect class="box-client" x="0"   y="0" width="22" height="14" rx="3"/><text x="30"  y="12" class="meta">Client</text>
+    <rect class="box-admin"  x="100" y="0" width="22" height="14" rx="3"/><text x="130" y="12" class="meta">Admin</text>
+    <rect class="box-system" x="200" y="0" width="22" height="14" rx="3"/><text x="230" y="12" class="meta">System / Optimization</text>
+    <rect class="box-emp"    x="380" y="0" width="22" height="14" rx="3"/><text x="410" y="12" class="meta">Employee</text>
+    <rect class="box-decis"  x="500" y="0" width="22" height="14" rx="3"/><text x="530" y="12" class="meta">Decision</text>
+    <rect class="box-cascade" x="620" y="0" width="22" height="14" rx="3"/><text x="650" y="12" class="meta">Rejection cascade</text>
+    <rect class="box-fb"     x="800" y="0" width="22" height="14" rx="3"/><text x="830" y="12" class="meta">Feedback</text>
+  </g>
+
+  <!-- ============ BOOKING ============ -->
+  <g transform="translate(540, 140)">
+    <rect class="box-client" width="420" height="62" rx="10"/>
+    <text x="14" y="18" class="actor">CLIENT</text>
+    <text x="14" y="40" class="label">1. Open booking form</text>
+    <text x="14" y="56" class="meta">/client/book-service · Step 1–3 (details, service, review)</text>
+  </g>
+  <path class="arrow" d="M750,202 L750,232"/>
+
+  <g transform="translate(540, 232)">
+    <rect class="box-client" width="420" height="62" rx="10"/>
+    <text x="14" y="18" class="actor">CLIENT</text>
+    <text x="14" y="40" class="label">2. Submit POST /client/book-service</text>
+    <text x="14" y="56" class="meta">ClientAppointmentController::store · reference preview attached</text>
+  </g>
+  <path class="arrow" d="M750,294 L750,326"/>
+
+  <!-- Decision: Validation -->
+  <g transform="translate(610, 326)">
+    <polygon class="box-decis" points="140,0 280,60 140,120 0,60"/>
+    <text x="140" y="48" text-anchor="middle" class="label">Validation passes?</text>
+    <text x="140" y="68" text-anchor="middle" class="meta">3-day notice · time conflict · urgent + premium</text>
+  </g>
+
+  <text x="430" y="380" class="no">NO</text>
+  <path class="arrow-no" d="M610,386 L350,386 L350,260 L540,260"/>
+  <g transform="translate(160, 360)">
+    <rect class="box-decis" width="180" height="62" rx="10"/>
+    <text x="12" y="22" class="label">Show error dialog</text>
+    <text x="12" y="40" class="meta">DATE_TOO_SOON ·</text>
+    <text x="12" y="54" class="meta">TIME_CONFLICT · PREMIUM</text>
+  </g>
+
+  <text x="760" y="464" class="ok">YES</text>
+  <path class="arrow" d="M750,446 L750,484"/>
+
+  <g transform="translate(540, 484)">
+    <rect class="box-system" width="420" height="78" rx="10"/>
+    <text x="14" y="18" class="actor">SYSTEM</text>
+    <text x="14" y="40" class="label">3. Generate reference + create appointment</text>
+    <text x="14" y="56" class="meta">ref = [Initials][Year]-[Queue]   e.g. DC2026-001</text>
+    <text x="14" y="72" class="meta">ClientAppointment status: → pending</text>
+  </g>
+  <path class="arrow" d="M750,562 L750,594"/>
+
+  <g transform="translate(540, 594)">
+    <rect class="box-system" width="420" height="56" rx="10"/>
+    <text x="14" y="18" class="actor">NOTIFICATION</text>
+    <text x="14" y="40" class="label">4. notifyAdminsNewAppointment()</text>
+  </g>
+  <path class="arrow" d="M750,650 L750,684"/>
+
+  <!-- ============ ADMIN REVIEW ============ -->
+  <g transform="translate(540, 684)">
+    <rect class="box-admin" width="420" height="62" rx="10"/>
+    <text x="14" y="18" class="actor">ADMIN</text>
+    <text x="14" y="40" class="label">5. Review pending appointment</text>
+    <text x="14" y="56" class="meta">AdminAppointmentController::approve / reject</text>
+  </g>
+  <path class="arrow" d="M750,746 L750,776"/>
+
+  <g transform="translate(610, 776)">
+    <polygon class="box-decis" points="140,0 280,60 140,120 0,60"/>
+    <text x="140" y="58" text-anchor="middle" class="label">Approve?</text>
+  </g>
+
+  <text x="445" y="830" class="no">REJECT</text>
+  <path class="arrow-no" d="M610,836 L350,836"/>
+  <g transform="translate(160, 810)">
+    <rect class="box-end" width="180" height="62" rx="10"/>
+    <text x="12" y="22" class="label">status: rejected</text>
+    <text x="12" y="40" class="meta">notify client</text>
+    <text x="12" y="54" class="meta">END (one branch)</text>
+  </g>
+
+  <text x="760" y="914" class="ok">APPROVE</text>
+  <path class="arrow" d="M750,896 L750,934"/>
+
+  <g transform="translate(540, 934)">
+    <rect class="box-admin" width="420" height="62" rx="10"/>
+    <text x="14" y="18" class="actor">ADMIN</text>
+    <text x="14" y="40" class="label">6. status: pending → approved</text>
+    <text x="14" y="56" class="meta">approved_by, approved_at set · notifyClientApproved()</text>
+  </g>
+  <path class="arrow" d="M750,996 L750,1028"/>
+
+  <!-- ============ ALLOCATION ============ -->
+  <g transform="translate(540, 1028)">
+    <rect class="box-system" width="420" height="120" rx="10"/>
+    <text x="14" y="18" class="actor">SYSTEM · OPTIMIZATION</text>
+    <text x="14" y="40" class="label">7. autoAssignTeam()</text>
+    <text x="14" y="60" class="meta">a. Try recommended team (no overlap)</text>
+    <text x="14" y="78" class="meta">b. Iterate available pool of OptimizationTeams</text>
+    <text x="14" y="96" class="meta">c. Else run OptimizationService::optimizeSchedule</text>
+    <text x="14" y="114" class="meta">    GeneticAlgorithm + RuleBased preprocessor</text>
+  </g>
+  <path class="arrow" d="M750,1148 L750,1180"/>
+
+  <g transform="translate(540, 1180)">
+    <rect class="box-system" width="420" height="78" rx="10"/>
+    <text x="14" y="18" class="actor">SYSTEM</text>
+    <text x="14" y="40" class="label">8. Task created · team assigned</text>
+    <text x="14" y="56" class="meta">Task status: Pending · assigned_team_id set</text>
+    <text x="14" y="72" class="meta">EstimatedDuration = units × 60 min</text>
+  </g>
+  <path class="arrow" d="M750,1258 L750,1290"/>
+
+  <g transform="translate(540, 1290)">
+    <rect class="box-system" width="420" height="62" rx="10"/>
+    <text x="14" y="18" class="actor">NOTIFICATION</text>
+    <text x="14" y="40" class="label">9. notifyClientConfirmed + notifyEmployeesAssigned</text>
+    <text x="14" y="56" class="meta">members see task in their schedule</text>
+  </g>
+  <path class="arrow" d="M750,1352 L750,1384"/>
+
+  <!-- ====== Decision: Employee rejects within 24h-of-start window? ====== -->
+  <g transform="translate(610, 1384)">
+    <polygon class="box-decis" points="140,0 280,60 140,120 0,60"/>
+    <text x="140" y="48" text-anchor="middle" class="label">Reject within window?</text>
+    <text x="140" y="66" text-anchor="middle" class="meta">≥ 24h before task start</text>
+    <text x="140" y="80" text-anchor="middle" class="meta">budget &gt; 0 · reason required</text>
+  </g>
+
+  <!-- REJECT branch fires the cascade on the right -->
+  <text x="900" y="1437" class="branch">REJECT (preference)</text>
+  <path class="arrow-thin" d="M890,1444 L985,1444"/>
+
+  <!-- NO-rejection / accept-continues path -->
+  <text x="760" y="1522" class="ok">NO REJECTION</text>
+  <path class="arrow" d="M750,1504 L750,1640"/>
+
+  <!-- ====== REJECTION CASCADE BOX (right column) ====== -->
+  <g transform="translate(985, 1180)">
+    <rect class="box-cascade" width="490" height="932" rx="12"/>
+    <text x="16" y="22" class="actor">REJECTION CASCADE (preference-based)</text>
+
+    <!-- Trigger -->
+    <text x="16" y="46" class="label">Trigger</text>
+    <text x="16" y="62" class="meta">Employee rejects within 24h-of-start window</text>
+    <text x="16" y="78" class="meta">Required: reason from fixed list · budget remaining (3 / month)</text>
+    <text x="16" y="94" class="meta">Past 24h → only emergency leave applies</text>
+    <text x="16" y="112" class="branch">📨 NOTIFY ADMIN (FYI · low): "Emp X rejected Task Y (reason). Cascade in progress."</text>
+
+    <line x1="16" y1="124" x2="474" y2="124" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 3"/>
+
+    <!-- Try 1 -->
+    <text x="16" y="144" class="try">TRY 1 — Bilateral swap (auto)</text>
+    <text x="16" y="162" class="meta">Find another employee whose task can be exchanged with the rejected one.</text>
+    <text x="16" y="178" class="meta">Both feasibilities (skill, no time conflict) must pass.</text>
+    <text x="16" y="194" class="meta">Workload preserved both sides · makespan preserved · no compensation.</text>
+    <text x="16" y="210" class="branch">📨 NOTIFY ADMIN (FYI · low): "Auto-resolved: swap between Emp A ↔ Emp B."</text>
+    <text x="16" y="226" class="branch">📨 NOTIFY both swapped employees: "Your task changed."</text>
+    <text x="16" y="242" class="branch">→ if no valid pair found, fall through to Try 2a</text>
+
+    <!-- Try 2a -->
+    <text x="16" y="266" class="try">TRY 2a — Free-slot replacement (auto)</text>
+    <text x="16" y="284" class="meta">Find an employee with a mid-day gap at the rejected task's hour.</text>
+    <text x="16" y="300" class="meta">Receiver fills the gap · day-end doesn't move · no compensation.</text>
+    <text x="16" y="316" class="branch">📨 NOTIFY ADMIN (FYI · low): "Auto-resolved: Task Y placed in Emp B's gap."</text>
+    <text x="16" y="332" class="branch">📨 NOTIFY receiving employee: "Task added to your day."</text>
+    <text x="16" y="348" class="branch">→ if only end-of-day "gaps" exist, fall through to Try 2b</text>
+
+    <!-- Try 2b -->
+    <text x="16" y="372" class="try">TRY 2b — Stretch assignment (admin-mediated)</text>
+    <text x="16" y="390" class="meta">Rank candidates by computed estimated completion time (earliest first).</text>
+    <text x="16" y="406" class="meta">Admin sends offer · employee opts in · compensation applies.</text>
+    <text x="16" y="422" class="meta">Earliest-finish ranking minimizes the makespan extension.</text>
+    <text x="16" y="438" class="branch">📨 NOTIFY ADMIN (medium): "Stretch offer required for Task Y. N candidates ranked."</text>
+    <text x="16" y="454" class="branch">📨 NOTIFY chosen candidate: "Optional task offered + compensation. Accept / Decline?"</text>
+    <text x="16" y="470" class="branch">📨 NOTIFY ADMIN on decline (medium): "Emp B declined. Try next?"</text>
+    <text x="16" y="486" class="branch">→ if all candidates decline, fall through to Try 3</text>
+
+    <!-- Try 3 -->
+    <text x="16" y="510" class="try">TRY 3 — Manual</text>
+    <text x="16" y="528" class="meta">Admin handles directly: override-assign, reschedule, or cancel.</text>
+    <text x="16" y="544" class="branch">📨 NOTIFY ADMIN (high · email): "Auto-cascade exhausted on Task Y. Manual handling required."</text>
+
+    <line x1="16" y1="562" x2="474" y2="562" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 3"/>
+
+    <!-- Swap partner rights -->
+    <text x="16" y="582" class="try">SWAP PARTNER'S RIGHTS</text>
+    <text x="16" y="600" class="meta">A swapped-into task can also be rejected (consumes that employee's budget).</text>
+    <text x="16" y="616" class="meta">Cascading rejections bounded by the per-task ceiling below.</text>
+
+    <line x1="16" y1="636" x2="474" y2="636" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 3"/>
+
+    <!-- Per-task ceiling -->
+    <text x="16" y="656" class="try">PER-TASK CEILING</text>
+    <text x="16" y="674" class="meta">After 3 rejections of the same task, stop the cascade and escalate to admin.</text>
+    <text x="16" y="690" class="meta">Prevents a single undesirable task from ping-ponging across the workforce.</text>
+    <text x="16" y="706" class="branch">📨 NOTIFY ADMIN + MANAGER (high · email): "Task Y rejected 3× — handle manually."</text>
+
+    <line x1="16" y1="724" x2="474" y2="724" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 3"/>
+
+    <!-- Mass-rejection meta -->
+    <text x="16" y="744" class="try">MASS-REJECTION (meta-trigger)</text>
+    <text x="16" y="762" class="meta">Trigger: 3 rejections OR ≥25% of assigned employees in a 4h window</text>
+    <text x="16" y="778" class="meta">              (whichever is higher)</text>
+    <text x="16" y="796" class="branch">📨 NOTIFY ADMIN + MANAGER (CRITICAL · email + push):</text>
+    <text x="16" y="812" class="meta">     "N rejections in 4h. Cascade paused. Re-optimization preparing."</text>
+    <text x="16" y="830" class="branch">→ Pause per-rejection cascade</text>
+    <text x="16" y="846" class="branch">→ Re-run GA over the affected time window</text>
+    <text x="16" y="862" class="meta">     • Rejections become forbidden pairings</text>
+    <text x="16" y="878" class="meta">     • In-progress and completed tasks LOCKED (rolling horizon)</text>
+    <text x="16" y="894" class="branch">📨 NOTIFY ADMIN (high · email): "Re-run done. X reassigned, Y unfulfillable. Approve?"</text>
+    <text x="16" y="910" class="branch">→ On approval: notify all affected employees of new assignments</text>
+    <text x="16" y="926" class="meta">     Unfulfillable appointments → admin reschedule / cancel decision</text>
+  </g>
+
+  <!-- Loop arrow: cascade resolution lands at modified Task assignment, then resumes execution -->
+  <path class="arrow-loop" d="M1230,2112 L1230,1640 L960,1640"/>
+  <text x="1058" y="1632" class="branch" font-size="10">resume execution after cascade resolves</text>
+
+  <!-- Loop arrow: mass-rejection re-run reuses allocation step -->
+  <path class="arrow-loop" d="M1475,1580 L1495,1580 L1495,1088 L960,1088"/>
+  <text x="1190" y="1080" class="branch" font-size="10">mass-rejection re-run feeds back into allocation</text>
+
+  <!-- ============ EXECUTION ============ -->
+  <g transform="translate(540, 1640)">
+    <rect class="box-emp" width="420" height="62" rx="10"/>
+    <text x="14" y="18" class="actor">EMPLOYEE · SERVICE DAY</text>
+    <text x="14" y="40" class="label">10. Clock in (Attendance)</text>
+    <text x="14" y="56" class="meta">required gate before any task transition</text>
+  </g>
+  <path class="arrow" d="M750,1702 L750,1734"/>
+
+  <g transform="translate(540, 1734)">
+    <rect class="box-emp" width="420" height="62" rx="10"/>
+    <text x="14" y="18" class="actor">EMPLOYEE</text>
+    <text x="14" y="40" class="label">11. Start task</text>
+    <text x="14" y="56" class="meta">Task status: Pending → In Progress · started_at = now()</text>
+  </g>
+  <path class="arrow" d="M750,1796 L750,1828"/>
+
+  <g transform="translate(540, 1828)">
+    <rect class="box-emp" width="420" height="62" rx="10"/>
+    <text x="14" y="18" class="actor">EMPLOYEE</text>
+    <text x="14" y="40" class="label">12. Tick off checklist items</text>
+    <text x="14" y="56" class="meta">toggleChecklistItem · per-item completion stored</text>
+  </g>
+  <path class="arrow" d="M750,1890 L750,1922"/>
+
+  <g transform="translate(540, 1922)">
+    <rect class="box-emp" width="420" height="78" rx="10"/>
+    <text x="14" y="18" class="actor">EMPLOYEE</text>
+    <text x="14" y="40" class="label">13. Complete task</text>
+    <text x="14" y="56" class="meta">Task status: In Progress → Completed</text>
+    <text x="14" y="72" class="meta">completed_at + actual_duration calculated</text>
+  </g>
+  <path class="arrow" d="M750,2000 L750,2032"/>
+
+  <g transform="translate(540, 2032)">
+    <rect class="box-system" width="420" height="78" rx="10"/>
+    <text x="14" y="18" class="actor">SYSTEM</text>
+    <text x="14" y="40" class="label">14. Post-completion checks</text>
+    <text x="14" y="56" class="meta">if actual &gt; estimated → PerformanceFlag</text>
+    <text x="14" y="72" class="meta">ClientAppointment status: → completed</text>
+  </g>
+  <path class="arrow" d="M750,2110 L750,2148"/>
+
+  <!-- ============ FEEDBACK ============ -->
+  <g transform="translate(540, 2148)">
+    <rect class="box-fb" width="420" height="98" rx="10"/>
+    <text x="14" y="18" class="actor">CLIENT · FEEDBACK</text>
+    <text x="14" y="40" class="label">15. Rate completed appointment</text>
+    <text x="14" y="58" class="meta">ClientAppointmentController::storeFeedback</text>
+    <text x="14" y="74" class="meta">Feedback row: user_type='client', rating, comment</text>
+    <text x="14" y="90" class="meta">notifyClientFeedbackSubmitted</text>
+  </g>
+  <path class="arrow" d="M750,2246 L750,2282"/>
+
+  <g transform="translate(540, 2282)">
+    <rect class="box-fb" width="420" height="98" rx="10"/>
+    <text x="14" y="18" class="actor">EMPLOYEE · FEEDBACK</text>
+    <text x="14" y="40" class="label">16. Post-task report</text>
+    <text x="14" y="58" class="meta">TaskStatusController::submitTaskFeedback</text>
+    <text x="14" y="74" class="meta">Feedback row: user_type='employee', rating, keywords, report</text>
+    <text x="14" y="90" class="meta">TaskCompletionObserver → recalculateEmployeeEfficiency</text>
+  </g>
+  <path class="arrow" d="M750,2380 L750,2416"/>
+
+  <g transform="translate(610, 2416)">
+    <rect class="box-end" width="280" height="58" rx="29"/>
+    <text x="140" y="36" text-anchor="middle" class="label">Cycle complete · efficiency feeds next optimization</text>
+  </g>
+
+  <!-- Notes / footer -->
+  <g transform="translate(120, 2520)">
+    <text x="0" y="0" class="actor">DATA STATES OBSERVED</text>
+    <text x="0" y="20" class="meta">ClientAppointment.status:  pending → approved → (assigned) → completed   |  rejected (terminal, admin-side)</text>
+    <text x="0" y="38" class="meta">Task.status:               Pending → In Progress → Completed   |  Rejected (preference, triggers cascade)</text>
+    <text x="0" y="56" class="meta">Rejection budget per employee: 3 / month   |   per-task ceiling: 3 rejections   |   window: assignment → 24h before start</text>
+    <text x="0" y="74" class="meta">Mass-rejection trigger: 3 rejections OR ≥25% of assigned employees in 4h window (whichever is higher)</text>
+    <text x="0" y="92" class="meta">Re-run scope (rolling horizon): in-progress + completed tasks locked · future-window tasks re-optimizable</text>
+  </g>
+
+  <g transform="translate(120, 2680)">
+    <text x="0" y="0" class="actor">KEY ENTRY POINTS</text>
+    <text x="0" y="20" class="meta">app/Http/Controllers/ClientAppointmentController.php · store, storeFeedback</text>
+    <text x="0" y="38" class="meta">app/Http/Controllers/Api/AdminAppointmentController.php · approve, autoAssignTeam, createTaskFromAppointment</text>
+    <text x="0" y="56" class="meta">app/Services/Optimization/OptimizationService.php · optimizeSchedule (GA + rule-based)</text>
+    <text x="0" y="74" class="meta">app/Http/Controllers/Api/TaskStatusController.php · rejectTask, startTask, completeTask, submitTaskFeedback</text>
+    <text x="0" y="92" class="meta">app/Services/Notification/NotificationService.php · stage-by-stage notifications to client / admin / employees</text>
+    <text x="0" y="110" class="meta">app/Services/Leave/EmergencyLeaveService.php · triggerActiveRecovery (post-window emergency path)</text>
+    <text x="0" y="128" class="meta">docs/task-rejection-reassignment-policy.md · authoritative policy reference</text>
+  </g>
+
+  <g transform="translate(120, 2870)">
+    <text x="0" y="0" class="actor">DESIGN STATUS</text>
+    <text x="0" y="20" class="meta">The rejection cascade (Try 1 → 2a → 2b → 3), per-task ceiling, and mass-rejection meta-trigger are designed but not yet implemented.</text>
+    <text x="0" y="38" class="meta">Existing code covers only a thin slice: rejectTask sets Task.status='Rejected' and TaskApprovalObserver recomputes the team's day timetable.</text>
+    <text x="0" y="56" class="meta">See docs/task-rejection-reassignment-policy.md §6 for the implementation gap.</text>
+  </g>
+</svg>

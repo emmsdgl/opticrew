@@ -69,12 +69,21 @@
             }
         }">
 
+        @php
+            // Fetch today's attendance record once — reused by the clock-in banner
+            // AND by the break-time section below.
+            $todayAttendanceRecord = $isClockedIn
+                ? \App\Models\Attendance::where('employee_id', is_array($employee) ? $employee['id'] : $employee->id)
+                    ->whereDate('clock_in', \Carbon\Carbon::today())
+                    ->first()
+                : null;
+            $clockInTimeFormatted = $todayAttendanceRecord && $todayAttendanceRecord->clock_in
+                ? \Carbon\Carbon::parse($todayAttendanceRecord->clock_in)->format('g:i A')
+                : '';
+        @endphp
+
         <!-- Clock In Status Banner -->
         @if($isClockedIn)
-            @php
-                $todayAttendanceRecord = \App\Models\Attendance::where('employee_id', is_array($employee) ? $employee['id'] : $employee->id)->whereDate('clock_in', \Carbon\Carbon::today())->first();
-                $clockInTimeFormatted = $todayAttendanceRecord && $todayAttendanceRecord->clock_in ? \Carbon\Carbon::parse($todayAttendanceRecord->clock_in)->format('g:i A') : '';
-            @endphp
             <div class="flex items-center gap-2 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
                 <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 <span class="text-sm font-medium text-green-800 dark:text-green-300">
@@ -165,6 +174,96 @@
                 </div>
             @endif
         </div>
+
+        {{-- Break Time Section — visible only when clocked in. --}}
+        {{-- Buttons appear visible-but-disabled before/after the lunch and dinner --}}
+        {{-- windows, and become enabled during the windows. Auto-end behavior --}}
+        {{-- comes from the existing backend (Attendance::autoEndExpiredBreaks). --}}
+        @if($isClockedIn)
+            <div class="flex flex-col gap-6 w-full rounded-lg p-4"
+                 x-data="breakControls()"
+                 x-init="init()">
+                <x-labelwithvalue label="Break Time" count="" />
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    @foreach ([
+                        ['type' => 'lunch',  'label' => 'Lunch',  'startH' => 12, 'endH' => 13],
+                        ['type' => 'dinner', 'label' => 'Dinner', 'startH' => 18, 'endH' => 19],
+                    ] as $b)
+                        @php
+                            $bStart    = $todayAttendanceRecord ? $todayAttendanceRecord->{$b['type'] . '_break_start'}  : null;
+                            $bEnd      = $todayAttendanceRecord ? $todayAttendanceRecord->{$b['type'] . '_break_end'}    : null;
+                            $bStatus   = $todayAttendanceRecord ? $todayAttendanceRecord->{$b['type'] . '_break_status'} : null;
+                            $bMinutes  = $todayAttendanceRecord ? $todayAttendanceRecord->breakMinutesFor($b['type'])    : 0;
+                            $isInProgress = $bStatus === \App\Models\Attendance::STATUS_IN_PROGRESS;
+                            $isResolved   = in_array($bStatus, [
+                                \App\Models\Attendance::STATUS_ENDED,
+                                \App\Models\Attendance::STATUS_AUTO_ENDED,
+                            ], true);
+                            $startTime = \Carbon\Carbon::today()->setTime($b['startH'], 0);
+                            $endTime   = \Carbon\Carbon::today()->setTime($b['endH'], 0);
+                        @endphp
+
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300">
+
+                            {{-- Label --}}
+                            <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                                {{ $b['label'] }} Break
+                            </p>
+
+                            {{-- Time range — typography matched to kpi-stat-card (text-2xl font-black). --}}
+                            <p class="mt-3 flex items-baseline flex-wrap gap-x-1.5 gap-y-1 text-2xl font-black text-gray-900 dark:text-gray-100">
+                                <span>{{ $startTime->format('g:i') }}</span>
+                                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $startTime->format('a') }}</span>
+                                <span class="text-base text-gray-400 dark:text-gray-500">-</span>
+                                <span>{{ $endTime->format('g:i') }}</span>
+                                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $endTime->format('a') }}</span>
+                            </p>
+
+                            {{-- Status subtitle --}}
+                            <div class="mt-3 min-h-[20px]">
+                                @if ($isInProgress)
+                                    <span class="inline-block px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-semibold text-xs">
+                                        On break since {{ \Carbon\Carbon::parse($bStart)->format('g:i A') }}
+                                    </span>
+                                @elseif ($bStatus === \App\Models\Attendance::STATUS_ENDED)
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        {{ \Carbon\Carbon::parse($bStart)->format('g:i A') }} – {{ \Carbon\Carbon::parse($bEnd)->format('g:i A') }}
+                                        <span class="text-gray-400 dark:text-gray-500">({{ $bMinutes }} min)</span>
+                                    </p>
+                                @elseif ($bStatus === \App\Models\Attendance::STATUS_AUTO_ENDED)
+                                    <span class="inline-block px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 font-semibold text-xs">
+                                        Auto-ended (not properly closed)
+                                    </span>
+                                @else
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $b['label'] }} Break Skipped</p>
+                                @endif
+                            </div>
+
+                            {{-- Action button — always rendered. Label changes per status:
+                                 not started → "Start X Break"
+                                 in progress → "End X Break"
+                                 ended / auto_ended → "Already taken X break" (disabled). --}}
+                            @php
+                                $buttonLabel = $isResolved
+                                    ? 'Already taken ' . $b['label'] . ' break'
+                                    : ($isInProgress ? 'End ' . $b['label'] . ' Break' : 'Start ' . $b['label'] . ' Break');
+                            @endphp
+                            <button type="button"
+                                @click="toggle('{{ $b['type'] }}', '{{ $bStatus }}')"
+                                :disabled="!canClick('{{ $b['type'] }}', '{{ $bStatus }}') || isProcessing"
+                                class="mt-4 w-full px-4 py-2 text-xs font-semibold rounded-lg transition-colors disabled:cursor-not-allowed
+                                    {{ $isInProgress
+                                        ? 'bg-red-600 hover:bg-red-700 text-white disabled:bg-red-300 dark:disabled:bg-red-900/40'
+                                        : 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-300 dark:disabled:bg-blue-900/40' }}">
+                                <span x-show="!isProcessing">{{ $buttonLabel }}</span>
+                                <span x-show="isProcessing"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         <!-- Inner Panel - Requests Records List -->
         <div class="flex flex-col gap-6 w-full rounded-lg p-4">
@@ -776,5 +875,97 @@
     });
 </script>
 @endif
+
+{{-- Break-time controls: client-side window check (12:00–13:00 / 18:00–19:00) --}}
+{{-- and POST to the existing /employee/attendance/break/{start|end} routes. --}}
+<script>
+    function breakControls() {
+        return {
+            now: new Date(),
+            isProcessing: false,
+
+            init() {
+                // Re-evaluate window state every 30s so buttons enable/disable
+                // when crossing the start/end of a break window.
+                setInterval(() => { this.now = new Date(); }, 30000);
+            },
+
+            isInWindow(type) {
+                const total = this.now.getHours() * 60 + this.now.getMinutes();
+                if (type === 'lunch')  return total >= 12 * 60 && total < 13 * 60;  // 12:00–13:00
+                if (type === 'dinner') return total >= 18 * 60 && total < 19 * 60;  // 18:00–19:00
+                return false;
+            },
+
+            canClick(type, status) {
+                // TEST MODE: time-window gating disabled so the break can be
+                // started/ended at any time of day to verify recording works.
+                // Re-enable by replacing the body with the commented version below.
+                if (status === 'ended' || status === 'auto_ended') return false;
+                return true;
+
+                // ── Production-intent logic (re-enable later): ───────────────
+                // if (status === 'ended' || status === 'auto_ended') return false;
+                // if (status === 'in_progress') return this.isInWindow(type);
+                // return this.isInWindow(type);
+            },
+
+            hint(type, status) {
+                // Resolved breaks (ended or auto-ended): button is shown disabled
+                // and the note tells the employee they've already used this slot.
+                if (status === 'ended' || status === 'auto_ended') {
+                    const label = type === 'lunch' ? 'Lunch' : 'Dinner';
+                    return `Already taken ${label} break`;
+                }
+                // TEST MODE hints (time-window gating off).
+                if (status === 'in_progress') return 'Test mode — click to end at any time';
+                return 'Test mode — click to start at any time';
+            },
+
+            async toggle(type, status) {
+                if (this.isProcessing) return;
+                if (!this.canClick(type, status)) return;
+                this.isProcessing = true;
+
+                const url = (status === 'in_progress')
+                    ? '{{ route('employee.attendance.break.end') }}'
+                    : '{{ route('employee.attendance.break.start') }}';
+
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                            'Accept': 'application/json'
+                        },
+                        // Pass the clicked break type so the backend records it
+                        // correctly even outside the natural time windows
+                        // (test mode — see AttendanceController::startBreak).
+                        body: JSON.stringify({ type })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        if (window.showErrorDialog) {
+                            window.showErrorDialog('Break Action Failed', data.message || 'Unable to update break.');
+                        } else {
+                            alert(data.message || 'Unable to update break.');
+                        }
+                        this.isProcessing = false;
+                    }
+                } catch (e) {
+                    if (window.showErrorDialog) {
+                        window.showErrorDialog('Break Action Failed', 'An error occurred. Please try again.');
+                    } else {
+                        alert('An error occurred. Please try again.');
+                    }
+                    this.isProcessing = false;
+                }
+            },
+        }
+    }
+</script>
 @endpush
 </x-layouts.general-employee>

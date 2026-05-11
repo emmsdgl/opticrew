@@ -145,6 +145,59 @@
                 window.showErrorDialog('Error', 'An unexpected error occurred. Please try again.', 'Close');
             }
         }
+
+        /**
+         * Decline-with-reason: open the rejection-reason dialog (same visual
+         * style as the confirm dialog), populate the hidden form inputs, then
+         * submit the existing decline-task-form. The controller side already
+         * handles the rest (audit row, status, cascade, notifications).
+         */
+        async function handleTaskReject() {
+            let result;
+            try {
+                result = await window.showRejectionReasonDialog(
+                    'Decline Task',
+                    'Pick a reason and confirm. This action cannot be undone.',
+                    'Decline',
+                    'Cancel'
+                );
+            } catch {
+                return; // user cancelled
+            }
+
+            const form = document.getElementById('decline-task-form');
+            if (!form) return;
+
+            const reasonInput = document.getElementById('decline-reason-input');
+            const reasonTextInput = document.getElementById('decline-reason-text-input');
+            if (reasonInput) reasonInput.value = result.reason || '';
+            if (reasonTextInput) reasonTextInput.value = result.reason_text || '';
+
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: new FormData(form)
+                });
+
+                if (res.ok || res.redirected) {
+                    window.showSuccessDialog(
+                        'Task Declined',
+                        'You have successfully declined this task.',
+                        'Done',
+                        window.location.href
+                    );
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    window.showErrorDialog('Error', data.message || 'Something went wrong.', 'Close');
+                }
+            } catch (e) {
+                window.showErrorDialog('Error', 'An unexpected error occurred. Please try again.', 'Close');
+            }
+        }
     </script>
 
     <div x-data="feedbackModal()" @open-feedback-modal.window="showFeedbackModal = true" class="p-4 md:p-8">
@@ -364,7 +417,7 @@
                             </button>
                             <button type="button"
                                 @if($isScheduledToday)
-                                    onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
+                                    onclick="handleTaskReject()"
                                     class="flex-1 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-full transition-colors shadow-lg shadow-red-600/30 dark:shadow-red-600/20"
                                 @else
                                     disabled
@@ -1323,7 +1376,7 @@
                                 </button>
                                 <button type="button"
                                     @if($isScheduledTodayDesktop)
-                                        onclick="handleTaskAction('Decline Task', 'Are you sure you want to decline this task? This action cannot be undone.', 'Decline', 'decline-task-form')"
+                                        onclick="handleTaskReject()"
                                         class="w-full px-4 py-2.5 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition-colors text-sm flex items-center justify-center gap-2"
                                     @else
                                         disabled
@@ -1568,6 +1621,9 @@
         </form>
         <form id="decline-task-form" action="{{ route('employee.tasks.decline', $task->id) }}" method="POST" style="display: none;">
             @csrf
+            {{-- Populated by handleTaskReject() before submit (see top-of-file script). --}}
+            <input type="hidden" name="reason" id="decline-reason-input" value="">
+            <input type="hidden" name="reason_text" id="decline-reason-text-input" value="">
         </form>
 
         {{-- Hidden Forms for Task Actions --}}

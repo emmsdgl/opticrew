@@ -342,8 +342,19 @@
                                                         'opacity-40 cursor-not-allowed line-through': bookedSlots.includes('{{ $val }}'),
                                                     }">
                                                     <span :class="bookedSlots.includes('{{ $val }}') ? 'text-gray-400 dark:text-gray-600' : 'text-gray-900 dark:text-white'">{{ $lbl }}</span>
-                                                    <span class="text-xs" :class="bookedSlots.includes('{{ $val }}') ? 'text-red-400 dark:text-red-500' : 'text-gray-400 dark:text-gray-500'"
-                                                          x-text="bookedSlots.includes('{{ $val }}') ? 'Booked' : '{{ $val }}'"></span>
+                                                    {{-- Right-side label: 'Break time' if the slot crosses lunch/dinner, --}}
+                                                    {{-- otherwise 'Booked' for appointment conflicts, otherwise the raw 24h value. --}}
+                                                    <span class="text-xs"
+                                                          :class="
+                                                              breakWindows.includes('{{ $val }}') ? 'text-orange-500 dark:text-orange-400 font-semibold' :
+                                                              bookedSlots.includes('{{ $val }}') ? 'text-red-400 dark:text-red-500' :
+                                                              'text-gray-400 dark:text-gray-500'
+                                                          "
+                                                          x-text="
+                                                              breakWindows.includes('{{ $val }}') ? 'Break time' :
+                                                              bookedSlots.includes('{{ $val }}') ? 'Booked' :
+                                                              '{{ $val }}'
+                                                          "></span>
                                                 </button>
                                             @endforeach
                                         @endfor
@@ -780,6 +791,7 @@
 
             // Time slot availability
             bookedSlots: [],
+            breakWindows: [],
             loadingSlots: false,
 
             // CSC API
@@ -1377,10 +1389,11 @@
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                     });
                     console.log('[BookedSlots] Response status:', res.status);
-                    if (!res.ok) { console.error('[BookedSlots] Error response:', res.status); this.bookedSlots = []; this.loadingSlots = false; return; }
+                    if (!res.ok) { console.error('[BookedSlots] Error response:', res.status); this.bookedSlots = []; this.breakWindows = []; this.loadingSlots = false; return; }
                     const data = await res.json();
-                    console.log('[BookedSlots] Booked slots:', data.booked);
+                    console.log('[BookedSlots] Booked slots:', data.booked, 'Break windows:', data.break_windows);
                     this.bookedSlots = data.booked || [];
+                    this.breakWindows = data.break_windows || [];
                     if (this.formData.service_time && this.bookedSlots.includes(this.formData.service_time)) {
                         this.formData.service_time = '';
                     }

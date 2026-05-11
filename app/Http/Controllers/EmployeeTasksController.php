@@ -274,7 +274,7 @@ class EmployeeTasksController extends Controller
      * SCENARIO #10: Last-minute cancellation pushes notifications
      * SCENARIO #20: Cannot cancel after task started or 30 min before scheduled time
      */
-    public function decline(Task $task)
+    public function decline(Task $task, \Illuminate\Http\Request $request)
     {
         $user = Auth::user();
         $employee = $user->employee;
@@ -319,14 +319,82 @@ class EmployeeTasksController extends Controller
             $isLastMinute = $daysUntilTask <= 1;
         }
 
-        // Update task approval status
-        $task->update([
-            'employee_approved' => false,
-            'employee_approved_at' => Carbon::now(),
-            'approved_by' => $user->id,
-        ]);
+        // Bridge to the new preference-based rejection flow:
+        //   - persist a task_rejections audit row (so the rejection appears
+        //     in the admin Rejected Tasks table)
+        //   - flip Task.status to 'Rejected' (the cascade + admin filter both look at this)
+        //   - increment rejection_count for the per-task ceiling
+        // Reason resolution: prefer the picker key + free text from the
+        // rejection-reason dialog when present, fall back to a sentinel for
+        // any old client that POSTs without a reason.
+        // See docs/task-rejection-reassignment-policy.md.
+        $allowedReasons = config('rejection.allowed_reasons', []);
+        $reasonKey = (string) $request->input('reason', '');
+        $reasonText = trim((string) $request->input('reason_text', ''));
 
-        // Notify all admins that the employee declined the task
+        if ($reasonKey !== '' && array_key_exists($reasonKey, $allowedReasons)) {
+            $reasonLabel = $allowedReasons[$reasonKey];
+            $defaultReason = $reasonText !== ''
+                ? "{$reasonLabel}: {$reasonText}"
+                : $reasonLabel;
+        } else {
+            $defaultReason = 'Declined via task page (no reason specified)';
+        }
+
+        $newRejectionCount = ($task->rejection_count ?? 0) + 1;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($task, $user, $employee, $defaultReason, $newRejectionCount) {
+            $task->update([
+                'employee_approved' => false,
+                'employee_approved_at' => Carbon::now(),
+                'approved_by' => $user->id,
+                'status' => 'Rejected',
+                'rejection_reason' => $defaultReason,
+                'rejection_count' => $newRejectionCount,
+            ]);
+
+            \App\Models\TaskRejection::create([
+                'task_id' => $task->id,
+                'employee_id' => $employee->id,
+                'reason' => $defaultReason,
+                'rejected_at' => Carbon::now(),
+            ]);
+        });
+
+        $task->refresh();
+
+        // Notify admins via the new rejection notification (richer payload:
+        // reason, budget remaining, ceiling progress).
+        $budgetRemaining = $employee->rejectionBudgetRemaining();
+        $this->notificationService->notifyAdminsTaskRejected(
+            $task,
+            $user->name,
+            $defaultReason,
+            $budgetRemaining,
+            $newRejectionCount
+        );
+
+        // Per-task ceiling vs. cascade.
+        $ceiling = (int) config('rejection.per_task_ceiling', 3);
+        if ($newRejectionCount >= $ceiling) {
+            $this->notificationService->notifyAdminsTaskRejectionCeilingReached($task);
+        } else {
+            $cascade = app(\App\Services\Reassignment\ReassignmentCascadeService::class);
+            $cascadeResult = $cascade->runAutoCascade($task);
+            if ($cascadeResult['resolved']) {
+                $resolutionLabel = $cascadeResult['resolved'] === 'try_1'
+                    ? 'Try 1 (bilateral swap)'
+                    : 'Try 2a (mid-day free-slot)';
+                $this->notificationService->notifyAdminsCascadeAutoResolved(
+                    $task,
+                    $resolutionLabel,
+                    $cascadeResult['message']
+                );
+            }
+        }
+
+        // Keep the legacy "Task Declined" notification for back-compat with
+        // any UI that filters on TYPE_TASK_DECLINED.
         $this->notificationService->notifyAdminsTaskDeclined($task, $user->name);
 
         // SCENARIO #10: For last-minute declines, send urgent push notifications

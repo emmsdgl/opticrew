@@ -739,10 +739,25 @@ class AttendanceController extends Controller
             return $this->breakError($request, 'You already have an active break');
         }
 
-        // Detect which break window we're in
+        // Detect which break window we're in. TEST MODE: if outside the lunch
+        // and dinner windows, we no longer reject; instead we honour an explicit
+        // ?type= or fall back to whichever break hasn't been taken yet so the
+        // recording flow can be exercised at any hour.
+        // Restore production behaviour by replacing this block with the original:
+        //   $type = $this->currentBreakType();
+        //   if (!$type) { return $this->breakError($request, '…'); }
         $type = $this->currentBreakType();
         if (!$type) {
-            return $this->breakError($request, 'Breaks can only be started during lunch (12:00–13:00) or dinner (18:00–19:00)');
+            $requested = (string) $request->input('type', '');
+            if (in_array($requested, ['lunch', 'dinner'], true)) {
+                $type = $requested;
+            } elseif ($attendance->lunch_break_status === null) {
+                $type = 'lunch';
+            } elseif ($attendance->dinner_break_status === null) {
+                $type = 'dinner';
+            } else {
+                return $this->breakError($request, 'Both breaks have already been taken today');
+            }
         }
 
         // Prevent re-taking the same break twice
